@@ -1,0 +1,33 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/Assets/fonts/Pangram-Black.otf",
+      "sha1": "558f4cd26f8a09e3a9f95af3ea1bc4647921461b"
+    },
+    {
+      "path": "src/Assets/fonts/Pangram-Bold.otf",
+      "sha1": "f81df084db20039c8cad0d94db15b7ad56661beb"
+    },
+    {
+      "path": "src/Assets/fonts/Pangram-ExtraBold.otf",
+      "sha1": "7a69a476ebde6bf70785175484863b8322b95f5a"
+    },
+    {
+      "path": "src/Assets/fonts/Pangram-ExtraLight.otf",
+      "sha1": "1d2aa44d400c6a5b58aaf9b0c7340c293cee1144"
+    },
+    {
+      "path": "src/Assets/fonts/Pangram-Light.otf",
+      "sha1": "119f7489c5c9ee27fe0187516abe453fe5ebdd82"
+    },
+    {
+      "path": "src/Assets/fonts/Pangram-Medium.otf",
+      "sha1": "a7678e47768d456a613ed2179c1cb89539e668d6"
+    },
+    {
+      "path": "src/Assets/fonts/Pangram-Regular.otf",
+      "sha1": "dd2f3983d68ad800242addcff564ba3fd317e33f"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "873545477450",
+    "project_id": "life-coaching-cd058",
+    "storage_bucket": "life-coaching-cd058.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:873545477450:android:268738aef957ef51b565b3",
+        "android_client_info": {
+          "package_name": "com.coachingoflife.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "873545477450-js1rpl3n0lrpjdi29e2cfq81iclckpgp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzTIqPz-QAwGaE9c5DRH1EuxHNOUnaLqY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "873545477450-js1rpl3n0lrpjdi29e2cfq81iclckpgp.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "873545477450-17ks6h2ctbnkqp75fri2uu04fhmfqu3f.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.coachingoflife.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
