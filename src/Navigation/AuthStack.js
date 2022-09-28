@@ -49,12 +49,26 @@ import TaskDetail from '../screens/Home/TimeTable/TaskDetail';
 
 // //? Gratitude
 import Gratitude from '../screens/Home/Gratitude/Gratitude';
+import messaging from '@react-native-firebase/messaging';
 
 // import Colors from '../Utilities/Colors';
 const Stack = createNativeStackNavigator();
 
 const AuthStack = () => {
   const [whichScreen, setWhichScreen] = useState(undefined);
+
+  // React.useLayoutEffect(() => {
+  //   messaging()
+  //     .getInitialNotification()
+  //     .then(remoteMessage => {
+  //       console.log('Initial Notification');
+  //       if (remoteMessage) {
+  //         console.log('Initial Notification true');
+  //         setWhichScreen(screens.qouteList);
+  //       }
+  //     });
+  // }, []);
+
   const checkOBoarding = async () => {
     let seen = await AsyncStorage.multiGet(['@onboarding', '@token']);
     console.log(seen[1][1]);
@@ -68,7 +82,9 @@ const AuthStack = () => {
   };
 
   useEffect(() => {
-    checkOBoarding();
+    if (whichScreen == undefined) {
+      checkOBoarding();
+    }
   }, []);
 
   if (whichScreen != undefined) {
@@ -108,7 +124,10 @@ const AuthStack = () => {
         <Stack.Screen name={screens.favQuoteList} component={FavQuoteList} />
         {/* Meditation*/}
         <Stack.Screen name={screens.meditation} component={Meditation} />
-        <Stack.Screen name={screens.trackPlayer} component={TrackPlayerScreen} />
+        <Stack.Screen
+          name={screens.trackPlayer}
+          component={TrackPlayerScreen}
+        />
         {/* TimeTable */}
         <Stack.Screen name={screens.timeTable} component={TimeTable} />
         <Stack.Screen name={screens.addTask} component={AddTask} />

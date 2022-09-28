@@ -13,6 +13,7 @@ import Colors from '../../Utilities/Colors';
 import {font} from '../../Utilities/font';
 import {screens} from '../../Navigation/Screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import SplashScreen from 'react-native-splash-screen';
 
 const Onboarding = ({navigation}) => {
   const slider = useRef();
@@ -30,6 +31,7 @@ const Onboarding = ({navigation}) => {
   };
 
   useEffect(() => {
+    SplashScreen.hide();
     OnboardingChecked();
   }, []);
 
@@ -129,7 +131,6 @@ const _styleOB = StyleSheet.create({
     // marginTop: 50,
     flex: 1,
     paddingHorizontal: 50,
-
   },
   title: {
     fontSize: 24,

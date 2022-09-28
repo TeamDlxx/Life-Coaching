@@ -6,12 +6,8 @@ import {SafeAreaView, StatusBar} from 'react-native';
 import moment from 'moment';
 import AuthStack from './src/Navigation/AuthStack';
 import TrackPlayer from 'react-native-track-player';
-import {Toast} from 'react-native-toast-message/lib/src/Toast';
-
-import Home from './src/screens/Home/Home';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-
-const Stack = createNativeStackNavigator();
+import Toast from 'react-native-toast-message';
+import messaging from '@react-native-firebase/messaging';
 
 moment.updateLocale('en', {
   week: {
@@ -19,12 +15,14 @@ moment.updateLocale('en', {
   },
 });
 
-const App = () => {
+const App = props => {
   React.useEffect(() => {
-    SplashScreen.hide();
-    TrackplayerSetup();
+    // SplashScreen.hide();
+    
+ 
+    // TrackplayerSetup()
   }, []);
-  
+
   const TrackplayerSetup = async () => {
     await TrackPlayer.setupPlayer();
     await TrackPlayer.updateOptions({

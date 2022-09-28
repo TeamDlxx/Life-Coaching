@@ -74,7 +74,11 @@ const Setting = props => {
         break;
 
       case 'logout':
-        logout();
+        Alert.alert('Logout', 'Are you sure you want to logout?', [
+          {text: 'No'},
+          {text: 'Yes', onPress: () => logout()},
+        ]);
+
         break;
     }
   };

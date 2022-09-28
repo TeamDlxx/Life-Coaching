@@ -10,7 +10,7 @@ import {
   Dimensions,
   TouchableOpacity,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import HeadingText from '../../Components/HeadingText';
 import {
   CustomSimpleTextInput,
@@ -21,6 +21,7 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {font} from '../../Utilities/font';
 import {screens} from '../../Navigation/Screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import messaging from '@react-native-firebase/messaging';
 
 const height = Dimensions.get('screen').height;
 const Login = props => {
@@ -36,13 +37,39 @@ const Login = props => {
   };
 
   const onBottomTabScreen = async () => {
-    AsyncStorage.setItem('@token', 'kdcdhsbchjbdshjsdcknjdsjkc').then(() => {
+    const token = await messaging().getToken();
+    console.log('Firebase Token\n', token);
+    AsyncStorage.multiSet([
+      ['@token', 'kdcdhsbchjbdshjsdcknjdsjkc'],
+      ['@firebaseToken', token],
+    ]).then(() => {
       props.navigation.reset({
         index: 0,
-        routes: [{name: screens.bottomTabs}],
+        routes: [
+          {
+            name: screens.bottomTabs,
+          },
+        ],
       });
     });
   };
+
+  async function checkNotificationPermission() {
+    const authorizationStatus = await messaging().requestPermission();
+
+    if (authorizationStatus === messaging.AuthorizationStatus.AUTHORIZED) {
+      // await messaging().registerDeviceForRemoteMessages();
+    } else if (
+      authorizationStatus === messaging.AuthorizationStatus.PROVISIONAL
+    ) {
+      // await messaging().registerDeviceForRemoteMessages();
+    } else {
+    }
+  }
+
+  useEffect(() => {
+    checkNotificationPermission();
+  }, []);
 
   return (
     <KeyboardAwareScrollView

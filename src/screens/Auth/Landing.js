@@ -12,8 +12,13 @@ import {font} from '../../Utilities/font';
 import Colors from '../../Utilities/Colors';
 import {screens} from '../../Navigation/Screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import SplashScreen from 'react-native-splash-screen';
 
 export default function Landing({navigation}) {
+  React.useEffect(() => {
+    SplashScreen.hide();
+  }, []);
+
   const onLoginScreen = () => {
     navigation.navigate(screens.Login);
   };
@@ -81,7 +86,7 @@ const _style = StyleSheet.create({
     color: Colors.black,
     flex: 1,
     justifyContent: 'center',
-    marginTop:10
+    marginTop: 10,
   },
   secondView: {
     flex: 1,
@@ -124,7 +129,6 @@ const _style = StyleSheet.create({
     // borderRadius: 10,
 
     flex: 1,
-    
 
     // backgroundColor: '#ffff',
   },

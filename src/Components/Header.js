@@ -2,6 +2,7 @@ import {View, Text, Image, Pressable} from 'react-native';
 import React from 'react';
 import Colors from '../Utilities/Colors';
 import {font} from '../Utilities/font';
+import {screens} from '../Navigation/Screens';
 
 const Header = props => {
   return (
@@ -22,7 +23,13 @@ const Header = props => {
               alignItems: 'center',
               justifyContent: 'center',
             }}
-            onPress={() => props.navigation.goBack()}>
+            onPress={() => {
+              if (props.navigation.canGoBack()) {
+                props.navigation.goBack();
+              } else {
+                props.navigation.navigate(screens.bottomTabs);
+              }
+            }}>
             <Image
               source={require('../Assets/Icons/back.png')}
               style={{height: 25, width: 25}}
@@ -74,7 +81,7 @@ const Header = props => {
               alignItems: 'center',
               justifyContent: 'center',
               // backgroundColor:"pink",
-              marginRight:10
+              marginRight: 10,
             }}
             onPress={props.rightIcononPress}>
             <Image source={props.rightIcon} style={{height: 20, width: 20}} />
