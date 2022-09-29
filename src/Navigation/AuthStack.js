@@ -41,6 +41,7 @@ import FavQuoteList from '../screens/Home/Quotes/FavQuoteList';
 import Meditation from '../screens/Home/Meditation/Meditation';
 // //
 import TrackPlayerScreen from '../screens/Home/Meditation/TrackPlayerScreen';
+import FavouriteTracks from '../screens/Home/Meditation/FavouriteTracks';
 
 // //? TimeTable
 import TimeTable from '../screens/Home/TimeTable/TimeTable';
@@ -56,18 +57,6 @@ const Stack = createNativeStackNavigator();
 
 const AuthStack = () => {
   const [whichScreen, setWhichScreen] = useState(undefined);
-
-  // React.useLayoutEffect(() => {
-  //   messaging()
-  //     .getInitialNotification()
-  //     .then(remoteMessage => {
-  //       console.log('Initial Notification');
-  //       if (remoteMessage) {
-  //         console.log('Initial Notification true');
-  //         setWhichScreen(screens.qouteList);
-  //       }
-  //     });
-  // }, []);
 
   const checkOBoarding = async () => {
     let seen = await AsyncStorage.multiGet(['@onboarding', '@token']);
@@ -119,6 +108,7 @@ const AuthStack = () => {
         {/* MoodTracker */}
         <Stack.Screen name={screens.moodTracker} component={MoodTracker} />
         <Stack.Screen name={screens.addMood} component={AddMood} />
+        <Stack.Screen name={screens.favTracks} component={FavouriteTracks} />
         {/* Quotes */}
         <Stack.Screen name={screens.qouteList} component={List} />
         <Stack.Screen name={screens.favQuoteList} component={FavQuoteList} />

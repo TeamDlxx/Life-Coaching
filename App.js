@@ -17,10 +17,7 @@ moment.updateLocale('en', {
 
 const App = props => {
   React.useEffect(() => {
-    // SplashScreen.hide();
-    
- 
-    // TrackplayerSetup()
+    TrackplayerSetup();
   }, []);
 
   const TrackplayerSetup = async () => {

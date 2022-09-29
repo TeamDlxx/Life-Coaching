@@ -7,16 +7,18 @@ import {
   TouchableOpacity,
   Pressable,
   AppState,
+  ImageBackground,
+  Platform,
+  StyleSheet,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
-import styles, {
-  mainStyles,
-  FAB_style,
-  other_style,
-} from '../../../Utilities/styles';
 import {font} from '../../../Utilities/font';
+import TrackPlayer from 'react-native-track-player';
+import ProgressBar from '../../../Components/ProgreeBar';
+
+//Icons
 
 import favIcon from '../../../Assets/TrackPlayer/favIcon.png';
 import nextTrack from '../../../Assets/TrackPlayer/nextTrack.png';
@@ -25,12 +27,9 @@ import pauseTrack from '../../../Assets/TrackPlayer/pauseTrack.png';
 import playTrack from '../../../Assets/TrackPlayer/playTrack.png';
 import randomTrack from '../../../Assets/TrackPlayer/randomTrack.png';
 
-import TrackPlayer from 'react-native-track-player';
-
-import ProgressBar from '../../../Components/ProgreeBar';
-
 const TrackPlayerScreen = props => {
   const [trackItem, setTrackItem] = useState(props.route.params.item);
+  const [isFav, setIsFav] = useState(false);
   const [playIcon, setPlayIcon] = useState(playTrack);
   //? Views
 
@@ -47,14 +46,12 @@ const TrackPlayerScreen = props => {
     TrackPlayer.add({
       id: '1',
       url: 'https://raw.githubusercontent.com/uit2712/RNPlaySound/develop/sounds/Tropic%20-%20Anno%20Domini%20Beats.mp3',
-
       title: 'name',
       artist: 'playlist',
       album: 'abc',
       genre: 'Progressive House, Electro House',
       artwork: 'this',
     });
-
     return function cleanup() {
       TrackPlayer.reset();
     };
@@ -94,190 +91,191 @@ const TrackPlayerScreen = props => {
     props.navigation.goBack();
   };
 
-  // Main render View............
+  //? Main render View............
   return (
-    <SafeAreaView style={mainStyles.MainView}>
-      <StatusBar
-        barStyle={'dark-content'}
-        backgroundColor={Colors.background}
-      />
-      {/* <View
-        style={{
-        width: '100%',
-        height: 50,
-        flexDirection: 'row',
-        alignItems: 'center',
-        }}>
-      <View style={{height: 50, width: 50}}>
-        
+    <View style={_styleTrackPlayer.rootView}>
+      <View style={_styleTrackPlayer.posterView}>
+        <ImageBackground
+          style={_styleTrackPlayer.posterImageView}
+          source={{uri: trackItem.image}}>
+          <StatusBar
+            barStyle={'dark-content'}
+            backgroundColor={'transparent'}
+            translucent={true}
+          />
+          <SafeAreaView style={{flex: 1}}>
+            <View
+              style={{
+                marginTop:
+                  Platform.OS == 'android' ? StatusBar.currentHeight : 0,
+              }}>
+              <Pressable
+                onPress={goBack}
+                style={_styleTrackPlayer.backButtonView}>
+                <Image
+                  style={_styleTrackPlayer.backButtonIcon}
+                  source={require('../../../Assets/Icons/back.png')}
+                />
+              </Pressable>
+            </View>
+          </SafeAreaView>
+        </ImageBackground>
+      </View>
+      <View style={_styleTrackPlayer.controlsAndTextView}>
+        <View style={_styleTrackPlayer.TextView}>
           <Pressable
-            style={{
-              height: 50,
-              width: 50,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            onPress={() => goBack()}>
+            onPress={() => setIsFav(!isFav)}
+            style={_styleTrackPlayer.favButtonView}>
             <Image
-              source={require('../../../Assets/Icons/back.png')}
-              style={{height: 25, width: 25}}
+              style={[
+                _styleTrackPlayer.favButtonIcon,
+                {
+                  tintColor: isFav ? Colors.primary : Colors.lightPrimary,
+                },
+              ]}
+              source={favIcon}
             />
           </Pressable>
-        
-      </View>
+          <Text style={_styleTrackPlayer.trackName}>{trackItem.note}</Text>
+          <Text style={_styleTrackPlayer.trackCategory}>
+            {props.route.params?.category?.name}
+          </Text>
+          <Text style={_styleTrackPlayer.trackDescription}>
+            {trackItem.description}
+          </Text>
+        </View>
+        <View style={_styleTrackPlayer.controlView}>
+          <ProgressBar
+            resetPlayer={resetTheTrack}
+            moveTo={val => {
+              moveTo(val);
+            }}
+          />
 
-      <View style={{flex: 1, justifyContent: 'center'}}>
-        <Text
-          numberOfLines={1}
-          style={{
-            color: Colors.black,
-            fontSize: 20,
-            fontFamily: font.bold,
-            textAlign:'center',
-            // fontWeight: '700',
-          }}>
-          Player
-        </Text>
-      </View>
-      <View style={{height: 50, width: 50}}>
-      
-    </View>
-         </View> */}
-      <Header navigation={props.navigation} title={'Player'} />
-      <View style={[mainStyles.innerView, {paddingHorizontal: 0}]}>
-        <View style={{flex: 1, marginHorizontal: 0}}>
-          <View
-            style={{
-              flex: 9,
-              borderTopLeftRadius: 60,
-              borderTopRightRadius: 60,
-              marginTop: -20,
-            }}>
-            <View
-              style={{
-                flex: 0.3,
-                alignItems: 'center',
-                justifyContent: 'flex-end',
-              }}></View>
-            <View
-              style={{
-                flex: 6.5,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
+          <View style={_styleTrackPlayer.playerButtonsView}>
+            <View style={_styleTrackPlayer.previosAndNextButtonView}>
               <Image
-                style={{width: '72%', height: '89%', borderRadius: 50}}
-                source={{uri: trackItem.image}}></Image>
-            </View>
-            <View style={{marginHorizontal: 50, minHeight: 80}}>
-              <Text
-                style={{
-                  fontFamily: font.xbold,
-                  fontSize: 21,
-                  includeFontPadding: false,
-                  color: Colors.black,
-                  marginTop: 5,
-                }}>
-                {trackItem.note}
-              </Text>
-              <Text
-                style={{
-                  fontFamily: font.bold,
-                  fontSize: 14,
-                  includeFontPadding: false,
-                  color: Colors.gray05,
-                  marginTop: 5,
-                }}>
-                {trackItem.title}
-              </Text>
-            </View>
-            <View style={{flex: 2.0, marginHorizontal: 35}}>
-              <ProgressBar
-                resetPlayer={resetTheTrack}
-                moveTo={val => {
-                  moveTo(val);
-                }}
+                style={_styleTrackPlayer.previosAndNextButtonIcon}
+                source={previousTrack}
               />
+            </View>
 
-              <View style={{flexDirection: 'row', marginTop: 10}}>
-                <View
-                  style={{
-                    flex: 0.8,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                  <Image
-                    style={{
-                      width: 20,
-                      height: 20,
-                      tintColor: Colors.lightPrimary,
-                    }}
-                    source={randomTrack}></Image>
-                </View>
-                <View
-                  style={{
-                    flex: 1,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                  <Image
-                    style={{width: 22, height: 22, tintColor: Colors.primary}}
-                    source={previousTrack}></Image>
-                </View>
-                <View
-                  style={{
-                    flex: 1.2,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                  <TouchableOpacity
-                    onPress={changeStatus}
-                    style={{
-                      width: 60,
-                      height: 60,
-                      borderRadius: 30,
-                      backgroundColor: Colors.primary,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderColor: Colors.lightPrimary,
-                      borderWidth: 7,
-                    }}>
-                    <Image
-                      style={{width: 22, height: 22, tintColor: Colors.white}}
-                      source={playIcon}></Image>
-                  </TouchableOpacity>
-                </View>
-                <View
-                  style={{
-                    flex: 1,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                  <Image
-                    style={{width: 22, height: 22, tintColor: Colors.primary}}
-                    source={nextTrack}></Image>
-                </View>
-                <View
-                  style={{
-                    flex: 0.8,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                  <Image
-                    style={{
-                      width: 20,
-                      height: 20,
-                      tintColor: Colors.lightPrimary,
-                    }}
-                    source={favIcon}></Image>
-                </View>
-              </View>
+            <View style={_styleTrackPlayer.playPauseButtonView}>
+              <TouchableOpacity
+                onPress={changeStatus}
+                style={_styleTrackPlayer.playPauseButtonInnerView}>
+                <Image
+                  style={_styleTrackPlayer.playPauseButtonIcon}
+                  source={playIcon}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={_styleTrackPlayer.previosAndNextButtonView}>
+              <Image
+                style={_styleTrackPlayer.previosAndNextButtonIcon}
+                source={nextTrack}
+              />
             </View>
           </View>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
 export default TrackPlayerScreen;
+
+const _styleTrackPlayer = StyleSheet.create({
+  rootView: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  posterView: {
+    flex: 0.5,
+    width: '100%',
+    transform: [{scaleX: 2}],
+    borderBottomStartRadius: 200,
+    borderBottomEndRadius: 200,
+    overflow: 'hidden',
+  },
+  posterImageView: {
+    flex: 1,
+    transform: [{scaleX: 0.5}],
+  },
+
+  backButtonView: {
+    height: 40,
+    width: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+    borderRadius: 40 / 2,
+    marginLeft: 10,
+  },
+  backButtonIcon: {height: 20, width: 20},
+  controlsAndTextView: {
+    flex: 0.5,
+    justifyContent: 'space-between',
+    marginBottom: '15%',
+    marginTop: '10%',
+  },
+  TextView: {marginHorizontal: 35, marginTop: -20},
+  favButtonView: {
+    alignItems: 'center',
+    height: 40,
+    width: 40,
+    borderRadius: 40 / 2,
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+  },
+  favButtonIcon: {
+    width: 20,
+    height: 20,
+  },
+  trackName: {
+    fontFamily: font.xbold,
+    fontSize: 21,
+    includeFontPadding: false,
+    color: Colors.black,
+    marginTop: 5,
+  },
+  trackCategory: {
+    fontFamily: font.bold,
+    fontSize: 18,
+    includeFontPadding: false,
+    color: Colors.gray12,
+    marginTop: 5,
+  },
+  trackDescription: {
+    fontFamily: font.bold,
+    fontSize: 14,
+    includeFontPadding: false,
+    color: Colors.gray05,
+    marginTop: 5,
+  },
+  controlView: {marginHorizontal: 35, marginTop: 10},
+  playerButtonsView: {flexDirection: 'row', marginTop: 10},
+  previosAndNextButtonView: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  previosAndNextButtonIcon: {width: 22, height: 22, tintColor: Colors.primary},
+
+  playPauseButtonView: {
+    flex: 1.2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playPauseButtonInnerView: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderColor: Colors.lightPrimary,
+    borderWidth: 7,
+  },
+  playPauseButtonIcon: {width: 22, height: 22, tintColor: Colors.white},
+});

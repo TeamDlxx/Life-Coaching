@@ -22,6 +22,7 @@ export const screens = {
   addMood: 'ADD_MOOD',
   meditation: 'MEDITATION',
   trackPlayer: 'TRACK_PLAYER',
+  favTracks: 'FAVOURITE_TRACKS',
   qouteList: 'QUOTE_LIST',
   favQuoteList: 'FAV_QUOTE_LIST',
   timeTable: 'TIME_TABLE',

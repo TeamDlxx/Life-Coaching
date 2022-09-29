@@ -8,6 +8,7 @@ import {
   Pressable,
   Image,
   TouchableOpacity,
+  TouchableHighlight,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import Header from '../../../Components/Header';
@@ -17,26 +18,8 @@ import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
 import play from '../../../Assets/Icons/play.png';
 
-import anxious from '../../../Assets/meditationIcons/anxious.png';
-import breathe from '../../../Assets/meditationIcons/breathe.png';
-import focus from '../../../Assets/meditationIcons/focus.png';
-import morning from '../../../Assets/meditationIcons/morning.png';
-import sleep from '../../../Assets/meditationIcons/sleep.png';
-import favList from '../../../Assets/Icons/favList.png';
-
-const Meditation = props => {
-  const [categoryList, setCategoryList] = useState([
-    {_id: '1', name: 'Breathe', image: breathe},
-    {_id: '2', name: 'Anxious', image: anxious},
-    {_id: '3', name: 'Focus', image: focus},
-    {_id: '4', name: 'Morning', image: morning},
-    {_id: '5', name: 'Sleep', image: sleep},
-  ]);
-  const [selectedCategory, setSelectedCategory] = useState({
-    _id: '1',
-    name: 'Breathe',
-    image: breathe,
-  });
+import favIcon from '../../../Assets/TrackPlayer/favIcon.png';
+const FavouriteTracks = props => {
   const [trackList, setTrackList] = useState([]);
 
   //? Navigation Functions
@@ -48,53 +31,17 @@ const Meditation = props => {
   const gotoTrackPlayer = item => {
     props.navigation.navigate(screens.trackPlayer, {
       item: item,
-      category: selectedCategory,
+      category: {_id: '1', name: 'Breathe'},
     });
   };
 
-  //? Views
-
-  const renderCategories = ({item, index}) => {
-    return (
-      <View>
-        <Pressable
-          onPress={() => setSelectedCategory(item)}
-          style={{
-            margin: 6,
-            alignItems: 'center',
-            justifyContent: 'center',
-            // padding: 10,
-            borderRadius: 20,
-            borderColor: Colors.gray07,
-            borderWidth: 0.8,
-            backgroundColor:
-              item._id == selectedCategory._id ? Colors.primary : Colors.white,
-            paddingHorizontal: 15,
-            height: 60,
-            width: 60,
-          }}>
-          <View>
-            <Image
-              style={
-                item._id == selectedCategory._id
-                  ? {width: 30, height: 30, tintColor: Colors.white}
-                  : {width: 30, height: 30}
-              }
-              source={item.image}></Image>
-          </View>
-        </Pressable>
-        <Text
-          style={{
-            fontFamily: font.medium,
-            color: Colors.black,
-            textAlign: 'center',
-            fontSize: 12,
-          }}>
-          {item.name}
-        </Text>
-      </View>
-    );
+  const unLike = index => {
+    let newArray = [...trackList];
+    newArray.splice(index, 1);
+    setTrackList(newArray);
   };
+
+  //? Views
 
   const renderTrackList = ({item, index}) => {
     return (
@@ -151,59 +98,30 @@ const Meditation = props => {
           </View>
         </View>
         <View style={{}}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{padding: 10}}
-            //   onPress={() => checkboxButton(item)}
-          >
-            <TouchableOpacity
-              onPress={() => {
-                gotoTrackPlayer(item);
-              }}
+          <TouchableHighlight
+            underlayColor={Colors.lightPrimary}
+            onPress={() => unLike(index)}
+            style={{
+              width: 40,
+              height: 40,
+              backgroundColor: Colors.white,
+              borderRadius: 10,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderColor: Colors.gray02,
+              borderWidth: 1,
+            }}>
+            <Image
               style={{
-                width: 35,
-                height: 35,
-                backgroundColor: Colors.white,
-                borderRadius: 12,
-                alignItems: 'center',
-                justifyContent: 'center',
-                shadowColor: Colors.primary,
-                shadowOffset: {width: 0, height: 1},
-                shadowOpacity: 0.2,
-                shadowRadius: 1.41,
-                elevation: 5,
-              }}>
-              <Image
-                style={{
-                  height: 18,
-                  width: 18,
-                  //   tintColor:Colors.primary
-                }}
-                source={play}
-              />
-            </TouchableOpacity>
-          </TouchableOpacity>
+                height: 18,
+                width: 18,
+                tintColor: Colors.primary,
+              }}
+              source={favIcon}
+            />
+          </TouchableHighlight>
         </View>
       </TouchableOpacity>
-    );
-  };
-
-  const flatListHeader = () => {
-    return (
-      <View style={{paddingHorizontal: 20, backgroundColor: Colors.background}}>
-        <View style={{marginHorizontal: -20, marginTop: 0}}>
-          <FlatList
-            contentContainerStyle={{paddingHorizontal: 20}}
-            showsHorizontalScrollIndicator={false}
-            data={categoryList}
-            horizontal={true}
-            renderItem={renderCategories}
-          />
-        </View>
-        <View style={{marginTop: 5, marginBottom: 25}}>
-          {/* <Text style={other_style.labelText}>All Habits</Text> */}
-        </View>
-      </View>
     );
   };
 
@@ -219,20 +137,12 @@ const Meditation = props => {
         backgroundColor={Colors.background}
       />
 
-      <Header
-        navigation={props.navigation}
-        title={'Meditation'}
-        // titleAlignLeft
-        rightIcon={favList}
-        rightIcononPress={onFavList}
-      />
+      <Header navigation={props.navigation} title={'Favorite Tracks'} />
       <View style={mainStyles.innerView}>
         <View style={{flex: 1, marginHorizontal: -20}}>
           <FlatList
             listKey="main"
-            stickyHeaderIndices={[0]}
             stickyHeaderHiddenOnScroll={true}
-            ListHeaderComponent={flatListHeader()}
             contentContainerStyle={{paddingVertical: 10, paddingBottom: 50}}
             showsVerticalScrollIndicator={false}
             data={trackList}
@@ -247,13 +157,14 @@ const Meditation = props => {
   );
 };
 
-export default Meditation;
+export default FavouriteTracks;
 
 const tracksList = [
   {
     _id: '1',
     title: 'Relax',
     note: 'Release the tention',
+    isFav: true,
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam',
     image:
@@ -264,6 +175,7 @@ const tracksList = [
     _id: '2',
     title: 'Breathe',
     note: 'Nature',
+    isFav: true,
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam',
     image:
@@ -274,6 +186,7 @@ const tracksList = [
     _id: '3',
     title: 'Sleep',
     note: 'deep sleep',
+    isFav: true,
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam',
     image:
@@ -284,6 +197,7 @@ const tracksList = [
     _id: '4',
     title: 'Relax',
     note: 'Release the tention',
+    isFav: true,
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam',
     image:
@@ -293,6 +207,7 @@ const tracksList = [
   {
     _id: '5',
     title: 'Breathe',
+    isFav: true,
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam',
     note: 'Nature',
@@ -304,6 +219,7 @@ const tracksList = [
     _id: '6',
     title: 'Sleep',
     note: 'deep sleep',
+    isFav: true,
     description:
       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam',
     image:

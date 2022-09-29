@@ -35,12 +35,13 @@ const HabitTracker = props => {
   });
 
   const daysInMonth = () => {
-    let month = moment().month();
-    let count = moment().month(month).daysInMonth();
+    let currentWeek = moment().startOf('week').isoWeekday(1);
+    let count = 6;
     let days = [];
-    for (let i = 1; i < count + 1; i++) {
+
+    for (let i = 0; i <= count; i++) {
       let newobj = {};
-      newobj.date = moment().month(month).date(i);
+      newobj.date = moment(currentWeek).add(i, 'day');
       newobj.mood = emojis[Math.floor(Math.random() * 5)];
       days.push(newobj);
     }

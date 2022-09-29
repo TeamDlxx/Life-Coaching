@@ -61,7 +61,7 @@ const List = props => {
   function kFormatter(num) {
     {
       if (num >= 1000000000) {
-        return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'G';
+        return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
       }
       if (num >= 1000000) {
         return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
@@ -273,7 +273,7 @@ const Qlist = [
       'Your time is limited, so don’t waste it living someone else’s life. Don’t be trapped by dogma – which is living with the results of other people’s thinking.',
     liked: true,
     author: 'Anonymous',
-    likes: 1001,
+    likes: 2100000000,
     fav: false,
     image:
       'https://cdn.lifehack.org/wp-content/uploads/2022/06/strength_quotes_1.jpg',

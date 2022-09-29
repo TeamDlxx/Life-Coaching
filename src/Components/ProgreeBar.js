@@ -66,7 +66,6 @@ const TrackSlider = props => {
         thumbStyle={{
           width: 15,
           height: 15,
-
           shadowOpacity: 0.9,
           shadowColor: 'silver',
           elevation: 1,
@@ -75,6 +74,7 @@ const TrackSlider = props => {
             height: 0,
           },
         }}
+        tapToSeek={true}
         animationType="timing"
         maximumValue={duration}
         onValueChange={val => {
