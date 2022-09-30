@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   Pressable,
   Image,
+  Platform,
 } from 'react-native';
 import React, {useState} from 'react';
 import HeadingText from '../../Components/HeadingText';
@@ -25,13 +26,52 @@ import {screens} from '../../Navigation/Screens';
 import Header from '../../Components/Header';
 import Colors from '../../Utilities/Colors';
 
+import showToast from '../../functions/showToast';
+import {validateEmail, checkSpace} from '../../functions/regex';
+import Loader from '../../Components/Loader';
+import invokeApi from '../../functions/invokeAPI';
+
 const height = Dimensions.get('screen').height;
 
 const ForgotPassword = props => {
   const [email, setEmail] = useState('');
+  const [isLoading, setisLoading] = useState(false);
 
-  const onOTPScreen = () => {
-    props.navigation.navigate(screens.otp);
+  const onOTPScreen = email => {
+    props.navigation.navigate(screens.otp, {
+      email,
+    });
+  };
+
+  const btn_EmailSend = () => {
+    let t_email = email.toLowerCase().trim();
+    if (t_email == '') {
+      showToast('Please enter your email', 'Alert');
+    } else if (validateEmail(t_email) == '') {
+      showToast('Please enter validate email', 'Alert');
+    } else {
+      let obj_sendEmail = {
+        email: t_email,
+      };
+      setisLoading(true);
+      api_emailVerification(obj_sendEmail);
+    }
+  };
+
+  const api_emailVerification = async obj => {
+    let res = await invokeApi({
+      path: 'api/app_api/email_verification',
+      method: 'POST',
+      postData: obj,
+    });
+    if (res) {
+      setisLoading(false);
+      if (res.code == 200) {
+        onOTPScreen(obj.email);
+      } else {
+        showToast(res.message);
+      }
+    }
   };
 
   return (
@@ -41,11 +81,10 @@ const ForgotPassword = props => {
         barStyle={'dark-content'}
         translucent={true}
       />
-
       <KeyboardAwareScrollView
         bounces={false}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps={"handled"}
+        keyboardShouldPersistTaps={'handled'}
         style={{}}>
         <ImageBackground
           resizeMode="stretch"
@@ -82,13 +121,16 @@ const ForgotPassword = props => {
               </View>
 
               <View style={{marginTop: 30}}>
-                <CustomButton
-                  onPress={() => onOTPScreen()}
-                  title={'Send Email'}
-                />
+                <CustomButton onPress={btn_EmailSend} title={'Send Email'} />
               </View>
             </View>
           </View>
+          <Loader
+            enable={isLoading}
+            style={{
+              marginTop: Platform.OS == 'android' ? 50 : 100,
+            }}
+          />
         </ImageBackground>
       </KeyboardAwareScrollView>
     </>

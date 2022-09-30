@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Dimensions,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import HeadingText from '../../Components/HeadingText';
@@ -23,10 +24,16 @@ import {screens} from '../../Navigation/Screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
 
+import showToast from '../../functions/showToast';
+import {validateEmail, checkSpace} from '../../functions/regex';
+import Loader from '../../Components/Loader';
+import invokeApi from '../../functions/invokeAPI';
+
 const height = Dimensions.get('screen').height;
 const Login = props => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setisLoading] = useState(false);
 
   const onSignUpScreen = () => {
     props.navigation.navigate(screens.signup);
@@ -36,22 +43,25 @@ const Login = props => {
     props.navigation.navigate(screens.forgotPassword);
   };
 
-  const onBottomTabScreen = async () => {
-    const token = await messaging().getToken();
-    console.log('Firebase Token\n', token);
-    AsyncStorage.multiSet([
-      ['@token', 'kdcdhsbchjbdshjsdcknjdsjkc'],
-      ['@firebaseToken', token],
-    ]).then(() => {
-      props.navigation.reset({
-        index: 0,
-        routes: [
-          {
-            name: screens.bottomTabs,
-          },
-        ],
+  const onBottomTabScreen = async data => {
+    const asyncData = [
+      ['@token', data?.token],
+      ['@user', JSON.stringify(data?.user)],
+    ];
+    console.log('Async Data', asyncData);
+    AsyncStorage.multiSet(asyncData)
+      .then(() => {
+        setisLoading(false);
+        props.navigation.reset({
+          index: 0,
+          routes: [{name: screens.bottomTabs}],
+        });
+      })
+      .catch(e => {
+        setisLoading(false);
+        console.log('Async Error', e);
+        showToast('Please Sign-in Agin', 'Something went wrong');
       });
-    });
   };
 
   async function checkNotificationPermission() {
@@ -66,6 +76,46 @@ const Login = props => {
     } else {
     }
   }
+
+  const btn_Login = () => {
+    let t_email = email.toLowerCase().trim();
+    let t_password = password;
+    if (t_email == '') {
+      showToast('Please enter your email', 'Alert');
+    } else if (validateEmail(t_email) == '') {
+      showToast('Please enter validate email', 'Alert');
+    } else if (t_password == '') {
+      showToast('Please enter your password', 'Alert');
+    } else if (checkSpace(t_password)) {
+      showToast('Password should not have white spaces', 'Alert');
+    } else if (t_password.length < 6) {
+      showToast('Password length must be minimim 6 letters', 'Alert');
+    } else {
+      let obj_Login = {
+        email: t_email,
+        password: t_password,
+        type: 1,
+      };
+      setisLoading(true);
+      api_Login(obj_Login);
+    }
+  };
+
+  const api_Login = async obj => {
+    let res = await invokeApi({
+      path: 'api/app_api/login',
+      method: 'POST',
+      postData: obj,
+    });
+    if (res) {
+      if (res.code == 200) {
+        onBottomTabScreen(res);
+      } else {
+        setisLoading(false);
+        showToast(res.message);
+      }
+    }
+  };
 
   useEffect(() => {
     checkNotificationPermission();
@@ -122,10 +172,7 @@ const Login = props => {
             </TouchableOpacity>
 
             <View style={{marginVertical: 20}}>
-              <CustomButton
-                onPress={() => onBottomTabScreen()}
-                title={'Sign In'}
-              />
+              <CustomButton onPress={btn_Login} title={'Sign In'} />
             </View>
 
             <View
@@ -145,6 +192,13 @@ const Login = props => {
             </View>
           </View>
         </View>
+        <Loader
+          enable={isLoading}
+          style={{
+            marginBottom: '40%',
+            marginTop: Platform.OS == 'android' ? 50 : 100,
+          }}
+        />
       </ImageBackground>
     </KeyboardAwareScrollView>
   );

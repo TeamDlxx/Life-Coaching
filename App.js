@@ -8,6 +8,7 @@ import AuthStack from './src/Navigation/AuthStack';
 import TrackPlayer from 'react-native-track-player';
 import Toast from 'react-native-toast-message';
 import messaging from '@react-native-firebase/messaging';
+import {toastConfig} from './src/functions/showToast';
 
 moment.updateLocale('en', {
   week: {
@@ -30,7 +31,7 @@ const App = props => {
   return (
     <NavigationContainer>
       <AuthStack />
-      <Toast />
+      <Toast config={toastConfig} />
     </NavigationContainer>
   );
 };

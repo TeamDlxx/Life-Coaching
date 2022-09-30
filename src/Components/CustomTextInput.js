@@ -43,6 +43,7 @@ export function CustomSimpleTextInput(props) {
           selectTextOnFocus={false}
           value={props.value}
           onChangeText={props.onChangeText}
+          selectionColor={Colors.primary}
         />
       </View>
     </View>
@@ -89,6 +90,7 @@ export function CustomMultilineTextInput(props) {
           value={props.value}
           onChangeText={props.onChangeText}
           multiline={true}
+          selectionColor={Colors.primary}
         />
       </View>
     </View>
@@ -119,6 +121,7 @@ export function CustomTouchableTextInput(props) {
           borderColor: Colors.gray02,
           justifyContent: 'center',
           alignItems: 'center',
+          
         }}>
         <Text style={{paddingHorizontal: 20, fontFamily: font.regular}}>
           {props.value}
@@ -163,6 +166,7 @@ export function CustomPasswordTextInput(props) {
             autoCorrect={false}
             autoCapitalize={'none'}
             selectTextOnFocus={false}
+            selectionColor={Colors.primary}
           />
         </View>
         <Pressable

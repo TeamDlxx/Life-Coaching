@@ -3,8 +3,6 @@ import {baseURL} from '../Utilities/domains';
 
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 
-// const _url = 'https://cors-anywhere.herokuapp.com/';
-
 export default async function invokeApi({
   path,
   method = 'GET',

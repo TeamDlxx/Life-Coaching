@@ -13,12 +13,7 @@ import {
   Image,
   Platform,
 } from 'react-native';
-import React, {useState} from 'react';
-import HeadingText from '../../Components/HeadingText';
-import {
-  CustomSimpleTextInput,
-  CustomPasswordTextInput,
-} from '../../Components/CustomTextInput';
+import React, {useState, useEffect} from 'react';
 import CustomButton from '../../Components/CustomButton';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {font} from '../../Utilities/font';
@@ -27,16 +22,88 @@ import Header from '../../Components/Header';
 import Colors from '../../Utilities/Colors';
 import {CodeField, Cursor} from 'react-native-confirmation-code-field';
 
+import showToast from '../../functions/showToast';
+import {validateEmail, checkSpace} from '../../functions/regex';
+import Loader from '../../Components/Loader';
+import invokeApi from '../../functions/invokeAPI';
+
 const height = Dimensions.get('screen').height;
 const screen = Dimensions.get('screen');
 
 const OTP = props => {
+  let interval;
+  const email = props?.route?.params?.email;
   const [code, setCode] = useState('');
+  const [countDown, setCountDown] = useState(30);
+  const [isLoading, setisLoading] = useState(false);
 
   const onNewPasswordScreen = () => {
-    props.navigation.navigate(screens.newPassword);
+    props.navigation.navigate(screens.newPassword, {
+      email,
+    });
   };
 
+  const btn_Verify = async () => {
+    let t_code = code.trim();
+    if (t_code == '') {
+      showToast('Code should not be empty', 'Alert');
+    } else if (t_code.length != 6) {
+      showToast('Code must not less than 6 digit', 'Alert');
+    } else {
+      let obj_verify = {
+        email: email.toLowerCase(),
+        verification_code: t_code,
+      };
+      api_VerifyCode(obj_verify);
+    }
+  };
+
+  const api_VerifyCode = async obj => {
+    setisLoading(true);
+    let res = await invokeApi({
+      path: 'api/app_api/code_verification',
+      method: 'POST',
+      postData: obj,
+    });
+    if (res) {
+      setisLoading(false);
+      if (res.code == 200) {
+        onNewPasswordScreen();
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  const api_emailVerification = async () => {
+    setisLoading(true);
+    let res = await invokeApi({
+      path: 'api/app_api/email_verification',
+      method: 'POST',
+      postData: {
+        email: email,
+      },
+    });
+    if (res) {
+      setisLoading(false);
+      if (res.code == 200) {
+        setCountDown(30);
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  useEffect(() => {
+    interval = setInterval(() => {
+      setCountDown(countDown - 1);
+    }, 1000);
+
+    if (countDown == 0) {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [countDown]);
   return (
     <>
       <StatusBar
@@ -59,7 +126,7 @@ const OTP = props => {
 
             <View
               style={{
-                height: height * 0.66,
+                height: height * 0.76,
                 paddingHorizontal: 20,
                 // paddingTop: 80,
                 justifyContent: 'center',
@@ -74,6 +141,18 @@ const OTP = props => {
                   }}>
                   Please enter 6 digit code sent to your email.
                 </Text>
+                {!!email && (
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      color: Colors.main,
+                      fontFamily: font.medium,
+                      textAlign: 'center',
+                      textDecorationLine: 'underline',
+                    }}>
+                    {`${email}`}
+                  </Text>
+                )}
               </View>
               <View>
                 <CodeField
@@ -100,13 +179,32 @@ const OTP = props => {
               </View>
 
               <View style={{marginTop: 30}}>
-                <CustomButton
-                  onPress={() => onNewPasswordScreen()}
-                  title={'Verify'}
-                />
+                <CustomButton onPress={btn_Verify} title={'Verify'} />
+              </View>
+
+              <View style={{marginTop: 50, alignItems: 'center'}}>
+                <Pressable
+                  onPress={api_emailVerification}
+                  disabled={countDown != 0}
+                  style={{padding: 10}}>
+                  <Text
+                    style={{
+                      fontFamily: font.medium,
+                      color: countDown == 0 ? Colors.primary : Colors.main,
+                      fontSize: 14,
+                    }}>
+                    {countDown == 0 ? 'Resend Code' : countDown}
+                  </Text>
+                </Pressable>
               </View>
             </View>
           </View>
+          <Loader
+            enable={isLoading}
+            style={{
+              marginTop: Platform.OS == 'android' ? 110 : 100,
+            }}
+          />
         </ImageBackground>
       </KeyboardAwareScrollView>
     </>
@@ -135,8 +233,8 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: font.medium,
 
-    borderWidth:1,
-    borderColor:Colors.gray02
+    borderWidth: 1,
+    borderColor: Colors.gray02,
   },
   cell: {
     width: 40,

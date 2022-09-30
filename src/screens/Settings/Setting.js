@@ -10,7 +10,7 @@ import {
   Alert,
   Image,
 } from 'react-native';
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import VersionCheck from 'react-native-version-check';
 import {mainStyles} from '../../Utilities/styles';
 import Header from '../../Components/Header';
@@ -18,14 +18,51 @@ import Colors from '../../Utilities/Colors';
 import {font} from '../../Utilities/font';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {screens} from '../../Navigation/Screens';
+
+import showToast from '../../functions/showToast';
+import {validateEmail, checkSpace} from '../../functions/regex';
+import Loader from '../../Components/Loader';
+import invokeApi from '../../functions/invokeAPI';
+import getTokenFromAsync from '../../functions/getTokenFromAsync';
+
 const Setting = props => {
-  const logout = () => {
-    AsyncStorage.multiRemove(['@token']).then(res => {
+  const [isLoading, setisLoading] = useState(false);
+  const [token, setToken] = useState(null);
+
+  const logout = async () => {
+    try {
+      let res = await AsyncStorage.multiRemove(['@token', '@user']);
+      console.log('res', res);
       props.navigation.reset({
         index: 0,
         routes: [{name: screens.landing}],
       });
+    } catch (e) {
+      props.navigation.reset({
+        index: 0,
+        routes: [{name: screens.landing}],
+      });
+    }
+  };
+
+  const api_LogOut = async obj => {
+    setisLoading(true);
+    let res = await invokeApi({
+      path: 'api/app_api/logout',
+      method: 'GET',
+      headers: {
+        'x-sh-auth': token,
+      },
     });
+    if (res) {
+      setisLoading(false);
+      if (res.code == 200) {
+        logout();
+      } else {
+        setisLoading(false);
+        showToast(res.message);
+      }
+    }
   };
 
   const performAction = async type => {
@@ -76,12 +113,19 @@ const Setting = props => {
       case 'logout':
         Alert.alert('Logout', 'Are you sure you want to logout?', [
           {text: 'No'},
-          {text: 'Yes', onPress: () => logout()},
+          {text: 'Yes', onPress: () => api_LogOut()},
         ]);
 
         break;
     }
   };
+  const getToken = async () => {
+    console.log(await getTokenFromAsync());
+    setToken(await getTokenFromAsync());
+  };
+  useEffect(() => {
+    getToken();
+  }, []);
 
   return (
     <SafeAreaView style={mainStyles.MainViewForBottomTabScreens}>
@@ -164,6 +208,7 @@ const Setting = props => {
             </Text>
           </Text>
         </View>
+        <Loader enable={isLoading } />
       </View>
     </SafeAreaView>
   );
