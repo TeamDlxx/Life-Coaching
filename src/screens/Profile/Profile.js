@@ -8,17 +8,41 @@ import {
   Settings,
   Pressable,
 } from 'react-native';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {mainStyles} from '../../Utilities/styles';
 import Header from '../../Components/Header';
 import Colors from '../../Utilities/Colors';
 import {font} from '../../Utilities/font';
 import {HabitStats_style} from '../../Utilities/styles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {screens} from '../../Navigation/Screens';
-
+import profile_placeholder from '../../Assets/Icons/dummy.png';
 import CustomImage from '../../Components/CustomImage';
+import {fileURL} from '../../Utilities/domains';
+
 const Profile = props => {
+  const [user, setUser] = useState(null);
+
+  const getUserDetail = async () => {
+    AsyncStorage.getItem('@user').then(val => {
+      if (val != null) {
+        setUser(JSON.parse(val));
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (props.route.params?.updated) {
+      getUserDetail();
+    }
+    console.log('props.route.params?.updated', props.route.params?.updated);
+  }, [props.route.params]);
+
+  useEffect(() => {
+    getUserDetail();
+  }, []);
+
   return (
     <SafeAreaView style={mainStyles.MainViewForBottomTabScreens}>
       <StatusBar
@@ -35,7 +59,6 @@ const Profile = props => {
                 height: 110,
                 width: 110,
                 borderRadius: 110 / 2,
-                // overflow: 'hidden',
                 alignSelf: 'center',
                 marginTop: 30,
                 borderWidth: 1,
@@ -44,7 +67,11 @@ const Profile = props => {
                 justifyContent: 'center',
               }}>
               <CustomImage
-                source={{uri: 'https://www.w3schools.com/w3images/avatar2.png'}}
+                source={
+                  !!user && !!user.profile_image
+                    ? {uri: fileURL + user?.profile_image}
+                    : profile_placeholder
+                }
                 style={{height: 100, width: 100}}
                 imageStyle={{borderRadius: 100 / 2}}
               />
@@ -56,7 +83,7 @@ const Profile = props => {
                   fontSize: 18,
                   letterSpacing: 0.5,
                 }}>
-                Ammar Yousaf
+                {!!user && user?.name}
               </Text>
             </View>
 
@@ -124,7 +151,9 @@ const Profile = props => {
                 key={x.id}
                 onPress={() => {
                   if (!!x.screen) {
-                    props.navigation.navigate(x.screen);
+                    props.navigation.navigate(x.screen, {
+                      user: x.screen == screens.editProfile ? user : null,
+                    });
                   }
                 }}
                 style={{

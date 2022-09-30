@@ -12,6 +12,8 @@ const showToast = (text2, text1 = 'Error') => {
   });
 };
 
+
+
 export const toastConfig = {
   success: props => (
     <BaseToast

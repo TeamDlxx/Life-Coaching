@@ -7,7 +7,7 @@ import {
   Image,
   Platform,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {mainStyles} from '../../Utilities/styles';
 import Header from '../../Components/Header';
 import Colors from '../../Utilities/Colors';
@@ -16,10 +16,17 @@ import ImagePicker from 'react-native-image-crop-picker';
 import Modal from 'react-native-modal';
 import {CustomSimpleTextInput} from '../../Components/CustomTextInput';
 
+import showToast from '../../functions/showToast';
+import {isFirstLetterAlphabet} from '../../functions/regex';
+import Loader from '../../Components/Loader';
+import invokeApi from '../../functions/invokeAPI';
+import getTokenFromAsync from '../../functions/getTokenFromAsync';
+import {fileURL} from '../../Utilities/domains';
+
 // Icons
 
-import profile_placeholder from '../../Assets/Icons/dummyProfile.png';
-import profile_avatar from '../../Assets/Icons/profileAvatar.jpg';
+import profile_placeholder from '../../Assets/Images/dummyProfile.png';
+import profile_avatar from '../../Assets/Icons/dummy.png';
 import ic_edit from '../../Assets/Icons/edit.png';
 import pick_image from '../../Assets/Icons/pickImage.png';
 import ic_gallery from '../../Assets/Icons/gallery.png';
@@ -27,17 +34,62 @@ import ic_camera from '../../Assets/Icons/camera.png';
 import ic_cross from '../../Assets/Icons/cross.png';
 import ic_trash from '../../Assets/Icons/trash.png';
 import CustomButton from '../../Components/CustomButton';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {screens} from '../../Navigation/Screens';
 
 const EditProfile = props => {
+  const userData = props.route.params.user;
   const [isModalVisible, setModalVisibility] = useState(false);
+  const [token, setToken] = useState(null);
+  const [isLoading, setisLoading] = useState(false);
   const [user, updateUser] = useState({
-    imageURI: null,
-    fullName: 'Ammar Yousaf',
+    imageURI: userData.profile_image,
+    fullName: userData.name,
   });
   const setUser = updation => updateUser({...user, ...updation});
 
   const SaveChangesButton = () => {
-    props.navigation.goBack();
+    let t_name = user.fullName.trim();
+    let t_image = !!user.imageURI ? user.imageURI : '';
+    if (t_name == '') {
+      showToast('Please enter your name', 'Alert');
+    } else if (!isFirstLetterAlphabet(t_name)) {
+      showToast('First letter of name must be an alphabet', 'Alert');
+    } else {
+      let obj_editProfile = {
+        name: t_name,
+        profile_image: t_image,
+      };
+      api_editImage(obj_editProfile);
+    }
+  };
+
+  const api_editImage = async obj => {
+    setisLoading(true);
+    let res = await invokeApi({
+      path: 'api/customer/edit_customer',
+      method: 'PUT',
+      postData: obj,
+      headers: {
+        'x-sh-auth': token,
+      },
+    });
+    setisLoading(false);
+    if (res) {
+      if (res.code == 200) {
+        EditAsyncData(res.customer);
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  const EditAsyncData = newData => {
+    AsyncStorage.setItem('@user', JSON.stringify(newData)).then(() => {
+      props.navigation.navigate(screens.profile, {
+        updated: true,
+      });
+    });
   };
 
   const openGallery = async () => {
@@ -51,7 +103,15 @@ const EditProfile = props => {
       })
         .then(image => {
           console.log('Image', image);
-          setUser({imageURI: image.sourceURL});
+          // setUser({imageURI: image.sourceURL});
+
+          let data = new FormData();
+          data.append('image', {
+            uri: image.path,
+            name: 'image',
+            type: image.mime,
+          });
+          api_fileUpload(data);
         })
         .catch(e => {
           console.log('Error', e);
@@ -70,12 +130,39 @@ const EditProfile = props => {
       })
         .then(image => {
           console.log('Image', image);
-          setUser({imageURI: image.sourceURL});
+          let data = new FormData();
+          data.append('image', {
+            uri: image.path,
+            name: 'image',
+            type: image.mime,
+          });
+          api_fileUpload(data);
         })
         .catch(e => {
           console.log('Error', e);
         });
     }, 500);
+  };
+
+  const api_fileUpload = async file => {
+    setisLoading(true);
+    let res = await invokeApi({
+      path: 'api/app_api/upload_image_s3',
+      method: 'POST',
+      postData: file,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'x-sh-auth': token,
+      },
+    });
+    setisLoading(false);
+    if (res) {
+      if (res.code == 200) {
+        setUser({imageURI: res.path});
+      } else {
+        showToast(res.message);
+      }
+    }
   };
 
   const ImagePickerOptionsModal = () => {
@@ -200,6 +287,13 @@ const EditProfile = props => {
     );
   };
 
+  const getUserToken = async () => {
+    setToken(await getTokenFromAsync());
+  };
+
+  useEffect(() => {
+    getUserToken();
+  }, []);
   return (
     <SafeAreaView style={mainStyles.MainView}>
       <StatusBar
@@ -224,7 +318,11 @@ const EditProfile = props => {
               overflow: 'hidden',
             }}>
             <CustomImage
-              source={!!user?.imageURI ? {uri: user?.imageURI} : profile_avatar}
+              source={
+                !!user?.imageURI
+                  ? {uri: fileURL + user?.imageURI}
+                  : profile_avatar
+              }
               style={{
                 height: 100,
                 width: 100,
@@ -272,6 +370,7 @@ const EditProfile = props => {
         <View style={{marginTop: 10, paddingHorizontal: 20}}>
           <CustomButton title="Save Changes" onPress={SaveChangesButton} />
         </View>
+        <Loader enable={isLoading} />
       </View>
       {ImagePickerOptionsModal()}
     </SafeAreaView>

@@ -38,6 +38,7 @@ export default async function invokeApi({
     return results.data;
   } catch (error) {
     console.log('<===Api-Error===>', error.response.data);
+    console.log('<===Api-Error===>', error);
     if (error.response.status === 401) {
       // localStorage.clear();
       // window.location.reload();
