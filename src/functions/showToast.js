@@ -4,32 +4,14 @@ import React from 'react';
 import {View, Text} from 'react-native';
 import {font} from '../Utilities/font';
 
-const showToast = (text2, text1 = 'Error') => {
+const showToast = (text2, text1 = 'Error', type = 'error') => {
   Toast.show({
-    type: 'success',
+    type: type,
     text1: text1,
     text2: text2,
+    autoHide: true,
+    visibilityTime: 3000,
   });
-};
-
-
-
-export const toastConfig = {
-  success: props => (
-    <BaseToast
-      {...props}
-      style={{backgroundColor: Colors.primary, borderLeftColor: Colors.primary}}
-      contentContainerStyle={{paddingHorizontal: 15}}
-      text1Style={{
-        fontFamily: font.medium,
-        color: Colors.white,
-      }}
-      text2Style={{
-        fontFamily: font.regular,
-        color: Colors.white,
-      }}
-    />
-  ),
 };
 
 export default showToast;

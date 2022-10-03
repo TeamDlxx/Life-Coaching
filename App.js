@@ -1,14 +1,10 @@
-import {View, Text} from 'react-native';
 import * as React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
-import SplashScreen from 'react-native-splash-screen';
-import {SafeAreaView, StatusBar} from 'react-native';
 import moment from 'moment';
 import AuthStack from './src/Navigation/AuthStack';
 import TrackPlayer from 'react-native-track-player';
 import Toast from 'react-native-toast-message';
-import messaging from '@react-native-firebase/messaging';
-import {toastConfig} from './src/functions/showToast';
+import {ContextProvider} from './src/Context';
 
 moment.updateLocale('en', {
   week: {
@@ -17,6 +13,8 @@ moment.updateLocale('en', {
 });
 
 const App = props => {
+  const [Token, setToken] = React.useState(null);
+  
   React.useEffect(() => {
     TrackplayerSetup();
   }, []);
@@ -29,10 +27,12 @@ const App = props => {
   };
 
   return (
-    <NavigationContainer>
-      <AuthStack />
-      <Toast config={toastConfig} />
-    </NavigationContainer>
+    <ContextProvider value={[Token, setToken]}>
+      <NavigationContainer>
+        <AuthStack />
+        <Toast />
+      </NavigationContainer>
+    </ContextProvider>
   );
 };
 

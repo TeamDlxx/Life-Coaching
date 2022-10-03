@@ -14,8 +14,11 @@ import getTokenFromAsync from '../../functions/getTokenFromAsync';
 import {fileURL} from '../../Utilities/domains';
 import {checkSpace} from '../../functions/regex';
 
+import {useContext} from 'react';
+import Context from '../../Context';
+
 const ChangePassword = props => {
-  const [token, setToken] = useState(null);
+  const [Token] = useContext(Context);
   const [isLoading, setisLoading] = useState(false);
   const [passwords, updatePasswords] = React.useState({
     old: '',
@@ -61,7 +64,7 @@ const ChangePassword = props => {
       method: 'PUT',
       postData: obj,
       headers: {
-        'x-sh-auth': token,
+        'x-sh-auth': Token,
       },
     });
     if (res) {
@@ -78,13 +81,7 @@ const ChangePassword = props => {
       }
     }
   };
-  const getUserToken = async () => {
-    setToken(await getTokenFromAsync());
-  };
 
-  useEffect(() => {
-    getUserToken();
-  }, []);
 
   return (
     <SafeAreaView style={mainStyles.MainView}>

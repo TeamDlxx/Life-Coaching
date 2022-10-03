@@ -10,7 +10,7 @@ import {
   Pressable,
   Share,
 } from 'react-native';
-import React, {useState, useEffect, useLayoutEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {mainStyles} from '../../Utilities/styles';
 import Colors from '../../Utilities/Colors';
 import {font} from '../../Utilities/font';
@@ -31,6 +31,7 @@ const home5 = require('../../Assets/Images/home6.jpg');
 const home6 = require('../../Assets/Images/home5.jpg');
 
 const Home = props => {
+  
   useEffect(() => {
     NotificationConfig(props);
     setTimeout(() => {

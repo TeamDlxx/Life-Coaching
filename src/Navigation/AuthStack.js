@@ -53,16 +53,20 @@ import Gratitude from '../screens/Home/Gratitude/Gratitude';
 import messaging from '@react-native-firebase/messaging';
 
 // import Colors from '../Utilities/Colors';
+import Context from '../Context';
+import {useContext} from 'react';
+
 const Stack = createNativeStackNavigator();
 
 const AuthStack = () => {
   const [whichScreen, setWhichScreen] = useState(undefined);
-
+  const [Token, setToken] = useContext(Context);
   const checkOBoarding = async () => {
     let seen = await AsyncStorage.multiGet(['@onboarding', '@token']);
     console.log(seen[1][1]);
     if (seen[1][1] != null) {
       setWhichScreen(screens.bottomTabs);
+      setToken(seen[1][1]);
     } else if (seen[0][1] != null) {
       setWhichScreen(screens.landing);
     } else {

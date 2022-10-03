@@ -17,7 +17,11 @@ import {SwipeListView} from 'react-native-swipe-list-view';
 import * as Progress from 'react-native-progress';
 import moment from 'moment';
 
+import {useContext} from 'react';
+import Context from '../../../Context';
+
 const AllHabits = props => {
+  const [Token] = useContext(Context);
   //  Functions
 
   const findProgress = row => {

@@ -3,14 +3,10 @@ import {
   Text,
   SafeAreaView,
   StatusBar,
-  FlatList,
   Image,
   Pressable,
-  StyleSheet,
   Switch,
   ScrollView,
-  TextInput,
-  Dimensions,
   Platform,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
@@ -27,20 +23,32 @@ import {screens} from '../../../Navigation/Screens';
 import {CustomSimpleTextInput} from '../../../Components/CustomTextInput';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import moment from 'moment';
+// For API's
+import {useContext} from 'react';
+import Context from '../../../Context';
+import showToast from '../../../functions/showToast';
+import Loader from '../../../Components/Loader';
+import invokeApi from '../../../functions/invokeAPI';
+import {fileURL} from '../../../Utilities/domains';
+import {isFirstLetterAlphabet} from '../../../functions/regex';
 
 const week = [
-  {name: 'Monday', day: 1},
-  {name: 'Tuesday', day: 2},
-  {name: 'Wednesday', day: 3},
-  {name: 'Thursday', day: 4},
-  {name: 'Friday', day: 5},
-  {name: 'Satuday', day: 6},
-  {name: 'Sunday', day: 7},
+  {name: 'monday', day: 1, status: false},
+  {name: 'tuesday', day: 2, status: false},
+  {name: 'wednesday', day: 3, status: false},
+  {name: 'thursday', day: 4, status: false},
+  {name: 'friday', day: 5, status: false},
+  {name: 'satuday', day: 6, status: false},
+  {name: 'sunday', day: 7, status: false},
 ];
 
 const CreateHabit = props => {
   // Hooks
   const {params} = props.route;
+  const {navigation} = props;
+  console.log('navigation', navigation);
+  const [Token] = useContext(Context);
+  const [isLoading, setisLoading] = useState(false);
   const [Habit, setHabit] = useState({
     title: '',
     type: null,
@@ -52,29 +60,85 @@ const CreateHabit = props => {
     targetDate: {
       showModal: false,
       value: false,
-      date: moment(),
+      date: moment().add(1, 'month'),
     },
-    frequency: [],
+    frequency: week,
   });
   const {title, type, reminder, targetDate, frequency} = Habit;
   const updateHabit = updation => setHabit({...Habit, ...updation});
   const selectDay = day => {
     let newArray = [...frequency];
-    let index = newArray.findIndex(x => x == day.day);
-    if (index != -1) {
-      newArray.splice(index, 1);
-    } else {
-      newArray.push(day.day);
-    }
+
+    let index = newArray.findIndex(x => x.day == day.day);
+
+    let newObj = newArray[index];
+    newObj = {
+      ...newObj,
+      status: !newObj.status,
+    };
+    newArray.splice(index, 1, newObj);
 
     updateHabit({frequency: [...newArray]});
   };
 
+  const btn_addHabit = () => {
+    let t_habitName = Habit.title.trim();
+    let t_type = Habit.type;
+    let t_reminder = Habit.reminder;
+    let t_targetDate = Habit.targetDate.date;
+    let t_frequency = Habit.frequency.map(x => {
+      return {
+        status: x.status,
+        day: x.name,
+      };
+    });
+
+    if (t_habitName == '') {
+      showToast('Please enter Habit name', 'Alert');
+    } else if (!isFirstLetterAlphabet(t_habitName)) {
+      showToast('Habit name must start with alphabet [A-Z,a-z]', 'Alert');
+    } else if (t_type == null) {
+      showToast('Please select type of frequency', 'Alert');
+    } else if (!t_frequency.some(x => x.status == true)) {
+      showToast('Please select at least one frequency', 'Alert');
+    } else {
+      let obj_createhabit = {
+        name: t_habitName,
+        type: t_type == 0 ? 'not to-do' : 'to-do',
+        target_date: moment(t_targetDate).format('MM-DD-YYYY'),
+        reminder: t_reminder.value,
+        reminder_time: moment(t_reminder.time).format('HH:mm'),
+        frequency: t_frequency,
+      };
+      console.log('Create Habit Obj', obj_createhabit);
+      api_createHabit(obj_createhabit);
+    }
+  };
+  const api_createHabit = async obj => {
+    setisLoading(true);
+    let res = await invokeApi({
+      path: 'api/habit/add_habit',
+      method: 'POST',
+      postData: obj,
+      headers: {
+        'x-sh-auth': Token,
+      },
+    });
+    setisLoading(false);
+    if (res) {
+      if (res.code == 200) {
+        navigation.navigate(screens.habitTracker);
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
   // USE EFFECT
 
   useEffect(() => {
-    console.log('params', params);
-    if (!!params?.item) {
+    console.log('params', !!params?.todo);
+    if (params?.item) {
+      console.log('1');
       let {item} = params;
       updateHabit({
         title: item?.title,
@@ -90,20 +154,22 @@ const CreateHabit = props => {
         },
         frequency: [...item?.frequency],
       });
-    }
-
-    if (!!params?.habit) {
+    } else if (params?.habit) {
+      console.log('2');
       let {habit} = params;
       updateHabit({
         title: habit?.title,
         type: params.todo,
       });
+    } else if (params?.todo != null && params?.todo != undefined) {
+      console.log('3');
+      updateHabit({
+        type: params?.todo,
+      });
+    } else {
+      console.log('4');
     }
   }, []);
-
-  useEffect(() => {
-    console.log('HABIT', Habit);
-  }, [Habit]);
 
   return (
     <SafeAreaView style={mainStyles.MainView}>
@@ -141,7 +207,7 @@ const CreateHabit = props => {
                   onPress={() => updateHabit({type: 0})}
                   style={[
                     createHabit_styles.typeButton,
-                    Habit.type == 0 && createHabit_styles.selectedButton,
+                    type == 0 && createHabit_styles.selectedButton,
                   ]}>
                   <Image
                     style={[createHabit_styles.typeButtonIcon]}
@@ -158,7 +224,7 @@ const CreateHabit = props => {
                   onPress={() => updateHabit({type: 1})}
                   style={[
                     createHabit_styles.typeButton,
-                    Habit.type == 1 && createHabit_styles.selectedButton,
+                    type == 1 && createHabit_styles.selectedButton,
                   ]}>
                   <Image
                     style={[createHabit_styles.typeButtonIcon]}
@@ -217,14 +283,14 @@ const CreateHabit = props => {
                     onPress={() => selectDay(x)}
                     style={[
                       createHabit_styles.weekButton,
-                      frequency.find(y => y == x.day) &&
+                      frequency.find(y => y.day == x.day).status &&
                         createHabit_styles.selectedButton,
                     ]}>
                     <Text style={createHabit_styles.weekButtonText}>
                       {x.name.charAt(0)}
                     </Text>
                     <View style={{height: 12, width: 12, marginTop: 10}}>
-                      {frequency.find(y => y == x.day) && (
+                      {frequency.find(y => y.day == x.day).status && (
                         <Image
                           style={{height: 12, width: 12}}
                           source={require('../../../Assets/Icons/tick.png')}
@@ -309,11 +375,12 @@ const CreateHabit = props => {
 
           <View style={{marginVertical: 20}}>
             <CustomButton
-              onPress={() => props.navigation.navigate(screens.habitTracker)}
+              onPress={btn_addHabit}
               title={!!params?.item ? 'Save Changes' : 'Add Habit'}
             />
           </View>
         </ScrollView>
+        <Loader enable={isLoading} />
       </View>
       <DateTimePickerModal
         buttonTextColorIOS={Colors.primary}
@@ -333,8 +400,10 @@ const CreateHabit = props => {
         buttonTextColorIOS={Colors.primary}
         isVisible={targetDate.showModal}
         mode="date"
+        date={moment(targetDate.date).toDate()}
         display="spinner"
         is24Hour={false}
+        minimumDate={moment().toDate()}
         onConfirm={val =>
           updateHabit({
             targetDate: {...targetDate, date: val, showModal: false},

@@ -28,9 +28,12 @@ import showToast from '../../functions/showToast';
 import {validateEmail, checkSpace} from '../../functions/regex';
 import Loader from '../../Components/Loader';
 import invokeApi from '../../functions/invokeAPI';
+import {useContext} from 'react';
+import Context from '../../Context'
 
 const height = Dimensions.get('screen').height;
 const Login = props => {
+  const [Token, setToken] = useContext(Context);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setisLoading] = useState(false);
@@ -52,6 +55,7 @@ const Login = props => {
     AsyncStorage.multiSet(asyncData)
       .then(() => {
         setisLoading(false);
+        setToken(data?.token);
         props.navigation.reset({
           index: 0,
           routes: [{name: screens.bottomTabs}],

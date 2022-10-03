@@ -24,8 +24,11 @@ import {validateEmail, checkSpace} from '../../functions/regex';
 import Loader from '../../Components/Loader';
 import invokeApi from '../../functions/invokeAPI';
 
+import {useContext} from 'react';
+import Context from '../../Context';
 const height = Dimensions.get('screen').height;
 const Signup = props => {
+  const [Token, setToken] = useContext(Context);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -43,6 +46,7 @@ const Signup = props => {
     console.log('Async Data', asyncData);
     AsyncStorage.multiSet(asyncData)
       .then(() => {
+        setToken(data?.token);
         setisLoading(false);
         props.navigation.reset({
           index: 0,

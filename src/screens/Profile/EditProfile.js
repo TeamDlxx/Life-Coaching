@@ -20,7 +20,6 @@ import showToast from '../../functions/showToast';
 import {isFirstLetterAlphabet} from '../../functions/regex';
 import Loader from '../../Components/Loader';
 import invokeApi from '../../functions/invokeAPI';
-import getTokenFromAsync from '../../functions/getTokenFromAsync';
 import {fileURL} from '../../Utilities/domains';
 
 // Icons
@@ -36,11 +35,13 @@ import ic_trash from '../../Assets/Icons/trash.png';
 import CustomButton from '../../Components/CustomButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {screens} from '../../Navigation/Screens';
+import {useContext} from 'react';
+import Context from '../../Context';
 
 const EditProfile = props => {
+  const [Token] = useContext(Context);
   const userData = props.route.params.user;
   const [isModalVisible, setModalVisibility] = useState(false);
-  const [token, setToken] = useState(null);
   const [isLoading, setisLoading] = useState(false);
   const [user, updateUser] = useState({
     imageURI: userData.profile_image,
@@ -71,7 +72,7 @@ const EditProfile = props => {
       method: 'PUT',
       postData: obj,
       headers: {
-        'x-sh-auth': token,
+        'x-sh-auth': Token,
       },
     });
     setisLoading(false);
@@ -85,6 +86,11 @@ const EditProfile = props => {
   };
 
   const EditAsyncData = newData => {
+    showToast(
+      'Profile has been updated successfully',
+      'Profile Updated',
+      'success',
+    );
     AsyncStorage.setItem('@user', JSON.stringify(newData)).then(() => {
       props.navigation.navigate(screens.profile, {
         updated: true,
@@ -152,7 +158,7 @@ const EditProfile = props => {
       postData: file,
       headers: {
         'Content-Type': 'multipart/form-data',
-        'x-sh-auth': token,
+        'x-sh-auth': Token,
       },
     });
     setisLoading(false);
@@ -259,7 +265,12 @@ const EditProfile = props => {
                 Gallery
               </Text>
             </Pressable>
-            <Pressable style={{alignItems: 'center', marginLeft: 30}}>
+            <Pressable
+              onPress={() => {
+                setUser({imageURI: ''});
+                setModalVisibility(false);
+              }}
+              style={{alignItems: 'center', marginLeft: 30}}>
               <View
                 style={{
                   backgroundColor: '#BDC3C744',
@@ -287,13 +298,6 @@ const EditProfile = props => {
     );
   };
 
-  const getUserToken = async () => {
-    setToken(await getTokenFromAsync());
-  };
-
-  useEffect(() => {
-    getUserToken();
-  }, []);
   return (
     <SafeAreaView style={mainStyles.MainView}>
       <StatusBar

@@ -17,6 +17,7 @@ import {screens} from '../../../Navigation/Screens';
 
 const ChooseHabit = props => {
   const {params} = props.route;
+  console.log(params);
   const [selectedhabits, setSelectedhabits] = useState(null);
 
   const renderItem = ({item, index}) => {
@@ -75,7 +76,11 @@ const ChooseHabit = props => {
             renderItem={renderItem}
             ListFooterComponent={() => (
               <Pressable
-                onPress={() => props.navigation.navigate(screens.createHabit)}
+                onPress={() =>
+                  props.navigation.navigate(screens.createHabit, {
+                    todo: params.todo,
+                  })
+                }
                 style={chooseHabit_style.addButton}>
                 <Image
                   source={require('../../../Assets/Icons/add.png')}

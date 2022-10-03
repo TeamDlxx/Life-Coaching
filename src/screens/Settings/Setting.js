@@ -18,21 +18,22 @@ import Colors from '../../Utilities/Colors';
 import {font} from '../../Utilities/font';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {screens} from '../../Navigation/Screens';
-
 import showToast from '../../functions/showToast';
-import {validateEmail, checkSpace} from '../../functions/regex';
 import Loader from '../../Components/Loader';
 import invokeApi from '../../functions/invokeAPI';
-import getTokenFromAsync from '../../functions/getTokenFromAsync';
+
+import {useContext} from 'react';
+import Context from '../../Context';
 
 const Setting = props => {
   const [isLoading, setisLoading] = useState(false);
-  const [token, setToken] = useState(null);
+  const [Token, setToken] = useContext(Context);
 
   const logout = async () => {
     try {
       let res = await AsyncStorage.multiRemove(['@token', '@user']);
       console.log('res', res);
+      setToken(null);
       props.navigation.reset({
         index: 0,
         routes: [{name: screens.landing}],
@@ -51,7 +52,7 @@ const Setting = props => {
       path: 'api/app_api/logout',
       method: 'GET',
       headers: {
-        'x-sh-auth': token,
+        'x-sh-auth': Token,
       },
     });
     if (res) {
@@ -119,13 +120,6 @@ const Setting = props => {
         break;
     }
   };
-  const getToken = async () => {
-    console.log(await getTokenFromAsync());
-    setToken(await getTokenFromAsync());
-  };
-  useEffect(() => {
-    getToken();
-  }, []);
 
   return (
     <SafeAreaView style={mainStyles.MainViewForBottomTabScreens}>
@@ -208,7 +202,7 @@ const Setting = props => {
             </Text>
           </Text>
         </View>
-        <Loader enable={isLoading } />
+        <Loader enable={isLoading} />
       </View>
     </SafeAreaView>
   );

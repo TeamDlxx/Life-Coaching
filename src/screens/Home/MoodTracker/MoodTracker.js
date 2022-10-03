@@ -22,19 +22,6 @@ const MoodTracker = props => {
   const [CurrentQuestion, setCurrentQuestion] = useState(1);
   const [data, setData] = useState(data13);
 
-  const selectAnswer = value => {
-    let index = data.findIndex(x => x.key == CurrentQuestion);
-    let newArray = [...data];
-    let newobj = newArray[index];
-    newobj = {...newobj, arc: {outerRadius: `${value}0%`}, value: 100};
-
-    newArray.splice(index, 1, newobj);
-    console.log('newObj', newobj);
-    setData(newArray);
-
-    setCurrentQuestion(CurrentQuestion + 1);
-  };
-
   const getStyle = size => {
     return {
       height: _10percentOfsize * size,
@@ -47,13 +34,26 @@ const MoodTracker = props => {
     };
   };
 
+  const selectAnswer = value => {
+    let index = data.findIndex(x => x.key == CurrentQuestion);
+    let newArray = [...data];
+    let newobj = newArray[index];
+    newobj = {...newobj, arc: {outerRadius: `${value}0%`}, value: 100};
+    newArray.splice(index, 1, newobj);
+    console.log('newObj', newobj);
+    setData(newArray);
+    setCurrentQuestion(CurrentQuestion + 1);
+  };
+
+
+
   return (
     <SafeAreaView style={mainStyles.MainView}>
       <StatusBar
         barStyle={'dark-content'}
         backgroundColor={Colors.background}
       />
-      <Header navigation={props.navigation} title={'Wheel of Life'} />
+      <Header navigation={props.navigation} title={'Wheel of Mood'} />
       <View style={mainStyles.innerView}>
         <ScrollView showsVerticalScrollIndicator={false}>
           {CurrentQuestion < 9 && (
@@ -62,7 +62,7 @@ const MoodTracker = props => {
                 {data13.find(x => x.key == CurrentQuestion).question}
               </Text>
               <Text style={WheelofLifeStyle.rateText}>
-                How would you rate this area of your life?
+                How would you rate this area of your mood?
               </Text>
               <View style={WheelofLifeStyle.answerButtonView}>
                 {options.map(x => (
@@ -201,17 +201,22 @@ const WheelofLifeStyle = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  lableSection: {alignItems: 'center', paddingBottom: 50},
+  lableSection: {
+    paddingBottom: 50,
+  },
   lableView: {
     flexDirection: 'row',
     marginTop: 10,
     justifyContent: 'center',
   },
-  colorView: {height: 20, width: 20},
+  colorView: {
+    height: 20,
+    width: 20,
+  },
   labelText: {
     fontSize: 16,
     fontFamily: font.medium,
-    width: 100,
+    width: 120,
     marginLeft: 10,
     includeFontPadding: false,
   },
@@ -220,59 +225,60 @@ const WheelofLifeStyle = StyleSheet.create({
 const data13 = [
   {
     key: 1,
-    value: 0,
-    svg: {fill: '#53DAFB'},
+    value: 100,
+    svg: {fill: '#F5BF40'},
     arc: {outerRadius: '0%'},
-    question: 'Health',
+    question: 'Happiness',
   },
   {
     key: 2,
-    value: 100,
-    svg: {fill: '#4775DC'},
+    value: 0,
+    svg: {fill: '#53DAFB'},
     arc: {outerRadius: '0%'},
-    question: 'Career',
+    question: 'Trust',
   },
   {
     key: 3,
     value: 100,
-    svg: {fill: '#B83958'},
+    svg: {fill: '#6AD007'},
     arc: {outerRadius: '0%'},
-    question: 'Love',
+    question: 'Excitement',
   },
+
   {
     key: 4,
     value: 100,
-    svg: {fill: '#9C56CC'},
+    svg: {fill: '#E97434'},
     arc: {outerRadius: '0%'},
-    question: 'Spirituality',
+    question: 'Surprised',
   },
   {
     key: 5,
     value: 100,
-    svg: {fill: '#E894EA'},
+    svg: {fill: '#4775DC'},
     arc: {outerRadius: '0%'},
-    question: 'Family',
+    question: 'Fear',
   },
   {
     key: 6,
     value: 100,
-    svg: {fill: '#6AD007'},
+    svg: {fill: '#B83958'},
     arc: {outerRadius: '0%'},
-    question: 'Money',
+    question: 'Sadness',
   },
   {
     key: 7,
     value: 100,
-    svg: {fill: '#F5BF40'},
+    svg: {fill: '#9C56CC'},
     arc: {outerRadius: '0%'},
-    question: 'Fun',
+    question: 'Disappointment',
   },
   {
     key: 8,
     value: 100,
-    svg: {fill: '#E97434'},
+    svg: {fill: '#E894EA'},
     arc: {outerRadius: '0%'},
-    question: 'Friends',
+    question: 'Anger',
   },
 ];
 
