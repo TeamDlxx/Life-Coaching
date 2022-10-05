@@ -54,6 +54,7 @@ const Setting = props => {
       headers: {
         'x-sh-auth': Token,
       },
+      navigation: props.navigation,
     });
     if (res) {
       setisLoading(false);
@@ -61,7 +62,7 @@ const Setting = props => {
         logout();
       } else {
         setisLoading(false);
-        showToast(res.message);
+        logout();
       }
     }
   };

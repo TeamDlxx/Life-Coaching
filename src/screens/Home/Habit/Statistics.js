@@ -25,7 +25,6 @@ import moment from 'moment';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import Collapsible from 'react-native-collapsible';
 
-
 //Icons
 const checked = require('../../../Assets/Icons/checked.png');
 const unChecked = require('../../../Assets/Icons/unchecked.png');
@@ -392,10 +391,11 @@ const Statistics = props => {
         />
       </View>
       <DateTimePickerModal
+        accentColor={Colors.primary}
         buttonTextColorIOS={Colors.primary}
         isVisible={dateRange.startDateModal}
         mode="date"
-        display={Platform.OS == 'android' ? 'calendar' : 'spinner'}
+        display={Platform.OS == 'android' ? 'default' : 'inline'}
         date={moment(dateRange.startDate).toDate()}
         onConfirm={val =>
           setDateRange({
@@ -413,11 +413,12 @@ const Statistics = props => {
       />
 
       <DateTimePickerModal
+        accentColor={Colors.primary}
         buttonTextColorIOS={Colors.primary}
         isVisible={dateRange.endDateModal}
         mode="date"
         date={moment(dateRange.endDate).toDate()}
-        display={Platform.OS == 'android' ? 'calendar' : 'spinner'}
+        display={Platform.OS == 'android' ? 'default' : 'inline'}
         onConfirm={val =>
           setDateRange({
             ...dateRange,

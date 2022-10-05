@@ -212,7 +212,7 @@ export const HabitStats_style = StyleSheet.create({
     // marginHorizontal:10
     height: 50,
     width: 90,
-    justifyContent:"center",
+    justifyContent: 'center',
     // alignItems:"center"
   },
   typeText: {
@@ -420,6 +420,7 @@ export const allHabit_styles = StyleSheet.create({
     paddingRight: 20,
     marginBottom: 15,
     flex: 1,
+    margin: 2,
   },
   hiddenIcon: {height: 25, width: 25, tintColor: Colors.white},
 });

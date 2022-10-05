@@ -6,8 +6,10 @@ import {
   Pressable,
   Image,
   Alert,
+  RefreshControl,
+  Dimensions,
 } from 'react-native';
-import React from 'react';
+import React, {useState} from 'react';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
 import {mainStyles, allHabit_styles} from '../../../Utilities/styles';
@@ -16,13 +18,29 @@ import {screens} from '../../../Navigation/Screens';
 import {SwipeListView} from 'react-native-swipe-list-view';
 import * as Progress from 'react-native-progress';
 import moment from 'moment';
-
+import CustomImage from '../../../Components/CustomImage';
+// fro API calling
 import {useContext} from 'react';
 import Context from '../../../Context';
+import showToast from '../../../functions/showToast';
+import Loader from '../../../Components/Loader';
+import invokeApi from '../../../functions/invokeAPI';
+import {fileURL} from '../../../Utilities/domains';
+
+const ic_nodata = require('../../../Assets/Icons/empty-box.png');
+const screen = Dimensions.get('screen');
 
 const AllHabits = props => {
   const [Token] = useContext(Context);
+  const [sHabitList, setHabitList] = useState([]);
+  const [isLoading, setisLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   //  Functions
+
+  const refreshFlatList = () => {
+    setRefreshing(true);
+    api_habitList();
+  };
 
   const findProgress = row => {
     let startDate = moment(row.createdAt, 'DD MMM YYYY');
@@ -30,74 +48,130 @@ const AllHabits = props => {
     let diff = endDate.diff(startDate, 'days');
     return row.daysCompleted / diff;
   };
+
+  const callHabitListApi = () => {
+    setisLoading(true);
+    api_habitList();
+  };
+
+  const api_habitList = async () => {
+    let res = await invokeApi({
+      path: 'api/habit/habit_list',
+      method: 'GET',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    setRefreshing(false);
+    if (res) {
+      if (res.code == 200) {
+        console.log('response', res);
+        setHabitList(res.habits);
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  const api_deleteHabit = async id => {
+    setisLoading(true);
+    let res = await invokeApi({
+      path: 'api/habit/delete_habit/' + id,
+      method: 'DELETE',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    if (res) {
+      if (res.code == 200) {
+        showToast(
+          'Habit has been deleted successfully',
+          'Habit Deleted',
+          'success',
+        );
+        removeHabitFromList(id);
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  const removeHabitFromList = id => {
+    let newArray = [...sHabitList];
+    let index = newArray.findIndex(x => x._id == id);
+    newArray.splice(index, 1);
+    setHabitList(newArray);
+  };
   //
+
+  React.useEffect(() => {
+    callHabitListApi();
+  }, []);
 
   // Views
   const renderHabitsList = ({item, index}) => {
+    let randomNumber = Math.random();
     return (
-      <Pressable
-        onPress={() =>
-          props.navigation.navigate(screens.habitDetail, {item: item})
-        }
-        style={allHabit_styles.itemView}>
+      <Pressable style={allHabit_styles.itemView}>
         <View style={allHabit_styles.imageView}>
-          <Image source={item.image} style={allHabit_styles.itemImage} />
+          <CustomImage
+            source={{uri: fileURL + item.images?.small}}
+            indicatorProps={{color: Colors.primary}}
+            style={allHabit_styles.itemImage}
+          />
         </View>
         <View style={allHabit_styles.detailView}>
-          <View style={{flexDirection: 'row'}}>
-            <View style={{flex: 1}}>
-              <Text style={allHabit_styles.title}>{item.title}</Text>
-
-              <View style={allHabit_styles.targetDateView}>
-                <Text style={allHabit_styles.targetDate}>
-                  Target Date : {item.target_date}
-                </Text>
-              </View>
+          <View style={{flex: 1}}>
+            <Text style={allHabit_styles.title}>{item.name}</Text>
+            <View style={allHabit_styles.targetDateView}>
+              <Text style={allHabit_styles.targetDate}>
+                Target Date : {moment(item.target_date).format('DD MMM YYYY')}
+              </Text>
+            </View>
+            <View style={{height: 14}}>
               {!!item.reminder && (
                 <View style={allHabit_styles.reminderView}>
                   <Text style={allHabit_styles.reminderText}>
-                    <Text>Reminder at {item.reminder_time}</Text>
+                    <Text>
+                      Reminder at {moment(item.reminder_time).format('hh:mm A')}
+                    </Text>
                   </Text>
                 </View>
               )}
             </View>
-            {/* {!!item.status && (
-              <View>
-                <Image
-                  source={require('../../../Assets/Icons/check.png')}
-                  style={{height: 20, width: 20}}
-                />
-              </View>
-            )} */}
           </View>
+
           <View style={allHabit_styles.weekView}>
-            {weekDays.map((x, i) => {
+            {item.frequency.map((x, i) => {
               return (
                 <View
+                  key={x._id}
                   style={[
                     allHabit_styles.weekDayView,
                     {
-                      backgroundColor: item?.frequency?.find(z => z == x.day)
+                      backgroundColor: x.status
                         ? Colors.lightPrimary
                         : Colors.white,
                     },
                   ]}>
                   <Text
                     style={{
-                      fontFamily: item?.frequency?.find(z => z == x.day)
-                        ? font.xbold
-                        : font.medium,
+                      fontFamily: x.status ? font.xbold : font.medium,
                       fontSize: 12,
-                      color: item?.frequency?.find(z => z == x.day)
-                        ? Colors.primary
-                        : Colors.placeHolder,
+                      color: x.status ? Colors.primary : Colors.placeHolder,
+                      textTransform: 'capitalize',
                     }}>
-                    {x.name.charAt(0)}
+                    {x.day.charAt(0)}
                   </Text>
                 </View>
               );
             })}
           </View>
+
           <View
             style={{
               flexDirection: 'row',
@@ -116,7 +190,7 @@ const AllHabits = props => {
                   color: Colors.placeHolder,
                   fontSize: 12,
                 }}>
-                {Math.round(findProgress(item) * 100) + '%'}
+                {Math.round(randomNumber * 100) + '%'}
               </Text>
             </View>
             <View style={{flex: 1}}>
@@ -126,13 +200,13 @@ const AllHabits = props => {
                 borderColor={Colors.gray02}
                 borderRadius={13}
                 borderWidth={1}
-                progress={findProgress(item)}
+                progress={randomNumber * 1}
                 width={null}
               />
             </View>
           </View>
         </View>
-        {!!item.status && (
+        {!!Math.floor(randomNumber * 1) && (
           <View
             style={{
               backgroundColor: Colors.primary,
@@ -151,7 +225,7 @@ const AllHabits = props => {
               shadowRadius: 1.41,
 
               elevation: 2,
-              // width: 200,
+              //    width: 200,
             }}>
             <Text
               style={{
@@ -178,36 +252,79 @@ const AllHabits = props => {
       <Header navigation={props.navigation} title={'Your Habits'} />
 
       <View style={{flex: 1}}>
-        <SwipeListView
-          useFlatList={true}
-          contentContainerStyle={{paddingVertical: 10}}
-          showsVerticalScrollIndicator={false}
-          data={habitsList}
-          renderItem={renderHabitsList}
-          rightOpenValue={-60}
-          disableRightSwipe={true}
-          closeOnRowBeginSwipe={true}
-          closeOnRowPress={true}
-          keyExtractor={item => {
-            return item._id;
-          }}
-          renderHiddenItem={() => (
-            <Pressable
-              onPress={() =>
-                Alert.alert(
-                  'Delete Habite',
-                  'Are you sure to delete this Habit',
-                  [{text: 'No'}, {text: 'Yes'}],
-                )
-              }
-              style={allHabit_styles.hiddenView}>
-              <Image
-                source={require('../../../Assets/Icons/trash.png')}
-                style={allHabit_styles.hiddenIcon}
+        {/* <Loader enable={isLoading} /> */}
+        <View style={{flex: 1}}>
+          <SwipeListView
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={refreshFlatList}
+                tintColor={Colors.primary}
+                colors={[Colors.primary]}
+                progressBackgroundColor={Colors.white}
               />
-            </Pressable>
-          )}
-        />
+            }
+            useFlatList={true}
+            contentContainerStyle={{paddingVertical: 10}}
+            showsVerticalScrollIndicator={false}
+            data={sHabitList}
+            renderItem={renderHabitsList}
+            rightOpenValue={-60}
+            disableRightSwipe={true}
+            closeOnRowBeginSwipe={true}
+            closeOnRowPress={true}
+            keyExtractor={item => {
+              return item._id;
+            }}
+            renderHiddenItem={({item, index}) => {
+              return (
+                <Pressable
+                  onPress={() =>
+                    Alert.alert(
+                      'Delete Habite',
+                      'Are you sure to delete this Habit',
+                      [
+                        {text: 'No'},
+                        {text: 'Yes', onPress: () => api_deleteHabit(item._id)},
+                      ],
+                    )
+                  }
+                  style={allHabit_styles.hiddenView}>
+                  <Image
+                    source={require('../../../Assets/Icons/trash.png')}
+                    style={allHabit_styles.hiddenIcon}
+                  />
+                </Pressable>
+              );
+            }}
+            ListEmptyComponent={() =>
+              isLoading == false &&
+              sHabitList.length == 0 && (
+                <View
+                  style={{
+                    width: screen.width,
+                    marginTop: screen.width / 2,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                  <Image
+                    source={ic_nodata}
+                    style={{
+                      width: screen.width * 0.3,
+                      height: screen.width * 0.3,
+                    }}
+                  />
+                  <View style={{alignItems: 'center', marginTop: 10}}>
+                    <Text style={{fontFamily: font.bold}}>No Data</Text>
+                    <Text style={{fontFamily: font.regular}}>
+                      Swipe down to refresh
+                    </Text>
+                  </View>
+                </View>
+              )
+            }
+          />
+        </View>
       </View>
     </SafeAreaView>
   );

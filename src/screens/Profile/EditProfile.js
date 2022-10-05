@@ -21,6 +21,7 @@ import {isFirstLetterAlphabet} from '../../functions/regex';
 import Loader from '../../Components/Loader';
 import invokeApi from '../../functions/invokeAPI';
 import {fileURL} from '../../Utilities/domains';
+import UploadImage from '../../Components/UploadImage';
 
 // Icons
 
@@ -74,6 +75,7 @@ const EditProfile = props => {
       headers: {
         'x-sh-auth': Token,
       },
+      navigation: props.navigation,
     });
     setisLoading(false);
     if (res) {
@@ -160,6 +162,7 @@ const EditProfile = props => {
         'Content-Type': 'multipart/form-data',
         'x-sh-auth': Token,
       },
+      navigation: props.navigation,
     });
     setisLoading(false);
     if (res) {
@@ -296,6 +299,10 @@ const EditProfile = props => {
         </View>
       </Modal>
     );
+  };
+
+  const setImage = path => {
+    setUser({imageURI: path});
   };
 
   return (

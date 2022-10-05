@@ -10,7 +10,7 @@ import {
   TouchableHighlight,
   ScrollView,
   Dimensions,
-  DeviceEventEmitter
+  DeviceEventEmitter,
 } from 'react-native';
 import React, {useEffect, useState, useRef} from 'react';
 import Header from '../../../Components/Header';
@@ -290,7 +290,7 @@ const HabitDetail = props => {
                       <View
                         style={[
                           createHabit_styles.weekButton,
-                          Habit.frequency.find(y => y == x.day) &&
+                          Habit.frequency.find(y => y.day == x.day).status &&
                             createHabit_styles.selectedButton,
                           {margin: 3},
                         ]}>
@@ -300,7 +300,7 @@ const HabitDetail = props => {
                           {x.name.charAt(0)}
                         </Text>
                         <View style={{height: 12, width: 12, marginTop: 10}}>
-                          {Habit.frequency.find(y => y == x.day) && (
+                          {Habit.frequency.find(y => y.day == x.day).status && (
                             <Image
                               style={{height: 12, width: 12}}
                               source={require('../../../Assets/Icons/tick.png')}
@@ -524,7 +524,15 @@ const habit = {
   _id: '1',
   title: 'Leave Junk Food',
   status: true,
-  frequency: [1, 2, 4, 6, 7],
+  frequency: [
+    {name: 'Monday', day: 1, status: true},
+    {name: 'Tuesday', day: 2, status: false},
+    {name: 'Wednesday', day: 3, status: true},
+    {name: 'Thursday', day: 4, status: false},
+    {name: 'Friday', day: 5, status: true},
+    {name: 'Satuday', day: 6, status: false},
+    {name: 'Sunday', day: 7, status: true},
+  ],
   image: require('../../../Assets/Images/junkfood.webp'),
   to_do: false,
   target_date: '12 Oct 2022',

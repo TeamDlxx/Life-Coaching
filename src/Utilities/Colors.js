@@ -2,7 +2,6 @@ export default colors = {
   main: '#2E2B29',
   primary: '#655FB1',
   secondary: '#DEDBEB',
-
   lightPrimary: '#deddee',
   lightPrimary1: '#cdcce6',
   lightPrimary2: '#efeef6',
