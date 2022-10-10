@@ -18,7 +18,7 @@ import {useContext} from 'react';
 import Context from '../../Context';
 
 const ChangePassword = props => {
-  const [Token] = useContext(Context);
+  const {Token} = useContext(Context);
   const [isLoading, setisLoading] = useState(false);
   const [passwords, updatePasswords] = React.useState({
     old: '',

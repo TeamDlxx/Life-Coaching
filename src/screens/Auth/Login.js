@@ -29,11 +29,11 @@ import {validateEmail, checkSpace} from '../../functions/regex';
 import Loader from '../../Components/Loader';
 import invokeApi from '../../functions/invokeAPI';
 import {useContext} from 'react';
-import Context from '../../Context'
+import Context from '../../Context';
 
 const height = Dimensions.get('screen').height;
 const Login = props => {
-  const [Token, setToken] = useContext(Context);
+  const {setToken} = useContext(Context);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setisLoading] = useState(false);

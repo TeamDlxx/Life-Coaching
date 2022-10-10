@@ -29,6 +29,7 @@ const Header = props => {
               } else {
                 props.navigation.navigate(screens.bottomTabs);
               }
+              
             }}>
             <Image
               source={require('../Assets/Icons/back.png')}

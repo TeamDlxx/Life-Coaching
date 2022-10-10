@@ -17,7 +17,7 @@ import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
 import {SwipeListView} from 'react-native-swipe-list-view';
 import * as Progress from 'react-native-progress';
-import moment from 'moment';
+import moment, {normalizeUnits} from 'moment';
 import CustomImage from '../../../Components/CustomImage';
 // fro API calling
 import {useContext} from 'react';
@@ -26,12 +26,11 @@ import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
-
-const ic_nodata = require('../../../Assets/Icons/empty-box.png');
+import EmptyView from '../../../Components/EmptyView';
 const screen = Dimensions.get('screen');
 
 const AllHabits = props => {
-  const [Token] = useContext(Context);
+  const {Token} = useContext(Context);
   const [sHabitList, setHabitList] = useState([]);
   const [isLoading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -42,11 +41,23 @@ const AllHabits = props => {
     api_habitList();
   };
 
-  const findProgress = row => {
-    let startDate = moment(row.createdAt, 'DD MMM YYYY');
-    let endDate = moment(row.target_date, 'DD MMM YYYY');
-    let diff = endDate.diff(startDate, 'days');
-    return row.daysCompleted / diff;
+  const findProgress = item => {
+    let freq = [];
+    item.frequency.filter((x, i) => {
+      if (x.status == true) {
+        freq.push(x.day);
+      }
+    });
+    console.log('freq', freq);
+
+    let count = 0;
+    item.notes.map((x, i) => {
+      if (freq.includes(moment(x.date).format('dddd').toLowerCase())) {
+        count = count + 1;
+      }
+    });
+
+    return count;
   };
 
   const callHabitListApi = () => {
@@ -54,7 +65,7 @@ const AllHabits = props => {
     api_habitList();
   };
 
-  const api_habitList = async () => {
+  async function api_habitList() {
     let res = await invokeApi({
       path: 'api/habit/habit_list',
       method: 'GET',
@@ -73,7 +84,14 @@ const AllHabits = props => {
         showToast(res.message);
       }
     }
-  };
+  }
+
+  function updateHabitLocally(item) {
+    let newArray = [...sHabitList];
+    let index = newArray.findIndex(x => x._id == item._id);
+    newArray.splice(index, 1, item);
+    setHabitList(newArray);
+  }
 
   const api_deleteHabit = async id => {
     setisLoading(true);
@@ -106,17 +124,32 @@ const AllHabits = props => {
     newArray.splice(index, 1);
     setHabitList(newArray);
   };
-  //
+
+  React.useEffect(() => {
+    if (!!props.route.params?.updated) {
+      console.log('ABC');
+    }
+  }, [props.route]);
 
   React.useEffect(() => {
     callHabitListApi();
+    return () => {
+      setHabitList([]);
+    };
   }, []);
 
   // Views
   const renderHabitsList = ({item, index}) => {
-    let randomNumber = Math.random();
+    let progress = findProgress(item);
     return (
-      <Pressable style={allHabit_styles.itemView}>
+      <Pressable
+        onPress={() => {
+          props.navigation.navigate(screens.habitDetail, {
+            id: item._id,
+            updateHabit: updateHabitLocally,
+          });
+        }}
+        style={allHabit_styles.itemView}>
         <View style={allHabit_styles.imageView}>
           <CustomImage
             source={{uri: fileURL + item.images?.small}}
@@ -126,7 +159,9 @@ const AllHabits = props => {
         </View>
         <View style={allHabit_styles.detailView}>
           <View style={{flex: 1}}>
-            <Text style={allHabit_styles.title}>{item.name}</Text>
+            <Text numberOfLines={1} style={allHabit_styles.title}>
+              {item.name}
+            </Text>
             <View style={allHabit_styles.targetDateView}>
               <Text style={allHabit_styles.targetDate}>
                 Target Date : {moment(item.target_date).format('DD MMM YYYY')}
@@ -190,7 +225,7 @@ const AllHabits = props => {
                   color: Colors.placeHolder,
                   fontSize: 12,
                 }}>
-                {Math.round(randomNumber * 100) + '%'}
+                {parseInt((progress / item?.total_days) * 100) + '%'}
               </Text>
             </View>
             <View style={{flex: 1}}>
@@ -200,13 +235,13 @@ const AllHabits = props => {
                 borderColor={Colors.gray02}
                 borderRadius={13}
                 borderWidth={1}
-                progress={randomNumber * 1}
+                progress={progress / item?.total_days}
                 width={null}
               />
             </View>
           </View>
         </View>
-        {!!Math.floor(randomNumber * 1) && (
+        {progress / item?.total_days == 1 && (
           <View
             style={{
               backgroundColor: Colors.primary,
@@ -225,7 +260,6 @@ const AllHabits = props => {
               shadowRadius: 1.41,
 
               elevation: 2,
-              //    width: 200,
             }}>
             <Text
               style={{
@@ -252,7 +286,7 @@ const AllHabits = props => {
       <Header navigation={props.navigation} title={'Your Habits'} />
 
       <View style={{flex: 1}}>
-        {/* <Loader enable={isLoading} /> */}
+        <Loader enable={isLoading} />
         <View style={{flex: 1}}>
           <SwipeListView
             refreshControl={
@@ -298,30 +332,7 @@ const AllHabits = props => {
               );
             }}
             ListEmptyComponent={() =>
-              isLoading == false &&
-              sHabitList.length == 0 && (
-                <View
-                  style={{
-                    width: screen.width,
-                    marginTop: screen.width / 2,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                  <Image
-                    source={ic_nodata}
-                    style={{
-                      width: screen.width * 0.3,
-                      height: screen.width * 0.3,
-                    }}
-                  />
-                  <View style={{alignItems: 'center', marginTop: 10}}>
-                    <Text style={{fontFamily: font.bold}}>No Data</Text>
-                    <Text style={{fontFamily: font.regular}}>
-                      Swipe down to refresh
-                    </Text>
-                  </View>
-                </View>
-              )
+              isLoading == false && sHabitList.length == 0 && <EmptyView />
             }
           />
         </View>
@@ -332,70 +343,3 @@ const AllHabits = props => {
 
 export default AllHabits;
 
-const weekDays = [
-  {name: 'Monday', day: 1, value: false},
-  {name: 'Tuesday', day: 2, value: false},
-  {name: 'Wednesday', day: 3, value: false},
-  {name: 'Thursday', day: 4, value: false},
-  {name: 'Friday', day: 5, value: false},
-  {name: 'Satuday', day: 6, value: false},
-  {name: 'Sunday', day: 7, value: false},
-];
-
-const habitsList = [
-  {
-    _id: '1',
-    title: 'Leave Junk Food',
-    status: false,
-    frequency: [1, 2, 3, 4, 5, 6, 7],
-    image: require('../../../Assets/Images/junkfood.webp'),
-    to_do: false,
-    target_date: '12 Oct 2022',
-    daysCompleted: 10,
-    reminder: true,
-    reminder_time: '10:00 AM',
-    createdAt: '30 Aug 2022',
-  },
-
-  {
-    _id: '2',
-    title: 'Drink Water Regularly',
-    status: true,
-    frequency: [1, 3, 4],
-    image: require('../../../Assets/Images/water.png'),
-    to_do: true,
-    target_date: '12 Oct 2022',
-    reminder: false,
-    daysCompleted: 10,
-    reminder_time: '06:30 PM',
-    createdAt: '30 Aug 2022',
-  },
-
-  {
-    _id: '3',
-    title: 'Quit Smoking',
-    status: false,
-    to_do: false,
-    daysCompleted: 10,
-    frequency: [1, 6, 7],
-    image: require('../../../Assets/Images/smoking.jpeg'),
-    target_date: '10 Nov 2022',
-    createdAt: '30 Aug 2022',
-    reminder: true,
-    reminder_time: '02:00 PM',
-  },
-
-  {
-    _id: '4',
-    title: 'Walk Regularly',
-    status: true,
-    to_do: true,
-    daysCompleted: 10,
-    frequency: [2, 3, 4],
-    image: require('../../../Assets/Images/walking.webp'),
-    target_date: '25 Sep  2022',
-    createdAt: '30 Aug 2022',
-    reminder: true,
-    reminder_time: '10:00 PM',
-  },
-];

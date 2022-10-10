@@ -8,7 +8,7 @@ import {
   TouchableHighlight,
   ActivityIndicator,
 } from 'react-native';
-import React, {useEffect, useState,useCallback} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import Colors from '../Utilities/Colors';
 import {font} from '../Utilities/font';
 import Modal from 'react-native-modal';
@@ -32,6 +32,8 @@ const UploadImage = props => {
   const Token = props.Token;
   const [isModalVisible, setModalVisibility] = useState(false);
   const [isLoading, setisLoading] = useState(false);
+
+  console.log('props', props);
 
   const openGallery = async () => {
     setModalVisibility(false);
@@ -256,8 +258,7 @@ const UploadImage = props => {
   //     </View>
   //   );
   // }
-  console.log("Component props",props);
-  
+
   return (
     <>
       <Pressable
@@ -285,13 +286,18 @@ const UploadImage = props => {
           {isLoading ? (
             <ActivityIndicator size={'small'} color={Colors.primary} />
           ) : !!props.localImage ? (
-            <Image
+            <CustomImage
               source={{uri: props.localImage}}
               style={{
                 flex: 1,
                 width: '100%',
                 height: '100%',
+              }}
+              imageStyle={{
                 borderRadius: props.borderRadius,
+              }}
+              indicatorProps={{
+                color: Colors.primary,
               }}
             />
           ) : !!props.NetworkImage ? (

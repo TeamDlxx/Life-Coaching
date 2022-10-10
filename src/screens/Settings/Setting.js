@@ -27,7 +27,7 @@ import Context from '../../Context';
 
 const Setting = props => {
   const [isLoading, setisLoading] = useState(false);
-  const [Token, setToken] = useContext(Context);
+  const {Token, setToken} = useContext(Context);
 
   const logout = async () => {
     try {

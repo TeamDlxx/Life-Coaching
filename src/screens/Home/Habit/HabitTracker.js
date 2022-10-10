@@ -9,6 +9,8 @@ import {
   Image,
   Platform,
   TouchableHighlight,
+  RefreshControl,
+  Dimensions,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Header from '../../../Components/Header';
@@ -20,12 +22,29 @@ import Modal from 'react-native-modal';
 import {CustomMultilineTextInput} from '../../../Components/CustomTextInput';
 import CustomButton from '../../../Components/CustomButton';
 import {screens} from '../../../Navigation/Screens';
+import CustomImage from '../../../Components/CustomImage';
+
+// For API's calling
+import {useContext} from 'react';
+import Context from '../../../Context';
+import showToast from '../../../functions/showToast';
+import Loader from '../../../Components/Loader';
+import invokeApi from '../../../functions/invokeAPI';
+import {fileURL} from '../../../Utilities/domains';
+import EmptyView from '../../../Components/EmptyView';
+
+const screen = Dimensions.get('screen');
+const ic_nodata = require('../../../Assets/Icons/empty-box.png');
 
 const HabitTracker = props => {
+  const {params} = props.route;
+  const {navigation} = props;
+  const {Token, habitList, setHabitList} = useContext(Context);
+  const [isLoading, setisLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const daysFlatList = React.useRef();
   const [daysList, setDays] = useState([]);
   const [option, setOption] = useState(0);
-  const [habitList, setHabitList] = useState([]);
   const [visibleAddHabitModal, setVisibleAddHabitModal] = useState(false);
   const [today, setToday] = useState(moment().format('YYYY-MM-DD'));
   const [note, setNote] = useState({
@@ -33,6 +52,27 @@ const HabitTracker = props => {
     modalVisible: false,
     item: null,
   });
+
+  const checkSelectedDayHabits = item => {
+    return (
+      item?.frequency?.find(
+        x => x.day == moment(today, 'YYYY-MM-DD').format('dddd').toLowerCase(),
+      ).status &&
+      moment(today, 'YYYY-MM-DD').isSameOrBefore(moment(item.target_date))
+    );
+  };
+
+  const checkCompleted = notes => {
+    let index = notes.findIndex(
+      x => moment(x.date).format('YYYY-MM-DD') == today,
+    );
+
+    if (index < 0) {
+      return false;
+    } else {
+      return true;
+    }
+  };
 
   const daysInMonth = () => {
     let currentWeek = moment().startOf('week').isoWeekday(1);
@@ -48,17 +88,12 @@ const HabitTracker = props => {
     setDays([...days]);
   };
 
-  const checkboxButton = item => {
-    if (item.status == true) {
-      setHabitList(prevState => {
-        const newState = prevState.map(obj => {
-          if (obj._id === item._id) {
-            return {...obj, status: false};
-          }
-          return obj;
-        });
-        return newState;
-      });
+  const checkboxButton = async item => {
+    if (checkCompleted(item.notes)) {
+      let id = await item.notes.find(
+        x => moment(x.date).format('YYYY-MM-DD') == today,
+      )._id;
+      api_removeNote(item._id, id);
     } else {
       setNote({...note, modalVisible: true, item: item});
     }
@@ -66,16 +101,66 @@ const HabitTracker = props => {
 
   const markCompeleted = () => {
     let {item} = note;
-    setHabitList(prevState => {
-      const newState = prevState.map(obj => {
-        if (obj._id === item._id) {
-          return {...obj, status: true, note: note.text};
-        }
-        return obj;
-      });
-      return newState;
-    });
+    let obj_addNote = {
+      note_text: note.text.trim(),
+      date: moment(today, 'YYYY-MM-DD').toISOString(),
+    };
+    api_addNote(item._id, obj_addNote);
+    setisLoading(true);
     setNote({modalVisible: false, text: '', item: null});
+  };
+
+  const api_addNote = async (id, obj) => {
+    let res = await invokeApi({
+      path: 'api/habit/add_note/' + id,
+      method: 'POST',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      postData: obj,
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    setRefreshing(false);
+    if (res) {
+      if (res.code == 200) {
+        updateHabitList(res?.habit);
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  const updateHabitList = habit => {
+    let newArray = [...habitList];
+    let index = newArray.findIndex(x => x._id == habit._id);
+    if (index != -1) {
+      newArray.splice(index, 1, habit);
+      setHabitList(newArray);
+    }
+  };
+
+  const api_removeNote = async (habit_id, note_id) => {
+    let res = await invokeApi({
+      path: 'api/habit/remove_note/' + habit_id,
+      method: 'POST',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      postData: {
+        note_id: note_id,
+      },
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    setRefreshing(false);
+    if (res) {
+      if (res.code == 200) {
+        updateHabitList(res.habit);
+      } else {
+        showToast(res.message);
+      }
+    }
   };
 
   //? Navigation Functions
@@ -87,9 +172,46 @@ const HabitTracker = props => {
     });
   };
 
+  //todo API's
+
+  const api_myHabits = async () => {
+    let res = await invokeApi({
+      path: 'api/habit/habit_list',
+      method: 'GET',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    setRefreshing(false);
+    if (res) {
+      if (res.code == 200) {
+        console.log('response', res);
+        setHabitList(res.habits);
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  const callHabitListAPI = () => {
+    setisLoading(true);
+    api_myHabits();
+  };
+
+  const refreshFlatList = () => {
+    setRefreshing(true);
+    api_myHabits();
+  };
+
   useEffect(() => {
     daysInMonth();
-    setHabitList(habitsList);
+    callHabitListAPI();
+
+    return () => {
+      setHabitList([]);
+    };
   }, []);
 
   useEffect(() => {
@@ -167,124 +289,132 @@ const HabitTracker = props => {
   };
 
   const renderHabitsList = ({item, index}) => {
-    return (
-      <Pressable
-        onPress={() =>
-          props.navigation.navigate(screens.habitDetail, {item: item})
-        }
-        style={{
-          // margin: 10,
-          marginBottom: 15,
-          alignItems: 'center',
-          // padding: 10,
-          borderRadius: 20,
-
-          borderColor: Colors.gray02,
-          borderWidth: 1,
-          backgroundColor: Colors.white,
-          paddingHorizontal: 10,
-          flexDirection: 'row',
-          // paddingVertical: 16,
-          marginHorizontal: 20,
-          height: 80,
-        }}>
-        <View
+    if (checkSelectedDayHabits(item)) {
+      return (
+        <Pressable
+          onPress={() =>
+            props.navigation.navigate(screens.habitDetail, {id: item._id})
+          }
           style={{
-            height: 50,
-            width: 50,
-            borderRadius: 15,
-            overflow: 'hidden',
-            borderWidth: 1,
+            // margin: 10,
+            marginBottom: 15,
+            alignItems: 'center',
+            // padding: 10,
+            borderRadius: 20,
+
             borderColor: Colors.gray02,
+            borderWidth: 1,
+            backgroundColor: Colors.white,
+            paddingHorizontal: 10,
+            flexDirection: 'row',
+            marginHorizontal: 20,
+            height: 80,
           }}>
-          <Image source={item.image} style={{height: 50, width: 50}} />
-        </View>
-        <View style={{marginLeft: 10, flex: 1}}>
-          <Text
+          <View
             style={{
-              fontFamily: font.bold,
-              fontSize: 16,
-              includeFontPadding: false,
-              color: Colors.black,
+              height: 50,
+              width: 50,
+              borderRadius: 15,
+              overflow: 'hidden',
+              borderWidth: 1,
+              borderColor: Colors.gray02,
             }}>
-            {item.title}
-          </Text>
-
-          {item.status == true ? (
-            <View
+            <CustomImage
+              source={{uri: fileURL + item?.images?.small}}
+              style={{height: 50, width: 50}}
+              indicatorProps={{
+                color: Colors.primary,
+              }}
+            />
+          </View>
+          <View style={{marginLeft: 10, flex: 1}}>
+            <Text
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginTop: 10,
+                fontFamily: font.bold,
+                fontSize: 16,
+                includeFontPadding: false,
+                color: Colors.black,
               }}>
-              <Image
-                source={require('../../../Assets/Icons/check.png')}
+              {item.name}
+            </Text>
+
+            {checkCompleted(item.notes) ? (
+              <View
                 style={{
-                  height: 15,
-                  width: 15,
-                  marginRight: 5,
-                  // tintColor: Colors.completed,
-                }}
-              />
-              <Text
-                style={{
-                  fontFamily: font.medium,
-                  color: Colors.text,
-                  fontSize: 12,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginTop: 10,
                 }}>
-                Completed
-              </Text>
-            </View>
-          ) : (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginTop: 10,
-              }}>
-              <Image
-                source={require('../../../Assets/Icons/inProgress.png')}
-                style={{
-                  height: 15,
-                  width: 15,
-                  marginRight: 5,
-                  tintColor: Colors.lightPrimary,
-                }}
-              />
-
-              <View style={{flex: 1}}>
+                <Image
+                  source={require('../../../Assets/Icons/check.png')}
+                  style={{
+                    height: 15,
+                    width: 15,
+                    marginRight: 5,
+                  }}
+                />
                 <Text
                   style={{
                     fontFamily: font.medium,
                     color: Colors.text,
                     fontSize: 12,
                   }}>
-                  Pending
+                  Completed
                 </Text>
               </View>
-            </View>
-          )}
-        </View>
-        <View style={{}}>
-          <TouchableHighlight
-            underlayColor={Colors.lightPrimary2}
-            style={{padding: 10, borderRadius: 900}}
-            onPress={() => checkboxButton(item)}>
-            <Image
-              style={{
-                height: 18,
-                width: 18,
-              }}
-              source={
-                item.status == true
-                  ? require('../../../Assets/Icons/checked.png')
-                  : require('../../../Assets/Icons/unchecked.png')
-              }
-            />
-          </TouchableHighlight>
-        </View>
-      </Pressable>
-    );
+            ) : (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginTop: 10,
+                }}>
+                <Image
+                  source={require('../../../Assets/Icons/inProgress.png')}
+                  style={{
+                    height: 15,
+                    width: 15,
+                    marginRight: 5,
+                    tintColor: Colors.lightPrimary,
+                  }}
+                />
+
+                <View style={{flex: 1}}>
+                  <Text
+                    style={{
+                      fontFamily: font.medium,
+                      color: Colors.text,
+                      fontSize: 12,
+                    }}>
+                    Pending
+                  </Text>
+                </View>
+              </View>
+            )}
+          </View>
+          <View style={{}}>
+            {moment(today, 'YYYY-MM-DD').isSameOrBefore(moment()) && (
+              <TouchableHighlight
+                underlayColor={Colors.lightPrimary2}
+                style={{padding: 10, borderRadius: 900}}
+                onPress={() => checkboxButton(item)}>
+                <Image
+                  style={{
+                    height: 18,
+                    width: 18,
+                  }}
+                  source={
+                    checkCompleted(item.notes)
+                      ? require('../../../Assets/Icons/checked.png')
+                      : require('../../../Assets/Icons/unchecked.png')
+                  }
+                />
+              </TouchableHighlight>
+            )}
+          </View>
+        </Pressable>
+      );
+    }
   };
 
   const flatListHeader = () => {
@@ -534,19 +664,56 @@ const HabitTracker = props => {
       />
       <View style={mainStyles.innerView}>
         <View style={{flex: 1, marginHorizontal: -20}}>
-          <FlatList
-            listKey="main"
-            stickyHeaderIndices={[0]}
-            stickyHeaderHiddenOnScroll={true}
-            ListHeaderComponent={flatListHeader()}
-            contentContainerStyle={{paddingVertical: 10, paddingBottom: 50}}
-            showsVerticalScrollIndicator={false}
-            data={habitList}
-            renderItem={renderHabitsList}
-            keyExtractor={item => {
-              return item._id;
-            }}
-          />
+          <Loader enable={isLoading} />
+          <View style={{flex: 1}}>
+            <FlatList
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={refreshFlatList}
+                  tintColor={Colors.primary}
+                  colors={[Colors.primary]}
+                  progressBackgroundColor={Colors.white}
+                />
+              }
+              listKey="main"
+              stickyHeaderIndices={[0]}
+              stickyHeaderHiddenOnScroll={true}
+              ListHeaderComponent={flatListHeader()}
+              contentContainerStyle={{paddingVertical: 10, paddingBottom: 50}}
+              showsVerticalScrollIndicator={false}
+              data={habitList}
+              renderItem={renderHabitsList}
+              keyExtractor={item => {
+                return item._id;
+              }}
+              ListEmptyComponent={() =>
+                isLoading == false && (
+                  <View
+                    style={{
+                      width: screen.width,
+                      marginTop: screen.width / 2,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                    <Image
+                      source={ic_nodata}
+                      style={{
+                        width: screen.width * 0.3,
+                        height: screen.width * 0.3,
+                      }}
+                    />
+                    <View style={{alignItems: 'center', marginTop: 10}}>
+                      <Text style={{fontFamily: font.bold}}>No Data</Text>
+                      <Text style={{fontFamily: font.regular}}>
+                        Swipe down to refresh
+                      </Text>
+                    </View>
+                  </View>
+                )
+              }
+            />
+          </View>
         </View>
 
         <Pressable
@@ -573,164 +740,6 @@ const emojis = [
   {name: 'Okay', emoji: '😐', _id: '3'},
   {name: 'Good', emoji: '🙂', _id: '4'},
   {name: 'Excellent', emoji: '😍', _id: '5'},
-];
-
-const habitsList = [
-  {
-    _id: '1',
-    title: 'Leave Junk Food',
-    status: false,
-    note: '',
-    frequency: [1, 2, 3, 4, 5, 6, 7],
-    image: require('../../../Assets/Images/junkfood.webp'),
-    to_do: false,
-    target_date: '12 Oct 2022',
-    reminder: true,
-    reminder_time: '10:00 AM',
-  },
-
-  {
-    _id: '2',
-    title: 'Drink Water Regularly',
-    status: true,
-    note: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    frequency: [1, 3, 4],
-    image: require('../../../Assets/Images/water.png'),
-    to_do: true,
-    target_date: '12 Oct 2022',
-    reminder: false,
-    reminder_time: '06:30 PM',
-  },
-
-  {
-    _id: '3',
-    title: 'Quit Smoking',
-    status: false,
-    note: '',
-    to_do: false,
-    frequency: [1, 6, 7],
-    image: require('../../../Assets/Images/smoking.jpeg'),
-    target_date: '10 Nov 2022',
-    reminder: true,
-    reminder_time: '02:00 PM',
-  },
-
-  {
-    _id: '4',
-    title: 'Walk Regularly',
-    status: true,
-    note: '',
-    to_do: true,
-    frequency: [2, 3, 4],
-    image: require('../../../Assets/Images/walking.webp'),
-    target_date: '25 Sep  2022',
-    reminder: true,
-    reminder_time: '10:00 PM',
-  },
-
-  {
-    _id: '23e1',
-    title: 'Leave Junk Food',
-    status: false,
-    note: '',
-    frequency: [1, 2, 3, 4, 5, 6, 7],
-    image: require('../../../Assets/Images/junkfood.webp'),
-    to_do: false,
-    target_date: '12 Oct 2022',
-    reminder: true,
-    reminder_time: '10:00 AM',
-  },
-
-  {
-    _id: 'fwe2',
-    title: 'Drink Water Regularly',
-    status: true,
-    note: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    frequency: [1, 3, 4],
-    image: require('../../../Assets/Images/water.png'),
-    to_do: true,
-    target_date: '12 Oct 2022',
-    reminder: false,
-    reminder_time: '06:30 PM',
-  },
-
-  {
-    _id: 'vDS3',
-    title: 'Quit Smoking',
-    status: false,
-    note: '',
-    to_do: false,
-    frequency: [1, 6, 7],
-    image: require('../../../Assets/Images/smoking.jpeg'),
-    target_date: '10 Nov 2022',
-    reminder: true,
-    reminder_time: '02:00 PM',
-  },
-
-  {
-    _id: '4EFWEFW',
-    title: 'Walk Regularly',
-    status: true,
-    note: '',
-    to_do: true,
-    frequency: [2, 3, 4],
-    image: require('../../../Assets/Images/walking.webp'),
-    target_date: '25 Sep  2022',
-    reminder: true,
-    reminder_time: '10:00 PM',
-  },
-
-  {
-    _id: '1F23F2WE',
-    title: 'Leave Junk Food',
-    status: false,
-    note: '',
-    frequency: [1, 2, 3, 4, 5, 6, 7],
-    image: require('../../../Assets/Images/junkfood.webp'),
-    to_do: false,
-    target_date: '12 Oct 2022',
-    reminder: true,
-    reminder_time: '10:00 AM',
-  },
-
-  {
-    _id: 'WEFWEF2',
-    title: 'Drink Water Regularly',
-    status: true,
-    note: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    frequency: [1, 3, 4],
-    image: require('../../../Assets/Images/water.png'),
-    to_do: true,
-    target_date: '12 Oct 2022',
-    reminder: false,
-    reminder_time: '06:30 PM',
-  },
-
-  {
-    _id: 'WEFBWRWEF3',
-    title: 'Quit Smoking',
-    status: false,
-    note: '',
-    to_do: false,
-    frequency: [1, 6, 7],
-    image: require('../../../Assets/Images/smoking.jpeg'),
-    target_date: '10 Nov 2022',
-    reminder: true,
-    reminder_time: '02:00 PM',
-  },
-
-  {
-    _id: '4WEFBRWEF',
-    title: 'Walk Regularly',
-    status: true,
-    note: '',
-    to_do: true,
-    frequency: [2, 3, 4],
-    image: require('../../../Assets/Images/walking.webp'),
-    target_date: '25 Sep  2022',
-    reminder: true,
-    reminder_time: '10:00 PM',
-  },
 ];
 
 const modalStyle = StyleSheet.create({

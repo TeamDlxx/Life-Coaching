@@ -6,6 +6,7 @@ import {
   FlatList,
   Image,
   Pressable,
+  RefreshControl,
 } from 'react-native';
 import React, {useState} from 'react';
 import Header from '../../../Components/Header';
@@ -15,10 +16,67 @@ import {font} from '../../../Utilities/font';
 import CustomButton from '../../../Components/CustomButton';
 import {screens} from '../../../Navigation/Screens';
 
+// For API's
+import {useContext} from 'react';
+import Context from '../../../Context';
+import showToast from '../../../functions/showToast';
+import Loader from '../../../Components/Loader';
+import invokeApi from '../../../functions/invokeAPI';
+import {fileURL} from '../../../Utilities/domains';
+import {isFirstLetterAlphabet} from '../../../functions/regex';
+import rountToNextmins from '../../../functions/rountToNextmins';
+import CustomImage from '../../../Components/CustomImage';
+
 const ChooseHabit = props => {
   const {params} = props.route;
-  console.log(params);
+  const {navigation} = props;
+  const {Token} = useContext(Context);
+  const [preDefinedHabits, setPreDefinedHabits] = useState([]);
   const [selectedhabits, setSelectedhabits] = useState(null);
+  const [isLoading, setisLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const callAdminHabitsListAPI = () => {
+    setisLoading(true);
+    api_AdminHabits();
+  };
+
+  const refreshFlatList = () => {
+    setRefreshing(true);
+    api_AdminHabits();
+  };
+
+  const api_AdminHabits = async () => {
+    let res = await invokeApi({
+      path: 'api/habit/admin_habit_list',
+      method: 'POST',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      postData: {
+        type: params?.todo == 1 ? 'to-do' : 'not-to-do',
+      },
+      navigation: props.navigation,
+    });
+
+    setisLoading(false);
+    setRefreshing(false);
+    if (res) {
+      if (res.code == 200) {
+        setPreDefinedHabits(res.habits);
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  React.useEffect(() => {
+    callAdminHabitsListAPI();
+
+    return () => {
+      setPreDefinedHabits([]);
+    };
+  }, []);
 
   const renderItem = ({item, index}) => {
     return (
@@ -37,20 +95,27 @@ const ChooseHabit = props => {
             borderWidth: 1,
             borderColor: Colors.gray02,
             backgroundColor:
-              selectedhabits?.id == item.id
+              selectedhabits?._id == item._id
                 ? Colors.lightPrimary
                 : Colors.white,
           }}>
-          <View style={{}}>
-            <Image
+          <View
+            style={{
+              width: 80,
+              height: 80,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <CustomImage
               resizeMode="contain"
-              source={item.pic}
-              style={{width: 70, height: 70}}
+              source={{uri: fileURL + item?.images?.small}}
+              style={{width: 60, height: 60}}
+              indicatorProps={{color: Colors.primary}}
             />
           </View>
           <View style={{marginTop: 0}}>
             <Text style={{fontFamily: font.medium, fontSize: 16}}>
-              {item.title}
+              {item.name}
             </Text>
           </View>
         </Pressable>
@@ -67,38 +132,53 @@ const ChooseHabit = props => {
       <Header navigation={props.navigation} title={'Choose Habit'} />
       <View style={mainStyles.innerView}>
         <View style={{flex: 1}}>
-          <FlatList
-            bounces={false}
-            contentContainerStyle={{paddingTop: 10, paddingBottom: 40}}
-            showsVerticalScrollIndicator={false}
-            numColumns={2}
-            data={habitList}
-            renderItem={renderItem}
-            ListFooterComponent={() => (
-              <Pressable
-                onPress={() =>
-                  props.navigation.navigate(screens.createHabit, {
-                    todo: params.todo,
-                  })
-                }
-                style={chooseHabit_style.addButton}>
-                <Image
-                  source={require('../../../Assets/Icons/add.png')}
-                  style={chooseHabit_style.addButtonIcon}
+          <Loader enable={isLoading} />
+          <View style={{flex: 1}}>
+            <FlatList
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={refreshFlatList}
+                  tintColor={Colors.primary}
+                  colors={[Colors.primary]}
+                  progressBackgroundColor={Colors.white}
                 />
-                <Text style={chooseHabit_style.addButtonText}>
-                  Create Habit
-                </Text>
-              </Pressable>
-            )}
-          />
+              }
+              contentContainerStyle={{paddingTop: 10, paddingBottom: 40}}
+              showsVerticalScrollIndicator={false}
+              numColumns={2}
+              data={preDefinedHabits}
+              renderItem={renderItem}
+              ListFooterComponent={() => {
+                if (isLoading == false) {
+                  return (
+                    <Pressable
+                      onPress={() =>
+                        navigation.navigate(screens.createHabit, {
+                          todo: params.todo,
+                        })
+                      }
+                      style={chooseHabit_style.addButton}>
+                      <Image
+                        source={require('../../../Assets/Icons/add.png')}
+                        style={chooseHabit_style.addButtonIcon}
+                      />
+                      <Text style={chooseHabit_style.addButtonText}>
+                        Create Habit
+                      </Text>
+                    </Pressable>
+                  );
+                }
+              }}
+            />
+          </View>
         </View>
         {!!selectedhabits && (
           <View style={{paddingHorizontal: 20, paddingBottom: 10}}>
             <CustomButton
               title="Get Started"
               onPress={() =>
-                props.navigation.navigate(screens.createHabit, {
+                navigation.navigate(screens.createHabit, {
                   habit: selectedhabits,
                   todo: params.todo,
                 })
@@ -113,60 +193,5 @@ const ChooseHabit = props => {
 
 export default ChooseHabit;
 
-const habitList = [
-  {
-    id: '1',
-    title: 'Work Out',
-    to_do: true,
-    pic: require('../../../Assets/Images/workout.png'),
-  },
 
-  {
-    id: '2',
-    title: 'Eat Food',
-    to_do: true,
-    pic: require('../../../Assets/Images/food.png'),
-  },
 
-  {
-    id: '3',
-    title: 'Music',
-    to_do: false,
-    pic: require('../../../Assets/Images/music.png'),
-  },
-
-  {
-    id: '4',
-    title: 'Art & Design',
-    to_do: false,
-    pic: require('../../../Assets/Images/art.png'),
-  },
-
-  {
-    id: '5',
-    title: 'Travelling',
-    to_do: true,
-    pic: require('../../../Assets/Images/travel.png'),
-  },
-
-  {
-    id: '6',
-    title: 'Reading Book',
-    to_do: false,
-    pic: require('../../../Assets/Images/reading.png'),
-  },
-
-  {
-    id: '7',
-    title: 'Gaming',
-    to_do: false,
-    pic: require('../../../Assets/Images/gaming.png'),
-  },
-
-  {
-    id: '8',
-    title: 'Machanic',
-    to_do: true,
-    pic: require('../../../Assets/Images/mechanic.png'),
-  },
-];

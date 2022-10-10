@@ -5,6 +5,7 @@ import AuthStack from './src/Navigation/AuthStack';
 import TrackPlayer from 'react-native-track-player';
 import Toast from 'react-native-toast-message';
 import {ContextProvider} from './src/Context';
+import ContextWrapper from './src/Context/ContextWrapper';
 
 moment.updateLocale('en', {
   week: {
@@ -13,8 +14,6 @@ moment.updateLocale('en', {
 });
 
 const App = props => {
-  const [Token, setToken] = React.useState(null);
-  
   React.useEffect(() => {
     TrackplayerSetup();
   }, []);
@@ -27,12 +26,12 @@ const App = props => {
   };
 
   return (
-    <ContextProvider value={[Token, setToken]}>
+    <ContextWrapper>
       <NavigationContainer>
         <AuthStack />
         <Toast />
       </NavigationContainer>
-    </ContextProvider>
+    </ContextWrapper>
   );
 };
 

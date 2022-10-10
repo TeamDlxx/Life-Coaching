@@ -39,3 +39,13 @@ export default colors = {
   gray13: 'rgba(082, 082, 082,1)',
   gray14: 'rgba(059, 059, 059,1)',
 };
+
+export const Bcolors = [
+  {dark: '#EAF5FC', light: '#EAF5FC55'},
+  {dark: '#C4C0F6', light: '#C4C0F655'},
+  {dark: '#FCE29F', light: '#FCE29F55'},
+  {dark: '#B0D7C3', light: '#B0D7C355'},
+  {dark: '#96EBD2', light: '#96EBD255'},
+  {dark: '#C1D5FF', light: '#C1D5FF55'},
+  {dark: '#FFB6BC', light: '#FFB6BC55'},
+];

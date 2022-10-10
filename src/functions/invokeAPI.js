@@ -13,7 +13,6 @@ export default async function invokeApi({
   postData = {},
   navigation,
 }) {
-  console.log('invoke--?', navigation);
   const reqObj = {
     method,
     url: baseURL + path,
@@ -34,19 +33,19 @@ export default async function invokeApi({
 
   let results;
 
-  console.log('<===REQUEST-OBJECT===>', reqObj);
+  console.log('<===REQUEST-OBJECT===>\n', reqObj);
 
   try {
     results = await axios(reqObj);
-    console.log('<===Api-Success-Result===>', results);
+    console.log('<===Api-Success-Result===>\n', results);
     return results.data;
   } catch (error) {
-    console.log('<===Api-Error===>', error.response.data);
-    console.log('<===Api-Error===>', error);
+    console.log('<===Api-Error===>\n', error.response.data);
+    console.log('<===Api-Error===>\n', error);
     if (error.code == 'ERR_NETWORK') {
       showToast('', 'No Internet Connection', 'error');
       return;
-    } else if (error?.response?.status === 401) {
+    } else if (error?.response?.data?.code === 401) {
       if (navigation != undefined) {
         showToast('Please login again!', 'Authentication Failed');
         try {

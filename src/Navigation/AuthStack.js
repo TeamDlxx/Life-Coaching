@@ -60,7 +60,8 @@ const Stack = createNativeStackNavigator();
 
 const AuthStack = () => {
   const [whichScreen, setWhichScreen] = useState(undefined);
-  const [Token, setToken] = useContext(Context);
+  const {Token, setToken} = useContext(Context);
+
   const checkOBoarding = async () => {
     let seen = await AsyncStorage.multiGet(['@onboarding', '@token']);
     console.log(seen[1][1]);

@@ -28,7 +28,7 @@ import {useContext} from 'react';
 import Context from '../../Context';
 const height = Dimensions.get('screen').height;
 const Signup = props => {
-  const [Token, setToken] = useContext(Context);
+  const {setToken} = useContext(Context);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');

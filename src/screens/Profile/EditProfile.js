@@ -40,7 +40,7 @@ import {useContext} from 'react';
 import Context from '../../Context';
 
 const EditProfile = props => {
-  const [Token] = useContext(Context);
+  const {Token} = useContext(Context);
   const userData = props.route.params.user;
   const [isModalVisible, setModalVisibility] = useState(false);
   const [isLoading, setisLoading] = useState(false);

@@ -36,23 +36,23 @@ import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
 import {isFirstLetterAlphabet} from '../../../functions/regex';
+import rountToNextmins from '../../../functions/rountToNextmins';
 const screen = Dimensions.get('screen');
 const week = [
-  {name: 'monday', day: 1, status: false},
-  {name: 'tuesday', day: 2, status: false},
-  {name: 'wednesday', day: 3, status: false},
-  {name: 'thursday', day: 4, status: false},
-  {name: 'friday', day: 5, status: false},
-  {name: 'satuday', day: 6, status: false},
-  {name: 'sunday', day: 7, status: false},
+  {day: 'monday', status: false},
+  {day: 'tuesday', status: false},
+  {day: 'wednesday', status: false},
+  {day: 'thursday', status: false},
+  {day: 'friday', status: false},
+  {day: 'saturday', status: false},
+  {day: 'sunday', status: false},
 ];
 
 const CreateHabit = props => {
   // Hooks
   const {params} = props.route;
   const {navigation} = props;
-  console.log('navigation', navigation);
-  const [Token] = useContext(Context);
+  const {Token, setHabitList, habitList} = useContext(Context);
   const [isLoading, setisLoading] = useState(false);
 
   const [Habit, setHabit] = useState({
@@ -61,13 +61,14 @@ const CreateHabit = props => {
       type: '',
       name: '',
     },
+    preDefinedImage: null,
     localImage: '',
     title: '',
     type: null,
     reminder: {
       showModal: false,
       value: false,
-      time: moment(),
+      time: rountToNextmins(10),
     },
     targetDate: {
       showModal: false,
@@ -76,8 +77,16 @@ const CreateHabit = props => {
     },
     frequency: week,
   });
-  const {title, type, reminder, targetDate, frequency, localImage, image} =
-    Habit;
+  const {
+    title,
+    type,
+    reminder,
+    targetDate,
+    frequency,
+    localImage,
+    image,
+    preDefinedImage,
+  } = Habit;
   const updateHabit = updation => setHabit({...Habit, ...updation});
   const selectDay = day => {
     let newArray = [...frequency];
@@ -91,7 +100,7 @@ const CreateHabit = props => {
     updateHabit({frequency: [...newArray]});
   };
 
-  const btn_addHabit = async () => {
+  const btn_editHabit = async () => {
     let t_image = {...Habit.image};
     let t_habitName = Habit.title.trim();
     let t_type = Habit.type;
@@ -99,12 +108,94 @@ const CreateHabit = props => {
     let t_targetDate = Habit.targetDate.date;
     let t_frequency = Habit.frequency.map(x => {
       return {
+        day: x.day,
         status: x.status,
-        day: x.name,
       };
     });
+
+    console.log('frequncy', t_frequency);
+
+    if (t_habitName == '') {
+      showToast('Please enter Habit name', 'Alert');
+    } else if (!isFirstLetterAlphabet(t_habitName)) {
+      showToast('Habit name must start with alphabet [A-Z,a-z]', 'Alert');
+    } else if (t_type == null) {
+      showToast('Please select type of frequency', 'Alert');
+    } else if (!t_frequency.some(x => x.status == true)) {
+      showToast('Please select at least one frequency', 'Alert');
+    } else {
+      let fd_editHabit = new FormData();
+      if (!!t_image?.uri) {
+        fd_editHabit.append('image', t_image);
+      }
+      fd_editHabit.append('name', t_habitName);
+      fd_editHabit.append('type', t_type == 0 ? 'not-to-do' : 'to-do');
+      fd_editHabit.append('frequency', JSON.stringify(t_frequency));
+      fd_editHabit.append(
+        'target_date',
+        moment(t_targetDate).format('MM-DD-YYYY'),
+      );
+      fd_editHabit.append('reminder', t_reminder.value);
+      fd_editHabit.append(
+        'reminder_time',
+        moment(t_reminder.time).toISOString(),
+      );
+      console.log('Edit Habit Obj', fd_editHabit);
+      api_editHabit(fd_editHabit);
+    }
+  };
+
+  const api_editHabit = async fdata => {
+    setisLoading(true);
+    let res = await invokeApi({
+      path: 'api/habit/edit_habit/' + params.item._id,
+      method: 'PUT',
+      postData: fdata,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    if (res) {
+      if (res.code == 200) {
+        showToast(
+          'Habit has been updated successfully',
+          'Habit Updated',
+          'success',
+        );
+        params?.updateHabitDetail(res.habit);
+        params?.updateHabit(res.habit);
+        updateHabitList(res.habit);
+        navigation.goBack();
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  const updateHabitList = habit => {
+    let newArray = [...habitList];
+    let index = newArray.findIndex(x => x._id == habit._id);
+    console.log('index', index);
+    console.log('habit', habit);
+    if (index != -1) {
+      newArray.splice(index, 1, habit);
+      setHabitList(newArray);
+    }
+  };
+
+  const btn_addHabit = async () => {
+    let t_image = {...Habit.image};
+    let t_preDefinedImage = {...Habit.preDefinedImage};
+    let t_habitName = Habit.title.trim();
+    let t_type = Habit.type;
+    let t_reminder = Habit.reminder;
+    let t_targetDate = Habit.targetDate.date;
+    let t_frequency = Habit.frequency;
     console.log(t_image);
-    if (t_image?.uri == '') {
+    if (t_image?.uri == '' && t_preDefinedImage == null) {
       showToast('Please select an image', 'Alert');
     } else if (t_habitName == '') {
       showToast('Please enter Habit name', 'Alert');
@@ -124,7 +215,18 @@ const CreateHabit = props => {
       //   frequency: t_frequency,
       // };
       let fd_createhabit = new FormData();
-      fd_createhabit.append('image', t_image);
+      if (t_image?.uri != '') {
+        fd_createhabit.append('image', t_image);
+      } else {
+        fd_createhabit.append('images', JSON.stringify(t_preDefinedImage));
+      }
+
+      if (t_image?.uri != '') {
+        fd_createhabit.append('uploaded_img', false);
+      } else {
+        fd_createhabit.append('uploaded_img', true);
+      }
+
       fd_createhabit.append('name', t_habitName);
       fd_createhabit.append('type', t_type == 0 ? 'not-to-do' : 'to-do');
       fd_createhabit.append('frequency', JSON.stringify(t_frequency));
@@ -158,6 +260,7 @@ const CreateHabit = props => {
     setisLoading(false);
     if (res) {
       if (res.code == 200) {
+        setHabitList(res?.all_habits);
         navigation.navigate(screens.habitTracker);
       } else {
         showToast(res.message);
@@ -185,25 +288,27 @@ const CreateHabit = props => {
       console.log('1');
       let {item} = params;
       updateHabit({
-        title: item?.title,
-        type: item?.to_do == true ? 1 : 0,
+        title: item?.name,
+        localImage: fileURL + item?.images.large,
+        type: item?.type == 'to-do' ? 1 : 0,
         reminder: {
           ...reminder,
           value: item?.reminder,
-          time: moment(item?.reminder_time, 'hh:mm A'),
+          time: moment(item?.reminder_time),
         },
         targetDate: {
           ...targetDate,
-          date: moment(item?.target_date, 'DD MMM YYYY'),
+          date: moment(item?.target_date),
         },
         frequency: [...item?.frequency],
       });
     } else if (params?.habit) {
-      console.log('2');
+      console.log('2', params?.habit);
       let {habit} = params;
       updateHabit({
-        title: habit?.title,
+        title: habit?.name,
         type: params.todo,
+        preDefinedImage: habit?.images,
       });
     } else if (params?.todo != null && params?.todo != undefined) {
       console.log('3');
@@ -232,7 +337,13 @@ const CreateHabit = props => {
             <UploadImage
               Token={Token}
               NetworkImage={image?.path}
-              localImage={localImage}
+              localImage={
+                !!localImage
+                  ? localImage
+                  : !!preDefinedImage
+                  ? fileURL + preDefinedImage?.large
+                  : ''
+              }
               setImage={setImage}
               borderRadius={20}
               width={screen.width / 3}
@@ -330,20 +441,19 @@ const CreateHabit = props => {
               <Text style={other_style.labelText}>Frequency</Text>
             </View>
             <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-              {week.map((x, i) => {
+              {frequency.map((x, i) => {
                 return (
                   <Pressable
                     onPress={() => selectDay(x)}
                     style={[
                       createHabit_styles.weekButton,
-                      frequency.find(y => y.day == x.day).status &&
-                        createHabit_styles.selectedButton,
+                      x.status && createHabit_styles.selectedButton,
                     ]}>
                     <Text style={createHabit_styles.weekButtonText}>
-                      {x.name.charAt(0)}
+                      {x.day.charAt(0)}
                     </Text>
                     <View style={{height: 12, width: 12, marginTop: 10}}>
-                      {frequency.find(y => y.day == x.day).status && (
+                      {x.status && (
                         <Image
                           style={{height: 12, width: 12}}
                           source={require('../../../Assets/Icons/tick.png')}
@@ -427,10 +537,11 @@ const CreateHabit = props => {
           )}
 
           <View style={{marginVertical: 20}}>
-            <CustomButton
-              onPress={btn_addHabit}
-              title={!!params?.item ? 'Save Changes' : 'Add Habit'}
-            />
+            {!!params?.item ? (
+              <CustomButton onPress={btn_editHabit} title={'Save Changes'} />
+            ) : (
+              <CustomButton onPress={btn_addHabit} title={'Add Habit'} />
+            )}
           </View>
         </ScrollView>
         <Loader enable={isLoading} />
@@ -441,7 +552,9 @@ const CreateHabit = props => {
         isVisible={reminder.showModal}
         mode="time"
         display="spinner"
+        date={moment(Habit?.reminder?.time).toDate()}
         is24Hour={false}
+        minuteInterval={10}
         onConfirm={val =>
           updateHabit({
             reminder: {

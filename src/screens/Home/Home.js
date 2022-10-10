@@ -9,6 +9,7 @@ import {
   Platform,
   Pressable,
   Share,
+  Image,
 } from 'react-native';
 import React, {useState, useEffect, useContext} from 'react';
 import {mainStyles} from '../../Utilities/styles';
@@ -19,6 +20,7 @@ import * as Animatable from 'react-native-animatable';
 import NotificationConfig from '../../Components/NotificationConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SplashScreen from 'react-native-splash-screen';
+import Context from '../../Context';
 const height = Dimensions.get('screen').width;
 
 // background
@@ -31,7 +33,7 @@ const home5 = require('../../Assets/Images/home6.jpg');
 const home6 = require('../../Assets/Images/home5.jpg');
 
 const Home = props => {
-  
+  const habit = React.useContext(Context);
   useEffect(() => {
     NotificationConfig(props);
     setTimeout(() => {
@@ -95,18 +97,35 @@ const Home = props => {
         <Pressable
           onPress={() => onNextScreen(item.screen)}
           style={{borderRadius: 20, overflow: 'hidden', elevation: 3}}>
-          <ImageBackground
+          <Image
+            // resizeMode="center"
+            // opacity={0.7}
             source={item.image}
-            style={{height: 200, padding: 20}}>
+            style={{height: 200,width:"100%"}}
+          />
+
+          <View
+            style={{
+              height: 200,
+              padding: 20,
+              position: 'absolute',
+              // backgroundColor:item.color
+            }}>
             <Text
               style={{
                 color: Colors.white,
-                fontSize: 16,
+                fontSize: 18,
                 fontFamily: font.xbold,
+                textShadowColor: Colors.gray12,
+                textShadowOffset: {width: 1, height: 1},
+                textShadowRadius: 1,
+                textTransform: 'capitalize',
+                
+                
               }}>
               {item.title}
             </Text>
-          </ImageBackground>
+          </View>
         </Pressable>
       </Animatable.View>
     );
@@ -159,6 +178,7 @@ const options = [
     image: home1,
     count: 5,
     screen: screens.habitTracker,
+    color: '#E394BB',
   },
 
   {
@@ -167,6 +187,7 @@ const options = [
     image: home2,
     count: 7,
     screen: screens.moodTracker,
+    color: '#A5A5DB',
   },
 
   {
@@ -175,6 +196,7 @@ const options = [
     image: home3,
     count: 8,
     screen: screens.meditation,
+    color: '#67C9BA',
   },
 
   {
@@ -183,6 +205,7 @@ const options = [
     image: home4,
     count: 3,
     screen: screens.timeTable,
+    color: '#C4BCB2',
   },
 
   {
@@ -191,6 +214,7 @@ const options = [
     image: home5,
     count: 7,
     screen: screens.gratitude,
+    color: '#44BCDF',
   },
 
   {
@@ -199,5 +223,6 @@ const options = [
     image: home6,
     count: 4,
     screen: screens.qouteList,
+    color: '#E48281',
   },
 ];
