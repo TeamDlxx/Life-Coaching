@@ -7,6 +7,7 @@ import {
   Dimensions,
   TouchableHighlight,
   ActivityIndicator,
+  PermissionsAndroid,
 } from 'react-native';
 import React, {useEffect, useState, useCallback} from 'react';
 import Colors from '../Utilities/Colors';
@@ -66,27 +67,42 @@ const UploadImage = props => {
 
   const openCamera = async () => {
     setModalVisibility(false);
-    setTimeout(() => {
-      ImagePicker.openCamera({
-        width: 600,
-        height: 600,
-        cropping: true,
-        mediaType: 'photo',
-      })
-        .then(image => {
-          console.log('Image', image);
-          let data = new FormData();
-          data.append('image', {
-            uri: image.path,
-            name: 'image',
-            type: image.mime,
-          });
-          api_fileUpload(data);
+    let granted;
+    if (Platform.OS == 'android') {
+      granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: 'App Camera Permission',
+          message: 'App needs access to your camera ',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+    } else {
+      granted = true;
+    }
+
+    if (granted) {
+      setTimeout(() => {
+        ImagePicker.openCamera({
+          width: 600,
+          height: 600,
+          cropping: true,
+          mediaType: 'photo',
         })
-        .catch(e => {
-          console.log('Error', e);
-        });
-    }, 500);
+          .then(image => {
+            console.log('Image', image);
+            props.setImage(image);
+          })
+          .catch(e => {
+            if (e?.code == 'E_NO_CAMERA_PERMISSION') {
+              showToast(e.message, 'Permission not granted');
+            }
+            console.log('Error', JSON.stringify(e));
+          });
+      }, 500);
+    }
   };
 
   const api_fileUpload = async file => {

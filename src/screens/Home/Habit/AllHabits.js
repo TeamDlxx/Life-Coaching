@@ -30,8 +30,8 @@ import EmptyView from '../../../Components/EmptyView';
 const screen = Dimensions.get('screen');
 
 const AllHabits = props => {
-  const {Token} = useContext(Context);
-  const [sHabitList, setHabitList] = useState([]);
+  const {Token, habitList, setHabitList} = useContext(Context);
+  const [sHabitList, setSHabitList] = useState([]);
   const [isLoading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   //  Functions
@@ -48,7 +48,6 @@ const AllHabits = props => {
         freq.push(x.day);
       }
     });
-    console.log('freq', freq);
 
     let count = 0;
     item.notes.map((x, i) => {
@@ -79,7 +78,7 @@ const AllHabits = props => {
     if (res) {
       if (res.code == 200) {
         console.log('response', res);
-        setHabitList(res.habits);
+        setSHabitList(res.habits);
       } else {
         showToast(res.message);
       }
@@ -90,7 +89,7 @@ const AllHabits = props => {
     let newArray = [...sHabitList];
     let index = newArray.findIndex(x => x._id == item._id);
     newArray.splice(index, 1, item);
-    setHabitList(newArray);
+    setSHabitList(newArray);
   }
 
   const api_deleteHabit = async id => {
@@ -112,9 +111,19 @@ const AllHabits = props => {
           'success',
         );
         removeHabitFromList(id);
+        removeFromGlobalHabitList(id);
       } else {
         showToast(res.message);
       }
+    }
+  };
+
+  const removeFromGlobalHabitList = id => {
+    let newArray = [...habitList];
+    let index = newArray.findIndex(x => x._id == id);
+    if (index != -1) {
+      newArray.splice(index, 1);
+      setHabitList(newArray);
     }
   };
 
@@ -122,7 +131,7 @@ const AllHabits = props => {
     let newArray = [...sHabitList];
     let index = newArray.findIndex(x => x._id == id);
     newArray.splice(index, 1);
-    setHabitList(newArray);
+    setSHabitList(newArray);
   };
 
   React.useEffect(() => {
@@ -134,7 +143,7 @@ const AllHabits = props => {
   React.useEffect(() => {
     callHabitListApi();
     return () => {
-      setHabitList([]);
+      setSHabitList([]);
     };
   }, []);
 
@@ -225,7 +234,9 @@ const AllHabits = props => {
                   color: Colors.placeHolder,
                   fontSize: 12,
                 }}>
-                {parseInt((progress / item?.total_days) * 100) + '%'}
+                {item?.total_days != 0
+                  ? parseInt((progress / item?.total_days) * 100) + '%'
+                  : '0%'}
               </Text>
             </View>
             <View style={{flex: 1}}>
@@ -235,13 +246,15 @@ const AllHabits = props => {
                 borderColor={Colors.gray02}
                 borderRadius={13}
                 borderWidth={1}
-                progress={progress / item?.total_days}
+                progress={
+                  item?.total_days != 0 ? progress / item?.total_days : 0
+                }
                 width={null}
               />
             </View>
           </View>
         </View>
-        {progress / item?.total_days == 1 && (
+        {item?.total_days != 0 && progress / item?.total_days == 1 && (
           <View
             style={{
               backgroundColor: Colors.primary,
@@ -342,4 +355,3 @@ const AllHabits = props => {
 };
 
 export default AllHabits;
-

@@ -14,9 +14,10 @@ import {mainStyles} from '../../../Utilities/styles';
 import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
 import {PieChart} from 'react-native-svg-charts';
+import {Circle, G, Line} from 'react-native-svg';
 
 const size = 300;
-const _10percentOfsize = (10 / 100) * 300;
+const _10percentOfsize = (10 / 100) * size;
 
 const MoodTracker = props => {
   const [CurrentQuestion, setCurrentQuestion] = useState(1);
@@ -44,8 +45,6 @@ const MoodTracker = props => {
     setData(newArray);
     setCurrentQuestion(CurrentQuestion + 1);
   };
-
-
 
   return (
     <SafeAreaView style={mainStyles.MainView}>
@@ -85,6 +84,7 @@ const MoodTracker = props => {
               innerRadius={0}
               data={data}
               padAngle={0}
+              animate={true}
             />
 
             {/* Backgrounf of Pie */}
@@ -123,7 +123,7 @@ const MoodTracker = props => {
             </View>
           </View>
 
-          <View style={WheelofLifeStyle.lableSection}>
+          {/* <View style={WheelofLifeStyle.lableSection}>
             {data13.map(x => (
               <View key={x.key} style={WheelofLifeStyle.lableView}>
                 <View
@@ -135,7 +135,7 @@ const MoodTracker = props => {
                 <Text style={WheelofLifeStyle.labelText}>{x.question}</Text>
               </View>
             ))}
-          </View>
+          </View> */}
         </ScrollView>
       </View>
     </SafeAreaView>
@@ -232,7 +232,7 @@ const data13 = [
   },
   {
     key: 2,
-    value: 0,
+    value: 100,
     svg: {fill: '#53DAFB'},
     arc: {outerRadius: '0%'},
     question: 'Trust',

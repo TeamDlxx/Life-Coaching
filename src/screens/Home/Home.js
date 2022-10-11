@@ -34,10 +34,12 @@ const home6 = require('../../Assets/Images/home5.jpg');
 
 const Home = props => {
   const habit = React.useContext(Context);
+  const [opt, setOpt] = useState([]);
   useEffect(() => {
     NotificationConfig(props);
     setTimeout(() => {
       SplashScreen.hide();
+      setOpt(options);
     }, 500);
   }, []);
 
@@ -101,7 +103,7 @@ const Home = props => {
             // resizeMode="center"
             // opacity={0.7}
             source={item.image}
-            style={{height: 200,width:"100%"}}
+            style={{height: 200, width: '100%'}}
           />
 
           <View
@@ -113,15 +115,13 @@ const Home = props => {
             }}>
             <Text
               style={{
-                color: Colors.white,
+                color: '#f2f2f2',
                 fontSize: 18,
                 fontFamily: font.xbold,
                 textShadowColor: Colors.gray12,
                 textShadowOffset: {width: 1, height: 1},
                 textShadowRadius: 1,
                 textTransform: 'capitalize',
-                
-                
               }}>
               {item.title}
             </Text>
@@ -160,7 +160,7 @@ const Home = props => {
             contentContainerStyle={{paddingBottom: 20, marginTop: 10}}
             bounces={false}
             numColumns={2}
-            data={options}
+            data={opt}
             renderItem={ItemView}
           />
         </View>
@@ -183,6 +183,22 @@ const options = [
 
   {
     id: '2',
+    title: 'Meditation',
+    image: home3,
+    count: 8,
+    screen: screens.meditation,
+    color: '#67C9BA',
+  },
+  {
+    id: '3',
+    title: 'Quote',
+    image: home6,
+    count: 4,
+    screen: screens.qouteList,
+    color: '#E48281',
+  },
+  {
+    id: '4',
     title: 'Mood Tracker',
     image: home2,
     count: 7,
@@ -191,16 +207,7 @@ const options = [
   },
 
   {
-    id: '3',
-    title: 'Meditation',
-    image: home3,
-    count: 8,
-    screen: screens.meditation,
-    color: '#67C9BA',
-  },
-
-  {
-    id: '4',
+    id: '5',
     title: 'Time Table',
     image: home4,
     count: 3,
@@ -209,20 +216,11 @@ const options = [
   },
 
   {
-    id: '5',
+    id: '6',
     title: 'Gratitude',
     image: home5,
     count: 7,
     screen: screens.gratitude,
     color: '#44BCDF',
-  },
-
-  {
-    id: '6',
-    title: 'Quote',
-    image: home6,
-    count: 4,
-    screen: screens.qouteList,
-    color: '#E48281',
   },
 ];

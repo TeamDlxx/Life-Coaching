@@ -126,9 +126,12 @@ const Statistics = props => {
         let completed = 0;
         let length = 0;
         let pending = 0;
+
         newArray.map((x, i) => {
-          if (findProgress(x) / x.total_days == 1) {
-            completed = completed + 1;
+          if (x.total_days != 0) {
+            if (findProgress(x) / x.total_days == 1) {
+              completed = completed + 1;
+            }
           }
         });
 
@@ -445,7 +448,9 @@ const Statistics = props => {
                   color: Colors.placeHolder,
                   fontSize: 12,
                 }}>
-                {parseInt((progress / item?.total_days) * 100) + '%'}
+                {item?.total_days != 0
+                  ? parseInt((progress / item?.total_days) * 100) + '%'
+                  : '0%'}
               </Text>
             </View>
             <View style={{flex: 1}}>
@@ -455,13 +460,15 @@ const Statistics = props => {
                 borderColor={Colors.gray02}
                 borderRadius={13}
                 borderWidth={1}
-                progress={progress / item?.total_days}
+                progress={
+                  item?.total_days != 0 ? progress / item?.total_days : 0
+                }
                 width={null}
               />
             </View>
           </View>
         </View>
-        {progress / item?.total_days == 1 && (
+        {item?.total_days == 0 && progress / item?.total_days == 1 && (
           <View
             style={{
               backgroundColor: Colors.primary,
@@ -545,7 +552,7 @@ const Statistics = props => {
             startDateModal: false,
           });
         }}
-        maximumDate={moment(dateRange.endDate).subtract(1,'day').toDate()}
+        maximumDate={moment(dateRange.endDate).subtract(1, 'day').toDate()}
         onCancel={() =>
           setDateRange({
             ...dateRange,

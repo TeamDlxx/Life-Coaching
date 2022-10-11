@@ -6,6 +6,7 @@ import {
   Pressable,
   Image,
   Platform,
+  PermissionsAndroid,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {mainStyles} from '../../Utilities/styles';
@@ -114,11 +115,20 @@ const EditProfile = props => {
           // setUser({imageURI: image.sourceURL});
 
           let data = new FormData();
-          data.append('image', {
-            uri: image.path,
-            name: 'image',
-            type: image.mime,
-          });
+          if (Platform.OS == 'android') {
+            let name = image.path.split('/');
+            data.append('image', {
+              uri: image.path,
+              name: name[name.length - 1],
+              type: image.mime,
+            });
+          } else if (Platform.OS == 'ios') {
+            data.append('image', {
+              uri: image.path,
+              name: image.filename,
+              type: image.mime,
+            });
+          }
           api_fileUpload(data);
         })
         .catch(e => {
@@ -129,30 +139,61 @@ const EditProfile = props => {
 
   const openCamera = async () => {
     setModalVisibility(false);
-    setTimeout(() => {
-      ImagePicker.openCamera({
-        width: 400,
-        height: 400,
-        cropping: true,
-        mediaType: 'photo',
-      })
-        .then(image => {
-          console.log('Image', image);
-          let data = new FormData();
-          data.append('image', {
-            uri: image.path,
-            name: 'image',
-            type: image.mime,
-          });
-          api_fileUpload(data);
+    let granted;
+    if (Platform.OS == 'android') {
+      granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: 'App Camera Permission',
+          message: 'App needs access to your camera ',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+    } else {
+      granted = true;
+    }
+
+    if (granted) {
+      setTimeout(() => {
+        ImagePicker.openCamera({
+          width: 400,
+          height: 400,
+          cropping: true,
+          mediaType: 'photo',
         })
-        .catch(e => {
-          console.log('Error', e);
-        });
-    }, 500);
+          .then(image => {
+            console.log('Image', image);
+            let data = new FormData();
+            if (Platform.OS == 'android') {
+              let name = image.path.split('/');
+              data.append('image', {
+                uri: image.path,
+                name: name[name.length - 1],
+                type: image.mime,
+              });
+            } else if (Platform.OS == 'ios') {
+              data.append('image', {
+                uri: image.path,
+                name: image.filename,
+                type: image.mime,
+              });
+            }
+            api_fileUpload(data);
+          })
+          .catch(e => {
+            console.log('Error', e);
+            if (e?.code == 'E_NO_CAMERA_PERMISSION') {
+              showToast(e.message, 'Permission not granted');
+            }
+          });
+      }, 500);
+    }
   };
 
   const api_fileUpload = async file => {
+    console.log('FIle', file);
     setisLoading(true);
     let res = await invokeApi({
       path: 'api/app_api/upload_image_s3',

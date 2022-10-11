@@ -27,7 +27,9 @@ const EmptyView = props => {
         }}
       />
       <View style={{alignItems: 'center', marginTop: 10}}>
-        <Text style={{fontFamily: font.bold}}>No Data</Text>
+        <Text style={{fontFamily: font.bold}}>
+          {!!props.title ? props.title : 'No Data'}
+        </Text>
         <Text style={{fontFamily: font.regular}}>Swipe down to refresh</Text>
       </View>
     </View>

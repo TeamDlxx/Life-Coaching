@@ -113,8 +113,6 @@ const CreateHabit = props => {
       };
     });
 
-    console.log('frequncy', t_frequency);
-
     if (t_habitName == '') {
       showToast('Please enter Habit name', 'Alert');
     } else if (!isFirstLetterAlphabet(t_habitName)) {
@@ -140,7 +138,7 @@ const CreateHabit = props => {
         'reminder_time',
         moment(t_reminder.time).toISOString(),
       );
-      console.log('Edit Habit Obj', fd_editHabit);
+
       api_editHabit(fd_editHabit);
     }
   };
@@ -165,8 +163,12 @@ const CreateHabit = props => {
           'Habit Updated',
           'success',
         );
-        params?.updateHabitDetail(res.habit);
-        params?.updateHabit(res.habit);
+        if (!!params?.updateHabitDetail) {
+          params?.updateHabitDetail(res.habit);
+        }
+        if (!!params?.updateHabit) {
+          params?.updateHabit(res.habit);
+        }
         updateHabitList(res.habit);
         navigation.goBack();
       } else {
@@ -178,8 +180,6 @@ const CreateHabit = props => {
   const updateHabitList = habit => {
     let newArray = [...habitList];
     let index = newArray.findIndex(x => x._id == habit._id);
-    console.log('index', index);
-    console.log('habit', habit);
     if (index != -1) {
       newArray.splice(index, 1, habit);
       setHabitList(newArray);
@@ -188,13 +188,12 @@ const CreateHabit = props => {
 
   const btn_addHabit = async () => {
     let t_image = {...Habit.image};
-    let t_preDefinedImage = {...Habit.preDefinedImage};
+    let t_preDefinedImage = Habit.preDefinedImage;
     let t_habitName = Habit.title.trim();
     let t_type = Habit.type;
     let t_reminder = Habit.reminder;
     let t_targetDate = Habit.targetDate.date;
     let t_frequency = Habit.frequency;
-    console.log(t_image);
     if (t_image?.uri == '' && t_preDefinedImage == null) {
       showToast('Please select an image', 'Alert');
     } else if (t_habitName == '') {
@@ -206,17 +205,10 @@ const CreateHabit = props => {
     } else if (!t_frequency.some(x => x.status == true)) {
       showToast('Please select at least one frequency', 'Alert');
     } else {
-      // let obj_createhabit = {
-      //   name: t_habitName,
-      //   type: t_type == 0 ? 'not to-do' : 'to-do',
-      //   target_date: moment(t_targetDate).format('MM-DD-YYYY'),
-      //   reminder: t_reminder.value,
-      //   reminder_time: moment(t_reminder.time).format('HH:mm'),
-      //   frequency: t_frequency,
-      // };
       let fd_createhabit = new FormData();
       if (t_image?.uri != '') {
         fd_createhabit.append('image', t_image);
+        fd_createhabit.append('images', JSON.stringify({}));
       } else {
         fd_createhabit.append('images', JSON.stringify(t_preDefinedImage));
       }
@@ -240,7 +232,6 @@ const CreateHabit = props => {
         moment(t_reminder.time).toISOString(),
       );
 
-      console.log('Create Habit Obj', fd_createhabit);
       api_createHabit(fd_createhabit);
     }
   };
@@ -252,12 +243,20 @@ const CreateHabit = props => {
       method: 'POST',
       postData: fdata,
       headers: {
+        // 'Access-Control-Allow-Origin': '*',
+        // 'Access-Control-Allow-Methods': 'POST, GET, PUT, OPTIONS, DELETE',
+        // 'Access-Control-Allow-Headers': 'Access-Control-Allow-Methods, Access-Control-Allow-Origin, Origin, Accept, Content-Type',
+        // 'Accept': 'application/x-www-form-urlencoded',
+        // 'Content-Type':'application/x-www-form-urlencoded',
         'Content-Type': 'multipart/form-data',
+
         'x-sh-auth': Token,
       },
       navigation: props.navigation,
     });
+
     setisLoading(false);
+    console.log('res', res);
     if (res) {
       if (res.code == 200) {
         setHabitList(res?.all_habits);
@@ -269,23 +268,34 @@ const CreateHabit = props => {
   };
 
   const setImage = img => {
-    console.log('selected Image', img);
-    updateHabit({
-      image: {
-        uri: img.path,
-        type: img.mime,
-        name: img.filename,
-      },
-      localImage: img.path,
-    });
+    console.log('img', img);
+    if (Platform.OS == 'android') {
+      let name = img.path.split('/');
+
+      updateHabit({
+        image: {
+          uri: img.path,
+          type: img.mime,
+          name: name[name.length - 1],
+        },
+        localImage: img.path,
+      });
+    } else if (Platform.OS == 'ios') {
+      updateHabit({
+        image: {
+          uri: img.path,
+          type: img.mime,
+          name: img.filename,
+        },
+        localImage: img.path,
+      });
+    }
   };
 
   // USE EFFECT
 
   useEffect(() => {
-    console.log('params', !!params?.todo);
     if (params?.item) {
-      console.log('1');
       let {item} = params;
       updateHabit({
         title: item?.name,
@@ -303,7 +313,6 @@ const CreateHabit = props => {
         frequency: [...item?.frequency],
       });
     } else if (params?.habit) {
-      console.log('2', params?.habit);
       let {habit} = params;
       updateHabit({
         title: habit?.name,
@@ -311,12 +320,10 @@ const CreateHabit = props => {
         preDefinedImage: habit?.images,
       });
     } else if (params?.todo != null && params?.todo != undefined) {
-      console.log('3');
       updateHabit({
         type: params?.todo,
       });
     } else {
-      console.log('4');
     }
   }, []);
 

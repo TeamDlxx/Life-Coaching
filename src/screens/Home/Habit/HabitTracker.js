@@ -23,6 +23,7 @@ import {CustomMultilineTextInput} from '../../../Components/CustomTextInput';
 import CustomButton from '../../../Components/CustomButton';
 import {screens} from '../../../Navigation/Screens';
 import CustomImage from '../../../Components/CustomImage';
+import Toast from 'react-native-toast-message';
 
 // For API's calling
 import {useContext} from 'react';
@@ -53,13 +54,18 @@ const HabitTracker = props => {
     item: null,
   });
 
-  const checkSelectedDayHabits = item => {
-    return (
-      item?.frequency?.find(
-        x => x.day == moment(today, 'YYYY-MM-DD').format('dddd').toLowerCase(),
-      ).status &&
-      moment(today, 'YYYY-MM-DD').isSameOrBefore(moment(item.target_date))
-    );
+  const filterSelectedDayHabits = list => {
+    return list.slice().filter(x => {
+      if (
+        x.frequency?.find(
+          x =>
+            x.day == moment(today, 'YYYY-MM-DD').format('dddd').toLowerCase(),
+        ).status == true &&
+        moment(today, 'YYYY-MM-DD').isSameOrBefore(moment(x.target_date))
+      ) {
+        return true;
+      }
+    });
   };
 
   const checkCompleted = notes => {
@@ -82,7 +88,7 @@ const HabitTracker = props => {
     for (let i = 0; i <= count; i++) {
       let newobj = {};
       newobj.date = moment(currentWeek).add(i, 'day');
-      newobj.mood = emojis[Math.floor(Math.random() * 5)];
+      newobj.mood = emojis[i];
       days.push(newobj);
     }
     setDays([...days]);
@@ -100,14 +106,19 @@ const HabitTracker = props => {
   };
 
   const markCompeleted = () => {
-    let {item} = note;
-    let obj_addNote = {
-      note_text: note.text.trim(),
-      date: moment(today, 'YYYY-MM-DD').toISOString(),
-    };
-    api_addNote(item._id, obj_addNote);
-    setisLoading(true);
-    setNote({modalVisible: false, text: '', item: null});
+    console.log('markCompeleted');
+    if (note.text.trim() == '') {
+      showToast('Please add note', 'Alert');
+    } else {
+      let {item} = note;
+      let obj_addNote = {
+        note_text: note.text.trim(),
+        date: moment(today, 'YYYY-MM-DD').toISOString(),
+      };
+      api_addNote(item._id, obj_addNote);
+      setisLoading(true);
+      setNote({modalVisible: false, text: '', item: null});
+    }
   };
 
   const api_addNote = async (id, obj) => {
@@ -289,132 +300,130 @@ const HabitTracker = props => {
   };
 
   const renderHabitsList = ({item, index}) => {
-    if (checkSelectedDayHabits(item)) {
-      return (
-        <Pressable
-          onPress={() =>
-            props.navigation.navigate(screens.habitDetail, {id: item._id})
-          }
+    // if (checkSelectedDayHabits(item)) {
+    return (
+      <Pressable
+        onPress={() =>
+          props.navigation.navigate(screens.habitDetail, {id: item._id})
+        }
+        style={{
+          marginBottom: 15,
+          alignItems: 'center',
+          borderRadius: 20,
+          borderColor: Colors.gray02,
+          borderWidth: 1,
+          backgroundColor: Colors.white,
+          paddingHorizontal: 10,
+          flexDirection: 'row',
+          marginHorizontal: 20,
+          height: 80,
+        }}>
+        <View
           style={{
-            // margin: 10,
-            marginBottom: 15,
-            alignItems: 'center',
-            // padding: 10,
-            borderRadius: 20,
-
-            borderColor: Colors.gray02,
+            height: 50,
+            width: 50,
+            borderRadius: 15,
+            overflow: 'hidden',
             borderWidth: 1,
-            backgroundColor: Colors.white,
-            paddingHorizontal: 10,
-            flexDirection: 'row',
-            marginHorizontal: 20,
-            height: 80,
+            borderColor: Colors.gray02,
           }}>
-          <View
+          <CustomImage
+            source={{uri: fileURL + item?.images?.small}}
+            style={{height: 50, width: 50}}
+            indicatorProps={{
+              color: Colors.primary,
+            }}
+          />
+        </View>
+        <View style={{marginLeft: 10, flex: 1}}>
+          <Text
+            numberOfLines={1}
             style={{
-              height: 50,
-              width: 50,
-              borderRadius: 15,
-              overflow: 'hidden',
-              borderWidth: 1,
-              borderColor: Colors.gray02,
+              fontFamily: font.bold,
+              fontSize: 16,
+              includeFontPadding: false,
+              color: Colors.black,
             }}>
-            <CustomImage
-              source={{uri: fileURL + item?.images?.small}}
-              style={{height: 50, width: 50}}
-              indicatorProps={{
-                color: Colors.primary,
-              }}
-            />
-          </View>
-          <View style={{marginLeft: 10, flex: 1}}>
-            <Text
-              style={{
-                fontFamily: font.bold,
-                fontSize: 16,
-                includeFontPadding: false,
-                color: Colors.black,
-              }}>
-              {item.name}
-            </Text>
+            {item.name}
+          </Text>
 
-            {checkCompleted(item.notes) ? (
-              <View
+          {checkCompleted(item.notes) ? (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginTop: 10,
+              }}>
+              <Image
+                source={require('../../../Assets/Icons/check.png')}
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginTop: 10,
+                  height: 15,
+                  width: 15,
+                  marginRight: 5,
+                }}
+              />
+              <Text
+                style={{
+                  fontFamily: font.medium,
+                  color: Colors.text,
+                  fontSize: 12,
                 }}>
-                <Image
-                  source={require('../../../Assets/Icons/check.png')}
-                  style={{
-                    height: 15,
-                    width: 15,
-                    marginRight: 5,
-                  }}
-                />
+                Completed
+              </Text>
+            </View>
+          ) : (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginTop: 10,
+              }}>
+              <Image
+                source={require('../../../Assets/Icons/inProgress.png')}
+                style={{
+                  height: 15,
+                  width: 15,
+                  marginRight: 5,
+                  tintColor: Colors.lightPrimary,
+                }}
+              />
+
+              <View style={{flex: 1}}>
                 <Text
                   style={{
                     fontFamily: font.medium,
                     color: Colors.text,
                     fontSize: 12,
                   }}>
-                  Completed
+                  Pending
                 </Text>
               </View>
-            ) : (
-              <View
+            </View>
+          )}
+        </View>
+        <View style={{}}>
+          {moment(today, 'YYYY-MM-DD').isSameOrBefore(moment()) && (
+            <TouchableHighlight
+              underlayColor={Colors.lightPrimary2}
+              style={{padding: 10, borderRadius: 900}}
+              onPress={() => checkboxButton(item)}>
+              <Image
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginTop: 10,
-                }}>
-                <Image
-                  source={require('../../../Assets/Icons/inProgress.png')}
-                  style={{
-                    height: 15,
-                    width: 15,
-                    marginRight: 5,
-                    tintColor: Colors.lightPrimary,
-                  }}
-                />
-
-                <View style={{flex: 1}}>
-                  <Text
-                    style={{
-                      fontFamily: font.medium,
-                      color: Colors.text,
-                      fontSize: 12,
-                    }}>
-                    Pending
-                  </Text>
-                </View>
-              </View>
-            )}
-          </View>
-          <View style={{}}>
-            {moment(today, 'YYYY-MM-DD').isSameOrBefore(moment()) && (
-              <TouchableHighlight
-                underlayColor={Colors.lightPrimary2}
-                style={{padding: 10, borderRadius: 900}}
-                onPress={() => checkboxButton(item)}>
-                <Image
-                  style={{
-                    height: 18,
-                    width: 18,
-                  }}
-                  source={
-                    checkCompleted(item.notes)
-                      ? require('../../../Assets/Icons/checked.png')
-                      : require('../../../Assets/Icons/unchecked.png')
-                  }
-                />
-              </TouchableHighlight>
-            )}
-          </View>
-        </Pressable>
-      );
-    }
+                  height: 18,
+                  width: 18,
+                }}
+                source={
+                  checkCompleted(item.notes)
+                    ? require('../../../Assets/Icons/checked.png')
+                    : require('../../../Assets/Icons/unchecked.png')
+                }
+              />
+            </TouchableHighlight>
+          )}
+        </View>
+      </Pressable>
+    );
+    // }
   };
 
   const flatListHeader = () => {
@@ -627,7 +636,7 @@ const HabitTracker = props => {
           </View>
           <View style={{marginTop: 10}}>
             <CustomMultilineTextInput
-              lable={'Add Note'}
+              lable={'Add Note*'}
               placeholder={'Please enter a note for completing this Habit'}
               lableBold
               lableColor={Colors.black}
@@ -643,6 +652,7 @@ const HabitTracker = props => {
             />
           </View>
         </View>
+        {note.modalVisible && <Toast />}
       </Modal>
     );
   };
@@ -682,34 +692,14 @@ const HabitTracker = props => {
               ListHeaderComponent={flatListHeader()}
               contentContainerStyle={{paddingVertical: 10, paddingBottom: 50}}
               showsVerticalScrollIndicator={false}
-              data={habitList}
+              data={filterSelectedDayHabits(habitList)}
               renderItem={renderHabitsList}
               keyExtractor={item => {
                 return item._id;
               }}
               ListEmptyComponent={() =>
                 isLoading == false && (
-                  <View
-                    style={{
-                      width: screen.width,
-                      marginTop: screen.width / 2,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}>
-                    <Image
-                      source={ic_nodata}
-                      style={{
-                        width: screen.width * 0.3,
-                        height: screen.width * 0.3,
-                      }}
-                    />
-                    <View style={{alignItems: 'center', marginTop: 10}}>
-                      <Text style={{fontFamily: font.bold}}>No Data</Text>
-                      <Text style={{fontFamily: font.regular}}>
-                        Swipe down to refresh
-                      </Text>
-                    </View>
-                  </View>
+                  <EmptyView title={`No Habits for this date`} />
                 )
               }
             />
@@ -740,6 +730,8 @@ const emojis = [
   {name: 'Okay', emoji: '😐', _id: '3'},
   {name: 'Good', emoji: '🙂', _id: '4'},
   {name: 'Excellent', emoji: '😍', _id: '5'},
+  {name: 'Shocked', emoji: '😲', _id: '6'},
+  {name: 'Sad', emoji: '😥', _id: '6'},
 ];
 
 const modalStyle = StyleSheet.create({

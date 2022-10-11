@@ -32,6 +32,7 @@ import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
+import EmptyView from '../../../Components/EmptyView';
 
 const screen = Dimensions.get('screen');
 
@@ -232,7 +233,6 @@ const HabitDetail = props => {
     callHabitDetailApi();
     return () => {};
   }, []);
-
 
   const dropDownMenu = () => {
     return (
@@ -551,92 +551,107 @@ const HabitDetail = props => {
                     </View>
                   </View>
                   <View style={{}}>
-                    {sorttheListbyDate(habit.notes).map((x, i) => {
-                      if (
-                        moment(x.date).isBetween(
-                          moment(currentWeek).startOf('isoWeek'),
-                          moment(currentWeek).endOf('isoWeek'),
-                          '[]',
+                    {sorttheListbyDate(habit.notes).length == 0 && (
+                      <EmptyView
+                        style={{
+                          marginTop: 0,
+                          paddingVertical: 90,
+                          width: '100%',
+                        }}
+                        title="No Notes for this week"
+                      />
+                    )}
+                    <>
+                      {sorttheListbyDate(habit.notes).map((x, i) => {
+                        if (
+                          moment(x.date).isBetween(
+                            moment(currentWeek).startOf('isoWeek'),
+                            moment(currentWeek).endOf('isoWeek'),
+                            '[]',
+                          )
                         )
-                      )
-                        return (
-                          <LinearGradient
-                            key={x.id}
-                            start={{x: 0, y: 0}}
-                            end={{x: 1, y: 1}}
-                            locations={[0.0, 0.99]}
-                            colors={[Bcolors[i].dark, Bcolors[i].light]}
-                            style={{
-                              marginTop: 10,
-                              borderRadius: 10,
-                              padding: 10,
-                            }}>
-                            <View style={{flexDirection: 'row'}}>
-                              <View style={{flex: 1}}>
-                                <Text
-                                  style={{
-                                    fontFamily: font.medium,
-                                    fontSize: 12,
-                                    color: Colors.gray12,
-                                    // textAlign: 'justify',
-                                  }}>
-                                  {x.note_text}
-                                </Text>
-                              </View>
-                              <Menu
-                                ref={ref => (MenuRef.current[i] = ref)}
-                                style={{
-                                  backgroundColor: Colors.white,
-                                }}
-                                onRequestClose={() => MenuRef.current[i].hide()}
-                                anchor={
-                                  <Pressable
-                                    onPress={() => MenuRef.current[i].show()}
-                                    style={{
-                                      height: 25,
-                                      width: 25,
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      marginRight: -5,
-                                      marginTop: -5,
-                                      borderRadius: 25 / 2,
-                                    }}>
-                                    <Image
-                                      style={{
-                                        height: 10,
-                                        width: 10,
-                                        tintColor: Colors.gray12,
-                                      }}
-                                      source={require('../../../Assets/Icons/threeDots.png')}
-                                    />
-                                  </Pressable>
-                                }>
-                                <MenuItem onPress={() => editNote(i, x)}>
-                                  <Text style={{fontFamily: font.bold}}>
-                                    Edit
-                                  </Text>
-                                </MenuItem>
-                                <MenuDivider />
-                                <MenuItem onPress={() => deleteNote(i, x._id)}>
-                                  <Text style={{fontFamily: font.bold}}>
-                                    Delete
-                                  </Text>
-                                </MenuItem>
-                              </Menu>
-                            </View>
-                            <Text
+                          return (
+                            <LinearGradient
+                              key={x.id}
+                              start={{x: 0, y: 0}}
+                              end={{x: 1, y: 1}}
+                              locations={[0.0, 0.99]}
+                              colors={[Bcolors[i].dark, Bcolors[i].light]}
                               style={{
-                                fontFamily: font.medium,
-                                fontSize: 10,
-                                textAlign: 'right',
-                                color: Colors.black,
-                                marginTop: 5,
+                                marginTop: 10,
+                                borderRadius: 10,
+                                padding: 10,
                               }}>
-                              {moment(x.date).format('dddd, DD MMM YYYY')}
-                            </Text>
-                          </LinearGradient>
-                        );
-                    })}
+                              <View style={{flexDirection: 'row'}}>
+                                <View style={{flex: 1}}>
+                                  <Text
+                                    style={{
+                                      fontFamily: font.medium,
+                                      fontSize: 12,
+                                      color: Colors.gray12,
+                                      // textAlign: 'justify',
+                                    }}>
+                                    {x.note_text}
+                                  </Text>
+                                </View>
+                                <Menu
+                                  ref={ref => (MenuRef.current[i] = ref)}
+                                  style={{
+                                    backgroundColor: Colors.white,
+                                  }}
+                                  onRequestClose={() =>
+                                    MenuRef.current[i].hide()
+                                  }
+                                  anchor={
+                                    <Pressable
+                                      onPress={() => MenuRef.current[i].show()}
+                                      style={{
+                                        height: 25,
+                                        width: 25,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        marginRight: -5,
+                                        marginTop: -5,
+                                        borderRadius: 25 / 2,
+                                      }}>
+                                      <Image
+                                        style={{
+                                          height: 10,
+                                          width: 10,
+                                          tintColor: Colors.gray12,
+                                        }}
+                                        source={require('../../../Assets/Icons/threeDots.png')}
+                                      />
+                                    </Pressable>
+                                  }>
+                                  <MenuItem onPress={() => editNote(i, x)}>
+                                    <Text style={{fontFamily: font.bold}}>
+                                      Edit
+                                    </Text>
+                                  </MenuItem>
+                                  <MenuDivider />
+                                  <MenuItem
+                                    onPress={() => deleteNote(i, x._id)}>
+                                    <Text style={{fontFamily: font.bold}}>
+                                      Delete
+                                    </Text>
+                                  </MenuItem>
+                                </Menu>
+                              </View>
+                              <Text
+                                style={{
+                                  fontFamily: font.medium,
+                                  fontSize: 10,
+                                  textAlign: 'right',
+                                  color: Colors.black,
+                                  marginTop: 5,
+                                }}>
+                                {moment(x.date).format('dddd, DD MMM YYYY')}
+                              </Text>
+                            </LinearGradient>
+                          );
+                      })}
+                    </>
                   </View>
                 </View>
               </View>
