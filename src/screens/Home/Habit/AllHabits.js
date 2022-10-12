@@ -328,8 +328,8 @@ const AllHabits = props => {
                 <Pressable
                   onPress={() =>
                     Alert.alert(
-                      'Delete Habite',
-                      'Are you sure to delete this Habit',
+                      'Delete Habit',
+                      'Are you sure you want to delete this Habit',
                       [
                         {text: 'No'},
                         {text: 'Yes', onPress: () => api_deleteHabit(item._id)},

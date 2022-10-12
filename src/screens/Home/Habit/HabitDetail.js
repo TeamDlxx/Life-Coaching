@@ -33,6 +33,7 @@ import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
+import Toast from 'react-native-toast-message';
 
 const screen = Dimensions.get('screen');
 
@@ -110,7 +111,7 @@ const HabitDetail = props => {
           </View>
           <View style={{marginTop: 10}}>
             <CustomMultilineTextInput
-              lable={'Edit Note'}
+              lable={'Edit Note*'}
               placeholder={'Please enter a note for completing this Habit'}
               lableBold
               lableColor={Colors.black}
@@ -121,27 +122,65 @@ const HabitDetail = props => {
           <View style={{marginTop: 20}}>
             <CustomButton
               height={50}
-              onPress={() =>
-                updateNote({modalVisible: false, text: '', item: null})
-              }
+              onPress={btn_saveChnages}
               title={'Save Changes'}
             />
           </View>
         </View>
+        {!!note?.modalVisible && <Toast />}
       </Modal>
     );
   };
 
   const editNote = async (i, item) => {
     await MenuRef.current[i].hide();
+
     setTimeout(() => {
-      updateNote({text: item.note, modalVisible: true});
+      updateNote({text: item?.note_text, modalVisible: true, item: item});
     }, 400);
+  };
+
+  const btn_saveChnages = () => {
+    if (note?.text.trim() == '') {
+      showToast('Please enter note', 'Alert');
+    } else {
+      let obj = {
+        note_id: note?.item?._id,
+        note_text: note?.text.trim(),
+        date: note?.item?.date,
+      };
+      api_editNote(obj);
+      setisLoading(true);
+      setTimeout(() => {
+        updateNote({text: '', modalVisible: false, item: null});
+      }, 50);
+    }
+  };
+
+  const api_editNote = async obj => {
+    let res = await invokeApi({
+      path: 'api/habit/edit_note/' + habit?._id,
+      method: 'PUT',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      postData: obj,
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    setRefreshing(false);
+    if (res) {
+      if (res.code == 200) {
+        setHabitDetail(res.habit);
+      } else {
+        showToast(res.message);
+      }
+    }
   };
 
   const deleteNote = (index, id) => {
     MenuRef.current[index].hide();
-    Alert.alert('Delete Note', 'Are you sure to deleted this note', [
+    Alert.alert('Delete Note', 'Are you sure you want to delete this note', [
       {
         text: 'No',
       },
@@ -567,6 +606,7 @@ const HabitDetail = props => {
                           moment(x.date).isBetween(
                             moment(currentWeek).startOf('isoWeek'),
                             moment(currentWeek).endOf('isoWeek'),
+                            undefined,
                             '[]',
                           )
                         )

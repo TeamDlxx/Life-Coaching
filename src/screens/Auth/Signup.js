@@ -20,7 +20,11 @@ import {screens} from '../../Navigation/Screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import showToast from '../../functions/showToast';
-import {validateEmail, checkSpace} from '../../functions/regex';
+import {
+  validateEmail,
+  checkSpace,
+  isFirstLetterAlphabet,
+} from '../../functions/regex';
 import Loader from '../../Components/Loader';
 import invokeApi from '../../functions/invokeAPI';
 
@@ -66,6 +70,8 @@ const Signup = props => {
     let t_password = password;
     if (t_name == '') {
       showToast('Please enter your name', 'Alert');
+    } else if (!isFirstLetterAlphabet(t_name)) {
+      showToast('First letter of name must be an alphabet', 'Alert');
     } else if (t_email == '') {
       showToast('Please enter your email', 'Alert');
     } else if (validateEmail(t_email) == '') {
