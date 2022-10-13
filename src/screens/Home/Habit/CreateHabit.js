@@ -73,7 +73,7 @@ const CreateHabit = props => {
     targetDate: {
       showModal: false,
       value: false,
-      date: moment(),
+      date: moment().add(1, 'week'),
     },
     frequency: week,
   });
@@ -243,13 +243,7 @@ const CreateHabit = props => {
       method: 'POST',
       postData: fdata,
       headers: {
-        // 'Access-Control-Allow-Origin': '*',
-        // 'Access-Control-Allow-Methods': 'POST, GET, PUT, OPTIONS, DELETE',
-        // 'Access-Control-Allow-Headers': 'Access-Control-Allow-Methods, Access-Control-Allow-Origin, Origin, Accept, Content-Type',
-        // 'Accept': 'application/x-www-form-urlencoded',
-        // 'Content-Type':'application/x-www-form-urlencoded',
         'Content-Type': 'multipart/form-data',
-
         'x-sh-auth': Token,
       },
       navigation: props.navigation,
@@ -358,6 +352,7 @@ const CreateHabit = props => {
           </View>
           <View style={{marginTop: 10}}>
             <CustomSimpleTextInput
+              autoCapitalize={true}
               lable={'Habit Name'}
               lableColor={Colors.black}
               lableBold={true}
@@ -456,17 +451,24 @@ const CreateHabit = props => {
                       createHabit_styles.weekButton,
                       x.status && createHabit_styles.selectedButton,
                     ]}>
-                    <Text style={createHabit_styles.weekButtonText}>
+                    <Text
+                      style={[
+                        createHabit_styles.weekButtonText,
+                        {
+                          color:
+                            x.status == true ? Colors.primary : Colors.black,
+                        },
+                      ]}>
                       {x.day.charAt(0)}
                     </Text>
-                    <View style={{height: 12, width: 12, marginTop: 10}}>
+                    {/* <View style={{height: 12, width: 12, marginTop: 10}}>
                       {x.status && (
                         <Image
                           style={{height: 12, width: 12}}
                           source={require('../../../Assets/Icons/tick.png')}
                         />
                       )}
-                    </View>
+                    </View> */}
                   </Pressable>
                 );
               })}
@@ -493,6 +495,32 @@ const CreateHabit = props => {
 
           {reminder.value && (
             <View style={createHabit_styles.timeButton}>
+              <Pressable
+                onPress={() =>
+                  updateHabit({
+                    reminder: {...reminder, showModal: !reminder.showModal},
+                  })
+                }
+                style={{
+                  height: 35,
+                  width: 35,
+                  alignSelf: 'flex-end',
+                  // backgroundColor: 'pink',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: -15,
+                  marginTop: -20,
+                }}>
+                <Image
+                  source={require('../../../Assets/Icons/edit.png')}
+                  style={{
+                    height: 20,
+                    width: 20,
+                    tintColor: Colors.placeHolder,
+                    marginLeft: 5,
+                  }}
+                />
+              </Pressable>
               <View style={{}}>
                 <Image
                   source={require('../../../Assets/Icons/alert.png')}
@@ -514,15 +542,6 @@ const CreateHabit = props => {
                     ]}>
                     Set Reminder
                   </Text>
-                  <Image
-                    source={require('../../../Assets/Icons/edit.png')}
-                    style={{
-                      height: 20,
-                      width: 20,
-                      tintColor: Colors.placeHolder,
-                      marginLeft: 5,
-                    }}
-                  />
                 </View>
                 <Text style={createHabit_styles.timeButtonText1}>
                   You will recieve a reminder on specified days on the following

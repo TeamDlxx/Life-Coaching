@@ -6,6 +6,7 @@ import TrackPlayer from 'react-native-track-player';
 import Toast from 'react-native-toast-message';
 import {ContextProvider} from './src/Context';
 import ContextWrapper from './src/Context/ContextWrapper';
+import {Text} from 'react-native';
 
 moment.updateLocale('en', {
   week: {
@@ -15,6 +16,8 @@ moment.updateLocale('en', {
 
 const App = props => {
   React.useEffect(() => {
+    if (Text.defaultProps == null) Text.defaultProps = {};
+    Text.defaultProps.allowFontScaling = false;
     TrackplayerSetup();
   }, []);
 

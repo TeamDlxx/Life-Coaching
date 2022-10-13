@@ -217,20 +217,18 @@ const profile_styles = StyleSheet.create({
     fontSize: 20,
   },
   statItemView: {
-    // flex: 1,
     alignItems: 'center',
     backgroundColor: '#BDC3C733',
-    height: 60,
+    // height: 60,
     width: 100,
+    // aspectRatio:2,
+    paddingVertical: 10,
     justifyContent: 'center',
     borderRadius: 10,
   },
   statRow: {
-    // marginVertical: 50,
     marginTop: 30,
     flexDirection: 'row',
-
-    // justifyContent:"space-around"
     justifyContent: 'space-evenly',
   },
   statOuterItem: {

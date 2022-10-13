@@ -28,6 +28,7 @@ import CreateHabit from '../screens/Home/Habit/CreateHabit';
 import HabitDetail from '../screens/Home/Habit/HabitDetail';
 import Statistics from '../screens/Home/Habit/Statistics';
 import AllHabits from '../screens/Home/Habit/AllHabits';
+import NotesDetail from '../screens/Home/Habit/NotesDetail';
 
 // //? MoodTracker
 import MoodTracker from '../screens/Home/MoodTracker/MoodTracker';
@@ -84,7 +85,12 @@ const AuthStack = () => {
   if (whichScreen != undefined) {
     return (
       <Stack.Navigator
-        screenOptions={{headerShown: false, orientation: 'portrait'}}
+        screenOptions={{
+          headerShown: false,
+          orientation: 'portrait',
+          animation: 'default',
+          // animationTypeForReplace:"pop"
+        }}
         initialRouteName={whichScreen}>
         <Stack.Screen name={screens.Login} component={Login} />
         <Stack.Screen name={screens.signup} component={Signup} />
@@ -110,6 +116,8 @@ const AuthStack = () => {
         <Stack.Screen name={screens.habitStats} component={Statistics} />
         <Stack.Screen name={screens.allHabits} component={AllHabits} />
         <Stack.Screen name={screens.habitDetail} component={HabitDetail} />
+        <Stack.Screen name={screens.NotesDetail} component={NotesDetail} />
+
         {/* MoodTracker */}
         <Stack.Screen name={screens.moodTracker} component={MoodTracker} />
         <Stack.Screen name={screens.addMood} component={AddMood} />

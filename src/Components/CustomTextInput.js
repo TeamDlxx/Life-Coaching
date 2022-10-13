@@ -39,7 +39,7 @@ export function CustomSimpleTextInput(props) {
           placeholderTextColor={colors.placeHolder}
           placeholder={props.placeholder}
           autoCorrect={false}
-          autoCapitalize={'none'}
+          autoCapitalize={!!props.autoCapitalize ? 'sentences' : 'none'}
           selectTextOnFocus={false}
           value={props.value}
           onChangeText={props.onChangeText}
@@ -121,7 +121,6 @@ export function CustomTouchableTextInput(props) {
           borderColor: Colors.gray02,
           justifyContent: 'center',
           alignItems: 'center',
-          
         }}>
         <Text style={{paddingHorizontal: 20, fontFamily: font.regular}}>
           {props.value}

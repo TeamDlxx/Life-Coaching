@@ -26,6 +26,7 @@ import {CustomTouchableTextInput} from '../../../Components/CustomTextInput';
 import moment from 'moment';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import Collapsible from 'react-native-collapsible';
+import {screens} from '../../../Navigation/Screens';
 // fro API calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -67,8 +68,14 @@ const Statistics = props => {
     setIsCollapsed(!isCollapsed);
     setAppliedFilter(filterOption);
     setisLoading(true);
-    api_habitList();
   };
+
+  function updateHabitLocally(item) {
+    let newArray = [...sHabitList];
+    let index = newArray.findIndex(x => x._id == item._id);
+    newArray.splice(index, 1, item);
+    setHabitList(newArray);
+  }
 
   const findProgress = item => {
     let freq = [];
@@ -166,7 +173,7 @@ const Statistics = props => {
     return () => {
       setHabitList([]);
     };
-  }, []);
+  }, [appliedFilter]);
 
   // Views
 
@@ -372,7 +379,14 @@ const Statistics = props => {
   const renderHabitsList = ({item, index}) => {
     let progress = findProgress(item);
     return (
-      <Pressable style={allHabit_styles.itemView}>
+      <Pressable
+        onPress={() => {
+          props.navigation.navigate(screens.habitDetail, {
+            id: item._id,
+            updateHabit: updateHabitLocally,
+          });
+        }}
+        style={allHabit_styles.itemView}>
         <View style={allHabit_styles.imageView}>
           <CustomImage
             source={{uri: fileURL + item.images?.small}}
@@ -390,17 +404,18 @@ const Statistics = props => {
                 Target Date : {moment(item.target_date).format('DD MMM YYYY')}
               </Text>
             </View>
-            <View style={{height: 14}}>
-              {!!item.reminder && (
-                <View style={allHabit_styles.reminderView}>
-                  <Text style={allHabit_styles.reminderText}>
-                    <Text>
-                      Reminder at {moment(item.reminder_time).format('hh:mm A')}
-                    </Text>
+
+            {!!item.reminder ? (
+              <View style={allHabit_styles.reminderView}>
+                <Text style={allHabit_styles.reminderText}>
+                  <Text>
+                    Reminder at {moment(item.reminder_time).format('hh:mm A')}
                   </Text>
-                </View>
-              )}
-            </View>
+                </Text>
+              </View>
+            ) : (
+              <View style={{height: 14}} />
+            )}
           </View>
 
           <View style={allHabit_styles.weekView}>

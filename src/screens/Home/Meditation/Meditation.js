@@ -8,15 +8,27 @@ import {
   Pressable,
   Image,
   TouchableOpacity,
+  RefreshControl,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
+import CustomImage from '../../../Components/CustomImage';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
 import {mainStyles} from '../../../Utilities/styles';
 import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
-import play from '../../../Assets/Icons/play.png';
 
+// For API's calling
+import {useContext} from 'react';
+import Context from '../../../Context';
+import showToast from '../../../functions/showToast';
+import Loader from '../../../Components/Loader';
+import invokeApi from '../../../functions/invokeAPI';
+import {fileURL} from '../../../Utilities/domains';
+import EmptyView from '../../../Components/EmptyView';
+
+//Icons
+import play from '../../../Assets/Icons/play.png';
 import anxious from '../../../Assets/meditationIcons/anxious.png';
 import breathe from '../../../Assets/meditationIcons/breathe.png';
 import focus from '../../../Assets/meditationIcons/focus.png';
@@ -25,25 +37,13 @@ import sleep from '../../../Assets/meditationIcons/sleep.png';
 import favList from '../../../Assets/Icons/favList.png';
 
 const Meditation = props => {
-  const [categoryList, setCategoryList] = useState([
-    {_id: '1', name: 'Breathe', image: breathe},
-    {_id: '2', name: 'Anxious', image: anxious},
-    {_id: '3', name: 'Focus', image: focus},
-    {_id: '4', name: 'Morning', image: morning},
-    {_id: '5', name: 'Sleep', image: sleep},
-  ]);
-  const [selectedCategory, setSelectedCategory] = useState({
-    _id: '1',
-    name: 'Breathe',
-    image: breathe,
-  });
-  const [trackList, setTrackList] = useState([]);
+  const {Token} = useContext(Context);
+  const [isLoading, setisLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [categoryList, setCategoryList] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState({});
 
   //? Navigation Functions
-
-  useEffect(() => {
-    setTrackList(tracksList);
-  }, []);
 
   const gotoTrackPlayer = item => {
     props.navigation.navigate(screens.trackPlayer, {
@@ -51,6 +51,48 @@ const Meditation = props => {
       category: selectedCategory,
     });
   };
+
+  // todo /////// API's
+
+  const call_categoryAPI = () => {
+    setisLoading(true);
+    api_CategoryWithTracksList();
+  };
+
+  const refresh_categoryAPI = () => {
+    setRefreshing(true);
+    api_CategoryWithTracksList();
+  };
+
+  const api_CategoryWithTracksList = async () => {
+    let res = await invokeApi({
+      path: 'api/category/get_active_categories',
+      method: 'GET',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    setRefreshing(false);
+    if (res) {
+      if (res.code == 200) {
+        console.log('response', res);
+        setCategoryList(res?.category);
+        if (res?.category.length > 0) {
+          setSelectedCategory(res?.category[0]);
+        }
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  //* UseEffect
+
+  useEffect(() => {
+    call_categoryAPI();
+  }, []);
 
   //? Views
 
@@ -63,24 +105,25 @@ const Meditation = props => {
             margin: 6,
             alignItems: 'center',
             justifyContent: 'center',
-            // padding: 10,
             borderRadius: 20,
             borderColor: Colors.gray07,
             borderWidth: 0.8,
             backgroundColor:
-              item._id == selectedCategory._id ? Colors.primary : Colors.white,
+              item._id == selectedCategory?._id ? Colors.primary : Colors.white,
             paddingHorizontal: 15,
             height: 60,
             width: 60,
           }}>
           <View>
-            <Image
+            <CustomImage
               style={
-                item._id == selectedCategory._id
+                item._id == selectedCategory?._id
                   ? {width: 30, height: 30, tintColor: Colors.white}
                   : {width: 30, height: 30}
               }
-              source={item.image}></Image>
+              source={{uri: fileURL + item?.images?.small}}
+              indicatorProps={{color: Colors.primary}}
+            />
           </View>
         </Pressable>
         <Text
@@ -121,7 +164,11 @@ const Meditation = props => {
             borderWidth: 1,
             borderColor: Colors.gray02,
           }}>
-          <Image source={{uri: item.image}} style={{height: 70, width: 70}} />
+          <CustomImage
+            source={{uri: fileURL + item?.images?.small}}
+            style={{height: 70, width: 70}}
+            indicatorProps={{color: Colors.primary}}
+          />
         </View>
         <View style={{marginLeft: 15, flex: 1}}>
           <Text
@@ -131,7 +178,7 @@ const Meditation = props => {
               includeFontPadding: false,
               color: Colors.black,
             }}>
-            {item.title}
+            {item?.name}
           </Text>
 
           <View
@@ -222,7 +269,6 @@ const Meditation = props => {
       <Header
         navigation={props.navigation}
         title={'Meditation'}
-        // titleAlignLeft
         rightIcon={favList}
         rightIcononPress={onFavList}
       />
@@ -235,11 +281,29 @@ const Meditation = props => {
             ListHeaderComponent={flatListHeader()}
             contentContainerStyle={{paddingVertical: 10, paddingBottom: 50}}
             showsVerticalScrollIndicator={false}
-            data={trackList}
+            data={
+              !!selectedCategory?.category_track
+                ? selectedCategory?.category_track
+                : []
+            }
             renderItem={renderTrackList}
             keyExtractor={item => {
               return item._id;
             }}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={refresh_categoryAPI}
+                tintColor={Colors.primary}
+                colors={[Colors.primary]}
+                progressBackgroundColor={Colors.white}
+              />
+            }
+            ListEmptyComponent={
+              isLoading == false && (
+                <EmptyView title="No tracks for this category" />
+              )
+            }
           />
         </View>
       </View>
@@ -248,65 +312,28 @@ const Meditation = props => {
 };
 
 export default Meditation;
-
-const tracksList = [
-  {
-    _id: '1',
-    title: 'Relax',
-    note: 'Release the tention',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam',
-    image:
-      'https://images.unsplash.com/photo-1604251405903-b8c4e83cdf7c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cmVsYXhhdGlvbnxlbnwwfHwwfHw%3D&w=1000&q=80',
+let terbcd = {
+  _id: '634672ea6a598f42f8cbb9e2',
+  name: 'c1',
+  images: {
+    large: 'HABIT/e3fa30c0-43cb-11ed-b6d8-e1cced6e1241.jpg',
+    medium: 'HABIT/e3faf410-43cb-11ed-b6d8-e1cced6e1241.jpg',
+    small: 'HABIT/e3fb1b20-43cb-11ed-b6d8-e1cced6e1241.jpg',
   },
-
-  {
-    _id: '2',
-    title: 'Breathe',
-    note: 'Nature',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam',
-    image:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7ZBrBNBKLvZB9Q3BXmxmdi54NJ9v4ND82rg&usqp=CAU',
-  },
-
-  {
-    _id: '3',
-    title: 'Sleep',
-    note: 'deep sleep',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam',
-    image:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_kPxS5Mrgm6uERvdjdtEee8OwPMY2pWGoyg&usqp=CAU',
-  },
-
-  {
-    _id: '4',
-    title: 'Relax',
-    note: 'Release the tention',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam',
-    image:
-      'https://images.unsplash.com/photo-1604251405903-b8c4e83cdf7c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cmVsYXhhdGlvbnxlbnwwfHwwfHw%3D&w=1000&q=80',
-  },
-
-  {
-    _id: '5',
-    title: 'Breathe',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam',
-    note: 'Nature',
-    image:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7ZBrBNBKLvZB9Q3BXmxmdi54NJ9v4ND82rg&usqp=CAU',
-  },
-
-  {
-    _id: '6',
-    title: 'Sleep',
-    note: 'deep sleep',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam',
-    image:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_kPxS5Mrgm6uERvdjdtEee8OwPMY2pWGoyg&usqp=CAU',
-  },
-];
+  status: true,
+  order: 1,
+  category_track: [
+    {
+      _id: '6346730b6a598f42f8cbb9e4',
+      name: 't1',
+      audio: 'audio/af19fa60-4557-11ed-836d-cdef7cfc246c.mp3',
+      duration: 635.87,
+      images: {
+        large: '',
+        medium: '',
+        small: '',
+      },
+    },
+  ],
+  load_more_url: '',
+};

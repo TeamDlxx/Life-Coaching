@@ -46,20 +46,52 @@ const HabitDetail = props => {
   const [isLoading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [currentWeek, setCurrentWeek] = useState(moment());
+  const [currentWeekDays, setCurrentWeekDays] = useState([]);
   const [note, setNote] = useState({
     modalVisible: false,
     item: null,
     text: '',
+    update: false,
   });
+
+  const makeDaysArray = () => {
+    let selectedWeekDays = [];
+    for (let i = 0; i < 7; i++) {
+      selectedWeekDays.push(
+        moment(currentWeek).startOf('isoWeek').add(i, 'days'),
+      );
+    }
+    setCurrentWeekDays(selectedWeekDays);
+  };
 
   const updateNote = updation => setNote({...note, ...updation});
 
   const onPreviousWeek = () => {
     setCurrentWeek(moment(currentWeek).subtract(1, 'week'));
+    makeDaysArray();
   };
 
   const onNextWeek = () => {
     setCurrentWeek(moment(currentWeek).add(1, 'week'));
+    makeDaysArray();
+  };
+
+  const checkCompleted = item => {
+    let index = habit.notes.findIndex(
+      x =>
+        moment(x.date).format('YYYY-MM-DD') ==
+        moment(item).format('YYYY-MM-DD'),
+    );
+
+    if (index < 0) {
+      return false;
+    } else {
+      return true;
+    }
+  };
+
+  const forNextScreen = habit => {
+    setHabitDetail(habit);
   };
 
   const getWeekDates = () => {
@@ -72,11 +104,46 @@ const HabitDetail = props => {
     );
   };
 
+  const markCompeleted = () => {
+    let {item} = note;
+    let obj_addNote = {
+      note_text: note.text.trim(),
+      date: moment(note.item).toISOString(),
+    };
+    api_addNote(item._id, obj_addNote);
+    setisLoading(true);
+    setNote({modalVisible: false, text: '', item: null});
+  };
+
+  const api_addNote = async (id, obj) => {
+    let res = await invokeApi({
+      path: 'api/habit/add_note/' + habit?._id,
+      method: 'POST',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      postData: obj,
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    setRefreshing(false);
+    if (res) {
+      if (res.code == 200) {
+        setHabitDetail(res.habit);
+        updateHabitList(res.habit);
+        if (!!params?.updateHabit) {
+          params?.updateHabit(res.habit);
+        }
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
   const editNoteModal = () => {
     return (
       <Modal
         isVisible={note.modalVisible}
-        // isVisible={true}
         onBackButtonPress={() => updateNote({modalVisible: false})}
         onBackdropPress={() => updateNote({modalVisible: false})}
         useNativeDriverForBackdrop={true}
@@ -111,7 +178,7 @@ const HabitDetail = props => {
           </View>
           <View style={{marginTop: 10}}>
             <CustomMultilineTextInput
-              lable={'Edit Note*'}
+              lable={note.update == false ? 'Add Note' : 'Edit Note'}
               placeholder={'Please enter a note for completing this Habit'}
               lableBold
               lableColor={Colors.black}
@@ -122,8 +189,8 @@ const HabitDetail = props => {
           <View style={{marginTop: 20}}>
             <CustomButton
               height={50}
-              onPress={btn_saveChnages}
-              title={'Save Changes'}
+              onPress={note.update == false ? markCompeleted : btn_saveChnages}
+              title={note.update == false ? 'Mark Complete' : 'Save Changes'}
             />
           </View>
         </View>
@@ -136,25 +203,26 @@ const HabitDetail = props => {
     await MenuRef.current[i].hide();
 
     setTimeout(() => {
-      updateNote({text: item?.note_text, modalVisible: true, item: item});
+      updateNote({
+        text: item?.note_text,
+        modalVisible: true,
+        item: item,
+        update: true,
+      });
     }, 400);
   };
 
   const btn_saveChnages = () => {
-    if (note?.text.trim() == '') {
-      showToast('Please enter note', 'Alert');
-    } else {
-      let obj = {
-        note_id: note?.item?._id,
-        note_text: note?.text.trim(),
-        date: note?.item?.date,
-      };
-      api_editNote(obj);
-      setisLoading(true);
-      setTimeout(() => {
-        updateNote({text: '', modalVisible: false, item: null});
-      }, 50);
-    }
+    let obj = {
+      note_id: note?.item?._id,
+      note_text: note?.text.trim(),
+      date: note?.item?.date,
+    };
+    api_editNote(obj);
+    setisLoading(true);
+    setTimeout(() => {
+      updateNote({text: '', modalVisible: false, item: null});
+    }, 50);
   };
 
   const api_editNote = async obj => {
@@ -168,17 +236,19 @@ const HabitDetail = props => {
       navigation: props.navigation,
     });
     setisLoading(false);
-    setRefreshing(false);
     if (res) {
       if (res.code == 200) {
         setHabitDetail(res.habit);
+        if (!!params?.updateHabit) {
+          params?.updateHabit(res.habit);
+        }
       } else {
         showToast(res.message);
       }
     }
   };
 
-  const deleteNote = (index, id) => {
+  const deleteNote = (obj, index) => {
     MenuRef.current[index].hide();
     Alert.alert('Delete Note', 'Are you sure you want to delete this note', [
       {
@@ -186,7 +256,7 @@ const HabitDetail = props => {
       },
       {
         text: 'Yes',
-        onPress: () => api_removeNote(id),
+        onPress: () => api_editNote(obj),
       },
     ]);
   };
@@ -204,11 +274,13 @@ const HabitDetail = props => {
       navigation: props.navigation,
     });
     setisLoading(false);
-    setRefreshing(false);
     if (res) {
       if (res.code == 200) {
         setHabitDetail(res.habit);
         updateHabitList(res.habit);
+        if (!!params?.updateHabit) {
+          params?.updateHabit(res.habit);
+        }
       } else {
         showToast(res.message);
       }
@@ -234,7 +306,7 @@ const HabitDetail = props => {
       navigation: props.navigation,
     });
     setisLoading(false);
-    setRefreshing(false);
+
     if (res) {
       if (res.code == 200) {
         console.log('response', res);
@@ -259,6 +331,20 @@ const HabitDetail = props => {
     });
   };
 
+  const checkNotesforthisweek = list => {
+    return list
+      .slice()
+      .filter(
+        x =>
+          moment(x.date).isBetween(
+            moment(currentWeek).startOf('isoWeek'),
+            moment(currentWeek).endOf('isoWeek'),
+            undefined,
+            '[]',
+          ) && x.note_text != '',
+      );
+  };
+
   const refreshDetail = () => {
     setRefreshing(true);
     api_habitDetail();
@@ -270,6 +356,7 @@ const HabitDetail = props => {
 
   useEffect(() => {
     callHabitDetailApi();
+    makeDaysArray();
     return () => {};
   }, []);
 
@@ -327,17 +414,7 @@ const HabitDetail = props => {
       />
       <View style={{flex: 1}}>
         {habit != null && (
-          <ScrollView
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={refreshDetail}
-                tintColor={Colors.primary}
-                colors={[Colors.primary]}
-                progressBackgroundColor={Colors.white}
-              />
-            }
-            showsVerticalScrollIndicator={false}>
+          <ScrollView showsVerticalScrollIndicator={false}>
             <View style={{flex: 1}}>
               <View
                 style={{
@@ -434,7 +511,7 @@ const HabitDetail = props => {
                       flexWrap: 'wrap',
                       marginTop: 5,
                     }}>
-                    {habit.frequency.map((x, i) => {
+                    {habit?.frequency.map((x, i) => {
                       return (
                         <View
                           style={[
@@ -444,17 +521,23 @@ const HabitDetail = props => {
                           ]}>
                           <Text
                             adjustsFontSizeToFit={true}
-                            style={[createHabit_styles.weekButtonText]}>
+                            style={[
+                              createHabit_styles.weekButtonText,
+                              {
+                                color: x.status && Colors.primary,
+                                fontFamily: x.status ? font.bold : font.regular,
+                              },
+                            ]}>
                             {x.day.charAt(0)}
                           </Text>
-                          <View style={{height: 12, width: 12, marginTop: 10}}>
+                          {/* <View style={{height: 12, width: 12, marginTop: 10}}>
                             {x.status && (
                               <Image
                                 style={{height: 12, width: 12}}
                                 source={require('../../../Assets/Icons/tick.png')}
                               />
                             )}
-                          </View>
+                          </View> */}
                         </View>
                       );
                     })}
@@ -472,15 +555,6 @@ const HabitDetail = props => {
                 {/* Notes */}
 
                 <View style={HabitDetail_style.ItemView}>
-                  <Text
-                    style={{
-                      color: Colors.black,
-                      fontSize: 20,
-                      fontFamily: font.bold,
-                      textAlign: 'center',
-                    }}>
-                    Notes
-                  </Text>
                   <View
                     style={{
                       flexDirection: 'row',
@@ -524,8 +598,6 @@ const HabitDetail = props => {
                         borderWidth: 1,
                         borderColor: Colors.gray02,
                         backgroundColor: '#F8F7FC',
-                        // borderWidth: 1,
-                        // borderColor: Colors.gray02,
                         marginHorizontal: 4,
                         borderRadius: 10,
                         height: 40,
@@ -589,8 +661,155 @@ const HabitDetail = props => {
                       </Pressable>
                     </View>
                   </View>
+
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                    }}>
+                    {currentWeekDays.map((x, i) => {
+                      if (
+                        habit?.frequency.findIndex(
+                          y =>
+                            y.day.toLowerCase() ===
+                              moment(x).format('dddd').toLowerCase() &&
+                            y.status == true,
+                        ) != -1
+                      ) {
+                        return (
+                          <Pressable
+                            onPress={() => {
+                              if (!moment(x).isAfter(moment())) {
+                                if (!checkCompleted(x)) {
+                                  setNote({
+                                    modalVisible: true,
+                                    text: '',
+                                    update: false,
+                                    item: x,
+                                  });
+                                } else {
+                                  props.navigation.navigate(
+                                    screens.NotesDetail,
+                                    {
+                                      habit: habit,
+                                      date: moment(x).toISOString(),
+                                      backScreenfunc: forNextScreen,
+                                      updateHabit: params?.updateHabit,
+                                    },
+                                  );
+                                }
+                              } else {
+                                showToast(
+                                  'You cannot mark complete for future days',
+                                  'Alert',
+                                );
+                              }
+                            }}
+                            style={{
+                              borderWidth: 1,
+                              borderColor: Colors.gray02,
+                              borderRadius: 10,
+                              // padding: 5,
+                              margin: 5,
+                              flex: 1,
+                              // width: '14.1%',
+                              aspectRatio: 0.7,
+                              justifyContent: 'center',
+                              backgroundColor: checkCompleted(x)
+                                ? Colors.secondary
+                                : Colors.white,
+                            }}>
+                            <View
+                              style={{
+                                alignItems: 'center',
+                              }}>
+                              <View style={{}}>
+                                <Text
+                                  style={{
+                                    textTransform: 'capitalize',
+                                    fontFamily: checkCompleted(x)
+                                      ? font.bold
+                                      : font.regular,
+                                    color: checkCompleted(x)
+                                      ? Colors.primary
+                                      : Colors.black,
+                                  }}>
+                                  {moment(x).format('dddd').charAt(0)}
+                                </Text>
+                              </View>
+                              <View>
+                                <View
+                                  style={{
+                                    height: 12,
+                                    width: 12,
+                                    marginTop: 10,
+                                  }}>
+                                  {checkCompleted(x) && (
+                                    <Image
+                                      style={{height: 12, width: 12}}
+                                      source={require('../../../Assets/Icons/tick.png')}
+                                    />
+                                  )}
+                                </View>
+                              </View>
+                            </View>
+                          </Pressable>
+                        );
+                      } else {
+                        return (
+                          <View
+                            opacity={0.5}
+                            style={{
+                              borderWidth: 1,
+                              borderColor: Colors.gray02,
+                              borderRadius: 10,
+                              margin: 5,
+                              flex: 1,
+                              aspectRatio: 0.7,
+                              justifyContent: 'center',
+                              // backgroundColor: Colors.gray01,
+                            }}>
+                            <View
+                              style={{
+                                alignItems: 'center',
+                              }}>
+                              <View style={{}}>
+                                <Text
+                                  style={{
+                                    textTransform: 'capitalize',
+                                    fontFamily: font.regular,
+                                    color: Colors.gray10,
+                                  }}>
+                                  {moment(x).format('dddd').charAt(0)}
+                                </Text>
+                              </View>
+                              <View>
+                                <View
+                                  style={{
+                                    height: 12,
+                                    width: 12,
+                                    marginTop: 10,
+                                  }}
+                                />
+                              </View>
+                            </View>
+                          </View>
+                        );
+                      }
+                    })}
+                  </View>
+                  <View style={{marginVertical: 10}}>
+                    <Text
+                      style={{
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontFamily: font.bold,
+                        textAlign: 'center',
+                      }}>
+                      Notes
+                    </Text>
+                  </View>
                   <View style={{}}>
-                    {sorttheListbyDate(habit.notes).length == 0 && (
+                    {checkNotesforthisweek(habit.notes).length == 0 && (
                       <EmptyView
                         style={{
                           marginTop: 0,
@@ -608,7 +827,8 @@ const HabitDetail = props => {
                             moment(currentWeek).endOf('isoWeek'),
                             undefined,
                             '[]',
-                          )
+                          ) &&
+                          x.note_text != ''
                         )
                           return (
                             <LinearGradient
@@ -671,7 +891,17 @@ const HabitDetail = props => {
                                   </MenuItem>
                                   <MenuDivider />
                                   <MenuItem
-                                    onPress={() => deleteNote(i, x._id)}>
+                                    onPress={() => {
+                                      deleteNote(
+                                        {
+                                          note_id: x._id,
+                                          note_text: '',
+                                          date: x.date,
+                                        },
+                                        i,
+                                      );
+                                      MenuRef.current[i].hide();
+                                    }}>
                                     <Text style={{fontFamily: font.bold}}>
                                       Delete
                                     </Text>

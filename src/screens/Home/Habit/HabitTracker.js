@@ -34,7 +34,6 @@ import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
 
-const screen = Dimensions.get('screen');
 const ic_nodata = require('../../../Assets/Icons/empty-box.png');
 
 const HabitTracker = props => {
@@ -107,18 +106,15 @@ const HabitTracker = props => {
 
   const markCompeleted = () => {
     console.log('markCompeleted');
-    if (note.text.trim() == '') {
-      showToast('Please add note', 'Alert');
-    } else {
-      let {item} = note;
-      let obj_addNote = {
-        note_text: note.text.trim(),
-        date: moment(today, 'YYYY-MM-DD').toISOString(),
-      };
-      api_addNote(item._id, obj_addNote);
-      setisLoading(true);
-      setNote({modalVisible: false, text: '', item: null});
-    }
+
+    let {item} = note;
+    let obj_addNote = {
+      note_text: note.text.trim(),
+      date: moment(today, 'YYYY-MM-DD').toISOString(),
+    };
+    api_addNote(item._id, obj_addNote);
+    setisLoading(true);
+    setNote({modalVisible: false, text: '', item: null});
   };
 
   const api_addNote = async (id, obj) => {
@@ -152,6 +148,7 @@ const HabitTracker = props => {
   };
 
   const api_removeNote = async (habit_id, note_id) => {
+    setisLoading(true);
     let res = await invokeApi({
       path: 'api/habit/remove_note/' + habit_id,
       method: 'POST',
@@ -219,7 +216,6 @@ const HabitTracker = props => {
   useEffect(() => {
     daysInMonth();
     callHabitListAPI();
-
     return () => {
       setHabitList([]);
     };
@@ -261,7 +257,7 @@ const HabitTracker = props => {
           height: 70,
           flexDirection: 'row',
         }}>
-        <View>
+        {/* <View>
           {today == moment(item.date).format('YYYY-MM-DD') && (
             <View style={{marginRight: 10}}>
               <Text style={{fontSize: 36, color: Colors.white}}>
@@ -269,7 +265,7 @@ const HabitTracker = props => {
               </Text>
             </View>
           )}
-        </View>
+        </View> */}
         <View style={{alignItems: 'center'}}>
           <Text
             style={{
@@ -300,7 +296,6 @@ const HabitTracker = props => {
   };
 
   const renderHabitsList = ({item, index}) => {
-    // if (checkSelectedDayHabits(item)) {
     return (
       <Pressable
         onPress={() =>
@@ -337,10 +332,10 @@ const HabitTracker = props => {
         </View>
         <View style={{marginLeft: 10, flex: 1}}>
           <Text
-            numberOfLines={1}
+            numberOfLines={2}
             style={{
               fontFamily: font.bold,
-              fontSize: 16,
+              fontSize: 14,
               includeFontPadding: false,
               color: Colors.black,
             }}>
@@ -423,7 +418,6 @@ const HabitTracker = props => {
         </View>
       </Pressable>
     );
-    // }
   };
 
   const flatListHeader = () => {
@@ -607,7 +601,9 @@ const HabitTracker = props => {
         useNativeDriverForBackdrop={true}
         avoidKeyboard={true}
         hideModalContentWhileAnimating={true}
-        style={{marginHorizontal: 5}}>
+        style={{
+          marginHorizontal: 5,
+        }}>
         <View
           style={{
             marginTop: 'auto',
@@ -636,7 +632,7 @@ const HabitTracker = props => {
           </View>
           <View style={{marginTop: 10}}>
             <CustomMultilineTextInput
-              lable={'Add Note*'}
+              lable={'Add Note'}
               placeholder={'Please enter a note for completing this Habit'}
               lableBold
               lableColor={Colors.black}

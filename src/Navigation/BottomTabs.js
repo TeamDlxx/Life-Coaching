@@ -19,8 +19,6 @@ const settingsIcon = require('../Assets/Icons/settings.png');
 const Tab = createBottomTabNavigator();
 
 export default function BottomTabs() {
-
-
   return (
     <Tab.Navigator
       initialRouteName={screens.home}
@@ -28,6 +26,9 @@ export default function BottomTabs() {
         headerShown: false,
         keyboardHidesTabBar: true,
         tabBarShowLabel: false,
+        // tabBarVisibilityAnimationConfig: {
+        //   show: true,
+        // },
         // tabBarLabelPosition: 'below-icon',
         tabBarStyle: {
           backgroundColor: 'transparent',

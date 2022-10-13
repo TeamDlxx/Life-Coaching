@@ -168,7 +168,7 @@ const AllHabits = props => {
         </View>
         <View style={allHabit_styles.detailView}>
           <View style={{flex: 1}}>
-            <Text numberOfLines={1} style={allHabit_styles.title}>
+            <Text numberOfLines={2} style={allHabit_styles.title}>
               {item.name}
             </Text>
             <View style={allHabit_styles.targetDateView}>
@@ -176,17 +176,16 @@ const AllHabits = props => {
                 Target Date : {moment(item.target_date).format('DD MMM YYYY')}
               </Text>
             </View>
-            <View style={{height: 14}}>
-              {!!item.reminder && (
-                <View style={allHabit_styles.reminderView}>
-                  <Text style={allHabit_styles.reminderText}>
-                    <Text>
-                      Reminder at {moment(item.reminder_time).format('hh:mm A')}
-                    </Text>
+
+            {!!item.reminder && (
+              <View style={allHabit_styles.reminderView}>
+                <Text style={allHabit_styles.reminderText}>
+                  <Text>
+                    Reminder at {moment(item.reminder_time).format('hh:mm A')}
                   </Text>
-                </View>
-              )}
-            </View>
+                </Text>
+              </View>
+            )}
           </View>
 
           <View style={allHabit_styles.weekView}>
@@ -302,15 +301,6 @@ const AllHabits = props => {
         <Loader enable={isLoading} />
         <View style={{flex: 1}}>
           <SwipeListView
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={refreshFlatList}
-                tintColor={Colors.primary}
-                colors={[Colors.primary]}
-                progressBackgroundColor={Colors.white}
-              />
-            }
             useFlatList={true}
             contentContainerStyle={{paddingVertical: 10}}
             showsVerticalScrollIndicator={false}

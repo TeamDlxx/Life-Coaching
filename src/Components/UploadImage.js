@@ -34,7 +34,6 @@ const UploadImage = props => {
   const [isModalVisible, setModalVisibility] = useState(false);
   const [isLoading, setisLoading] = useState(false);
 
-  console.log('props', props);
 
   const openGallery = async () => {
     setModalVisibility(false);
@@ -302,35 +301,87 @@ const UploadImage = props => {
           {isLoading ? (
             <ActivityIndicator size={'small'} color={Colors.primary} />
           ) : !!props.localImage ? (
-            <CustomImage
-              source={{uri: props.localImage}}
-              style={{
-                flex: 1,
-                width: '100%',
-                height: '100%',
-              }}
-              imageStyle={{
-                borderRadius: props.borderRadius,
-              }}
-              indicatorProps={{
-                color: Colors.primary,
-              }}
-            />
+            <>
+              <CustomImage
+                source={{uri: props.localImage}}
+                style={{
+                  flex: 1,
+                  width: '100%',
+                  height: '100%',
+                }}
+                imageStyle={{
+                  borderRadius: props.borderRadius,
+                }}
+                indicatorProps={{
+                  color: Colors.primary,
+                }}
+              />
+              <View
+                style={{
+                  position: 'absolute',
+                  width: '100%',
+                  height: '100%',
+                  bottom: 0,
+                  overflow: 'hidden',
+                  borderBottomLeftRadius: props.borderRadius,
+                  borderBottomRightRadius: props.borderRadius,
+                }}>
+                <View style={{flex: 3}} />
+                <View
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#FFFFFF88',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                  <Image
+                    source={pick_image}
+                    style={{height: 20, width: 20, tintColor: '#000'}}
+                  />
+                </View>
+              </View>
+            </>
           ) : !!props.NetworkImage ? (
-            <CustomImage
-              source={{uri: fileURL + props.NetworkImage}}
-              style={{
-                flex: 1,
-                width: '100%',
-                height: '100%',
-              }}
-              imageStyle={{
-                borderRadius: props.borderRadius,
-              }}
-              indicatorProps={{
-                color: Colors.primary,
-              }}
-            />
+            <>
+              <CustomImage
+                source={{uri: fileURL + props.NetworkImage}}
+                style={{
+                  flex: 1,
+                  width: '100%',
+                  height: '100%',
+                }}
+                imageStyle={{
+                  borderRadius: props.borderRadius,
+                }}
+                indicatorProps={{
+                  color: Colors.primary,
+                }}
+              />
+              <View
+                style={{
+                  position: 'absolute',
+                  width: '100%',
+                  height: '100%',
+                  bottom: 0,
+                  overflow: 'hidden',
+                  borderBottomLeftRadius: props.borderRadius,
+                  borderBottomRightRadius: props.borderRadius,
+                }}>
+                <View style={{flex: 3}} />
+                <View
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#FFFFFF88',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                  <Image
+                    source={pick_image}
+                    style={{height: 20, width: 20, tintColor: '#000'}}
+                  />
+                </View>
+              </View>
+            </>
           ) : (
             <Image
               source={ic_addImage}
@@ -341,30 +392,6 @@ const UploadImage = props => {
               }}
             />
           )}
-          <View
-            style={{
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              bottom: 0,
-              overflow: 'hidden',
-              borderBottomLeftRadius: props.borderRadius,
-              borderBottomRightRadius: props.borderRadius,
-            }}>
-            <View style={{flex: 3}} />
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: '#FFFFFF88',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              <Image
-                source={pick_image}
-                style={{height: 20, width: 20, tintColor: '#000'}}
-              />
-            </View>
-          </View>
         </>
       </Pressable>
 
