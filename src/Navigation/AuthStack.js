@@ -29,6 +29,7 @@ import HabitDetail from '../screens/Home/Habit/HabitDetail';
 import Statistics from '../screens/Home/Habit/Statistics';
 import AllHabits from '../screens/Home/Habit/AllHabits';
 import NotesDetail from '../screens/Home/Habit/NotesDetail';
+import AllNotes from '../screens/Home/Habit/AllNotes';
 
 // //? MoodTracker
 import MoodTracker from '../screens/Home/MoodTracker/MoodTracker';
@@ -88,7 +89,7 @@ const AuthStack = () => {
         screenOptions={{
           headerShown: false,
           orientation: 'portrait',
-          animation: 'default',
+          // animation: 'slide_from_right',
           // animationTypeForReplace:"pop"
         }}
         initialRouteName={whichScreen}>
@@ -117,6 +118,7 @@ const AuthStack = () => {
         <Stack.Screen name={screens.allHabits} component={AllHabits} />
         <Stack.Screen name={screens.habitDetail} component={HabitDetail} />
         <Stack.Screen name={screens.NotesDetail} component={NotesDetail} />
+        <Stack.Screen name={screens.AllNotes} component={AllNotes} />
 
         {/* MoodTracker */}
         <Stack.Screen name={screens.moodTracker} component={MoodTracker} />

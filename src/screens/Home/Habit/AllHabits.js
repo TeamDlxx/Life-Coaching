@@ -34,6 +34,14 @@ const AllHabits = props => {
   const [sHabitList, setSHabitList] = useState([]);
   const [isLoading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [currentWeek, setCurrentWeekDays] = useState([]);
+  const makeDaysArray = () => {
+    let selectedWeekDays = [];
+    for (let i = 0; i < 7; i++) {
+      selectedWeekDays.push(moment().startOf('isoWeek').add(i, 'days'));
+    }
+    setCurrentWeekDays(selectedWeekDays);
+  };
   //  Functions
 
   const refreshFlatList = () => {
@@ -141,6 +149,7 @@ const AllHabits = props => {
   }, [props.route]);
 
   React.useEffect(() => {
+    makeDaysArray();
     callHabitListApi();
     return () => {
       setSHabitList([]);
@@ -213,6 +222,43 @@ const AllHabits = props => {
                 </View>
               );
             })}
+          </View>
+
+          <View>
+            {/* <Text
+              style={{
+                fontSize: 12,
+                color: Colors.text,
+                fontFamily: font.medium,
+                marginTop: 10,
+              }}>
+              Current Week Status:
+            </Text> */}
+            <View style={{flexDirection: 'row',marginTop:10}}>
+              {currentWeek.map(x => {
+                console.log('wednejkw', moment(x).format('DDMMYYYY'));
+                return (
+                  <View
+                    style={{
+                      borderRadius: 4,
+                      flex: 1,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                    {item.notes.findIndex(
+                      y =>
+                        moment(y.date).format('DDMMYYYY') ==
+                        moment(x).format('DDMMYYYY'),
+                    ) != -1 && (
+                      <Image
+                        style={{height: 12, width: 12}}
+                        source={require('../../../Assets/Icons/tick.png')}
+                      />
+                    )}
+                  </View>
+                );
+              })}
+            </View>
           </View>
 
           <View
@@ -335,7 +381,8 @@ const AllHabits = props => {
               );
             }}
             ListEmptyComponent={() =>
-              isLoading == false && sHabitList.length == 0 && <EmptyView />
+              isLoading == false &&
+              sHabitList.length == 0 && <EmptyView noSubtitle />
             }
           />
         </View>

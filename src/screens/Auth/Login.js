@@ -22,7 +22,7 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {font} from '../../Utilities/font';
 import {screens} from '../../Navigation/Screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import messaging from '@react-native-firebase/messaging';
+import messaging, {firebase} from '@react-native-firebase/messaging';
 
 import showToast from '../../functions/showToast';
 import {validateEmail, checkSpace} from '../../functions/regex';
@@ -95,6 +95,7 @@ const Login = props => {
     } else if (t_password.length < 6) {
       showToast('Password length must be minimim 6 letters', 'Alert');
     } else {
+      console.log('Firebase Token', messaging().getToken());
       let obj_Login = {
         email: t_email,
         password: t_password,

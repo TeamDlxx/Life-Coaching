@@ -24,12 +24,7 @@ const Header = props => {
               justifyContent: 'center',
             }}
             onPress={() => {
-              if (props.navigation.canGoBack()) {
-                props.navigation.goBack();
-              } else {
-                props.navigation.navigate(screens.bottomTabs);
-              }
-              
+              props.navigation.goBack();
             }}>
             <Image
               source={require('../Assets/Icons/back.png')}
@@ -47,7 +42,6 @@ const Header = props => {
             fontSize: 20,
             fontFamily: font.bold,
             textAlign: !!props.titleAlignLeft ? 'left' : 'center',
-            // fontWeight: '700',
           }}>
           {props.title}
         </Text>

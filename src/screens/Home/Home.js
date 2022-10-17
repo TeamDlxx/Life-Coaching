@@ -21,6 +21,7 @@ import NotificationConfig from '../../Components/NotificationConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SplashScreen from 'react-native-splash-screen';
 import Context from '../../Context';
+import messaging from '@react-native-firebase/messaging';
 const height = Dimensions.get('screen').width;
 
 // background

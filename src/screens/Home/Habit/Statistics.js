@@ -49,7 +49,7 @@ const Statistics = props => {
   const [filterOption, setFilterOption] = useState(1);
   const [sHabitList, setHabitList] = useState([]);
   const [isLoading, setisLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [isRefreshing, setRefreshing] = useState(false);
   const [appliedFilter, setAppliedFilter] = useState(1);
   const [dateRange, setDateRange] = useState({
     startDate: moment().add(-30, 'days'),
@@ -67,7 +67,7 @@ const Statistics = props => {
   const btn_apply = () => {
     setIsCollapsed(!isCollapsed);
     setAppliedFilter(filterOption);
-    setisLoading(true);
+    api_habitList(filterOption);
   };
 
   function updateHabitLocally(item) {
@@ -93,23 +93,24 @@ const Statistics = props => {
     return count;
   };
 
-  async function api_habitList() {
+  async function api_habitList(filterOption) {
+    console.log('habit list');
     let dateObj;
 
-    if (appliedFilter == 1) {
+    if (filterOption == 1) {
       dateObj = {
         end_date: moment().toISOString(),
         start_date: moment().subtract({days: 6}).toISOString(),
       };
-    } else if (appliedFilter == 2) {
+    } else if (filterOption == 2) {
       dateObj = {
         end_date: moment().toISOString(),
         start_date: moment().subtract({days: 29}).toISOString(),
       };
     } else {
       dateObj = {
-        end_date: moment(dateRange.startDate).toISOString(),
-        start_date: moment(dateRange.endDate).toISOString(),
+        start_date: moment(dateRange.startDate).toISOString(),
+        end_date: moment(dateRange.endDate).toISOString(),
       };
     }
 
@@ -131,16 +132,16 @@ const Statistics = props => {
 
         let newArray = res.habits;
         let completed = 0;
-        let length = 0;
-        let pending = 0;
 
-        newArray.map((x, i) => {
-          if (x.total_days != 0) {
-            if (findProgress(x) / x.total_days == 1) {
-              completed = completed + 1;
+        if (res.habits.length != 0) {
+          newArray.map((x, i) => {
+            if (x.total_days != 0) {
+              if (findProgress(x) / x.total_days == 1) {
+                completed = completed + 1;
+              }
             }
-          }
-        });
+          });
+        }
 
         setStats({
           total: newArray.length,
@@ -148,13 +149,12 @@ const Statistics = props => {
           pending: newArray.length - completed,
         });
         setHabitList(res.habits);
-        setisLoading(false);
-        setRefreshing(false);
       } else {
         setisLoading(false);
-        setRefreshing(false);
         showToast(res.message);
       }
+      setisLoading(false);
+      setRefreshing(false);
     }
   }
 
@@ -163,17 +163,22 @@ const Statistics = props => {
     api_habitList();
   };
 
+  const wait = timeout => {
+    return new Promise(resolve => setTimeout(resolve, timeout));
+  };
+
   const callHabitListApi = () => {
     setisLoading(true);
-    api_habitList();
+    api_habitList(filterOption);
   };
 
   React.useEffect(() => {
     callHabitListApi();
     return () => {
       setHabitList([]);
+      setRefreshing(false);
     };
-  }, [appliedFilter]);
+  }, []);
 
   // Views
 
@@ -528,18 +533,17 @@ const Statistics = props => {
       <Header navigation={props.navigation} title={'Habit Statistics'} />
       <View style={{flex: 1}}>
         <Loader enable={isLoading} />
-
         <View style={{flex: 1}}>
           <FlatList
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={refreshFlatList}
-                tintColor={Colors.primary}
-                colors={[Colors.primary]}
-                progressBackgroundColor={Colors.white}
-              />
-            }
+            // refreshControl={
+            //   <RefreshControl
+            //     refreshing={isRefreshing}
+            //     onRefresh={refreshFlatList}
+            //     tintColor={Colors.primary}
+            //     colors={[Colors.primary]}
+            //     progressBackgroundColor={Colors.white}
+            //   />
+            // }
             ListEmptyComponent={() =>
               isLoading == false &&
               sHabitList.length == 0 && <EmptyView style={{marginTop: 50}} />

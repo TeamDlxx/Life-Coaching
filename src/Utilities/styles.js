@@ -120,7 +120,7 @@ export const createHabit_styles = StyleSheet.create({
     margin: 5,
     borderRadius: 10,
     flex: 1,
-    aspectRatio:1,
+    aspectRatio: 1,
     backgroundColor: Colors.white,
   },
   weekButtonText: {
@@ -418,6 +418,7 @@ export const allHabit_styles = StyleSheet.create({
     justifyContent: 'center',
     marginHorizontal: 20,
     backgroundColor: Colors.delete,
+
     borderRadius: 20,
     borderBottomEndRadius: 20,
     paddingRight: 20,

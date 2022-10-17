@@ -177,6 +177,8 @@ const NotesDetail = props => {
     }, 50);
   };
 
+  
+
   const api_editNote = async obj => {
     let res = await invokeApi({
       path: 'api/habit/edit_note/' + habit?._id,

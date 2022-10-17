@@ -19,6 +19,7 @@ export const screens = {
   allHabits: 'ALL_HABITS',
   habitDetail: 'HABIT_DETAIL',
   NotesDetail: 'NOTES_DETAIL',
+  AllNotes: 'ALL_NOTES',
   moodTracker: 'MOOD_TRACKER',
   addMood: 'ADD_MOOD',
   meditation: 'MEDITATION',

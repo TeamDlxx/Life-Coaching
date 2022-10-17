@@ -18,7 +18,10 @@ const App = props => {
   React.useEffect(() => {
     if (Text.defaultProps == null) Text.defaultProps = {};
     Text.defaultProps.allowFontScaling = false;
-    TrackplayerSetup();
+
+    if (!__DEV__) {
+      TrackplayerSetup();
+    }
   }, []);
 
   const TrackplayerSetup = async () => {

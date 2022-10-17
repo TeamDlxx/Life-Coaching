@@ -1,3 +1,4 @@
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -10,9 +11,7 @@ import {
   Platform,
   TouchableHighlight,
   RefreshControl,
-  Dimensions,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
 import {mainStyles, FAB_style, other_style} from '../../../Utilities/styles';
@@ -128,7 +127,7 @@ const HabitTracker = props => {
       navigation: props.navigation,
     });
     setisLoading(false);
-    setRefreshing(false);
+
     if (res) {
       if (res.code == 200) {
         updateHabitList(res?.habit);
@@ -193,9 +192,9 @@ const HabitTracker = props => {
     });
     setisLoading(false);
     setRefreshing(false);
+
     if (res) {
       if (res.code == 200) {
-        console.log('response', res);
         setHabitList(res.habits);
       } else {
         showToast(res.message);
@@ -673,15 +672,17 @@ const HabitTracker = props => {
           <Loader enable={isLoading} />
           <View style={{flex: 1}}>
             <FlatList
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={refreshFlatList}
-                  tintColor={Colors.primary}
-                  colors={[Colors.primary]}
-                  progressBackgroundColor={Colors.white}
-                />
-              }
+              // refreshControl={
+              //   <RefreshControl
+              //     refreshing={refreshing}
+              //     onRefresh={refreshFlatList}
+              //     tintColor={Colors.primary}
+              //     colors={[Colors.primary]}
+              //     progressBackgroundColor={Colors.white}
+              //   />
+              // }
+              refreshing={false}
+              onRefresh={refreshFlatList}
               listKey="main"
               stickyHeaderIndices={[0]}
               stickyHeaderHiddenOnScroll={true}

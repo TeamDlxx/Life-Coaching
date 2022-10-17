@@ -68,12 +68,24 @@ const HabitDetail = props => {
 
   const onPreviousWeek = () => {
     setCurrentWeek(moment(currentWeek).subtract(1, 'week'));
-    makeDaysArray();
+    // makeDaysArray();
   };
+
+  useEffect(() => {
+    makeDaysArray();
+  }, [currentWeek]);
 
   const onNextWeek = () => {
     setCurrentWeek(moment(currentWeek).add(1, 'week'));
-    makeDaysArray();
+    // makeDaysArray();
+  };
+
+  const onViewAllNotes = () => {
+    props.navigation.navigate(screens.AllNotes, {
+      habit: habit,
+      backScreenfunc: forNextScreen,
+      updateHabit: params?.updateHabit,
+    });
   };
 
   const checkCompleted = item => {
@@ -356,7 +368,6 @@ const HabitDetail = props => {
 
   useEffect(() => {
     callHabitDetailApi();
-    makeDaysArray();
     return () => {};
   }, []);
 
@@ -377,7 +388,6 @@ const HabitDetail = props => {
               width: 40,
               alignItems: 'center',
               justifyContent: 'center',
-              // backgroundColor:'pink',
               borderRadius: 25,
             }}>
             <Image
@@ -530,14 +540,6 @@ const HabitDetail = props => {
                             ]}>
                             {x.day.charAt(0)}
                           </Text>
-                          {/* <View style={{height: 12, width: 12, marginTop: 10}}>
-                            {x.status && (
-                              <Image
-                                style={{height: 12, width: 12}}
-                                source={require('../../../Assets/Icons/tick.png')}
-                              />
-                            )}
-                          </View> */}
                         </View>
                       );
                     })}
@@ -662,10 +664,7 @@ const HabitDetail = props => {
                     </View>
                   </View>
 
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                    }}>
+                  <View style={{flexDirection: 'row'}}>
                     {currentWeekDays.map((x, i) => {
                       if (
                         habit?.frequency.findIndex(
@@ -808,6 +807,22 @@ const HabitDetail = props => {
                       Notes
                     </Text>
                   </View>
+
+                  <Pressable
+                    onPress={onViewAllNotes}
+                    style={{
+                      alignSelf: 'flex-end',
+                      padding: 5,
+                    }}>
+                    <Text
+                      style={{
+                        color: Colors.black,
+                        fontSize: 12,
+                        fontFamily: font.bold,
+                      }}>
+                      View All
+                    </Text>
+                  </Pressable>
                   <View style={{}}>
                     {checkNotesforthisweek(habit.notes).length == 0 && (
                       <EmptyView
@@ -836,7 +851,7 @@ const HabitDetail = props => {
                               start={{x: 0, y: 0}}
                               end={{x: 1, y: 1}}
                               locations={[0.0, 0.99]}
-                              colors={[Bcolors[i].dark, Bcolors[i].light]}
+                              colors={['#FCE29F', '#FCE29F55']}
                               style={{
                                 marginTop: 10,
                                 borderRadius: 10,
@@ -849,7 +864,6 @@ const HabitDetail = props => {
                                       fontFamily: font.medium,
                                       fontSize: 12,
                                       color: Colors.gray12,
-                                      // textAlign: 'justify',
                                     }}>
                                     {x.note_text}
                                   </Text>
