@@ -186,6 +186,7 @@ const CreateHabit = props => {
   };
 
   const RemoveThisHabitScheduleNotifications = id => {
+    console.log('id for habit', id);
     PushNotification.getScheduledLocalNotifications(list => {
       list.map(x => {
         if (x.data._id == id) {
@@ -304,8 +305,7 @@ const CreateHabit = props => {
         ) + 1;
     }
 
-    console.log('diff', diff);
-    console.log('days', days);
+    
 
     for (let i = 0; i <= diff; i++) {
       let day = moment(obj_habit.createdAt).add(i, 'days');
@@ -317,10 +317,11 @@ const CreateHabit = props => {
 
         PushNotification.localNotificationSchedule({
           title: obj_habit?.name,
-          message: 'Please complete your todays habot',
+          message: "Please complete your today's habit",
           date: moment(scheduledTime, 'DD-MM-YYYY HH:mm').toDate(),
           userInfo: {
             _id: obj_habit?._id,
+            type: 'habit',
           },
           channelId: '6007',
           channelName: 'lifeCoaching',

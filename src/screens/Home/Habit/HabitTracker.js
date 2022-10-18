@@ -33,13 +33,10 @@ import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
-import {ToastAndroid} from 'react-native';
 
 const ic_nodata = require('../../../Assets/Icons/empty-box.png');
 
 const HabitTracker = props => {
-  const {params} = props.route;
-  const {navigation} = props;
   const {Token, habitList, setHabitList} = useContext(Context);
   const [isLoading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -133,6 +130,7 @@ const HabitTracker = props => {
     if (res) {
       if (res.code == 200) {
         updateHabitList(res?.habit);
+        removeScheduleNotification(res?.habit._id);
       } else {
         showToast(res.message);
       }
@@ -166,8 +164,58 @@ const HabitTracker = props => {
     if (res) {
       if (res.code == 200) {
         updateHabitList(res.habit);
+        addScheduleNotification(res.habit);
       } else {
         showToast(res.message);
+      }
+    }
+  };
+
+  //? Schedule Notifications
+
+  const removeScheduleNotification = id => {
+    PushNotification.getScheduledLocalNotifications(list => {
+      let notification = list.find(
+        x => x.data._id == id && moment(x.date).isSame(moment(today), 'date'),
+      );
+      console.log('notification', notification);
+      if (!!notification) {
+        PushNotification.cancelLocalNotification(notification.id);
+      }
+    });
+  };
+
+  const addScheduleNotification = obj_habit => {
+    console.log('addScheduleNotification', obj_habit);
+    if (obj_habit.reminder) {
+      let days = [];
+      obj_habit.frequency.filter(x => {
+        if (x.status == true) {
+          days.push(x.day.toLowerCase());
+        }
+      });
+
+      if (days.includes(moment(today).format('dddd').toLowerCase())) {
+        let scheduledTime = moment(
+          moment(today).format('DD-MM-YYYY') +
+            ' ' +
+            moment(obj_habit?.reminder_time).format('HH:mm'),
+          'DD-MM-YYYY HH:mm',
+        ).toISOString();
+        if (moment(scheduledTime).isAfter(moment())) {
+          console.log('isAfter');
+          PushNotification.localNotificationSchedule({
+            title: obj_habit?.name,
+            message: 'Please complete your todays habit',
+            date: moment(scheduledTime).toDate(),
+            userInfo: {
+              _id: obj_habit?._id,
+              type: 'habit',
+            },
+            channelId: '6007',
+            channelName: 'lifeCoaching',
+          });
+        }
       }
     }
   };
@@ -419,19 +467,6 @@ const HabitTracker = props => {
         </View>
       </Pressable>
     );
-  };
-
-  const scheduleNotification = () => {
-    PushNotification.localNotificationSchedule({
-      message: 'My Notification Message',
-      date: moment(moment().valueOf() + 10).toDate(),
-      channelId: '123',
-      channelName: 'Done',
-      repeatTime: 1,
-      repeatType: 'minute',
-    });
-
-    ToastAndroid.show('Notification scheduled', ToastAndroid.SHORT);
   };
 
   const flatListHeader = () => {

@@ -30,6 +30,8 @@ import Loader from '../../Components/Loader';
 import invokeApi from '../../functions/invokeAPI';
 import {useContext} from 'react';
 import Context from '../../Context';
+import moment from 'moment';
+import PushNotification from 'react-native-push-notification';
 
 const height = Dimensions.get('screen').height;
 const Login = props => {
@@ -60,12 +62,61 @@ const Login = props => {
           index: 0,
           routes: [{name: screens.bottomTabs}],
         });
+        scheduleNotifications(data?.habit);
       })
       .catch(e => {
         setisLoading(false);
         console.log('Async Error', e);
         showToast('Please Sign-in Agin', 'Something went wrong');
       });
+  };
+
+  const scheduleNotifications = list => {
+    list.map((x, i) => {
+      if (
+        x.reminder == true &&
+        moment(x.target_date).isSameOrAfter(moment(), 'date')
+      ) {
+        let days = [];
+        x.frequency.filter(y => {
+          if (y.status == true) {
+            days.push(y.day.toLowerCase());
+          }
+        });
+
+        let diff = 0;
+
+        if (
+          moment(x.target_date).format('DDMMYYYY') ==
+          moment().format('DDMMYYYY')
+        ) {
+          diff = 0;
+        } else {
+          diff = moment(x.target_date).diff(moment(), 'days') + 1;
+        }
+
+        for (let i = 0; i <= diff; i++) {
+          let day = moment().add(i, 'days');
+          if (days.includes(day.format('dddd').toLowerCase())) {
+            let scheduledTime =
+              day.format('DD-MM-YYYY') +
+              ' ' +
+              moment(x?.reminder_time).format('HH:mm');
+            PushNotification.localNotificationSchedule({
+              title: x?.name,
+              message: "Please complete your today's habit",
+              date: moment(scheduledTime, 'DD-MM-YYYY HH:mm').toDate(),
+              userInfo: {
+                _id: x?._id,
+                type: 'habit',
+              },
+              channelId: '6007',
+              channelName: 'lifeCoaching',
+            });
+          }
+        }
+      }
+    });
   };
 
   async function checkNotificationPermission() {

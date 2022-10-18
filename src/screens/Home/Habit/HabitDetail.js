@@ -34,6 +34,7 @@ import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
 import Toast from 'react-native-toast-message';
+import PushNotification from 'react-native-push-notification';
 
 const screen = Dimensions.get('screen');
 
@@ -122,12 +123,12 @@ const HabitDetail = props => {
       note_text: note.text.trim(),
       date: moment(note.item).toISOString(),
     };
-    api_addNote(item._id, obj_addNote);
+    api_addNote(item._id, obj_addNote, note.item);
     setisLoading(true);
     setNote({modalVisible: false, text: '', item: null});
   };
 
-  const api_addNote = async (id, obj) => {
+  const api_addNote = async (id, obj, date) => {
     let res = await invokeApi({
       path: 'api/habit/add_note/' + habit?._id,
       method: 'POST',
@@ -141,6 +142,7 @@ const HabitDetail = props => {
     setRefreshing(false);
     if (res) {
       if (res.code == 200) {
+        removeScheduleNotification(res.habit._id, date);
         setHabitDetail(res.habit);
         updateHabitList(res.habit);
         if (!!params?.updateHabit) {
@@ -364,6 +366,19 @@ const HabitDetail = props => {
 
   const updateHabitLocally = item => {
     setHabitDetail(item);
+  };
+
+  //? Schedule Notifications
+
+  const removeScheduleNotification = (id, date) => {
+    PushNotification.getScheduledLocalNotifications(list => {
+      let notification = list.find(
+        x => x.data._id == id && moment(x.date).isSame(moment(date), 'date'),
+      );
+      if (!!notification) {
+        PushNotification.cancelLocalNotification(notification.id);
+      }
+    });
   };
 
   useEffect(() => {

@@ -26,13 +26,8 @@ export default function BottomTabs() {
         headerShown: false,
         keyboardHidesTabBar: true,
         tabBarShowLabel: false,
-        // tabBarVisibilityAnimationConfig: {
-        //   show: true,
-        // },
-        // tabBarLabelPosition: 'below-icon',
         tabBarStyle: {
           backgroundColor: 'transparent',
-
           borderTopWidth: 0,
           paddingTop: Platform.OS == 'android' ? 20 : 18,
           elevation: 0,

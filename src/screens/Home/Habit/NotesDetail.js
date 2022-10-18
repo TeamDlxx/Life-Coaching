@@ -25,6 +25,7 @@ import moment from 'moment';
 import LinearGradient from 'react-native-linear-gradient';
 import Modal from 'react-native-modal';
 import CustomImage from '../../../Components/CustomImage';
+import PushNotification from 'react-native-push-notification';
 
 // For API's calling
 import {useContext} from 'react';
@@ -177,8 +178,6 @@ const NotesDetail = props => {
     }, 50);
   };
 
-  
-
   const api_editNote = async obj => {
     let res = await invokeApi({
       path: 'api/habit/edit_note/' + habit?._id,
@@ -240,6 +239,7 @@ const NotesDetail = props => {
     setisLoading(false);
     if (res) {
       if (res.code == 200) {
+        addScheduleNotification(res.habit);
         if (!!params?.backScreenfunc) {
           params?.backScreenfunc(res.habit);
         }
@@ -253,6 +253,41 @@ const NotesDetail = props => {
         }, 200);
       } else {
         showToast(res.message);
+      }
+    }
+  };
+
+  const addScheduleNotification = obj_habit => {
+    console.log('addScheduleNotification', obj_habit);
+    if (obj_habit.reminder) {
+      let days = [];
+      obj_habit.frequency.filter(x => {
+        if (x.status == true) {
+          days.push(x.day.toLowerCase());
+        }
+      });
+
+      if (days.includes(moment(date).format('dddd').toLowerCase())) {
+        let scheduledTime = moment(
+          moment(date).format('DD-MM-YYYY') +
+            ' ' +
+            moment(obj_habit?.reminder_time).format('HH:mm'),
+          'DD-MM-YYYY HH:mm',
+        ).toISOString();
+        if (moment(scheduledTime).isAfter(moment())) {
+          console.log('isAfter');
+          PushNotification.localNotificationSchedule({
+            title: obj_habit?.name,
+            message: 'Please complete your todays habit',
+            date: moment(scheduledTime).toDate(),
+            userInfo: {
+              _id: obj_habit?._id,
+              type: 'habit',
+            },
+            channelId: '6007',
+            channelName: 'lifeCoaching',
+          });
+        }
       }
     }
   };

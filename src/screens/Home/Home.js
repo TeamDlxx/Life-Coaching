@@ -41,7 +41,7 @@ const Home = props => {
     setTimeout(() => {
       SplashScreen.hide();
       setOpt(options);
-    }, 500);
+    }, 1000);
   }, []);
 
   const onDisplayNotification = async () => {

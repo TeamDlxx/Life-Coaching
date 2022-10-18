@@ -39,8 +39,6 @@ export default function NotificationConfig(props) {
 
   const NotificationAction = notification => {
     let {data} = notification;
-    console.log('props', props);
-    console.log('Click on Push Notification', notification);
     console.log(data, 'notificationId');
     switch (data.type) {
       case 'Quote':
@@ -49,7 +47,18 @@ export default function NotificationConfig(props) {
           routes: [{name: screens.bottomTabs}, {name: screens.qouteList}],
         });
 
-        // props.navigation.dispatch(StackActions.push(screens.qouteList));
+        break;
+
+      case 'habit':
+        props.navigation.reset({
+          index: 0,
+          routes: [
+            {name: screens.bottomTabs},
+            {name: screens.habitTracker},
+            {name: screens.habitDetail, params: {id: data._id}},
+          ],
+        });
+
         break;
     }
   };
