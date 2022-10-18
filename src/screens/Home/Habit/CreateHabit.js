@@ -37,6 +37,7 @@ import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
 import {isFirstLetterAlphabet} from '../../../functions/regex';
 import rountToNextmins from '../../../functions/rountToNextmins';
+import PushNotification from 'react-native-push-notification';
 const screen = Dimensions.get('screen');
 const week = [
   {day: 'monday', status: false},
@@ -155,9 +156,16 @@ const CreateHabit = props => {
       },
       navigation: props.navigation,
     });
-    setisLoading(false);
+
     if (res) {
       if (res.code == 200) {
+        if (res?.habit?.reminder) {
+          RemoveThisHabitScheduleNotifications(res?.habit?._id);
+          scheduleNotification(res?.habit);
+        } else {
+          RemoveThisHabitScheduleNotifications(res?.habit?._id);
+        }
+        setisLoading(false);
         showToast(
           'Habit has been updated successfully',
           'Habit Updated',
@@ -175,6 +183,16 @@ const CreateHabit = props => {
         showToast(res.message);
       }
     }
+  };
+
+  const RemoveThisHabitScheduleNotifications = id => {
+    PushNotification.getScheduledLocalNotifications(list => {
+      list.map(x => {
+        if (x.data._id == id) {
+          PushNotification.cancelLocalNotification(x.id);
+        }
+      });
+    });
   };
 
   const updateHabitList = habit => {
@@ -248,15 +266,65 @@ const CreateHabit = props => {
       },
       navigation: props.navigation,
     });
-
-    setisLoading(false);
-    console.log('res', res);
     if (res) {
       if (res.code == 200) {
+        if (res?.habit?.reminder) {
+          scheduleNotification(res?.habit);
+        }
+        setisLoading(false);
         setHabitList(res?.all_habits);
         navigation.navigate(screens.habitTracker);
       } else {
+        setisLoading(false);
         showToast(res.message);
+      }
+    }
+  };
+
+  const scheduleNotification = obj_habit => {
+    let days = [];
+    obj_habit.frequency.filter(x => {
+      if (x.status == true) {
+        days.push(x.day.toLowerCase());
+      }
+    });
+
+    let diff = 0;
+
+    if (
+      moment(obj_habit.target_date).format('DDMMYYYY') ==
+      moment(obj_habit.createdAt).format('DDMMYYYY')
+    ) {
+      diff = 0;
+    } else {
+      diff =
+        moment(obj_habit.target_date).diff(
+          moment(obj_habit.createdAt),
+          'days',
+        ) + 1;
+    }
+
+    console.log('diff', diff);
+    console.log('days', days);
+
+    for (let i = 0; i <= diff; i++) {
+      let day = moment(obj_habit.createdAt).add(i, 'days');
+      if (days.includes(day.format('dddd').toLowerCase())) {
+        let scheduledTime =
+          day.format('DD-MM-YYYY') +
+          ' ' +
+          moment(obj_habit?.reminder_time).format('HH:mm');
+
+        PushNotification.localNotificationSchedule({
+          title: obj_habit?.name,
+          message: 'Please complete your todays habot',
+          date: moment(scheduledTime, 'DD-MM-YYYY HH:mm').toDate(),
+          userInfo: {
+            _id: obj_habit?._id,
+          },
+          channelId: '6007',
+          channelName: 'lifeCoaching',
+        });
       }
     }
   };
@@ -407,7 +475,6 @@ const CreateHabit = props => {
               <Text style={other_style.labelText}>Target Date</Text>
             </View>
             <Pressable
-              // onPress={() => setTargetDate({...targetDate, showModal: true})}
               onPress={() =>
                 updateHabit({targetDate: {...targetDate, showModal: true}})
               }
@@ -461,14 +528,6 @@ const CreateHabit = props => {
                       ]}>
                       {x.day.charAt(0)}
                     </Text>
-                    {/* <View style={{height: 12, width: 12, marginTop: 10}}>
-                      {x.status && (
-                        <Image
-                          style={{height: 12, width: 12}}
-                          source={require('../../../Assets/Icons/tick.png')}
-                        />
-                      )}
-                    </View> */}
                   </Pressable>
                 );
               })}
@@ -505,7 +564,6 @@ const CreateHabit = props => {
                   height: 35,
                   width: 35,
                   alignSelf: 'flex-end',
-                  // backgroundColor: 'pink',
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginRight: -15,

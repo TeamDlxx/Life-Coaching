@@ -15,7 +15,7 @@ import {
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
 import {mainStyles, FAB_style, other_style} from '../../../Utilities/styles';
-import moment from 'moment';
+import moment, {months} from 'moment';
 import {font} from '../../../Utilities/font';
 import Modal from 'react-native-modal';
 import {CustomMultilineTextInput} from '../../../Components/CustomTextInput';
@@ -23,6 +23,7 @@ import CustomButton from '../../../Components/CustomButton';
 import {screens} from '../../../Navigation/Screens';
 import CustomImage from '../../../Components/CustomImage';
 import Toast from 'react-native-toast-message';
+import PushNotification from 'react-native-push-notification';
 
 // For API's calling
 import {useContext} from 'react';
@@ -32,6 +33,7 @@ import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
+import {ToastAndroid} from 'react-native';
 
 const ic_nodata = require('../../../Assets/Icons/empty-box.png');
 
@@ -419,14 +421,33 @@ const HabitTracker = props => {
     );
   };
 
+  const scheduleNotification = () => {
+    PushNotification.localNotificationSchedule({
+      message: 'My Notification Message',
+      date: moment(moment().valueOf() + 10).toDate(),
+      channelId: '123',
+      channelName: 'Done',
+      repeatTime: 1,
+      repeatType: 'minute',
+    });
+
+    ToastAndroid.show('Notification scheduled', ToastAndroid.SHORT);
+  };
+
   const flatListHeader = () => {
     return (
       <View style={{paddingHorizontal: 20, backgroundColor: Colors.background}}>
-        <View style={{marginTop: 5}}>
+        <Pressable
+          onPress={() => {
+            PushNotification.getScheduledLocalNotifications(list => {
+              console.log('schedule notification', list);
+            });
+          }}
+          style={{marginTop: 5}}>
           <Text style={other_style.labelText}>
             {moment().format('DD MMM YYYY')}
           </Text>
-        </View>
+        </Pressable>
         <View style={{marginHorizontal: -20, marginTop: 5}}>
           <FlatList
             listKey="days"
@@ -445,9 +466,9 @@ const HabitTracker = props => {
             }}
           />
         </View>
-        <View style={{marginTop: 5, marginBottom: 15}}>
+        <Pressable style={{marginTop: 5, marginBottom: 15}}>
           <Text style={other_style.labelText}>All Habits</Text>
-        </View>
+        </Pressable>
       </View>
     );
   };
@@ -532,54 +553,6 @@ const HabitTracker = props => {
               </Text>
             </Pressable>
           </View>
-          {/* <View style={modalStyle.emojiView}>
-            {emojis.map((item, index) => {
-              return (
-                <Pressable
-                  onPress={() => setSelectedMood(item)}
-                  style={[
-                    selectedMood?._id == item._id
-                      ? {
-                          backgroundColor: Colors.lightPrimary,
-                          borderRadius: 10,
-                          borderColor: Colors.gray02,
-                        }
-                      : null,
-                    {
-                      flex: 1,
-                      // paddingHorizontal: 10,
-                      borderWidth: 1,
-                      // borderWidth: 1,
-                      borderColor: 'transparent',
-                      paddingVertical: 10,
-                      alignItems: 'center',
-
-                      // backgroundColor:Colors.background
-                    },
-                  ]}>
-                  <Text
-                    adjustsFontSizeToFit={true}
-                    style={{fontSize: 24, color: '#fff'}}>
-                    {item.emoji}
-                  </Text>
-                  <Text
-                    adjustsFontSizeToFit={true}
-                    style={{
-                      fontSize: 12,
-                      fontFamily: font.medium,
-                      color:
-                        selectedMood?._id == item._id
-                          ? Colors.black
-                          : Colors.gray14,
-                      marginTop: 5,
-                      textAlign: 'center',
-                    }}>
-                    {item.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View> */}
           <View style={{marginHorizontal: 10, marginTop: 20}}>
             <CustomButton
               onPress={onChooseHabitScreen}
@@ -672,17 +645,15 @@ const HabitTracker = props => {
           <Loader enable={isLoading} />
           <View style={{flex: 1}}>
             <FlatList
-              // refreshControl={
-              //   <RefreshControl
-              //     refreshing={refreshing}
-              //     onRefresh={refreshFlatList}
-              //     tintColor={Colors.primary}
-              //     colors={[Colors.primary]}
-              //     progressBackgroundColor={Colors.white}
-              //   />
-              // }
-              refreshing={false}
-              onRefresh={refreshFlatList}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={refreshFlatList}
+                  tintColor={Colors.primary}
+                  colors={[Colors.primary]}
+                  progressBackgroundColor={Colors.white}
+                />
+              }
               listKey="main"
               stickyHeaderIndices={[0]}
               stickyHeaderHiddenOnScroll={true}

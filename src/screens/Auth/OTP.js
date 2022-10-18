@@ -183,17 +183,26 @@ const OTP = props => {
               </View>
 
               <View style={{marginTop: 50, alignItems: 'center'}}>
+                <Text
+                  style={{
+                    fontFamily: font.medium,
+                    color: Colors.main,
+                    fontSize: 14,
+                  }}>
+                  Didn't received code yet?
+                </Text>
                 <Pressable
                   onPress={api_emailVerification}
                   disabled={countDown != 0}
-                  style={{padding: 10}}>
+                  style={{padding: 0}}>
                   <Text
                     style={{
                       fontFamily: font.medium,
                       color: countDown == 0 ? Colors.primary : Colors.main,
                       fontSize: 14,
                     }}>
-                    {countDown == 0 ? 'Resend Code' : countDown}
+                    Resend code{' '}
+                    {countDown != 0 ? 'in ' + countDown + 's' : 'again'}
                   </Text>
                 </Pressable>
               </View>

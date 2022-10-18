@@ -27,6 +27,7 @@ import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
+import PushNotification from 'react-native-push-notification';
 const screen = Dimensions.get('screen');
 
 const AllHabits = props => {
@@ -113,6 +114,7 @@ const AllHabits = props => {
     setisLoading(false);
     if (res) {
       if (res.code == 200) {
+        RemoveThisHabitScheduleNotifications(id);
         showToast(
           'Habit has been deleted successfully',
           'Habit Deleted',
@@ -124,6 +126,16 @@ const AllHabits = props => {
         showToast(res.message);
       }
     }
+  };
+
+  const RemoveThisHabitScheduleNotifications = id => {
+    PushNotification.getScheduledLocalNotifications(list => {
+      list.map(x => {
+        if (x.data._id == id) {
+          PushNotification.cancelLocalNotification(x.id);
+        }
+      });
+    });
   };
 
   const removeFromGlobalHabitList = id => {
@@ -225,18 +237,8 @@ const AllHabits = props => {
           </View>
 
           <View>
-            {/* <Text
-              style={{
-                fontSize: 12,
-                color: Colors.text,
-                fontFamily: font.medium,
-                marginTop: 10,
-              }}>
-              Current Week Status:
-            </Text> */}
-            <View style={{flexDirection: 'row',marginTop:10}}>
+            <View style={{flexDirection: 'row', marginTop: 10}}>
               {currentWeek.map(x => {
-                console.log('wednejkw', moment(x).format('DDMMYYYY'));
                 return (
                   <View
                     style={{

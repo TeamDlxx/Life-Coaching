@@ -120,13 +120,15 @@ export const createHabit_styles = StyleSheet.create({
     margin: 5,
     borderRadius: 10,
     flex: 1,
-    aspectRatio: 1,
+
     backgroundColor: Colors.white,
   },
   weekButtonText: {
     fontFamily: font.medium,
     fontSize: 14,
     textTransform: 'capitalize',
+    // backgroundColor:"pink",
+    includeFontPadding: false,
   },
 
   timeButton: {

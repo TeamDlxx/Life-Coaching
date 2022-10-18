@@ -24,6 +24,7 @@ import invokeApi from '../../functions/invokeAPI';
 
 import {useContext} from 'react';
 import Context from '../../Context';
+import PushNotification from 'react-native-push-notification';
 
 const Setting = props => {
   const [isLoading, setisLoading] = useState(false);
@@ -38,11 +39,13 @@ const Setting = props => {
         index: 0,
         routes: [{name: screens.landing}],
       });
+      PushNotification.cancelAllLocalNotifications();
     } catch (e) {
       props.navigation.reset({
         index: 0,
         routes: [{name: screens.landing}],
       });
+      PushNotification.cancelAllLocalNotifications();
     }
   };
 

@@ -5,6 +5,7 @@
         <!-- Customize your theme here. -->
         <item name="android:forceDarkAllowed" tools:ignore="NewApi">false</item>
         <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
         <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
         <item name="android:navigationBarColor">@color/background</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>

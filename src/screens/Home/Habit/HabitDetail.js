@@ -417,533 +417,541 @@ const HabitDetail = props => {
         barStyle={'dark-content'}
         backgroundColor={Colors.background}
       />
-      <Header
-        menu={dropDownMenu}
-        navigation={props.navigation}
-        title={'Habit Detail'}
-      />
       <View style={{flex: 1}}>
-        {habit != null && (
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View style={{flex: 1}}>
-              <View
-                style={{
-                  backgroundColor: Colors.white,
-                  padding: 15,
-                  borderRadius: 20,
-                  borderWidth: 1,
-                  borderColor: Colors.gray02,
-                  marginTop: '25%',
-                  marginHorizontal: 10,
-                }}>
+        <Header
+          menu={dropDownMenu}
+          navigation={props.navigation}
+          title={'Habit Detail'}
+        />
+        <View style={{flex: 1}}>
+          {habit != null && (
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={{flex: 1}}>
                 <View
                   style={{
-                    width: screen.width / 3,
-                    aspectRatio: 1,
-                    borderRadius: 20,
-                    alignSelf: 'center',
-                    shadowColor: '#000',
-                    shadowOffset: {
-                      width: 0,
-                      height: 2,
-                    },
-                    shadowOpacity: 0.25,
-                    shadowRadius: 3.84,
-
-                    elevation: 5,
-                    marginTop: -screen.width / 5,
                     backgroundColor: Colors.white,
+                    padding: 15,
+                    borderRadius: 20,
+                    borderWidth: 1,
+                    borderColor: Colors.gray02,
+                    marginTop: '25%',
+                    marginHorizontal: 10,
                   }}>
-                  <CustomImage
-                    source={{uri: fileURL + habit.images?.large}}
+                  <View
                     style={{
-                      flex: 1,
-                      width: '100%',
-                      height: '100%',
-                    }}
-                    imageStyle={{
+                      width: screen.width / 3,
+                      aspectRatio: 1,
                       borderRadius: 20,
-                    }}
-                    indicatorProps={{
-                      color: Colors.primary,
-                    }}
-                  />
-                </View>
-                <View style={{marginTop: 30}}>
-                  <Text style={HabitDetail_style.lable}>Habit Name</Text>
-                  <Text style={[HabitDetail_style.detailText, {fontSize: 20}]}>
-                    {habit.name}
-                  </Text>
-                </View>
+                      alignSelf: 'center',
+                      shadowColor: '#000',
+                      shadowOffset: {
+                        width: 0,
+                        height: 2,
+                      },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 3.84,
 
-                <View style={HabitDetail_style.ItemView}>
-                  <Text style={HabitDetail_style.lable}>Type</Text>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      marginTop: 5,
+                      elevation: 5,
+                      marginTop: -screen.width / 5,
+                      backgroundColor: Colors.white,
                     }}>
-                    <Image
-                      source={
-                        habit.type == 'to-do'
-                          ? require('../../../Assets/Icons/check.png')
-                          : require('../../../Assets/Icons/remove.png')
-                      }
-                      style={{height: 15, width: 15, marginRight: 5}}
-                    />
-                    <Text
-                      style={[HabitDetail_style.detailText, {marginTop: -2}]}>
-                      {habit.type == 'to-do' ? 'TO-DO' : 'Not TO-DO'}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={HabitDetail_style.ItemView}>
-                  <Text style={HabitDetail_style.lable}>Target Date</Text>
-                  <Text style={[HabitDetail_style.detailText]}>
-                    {moment(habit.target_date).format('DD MMM YYYY')}
-                  </Text>
-                </View>
-
-                <View style={HabitDetail_style.ItemView}>
-                  <Text style={HabitDetail_style.lable}>Start Date</Text>
-                  <Text style={[HabitDetail_style.detailText]}>
-                    {moment(habit.createdAt).format('DD MMM YYYY')}
-                  </Text>
-                </View>
-
-                <View style={HabitDetail_style.ItemView}>
-                  <Text style={HabitDetail_style.lable}>Frequency</Text>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      flexWrap: 'wrap',
-                      marginTop: 5,
-                    }}>
-                    {habit?.frequency.map((x, i) => {
-                      return (
-                        <View
-                          style={[
-                            createHabit_styles.weekButton,
-                            x.status && createHabit_styles.selectedButton,
-                            {margin: 3},
-                          ]}>
-                          <Text
-                            adjustsFontSizeToFit={true}
-                            style={[
-                              createHabit_styles.weekButtonText,
-                              {
-                                color: x.status && Colors.primary,
-                                fontFamily: x.status ? font.bold : font.regular,
-                              },
-                            ]}>
-                            {x.day.charAt(0)}
-                          </Text>
-                        </View>
-                      );
-                    })}
-                  </View>
-                </View>
-                {habit.reminder && (
-                  <View style={HabitDetail_style.ItemView}>
-                    <Text style={HabitDetail_style.lable}>Reminder at</Text>
-                    <Text style={[HabitDetail_style.detailText]}>
-                      {moment(habit.reminder_time).format('hh:mm A')}
-                    </Text>
-                  </View>
-                )}
-
-                {/* Notes */}
-
-                <View style={HabitDetail_style.ItemView}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      marginTop: 10,
-                    }}>
-                    <Pressable
-                      disabled={
-                        !(
-                          moment(currentWeek).startOf('week').valueOf() >
-                          moment(habit?.createdAt).startOf('week').valueOf()
-                        )
-                      }
-                      onPress={onPreviousWeek}
-                      style={{
-                        height: 40,
-                        width: 40,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: '#F8F7FC',
-                        borderWidth: 1,
-                        borderColor: Colors.gray02,
-                        borderRadius: 10,
-                      }}>
-                      <Image
-                        source={require('../../../Assets/Icons/left_arrow.png')}
-                        style={{
-                          height: 10,
-                          width: 10,
-                          tintColor:
-                            moment(currentWeek).startOf('week').valueOf() >
-                            moment(habit?.createdAt).startOf('week').valueOf()
-                              ? Colors.black
-                              : Colors.placeHolder,
-                        }}
-                      />
-                    </Pressable>
-                    <Pressable
+                    <CustomImage
+                      source={{uri: fileURL + habit.images?.large}}
                       style={{
                         flex: 1,
-                        borderWidth: 1,
-                        borderColor: Colors.gray02,
-                        backgroundColor: '#F8F7FC',
-                        marginHorizontal: 4,
-                        borderRadius: 10,
-                        height: 40,
-                        justifyContent: 'center',
-                      }}>
-                      <Text
-                        style={{
-                          fontFamily: font.medium,
-                          textAlign: 'center',
-                          fontSize: 14,
-                        }}>
-                        {moment(currentWeek).isSame(new Date(), 'week')
-                          ? 'This Week'
-                          : getWeekDates()}
-                      </Text>
-                    </Pressable>
+                        width: '100%',
+                        height: '100%',
+                      }}
+                      imageStyle={{
+                        borderRadius: 20,
+                      }}
+                      indicatorProps={{
+                        color: Colors.primary,
+                      }}
+                    />
+                  </View>
+                  <View style={{marginTop: 30}}>
+                    <Text style={HabitDetail_style.lable}>Habit Name</Text>
+                    <Text
+                      style={[HabitDetail_style.detailText, {fontSize: 20}]}>
+                      {habit.name}
+                    </Text>
+                  </View>
+
+                  <View style={HabitDetail_style.ItemView}>
+                    <Text style={HabitDetail_style.lable}>Type</Text>
                     <View
                       style={{
-                        height: 40,
-                        width: 40,
-                        backgroundColor: '#F8F7FC',
-                        borderWidth: 1,
-                        borderColor: Colors.gray02,
-                        borderRadius: 10,
-                        marginVertical: 10,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginTop: 5,
+                      }}>
+                      <Image
+                        source={
+                          habit.type == 'to-do'
+                            ? require('../../../Assets/Icons/check.png')
+                            : require('../../../Assets/Icons/remove.png')
+                        }
+                        style={{height: 15, width: 15, marginRight: 5}}
+                      />
+                      <Text
+                        style={[HabitDetail_style.detailText, {marginTop: -2}]}>
+                        {habit.type == 'to-do' ? 'TO-DO' : 'Not TO-DO'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={HabitDetail_style.ItemView}>
+                    <Text style={HabitDetail_style.lable}>Target Date</Text>
+                    <Text style={[HabitDetail_style.detailText]}>
+                      {moment(habit.target_date).format('DD MMM YYYY')}
+                    </Text>
+                  </View>
+
+                  <View style={HabitDetail_style.ItemView}>
+                    <Text style={HabitDetail_style.lable}>Start Date</Text>
+                    <Text style={[HabitDetail_style.detailText]}>
+                      {moment(habit.createdAt).format('DD MMM YYYY')}
+                    </Text>
+                  </View>
+
+                  <View style={HabitDetail_style.ItemView}>
+                    <Text style={HabitDetail_style.lable}>Frequency</Text>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                        marginTop: 5,
+                      }}>
+                      {habit?.frequency.map((x, i) => {
+                        return (
+                          <View
+                            style={[
+                              createHabit_styles.weekButton,
+                              x.status && createHabit_styles.selectedButton,
+                              {margin: 3},
+                            ]}>
+                            <Text
+                              adjustsFontSizeToFit={true}
+                              style={[
+                                createHabit_styles.weekButtonText,
+                                {
+                                  color: x.status && Colors.primary,
+                                  fontFamily: x.status
+                                    ? font.bold
+                                    : font.regular,
+                                },
+                              ]}>
+                              {x.day.charAt(0)}
+                            </Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  </View>
+                  {habit.reminder && (
+                    <View style={HabitDetail_style.ItemView}>
+                      <Text style={HabitDetail_style.lable}>Reminder at</Text>
+                      <Text style={[HabitDetail_style.detailText]}>
+                        {moment(habit.reminder_time).format('hh:mm A')}
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* Notes */}
+
+                  <View style={HabitDetail_style.ItemView}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginTop: 10,
                       }}>
                       <Pressable
                         disabled={
                           !(
-                            moment(currentWeek).endOf('week').valueOf() <
-                              moment(habit?.target_date)
-                                .endOf('week')
-                                .valueOf() &&
-                            moment(currentWeek).endOf('week').valueOf() <=
-                              moment().valueOf()
+                            moment(currentWeek).startOf('week').valueOf() >
+                            moment(habit?.createdAt).startOf('week').valueOf()
                           )
                         }
-                        onPress={onNextWeek}
+                        onPress={onPreviousWeek}
                         style={{
                           height: 40,
                           width: 40,
                           alignItems: 'center',
                           justifyContent: 'center',
+                          backgroundColor: '#F8F7FC',
+                          borderWidth: 1,
+                          borderColor: Colors.gray02,
+                          borderRadius: 10,
                         }}>
                         <Image
-                          source={require('../../../Assets/Icons/right_arrow.png')}
+                          source={require('../../../Assets/Icons/left_arrow.png')}
                           style={{
                             height: 10,
                             width: 10,
                             tintColor:
+                              moment(currentWeek).startOf('week').valueOf() >
+                              moment(habit?.createdAt).startOf('week').valueOf()
+                                ? Colors.black
+                                : Colors.placeHolder,
+                          }}
+                        />
+                      </Pressable>
+                      <Pressable
+                        style={{
+                          flex: 1,
+                          borderWidth: 1,
+                          borderColor: Colors.gray02,
+                          backgroundColor: '#F8F7FC',
+                          marginHorizontal: 4,
+                          borderRadius: 10,
+                          height: 40,
+                          justifyContent: 'center',
+                        }}>
+                        <Text
+                          style={{
+                            fontFamily: font.medium,
+                            textAlign: 'center',
+                            fontSize: 14,
+                          }}>
+                          {moment(currentWeek).isSame(new Date(), 'week')
+                            ? 'This Week'
+                            : getWeekDates()}
+                        </Text>
+                      </Pressable>
+                      <View
+                        style={{
+                          height: 40,
+                          width: 40,
+                          backgroundColor: '#F8F7FC',
+                          borderWidth: 1,
+                          borderColor: Colors.gray02,
+                          borderRadius: 10,
+                          marginVertical: 10,
+                        }}>
+                        <Pressable
+                          disabled={
+                            !(
                               moment(currentWeek).endOf('week').valueOf() <
                                 moment(habit?.target_date)
                                   .endOf('week')
                                   .valueOf() &&
                               moment(currentWeek).endOf('week').valueOf() <=
                                 moment().valueOf()
-                                ? Colors.black
-                                : Colors.placeHolder,
-                          }}
-                        />
-                      </Pressable>
+                            )
+                          }
+                          onPress={onNextWeek}
+                          style={{
+                            height: 40,
+                            width: 40,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}>
+                          <Image
+                            source={require('../../../Assets/Icons/right_arrow.png')}
+                            style={{
+                              height: 10,
+                              width: 10,
+                              tintColor:
+                                moment(currentWeek).endOf('week').valueOf() <
+                                  moment(habit?.target_date)
+                                    .endOf('week')
+                                    .valueOf() &&
+                                moment(currentWeek).endOf('week').valueOf() <=
+                                  moment().valueOf()
+                                  ? Colors.black
+                                  : Colors.placeHolder,
+                            }}
+                          />
+                        </Pressable>
+                      </View>
                     </View>
-                  </View>
 
-                  <View style={{flexDirection: 'row'}}>
-                    {currentWeekDays.map((x, i) => {
-                      if (
-                        habit?.frequency.findIndex(
-                          y =>
-                            y.day.toLowerCase() ===
-                              moment(x).format('dddd').toLowerCase() &&
-                            y.status == true,
-                        ) != -1
-                      ) {
-                        return (
-                          <Pressable
-                            onPress={() => {
-                              if (!moment(x).isAfter(moment())) {
-                                if (!checkCompleted(x)) {
-                                  setNote({
-                                    modalVisible: true,
-                                    text: '',
-                                    update: false,
-                                    item: x,
-                                  });
+                    <View style={{flexDirection: 'row'}}>
+                      {currentWeekDays.map((x, i) => {
+                        if (
+                          habit?.frequency.findIndex(
+                            y =>
+                              y.day.toLowerCase() ===
+                                moment(x).format('dddd').toLowerCase() &&
+                              y.status == true,
+                          ) != -1
+                        ) {
+                          return (
+                            <Pressable
+                              onPress={() => {
+                                if (!moment(x).isAfter(moment())) {
+                                  if (!checkCompleted(x)) {
+                                    setNote({
+                                      modalVisible: true,
+                                      text: '',
+                                      update: false,
+                                      item: x,
+                                    });
+                                  } else {
+                                    props.navigation.navigate(
+                                      screens.NotesDetail,
+                                      {
+                                        habit: habit,
+                                        date: moment(x).toISOString(),
+                                        backScreenfunc: forNextScreen,
+                                        updateHabit: params?.updateHabit,
+                                      },
+                                    );
+                                  }
                                 } else {
-                                  props.navigation.navigate(
-                                    screens.NotesDetail,
-                                    {
-                                      habit: habit,
-                                      date: moment(x).toISOString(),
-                                      backScreenfunc: forNextScreen,
-                                      updateHabit: params?.updateHabit,
-                                    },
+                                  showToast(
+                                    'You cannot mark complete for future days',
+                                    'Alert',
                                   );
                                 }
-                              } else {
-                                showToast(
-                                  'You cannot mark complete for future days',
-                                  'Alert',
-                                );
-                              }
-                            }}
-                            style={{
-                              borderWidth: 1,
-                              borderColor: Colors.gray02,
-                              borderRadius: 10,
-                              // padding: 5,
-                              margin: 5,
-                              flex: 1,
-                              // width: '14.1%',
-                              aspectRatio: 0.7,
-                              justifyContent: 'center',
-                              backgroundColor: checkCompleted(x)
-                                ? Colors.secondary
-                                : Colors.white,
-                            }}>
-                            <View
+                              }}
                               style={{
-                                alignItems: 'center',
-                              }}>
-                              <View style={{}}>
-                                <Text
-                                  style={{
-                                    textTransform: 'capitalize',
-                                    fontFamily: checkCompleted(x)
-                                      ? font.bold
-                                      : font.regular,
-                                    color: checkCompleted(x)
-                                      ? Colors.primary
-                                      : Colors.black,
-                                  }}>
-                                  {moment(x).format('dddd').charAt(0)}
-                                </Text>
-                              </View>
-                              <View>
-                                <View
-                                  style={{
-                                    height: 12,
-                                    width: 12,
-                                    marginTop: 10,
-                                  }}>
-                                  {checkCompleted(x) && (
-                                    <Image
-                                      style={{height: 12, width: 12}}
-                                      source={require('../../../Assets/Icons/tick.png')}
-                                    />
-                                  )}
-                                </View>
-                              </View>
-                            </View>
-                          </Pressable>
-                        );
-                      } else {
-                        return (
-                          <View
-                            opacity={0.5}
-                            style={{
-                              borderWidth: 1,
-                              borderColor: Colors.gray02,
-                              borderRadius: 10,
-                              margin: 5,
-                              flex: 1,
-                              aspectRatio: 0.7,
-                              justifyContent: 'center',
-                              // backgroundColor: Colors.gray01,
-                            }}>
-                            <View
-                              style={{
-                                alignItems: 'center',
-                              }}>
-                              <View style={{}}>
-                                <Text
-                                  style={{
-                                    textTransform: 'capitalize',
-                                    fontFamily: font.regular,
-                                    color: Colors.gray10,
-                                  }}>
-                                  {moment(x).format('dddd').charAt(0)}
-                                </Text>
-                              </View>
-                              <View>
-                                <View
-                                  style={{
-                                    height: 12,
-                                    width: 12,
-                                    marginTop: 10,
-                                  }}
-                                />
-                              </View>
-                            </View>
-                          </View>
-                        );
-                      }
-                    })}
-                  </View>
-                  <View style={{marginVertical: 10}}>
-                    <Text
-                      style={{
-                        color: Colors.black,
-                        fontSize: 16,
-                        fontFamily: font.bold,
-                        textAlign: 'center',
-                      }}>
-                      Notes
-                    </Text>
-                  </View>
-
-                  <Pressable
-                    onPress={onViewAllNotes}
-                    style={{
-                      alignSelf: 'flex-end',
-                      padding: 5,
-                    }}>
-                    <Text
-                      style={{
-                        color: Colors.black,
-                        fontSize: 12,
-                        fontFamily: font.bold,
-                      }}>
-                      View All
-                    </Text>
-                  </Pressable>
-                  <View style={{}}>
-                    {checkNotesforthisweek(habit.notes).length == 0 && (
-                      <EmptyView
-                        style={{
-                          marginTop: 0,
-                          paddingVertical: 90,
-                          width: '100%',
-                        }}
-                        title="No Notes for this week"
-                      />
-                    )}
-                    <>
-                      {sorttheListbyDate(habit.notes).map((x, i) => {
-                        if (
-                          moment(x.date).isBetween(
-                            moment(currentWeek).startOf('isoWeek'),
-                            moment(currentWeek).endOf('isoWeek'),
-                            undefined,
-                            '[]',
-                          ) &&
-                          x.note_text != ''
-                        )
-                          return (
-                            <LinearGradient
-                              key={x.id}
-                              start={{x: 0, y: 0}}
-                              end={{x: 1, y: 1}}
-                              locations={[0.0, 0.99]}
-                              colors={['#FCE29F', '#FCE29F55']}
-                              style={{
-                                marginTop: 10,
+                                borderWidth: 1,
+                                borderColor: Colors.gray02,
                                 borderRadius: 10,
-                                padding: 10,
+                                // padding: 5,
+                                margin: 5,
+                                flex: 1,
+                                // width: '14.1%',
+                                aspectRatio: 0.7,
+                                justifyContent: 'center',
+                                backgroundColor: checkCompleted(x)
+                                  ? Colors.secondary
+                                  : Colors.white,
                               }}>
-                              <View style={{flexDirection: 'row'}}>
-                                <View style={{flex: 1}}>
+                              <View
+                                style={{
+                                  alignItems: 'center',
+                                }}>
+                                <View style={{}}>
                                   <Text
                                     style={{
-                                      fontFamily: font.medium,
-                                      fontSize: 12,
-                                      color: Colors.gray12,
+                                      textTransform: 'capitalize',
+                                      fontFamily: checkCompleted(x)
+                                        ? font.bold
+                                        : font.regular,
+                                      color: checkCompleted(x)
+                                        ? Colors.primary
+                                        : Colors.black,
                                     }}>
-                                    {x.note_text}
+                                    {moment(x).format('dddd').charAt(0)}
                                   </Text>
                                 </View>
-                                <Menu
-                                  ref={ref => (MenuRef.current[i] = ref)}
-                                  style={{
-                                    backgroundColor: Colors.white,
-                                  }}
-                                  onRequestClose={() =>
-                                    MenuRef.current[i].hide()
-                                  }
-                                  anchor={
-                                    <Pressable
-                                      onPress={() => MenuRef.current[i].show()}
-                                      style={{
-                                        height: 25,
-                                        width: 25,
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        marginRight: -5,
-                                        marginTop: -5,
-                                        borderRadius: 25 / 2,
-                                      }}>
-                                      <Image
-                                        style={{
-                                          height: 10,
-                                          width: 10,
-                                          tintColor: Colors.gray12,
-                                        }}
-                                        source={require('../../../Assets/Icons/threeDots.png')}
-                                      />
-                                    </Pressable>
-                                  }>
-                                  <MenuItem onPress={() => editNote(i, x)}>
-                                    <Text style={{fontFamily: font.bold}}>
-                                      Edit
-                                    </Text>
-                                  </MenuItem>
-                                  <MenuDivider />
-                                  <MenuItem
-                                    onPress={() => {
-                                      deleteNote(
-                                        {
-                                          note_id: x._id,
-                                          note_text: '',
-                                          date: x.date,
-                                        },
-                                        i,
-                                      );
-                                      MenuRef.current[i].hide();
+                                <View>
+                                  <View
+                                    style={{
+                                      height: 12,
+                                      width: 12,
+                                      marginTop: 10,
                                     }}>
-                                    <Text style={{fontFamily: font.bold}}>
-                                      Delete
-                                    </Text>
-                                  </MenuItem>
-                                </Menu>
+                                    {checkCompleted(x) && (
+                                      <Image
+                                        style={{height: 12, width: 12}}
+                                        source={require('../../../Assets/Icons/tick.png')}
+                                      />
+                                    )}
+                                  </View>
+                                </View>
                               </View>
-                              <Text
-                                style={{
-                                  fontFamily: font.medium,
-                                  fontSize: 10,
-                                  textAlign: 'right',
-                                  color: Colors.black,
-                                  marginTop: 5,
-                                }}>
-                                {moment(x.date).format('dddd, DD MMM YYYY')}
-                              </Text>
-                            </LinearGradient>
+                            </Pressable>
                           );
+                        } else {
+                          return (
+                            <View
+                              opacity={0.5}
+                              style={{
+                                borderWidth: 1,
+                                borderColor: Colors.gray02,
+                                borderRadius: 10,
+                                margin: 5,
+                                flex: 1,
+                                aspectRatio: 0.7,
+                                justifyContent: 'center',
+                                // backgroundColor: Colors.gray01,
+                              }}>
+                              <View
+                                style={{
+                                  alignItems: 'center',
+                                }}>
+                                <View style={{}}>
+                                  <Text
+                                    style={{
+                                      textTransform: 'capitalize',
+                                      fontFamily: font.regular,
+                                      color: Colors.gray10,
+                                    }}>
+                                    {moment(x).format('dddd').charAt(0)}
+                                  </Text>
+                                </View>
+                                <View>
+                                  <View
+                                    style={{
+                                      height: 12,
+                                      width: 12,
+                                      marginTop: 10,
+                                    }}
+                                  />
+                                </View>
+                              </View>
+                            </View>
+                          );
+                        }
                       })}
-                    </>
+                    </View>
+                    <View style={{marginVertical: 10}}>
+                      <Text
+                        style={{
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontFamily: font.bold,
+                          textAlign: 'center',
+                        }}>
+                        Notes
+                      </Text>
+                    </View>
+
+                    <Pressable
+                      onPress={onViewAllNotes}
+                      style={{
+                        alignSelf: 'flex-end',
+                        padding: 5,
+                      }}>
+                      <Text
+                        style={{
+                          color: Colors.black,
+                          fontSize: 12,
+                          fontFamily: font.bold,
+                        }}>
+                        View All
+                      </Text>
+                    </Pressable>
+                    <View style={{}}>
+                      {checkNotesforthisweek(habit.notes).length == 0 && (
+                        <EmptyView
+                          style={{
+                            marginTop: 0,
+                            paddingVertical: 90,
+                            width: '100%',
+                          }}
+                          noSubtitle
+                          title="No Notes for this week"
+                        />
+                      )}
+                      <>
+                        {sorttheListbyDate(habit.notes).map((x, i) => {
+                          if (
+                            moment(x.date).isBetween(
+                              moment(currentWeek).startOf('isoWeek'),
+                              moment(currentWeek).endOf('isoWeek'),
+                              undefined,
+                              '[]',
+                            ) &&
+                            x.note_text != ''
+                          )
+                            return (
+                              <LinearGradient
+                                key={x.id}
+                                start={{x: 0, y: 0}}
+                                end={{x: 1, y: 1}}
+                                locations={[0.0, 0.99]}
+                                colors={['#FCE29F', '#FCE29F55']}
+                                style={{
+                                  marginTop: 10,
+                                  borderRadius: 10,
+                                  padding: 10,
+                                }}>
+                                <View style={{flexDirection: 'row'}}>
+                                  <View style={{flex: 1}}>
+                                    <Text
+                                      style={{
+                                        fontFamily: font.medium,
+                                        fontSize: 12,
+                                        color: Colors.gray12,
+                                      }}>
+                                      {x.note_text}
+                                    </Text>
+                                  </View>
+                                  <Menu
+                                    ref={ref => (MenuRef.current[i] = ref)}
+                                    style={{
+                                      backgroundColor: Colors.white,
+                                    }}
+                                    onRequestClose={() =>
+                                      MenuRef.current[i].hide()
+                                    }
+                                    anchor={
+                                      <Pressable
+                                        onPress={() =>
+                                          MenuRef.current[i].show()
+                                        }
+                                        style={{
+                                          height: 25,
+                                          width: 25,
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          marginRight: -5,
+                                          marginTop: -5,
+                                          borderRadius: 25 / 2,
+                                        }}>
+                                        <Image
+                                          style={{
+                                            height: 10,
+                                            width: 10,
+                                            tintColor: Colors.gray12,
+                                          }}
+                                          source={require('../../../Assets/Icons/threeDots.png')}
+                                        />
+                                      </Pressable>
+                                    }>
+                                    <MenuItem onPress={() => editNote(i, x)}>
+                                      <Text style={{fontFamily: font.bold}}>
+                                        Edit
+                                      </Text>
+                                    </MenuItem>
+                                    <MenuDivider />
+                                    <MenuItem
+                                      onPress={() => {
+                                        deleteNote(
+                                          {
+                                            note_id: x._id,
+                                            note_text: '',
+                                            date: x.date,
+                                          },
+                                          i,
+                                        );
+                                        MenuRef.current[i].hide();
+                                      }}>
+                                      <Text style={{fontFamily: font.bold}}>
+                                        Delete
+                                      </Text>
+                                    </MenuItem>
+                                  </Menu>
+                                </View>
+                                <Text
+                                  style={{
+                                    fontFamily: font.medium,
+                                    fontSize: 10,
+                                    textAlign: 'right',
+                                    color: Colors.black,
+                                    marginTop: 5,
+                                  }}>
+                                  {moment(x.date).format('dddd, DD MMM YYYY')}
+                                </Text>
+                              </LinearGradient>
+                            );
+                        })}
+                      </>
+                    </View>
                   </View>
                 </View>
               </View>
-            </View>
-          </ScrollView>
-        )}
-        <Loader enable={isLoading} />
-        {editNoteModal()}
+            </ScrollView>
+          )}
+          <Loader enable={isLoading} />
+          {editNoteModal()}
+        </View>
       </View>
     </SafeAreaView>
   );

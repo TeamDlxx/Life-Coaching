@@ -9,11 +9,10 @@ import TrackPlayer from 'react-native-track-player';
 import messaging from '@react-native-firebase/messaging';
 import PushNotification, {Importance} from 'react-native-push-notification';
 
-
 PushNotification.createChannel(
   {
-    channelId: '123', // (required)
-    channelName: 'Done', // (required)
+    channelId: '6007', // (required)
+    channelName: 'lifeCoaching', // (required)
     channelDescription: 'A channel to categorise your notifications', // (optional) default: undefined.
     playSound: true, // (optional) default: true
     soundName: 'default', // (optional) See `soundName` parameter of `localNotification` function
@@ -25,7 +24,7 @@ PushNotification.createChannel(
 
 const onMessageReceived = remoteMessage => {
   PushNotification.localNotification({
-    channelId: '123',
+    channelId: '6007',
     title: remoteMessage.notification.title,
     message: remoteMessage.notification.body,
     userInfo: remoteMessage.data,
@@ -41,4 +40,3 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {});
 AppRegistry.registerComponent(appName, () => App);
 
 TrackPlayer.registerPlaybackService(() => require('./service'));
-
