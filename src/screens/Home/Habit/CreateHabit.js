@@ -267,19 +267,19 @@ const CreateHabit = props => {
       },
       navigation: props.navigation,
     });
+
     if (res) {
       if (res.code == 200) {
         if (res?.habit?.reminder) {
           scheduleNotification(res?.habit);
         }
-        setisLoading(false);
         setHabitList(res?.all_habits);
         navigation.navigate(screens.habitTracker);
       } else {
-        setisLoading(false);
         showToast(res.message);
       }
     }
+    setisLoading(false);
   };
 
   const scheduleNotification = obj_habit => {
@@ -305,27 +305,28 @@ const CreateHabit = props => {
         ) + 1;
     }
 
-    
-
     for (let i = 0; i <= diff; i++) {
       let day = moment(obj_habit.createdAt).add(i, 'days');
       if (days.includes(day.format('dddd').toLowerCase())) {
-        let scheduledTime =
+        let scheduledTime = moment(
           day.format('DD-MM-YYYY') +
-          ' ' +
-          moment(obj_habit?.reminder_time).format('HH:mm');
-
-        PushNotification.localNotificationSchedule({
-          title: obj_habit?.name,
-          message: "Please complete your today's habit",
-          date: moment(scheduledTime, 'DD-MM-YYYY HH:mm').toDate(),
-          userInfo: {
-            _id: obj_habit?._id,
-            type: 'habit',
-          },
-          channelId: '6007',
-          channelName: 'lifeCoaching',
-        });
+            ' ' +
+            moment(obj_habit?.reminder_time).format('HH:mm'),
+          'DD-MM-YYYY HH:mm',
+        ).toISOString();
+        if (moment(scheduledTime).isAfter(moment())) {
+          PushNotification.localNotificationSchedule({
+            title: obj_habit?.name,
+            message: "Please complete your today's habit",
+            date: moment(scheduledTime).toDate(),
+            userInfo: {
+              _id: obj_habit?._id,
+              type: 'habit',
+            },
+            channelId: '6007',
+            channelName: 'lifeCoaching',
+          });
+        }
       }
     }
   };
@@ -639,7 +640,7 @@ const CreateHabit = props => {
         display="spinner"
         date={moment(Habit?.reminder?.time).toDate()}
         is24Hour={false}
-        // minuteInterval={10}
+        minuteInterval={10}
         onConfirm={val =>
           updateHabit({
             reminder: {

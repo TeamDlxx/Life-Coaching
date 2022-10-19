@@ -760,7 +760,11 @@ const HabitDetail = props => {
                               y.day.toLowerCase() ===
                                 moment(x).format('dddd').toLowerCase() &&
                               y.status == true,
-                          ) != -1
+                          ) != -1 &&
+                          moment(x).isSameOrAfter(
+                            moment(habit?.createdAt),
+                            'date',
+                          )
                         ) {
                           return (
                             <Pressable

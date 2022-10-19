@@ -73,10 +73,7 @@ const Login = props => {
 
   const scheduleNotifications = list => {
     list.map((x, i) => {
-      if (
-        x.reminder == true &&
-        moment(x.target_date).isSameOrAfter(moment(), 'date')
-      ) {
+      if (x.reminder == true && moment(x.target_date).isAfter(moment())) {
         let days = [];
         x.frequency.filter(y => {
           if (y.status == true) {
@@ -102,17 +99,18 @@ const Login = props => {
               day.format('DD-MM-YYYY') +
               ' ' +
               moment(x?.reminder_time).format('HH:mm');
-            PushNotification.localNotificationSchedule({
-              title: x?.name,
-              message: "Please complete your today's habit",
-              date: moment(scheduledTime, 'DD-MM-YYYY HH:mm').toDate(),
-              userInfo: {
-                _id: x?._id,
-                type: 'habit',
-              },
-              channelId: '6007',
-              channelName: 'lifeCoaching',
-            });
+            if (moment(scheduledTime).isAfter(moment()))
+              PushNotification.localNotificationSchedule({
+                title: x?.name,
+                message: "Please complete your today's habit",
+                date: moment(scheduledTime, 'DD-MM-YYYY HH:mm').toDate(),
+                userInfo: {
+                  _id: x?._id,
+                  type: 'habit',
+                },
+                channelId: '6007',
+                channelName: 'lifeCoaching',
+              });
           }
         }
       }

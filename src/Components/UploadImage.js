@@ -34,7 +34,6 @@ const UploadImage = props => {
   const [isModalVisible, setModalVisibility] = useState(false);
   const [isLoading, setisLoading] = useState(false);
 
-
   const openGallery = async () => {
     setModalVisibility(false);
     setTimeout(() => {
@@ -43,6 +42,8 @@ const UploadImage = props => {
         height: 600,
         cropping: true,
         mediaType: 'photo',
+        cropperStatusBarColor: Colors.background,
+        cropperToolbarColor: Colors.background,
       })
         .then(image => {
           console.log('Image', image);
@@ -89,6 +90,8 @@ const UploadImage = props => {
           height: 600,
           cropping: true,
           mediaType: 'photo',
+          cropperStatusBarColor: Colors.background,
+          cropperToolbarColor: Colors.background,
         })
           .then(image => {
             console.log('Image', image);

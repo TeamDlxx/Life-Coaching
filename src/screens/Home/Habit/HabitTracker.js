@@ -59,7 +59,11 @@ const HabitTracker = props => {
           x =>
             x.day == moment(today, 'YYYY-MM-DD').format('dddd').toLowerCase(),
         ).status == true &&
-        moment(today, 'YYYY-MM-DD').isSameOrBefore(moment(x.target_date))
+        moment(today, 'YYYY-MM-DD').isSameOrBefore(
+          moment(x.target_date),
+          'date',
+        ) &&
+        moment(today, 'YYYY-MM-DD').isSameOrAfter(moment(x.createdAt), 'date')
       ) {
         return true;
       }
@@ -473,13 +477,7 @@ const HabitTracker = props => {
   const flatListHeader = () => {
     return (
       <View style={{paddingHorizontal: 20, backgroundColor: Colors.background}}>
-        <Pressable
-          onPress={() => {
-            PushNotification.getScheduledLocalNotifications(list => {
-              console.log('schedule notification', list);
-            });
-          }}
-          style={{marginTop: 5}}>
+        <Pressable style={{marginTop: 5}}>
           <Text style={other_style.labelText}>
             {moment().format('DD MMM YYYY')}
           </Text>
@@ -487,7 +485,7 @@ const HabitTracker = props => {
         <View style={{marginHorizontal: -20, marginTop: 5}}>
           <FlatList
             listKey="days"
-            initialNumToRender={31}
+            initialNumToRender={7}
             ref={daysFlatList}
             keyExtractor={(item, index) => {
               return index.toString();
@@ -688,6 +686,7 @@ const HabitTracker = props => {
                   tintColor={Colors.primary}
                   colors={[Colors.primary]}
                   progressBackgroundColor={Colors.white}
+                  progressViewOffset={Platform.OS == 'android' ? -20 : 0}
                 />
               }
               listKey="main"

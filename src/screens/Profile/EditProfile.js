@@ -109,6 +109,9 @@ const EditProfile = props => {
         height: 400,
         cropping: true,
         mediaType: 'photo',
+
+        cropperStatusBarColor: Colors.background,
+        cropperToolbarColor: Colors.background,
       })
         .then(image => {
           console.log('Image', image);
@@ -162,6 +165,9 @@ const EditProfile = props => {
           height: 400,
           cropping: true,
           mediaType: 'photo',
+
+          cropperStatusBarColor: Colors.background,
+          cropperToolbarColor: Colors.background,
         })
           .then(image => {
             console.log('Image', image);

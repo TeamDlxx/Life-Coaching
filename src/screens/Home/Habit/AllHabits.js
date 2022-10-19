@@ -302,7 +302,7 @@ const AllHabits = props => {
             </View>
           </View>
         </View>
-        {item?.total_days != 0 && progress / item?.total_days == 1 && (
+        {item?.total_days != 0 && progress / item?.total_days >= 1 && (
           <View
             style={{
               backgroundColor: Colors.primary,
@@ -385,7 +385,9 @@ const AllHabits = props => {
             }}
             ListEmptyComponent={() =>
               isLoading == false &&
-              sHabitList.length == 0 && <EmptyView title={"No Habits"} noSubtitle />
+              sHabitList.length == 0 && (
+                <EmptyView title={'No Habits'} noSubtitle />
+              )
             }
           />
         </View>
