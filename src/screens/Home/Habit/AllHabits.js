@@ -177,6 +177,7 @@ const AllHabits = props => {
           props.navigation.navigate(screens.habitDetail, {
             id: item._id,
             updateHabit: updateHabitLocally,
+            removeHabitFromPreviosScreenList: removeHabitFromList,
           });
         }}
         style={allHabit_styles.itemView}>
@@ -384,7 +385,7 @@ const AllHabits = props => {
             }}
             ListEmptyComponent={() =>
               isLoading == false &&
-              sHabitList.length == 0 && <EmptyView noSubtitle />
+              sHabitList.length == 0 && <EmptyView title={"No Habits"} noSubtitle />
             }
           />
         </View>

@@ -21,7 +21,7 @@ import {screens} from '../../Navigation/Screens';
 import showToast from '../../functions/showToast';
 import Loader from '../../Components/Loader';
 import invokeApi from '../../functions/invokeAPI';
-
+import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {useContext} from 'react';
 import Context from '../../Context';
 import PushNotification from 'react-native-push-notification';
@@ -126,7 +126,11 @@ const Setting = props => {
   };
 
   return (
-    <SafeAreaView style={mainStyles.MainViewForBottomTabScreens}>
+    <SafeAreaView
+      style={[
+        mainStyles.MainViewForBottomTabScreens,
+        {marginBottom: useBottomTabBarHeight()},
+      ]}>
       <StatusBar
         backgroundColor={Colors.background}
         barStyle={'dark-content'}

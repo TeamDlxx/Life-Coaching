@@ -639,7 +639,7 @@ const CreateHabit = props => {
         display="spinner"
         date={moment(Habit?.reminder?.time).toDate()}
         is24Hour={false}
-        minuteInterval={10}
+        // minuteInterval={10}
         onConfirm={val =>
           updateHabit({
             reminder: {

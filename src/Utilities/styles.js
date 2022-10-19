@@ -2,6 +2,7 @@ import {Platform, StyleSheet, Dimensions} from 'react-native';
 import Colors from './Colors';
 import {font} from './font';
 
+
 const screen = Dimensions.get('screen');
 
 export const mainStyles = StyleSheet.create({
@@ -12,7 +13,7 @@ export const mainStyles = StyleSheet.create({
   MainViewForBottomTabScreens: {
     flex: 1,
     backgroundColor: Colors.background,
-    marginBottom: Platform.OS == 'ios' ? 70 : 50,
+    // marginBottom: 50,
     // backgroundColor: 'pink',
   },
   innerView: {

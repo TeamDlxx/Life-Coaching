@@ -15,7 +15,7 @@ import Colors from '../../Utilities/Colors';
 import {font} from '../../Utilities/font';
 import {HabitStats_style} from '../../Utilities/styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {screens} from '../../Navigation/Screens';
 import profile_placeholder from '../../Assets/Icons/dummy.png';
 import CustomImage from '../../Components/CustomImage';
@@ -44,7 +44,11 @@ const Profile = props => {
   }, []);
 
   return (
-    <SafeAreaView style={mainStyles.MainViewForBottomTabScreens}>
+    <SafeAreaView
+      style={[
+        mainStyles.MainViewForBottomTabScreens,
+        {marginBottom: useBottomTabBarHeight()},
+      ]}>
       <StatusBar
         backgroundColor={Colors.background}
         barStyle={'dark-content'}

@@ -24,6 +24,7 @@ import {screens} from '../../../Navigation/Screens';
 import CustomImage from '../../../Components/CustomImage';
 import Toast from 'react-native-toast-message';
 import PushNotification from 'react-native-push-notification';
+import PushNotificationIOS from '@react-native-community/push-notification-ios';
 
 // For API's calling
 import {useContext} from 'react';

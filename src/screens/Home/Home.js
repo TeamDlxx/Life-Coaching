@@ -23,6 +23,7 @@ import SplashScreen from 'react-native-splash-screen';
 import Context from '../../Context';
 import messaging from '@react-native-firebase/messaging';
 const height = Dimensions.get('screen').width;
+import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 
 // background
 
@@ -38,10 +39,11 @@ const Home = props => {
   const [opt, setOpt] = useState([]);
   useEffect(() => {
     NotificationConfig(props);
+
     setTimeout(() => {
       SplashScreen.hide();
       setOpt(options);
-    }, 1000);
+    }, 500);
   }, []);
 
   const onDisplayNotification = async () => {
@@ -133,7 +135,11 @@ const Home = props => {
   };
 
   return (
-    <SafeAreaView style={mainStyles.MainViewForBottomTabScreens}>
+    <SafeAreaView
+      style={[
+        mainStyles.MainViewForBottomTabScreens,
+        {marginBottom: useBottomTabBarHeight()},
+      ]}>
       <StatusBar
         barStyle={'dark-content'}
         backgroundColor={Colors.background}
@@ -159,7 +165,7 @@ const Home = props => {
           <FlatList
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{paddingBottom: 20, marginTop: 10}}
-            bounces={false}
+            // bounces={false}
             numColumns={2}
             data={opt}
             renderItem={ItemView}

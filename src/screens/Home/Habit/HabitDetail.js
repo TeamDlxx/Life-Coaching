@@ -381,6 +381,61 @@ const HabitDetail = props => {
     });
   };
 
+  //? delete Habit
+
+  const api_deleteHabit = async () => {
+    let id = habit?._id;
+    setisLoading(true);
+    let res = await invokeApi({
+      path: 'api/habit/delete_habit/' + id,
+      method: 'DELETE',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    if (res) {
+      if (res.code == 200) {
+        RemoveThisHabitScheduleNotifications(id);
+        showToast(
+          'Habit has been deleted successfully',
+          'Habit Deleted',
+          'success',
+        );
+        if (!!params?.removeHabitFromPreviosScreenList) {
+          params?.removeHabitFromPreviosScreenList(id);
+        }
+        if (!!params?.statScreenAPI) {
+          params?.statScreenAPI();
+        }
+        removeFromGlobalHabitList(id);
+        props?.navigation?.goBack();
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  const removeFromGlobalHabitList = id => {
+    let newArray = [...habitList];
+    let index = newArray.findIndex(x => x._id == id);
+    if (index != -1) {
+      newArray.splice(index, 1);
+      setHabitList(newArray);
+    }
+  };
+
+  const RemoveThisHabitScheduleNotifications = id => {
+    PushNotification.getScheduledLocalNotifications(list => {
+      list.map(x => {
+        if (x.data._id == id) {
+          PushNotification.cancelLocalNotification(x.id);
+        }
+      });
+    });
+  };
+
   useEffect(() => {
     callHabitDetailApi();
     return () => {};
@@ -421,6 +476,20 @@ const HabitDetail = props => {
             });
           }}>
           <Text style={{fontFamily: font.bold}}>Edit</Text>
+        </MenuItem>
+
+        <MenuDivider />
+
+        <MenuItem
+          onPress={() => {
+            EditMenu?.current.hide();
+            Alert.alert(
+              'Delete Habit',
+              'Are you sure you want to delete this Habit',
+              [{text: 'No'}, {text: 'Yes', onPress: () => api_deleteHabit()}],
+            );
+          }}>
+          <Text style={{fontFamily: font.bold}}>Delete</Text>
         </MenuItem>
       </Menu>
     );

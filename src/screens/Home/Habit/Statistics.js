@@ -77,6 +77,13 @@ const Statistics = props => {
     setHabitList(newArray);
   }
 
+  const removeHabitFromList = id => {
+    let newArray = [...sHabitList];
+    let index = newArray.findIndex(x => x._id == id);
+    newArray.splice(index, 1);
+    setHabitList(newArray);
+  };
+
   const findProgress = item => {
     let freq = [];
     item.frequency.filter((x, i) => {
@@ -157,15 +164,6 @@ const Statistics = props => {
       setRefreshing(false);
     }
   }
-
-  const refreshFlatList = () => {
-    setRefreshing(true);
-    api_habitList();
-  };
-
-  const wait = timeout => {
-    return new Promise(resolve => setTimeout(resolve, timeout));
-  };
 
   const callHabitListApi = () => {
     setisLoading(true);
@@ -389,6 +387,8 @@ const Statistics = props => {
           props.navigation.navigate(screens.habitDetail, {
             id: item._id,
             updateHabit: updateHabitLocally,
+            removeHabitFromPreviosScreenList: removeHabitFromList,
+            statScreenAPI: api_habitList,
           });
         }}
         style={allHabit_styles.itemView}>
@@ -535,15 +535,6 @@ const Statistics = props => {
         <Loader enable={isLoading} />
         <View style={{flex: 1}}>
           <FlatList
-            // refreshControl={
-            //   <RefreshControl
-            //     refreshing={isRefreshing}
-            //     onRefresh={refreshFlatList}
-            //     tintColor={Colors.primary}
-            //     colors={[Colors.primary]}
-            //     progressBackgroundColor={Colors.white}
-            //   />
-            // }
             ListEmptyComponent={() =>
               isLoading == false &&
               sHabitList.length == 0 && <EmptyView style={{marginTop: 50}} />

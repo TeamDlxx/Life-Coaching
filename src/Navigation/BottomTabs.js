@@ -7,7 +7,7 @@ import {screens} from './Screens';
 import Colors from '../Utilities/Colors';
 
 import React from 'react';
-import {Image, View, Text, StyleSheet} from 'react-native';
+import {Image, View, Text, StyleSheet, SafeAreaView} from 'react-native';
 import {font} from '../Utilities/font';
 
 //Icons
@@ -26,16 +26,16 @@ export default function BottomTabs() {
         headerShown: false,
         keyboardHidesTabBar: true,
         tabBarShowLabel: false,
+
         tabBarStyle: {
           backgroundColor: 'transparent',
           borderTopWidth: 0,
-          paddingTop: Platform.OS == 'android' ? 20 : 18,
+          padding: 0,
           elevation: 0,
           position: 'absolute',
           bottom: 0,
           right: 0,
           left: 0,
-          height: 70,
         },
       }}>
       <Tab.Screen

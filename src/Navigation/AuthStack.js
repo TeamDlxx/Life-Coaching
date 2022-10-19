@@ -1,7 +1,7 @@
 import {screens} from './Screens';
 import {useState, useEffect} from 'react';
 import * as React from 'react';
-import {View, StatusBar} from 'react-native';
+import {View, StatusBar, SafeAreaView} from 'react-native';
 import Colors from '../Utilities/Colors';
 
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
