@@ -283,49 +283,47 @@ const CreateHabit = props => {
   };
 
   const scheduleNotification = obj_habit => {
-    let days = [];
-    obj_habit.frequency.filter(x => {
-      if (x.status == true) {
-        days.push(x.day.toLowerCase());
+    if (moment(obj_habit?.target_date).isSameOrAfter(moment())) {
+      let days = [];
+      obj_habit.frequency.filter(x => {
+        if (x.status == true) {
+          days.push(x.day.toLowerCase());
+        }
+      });
+
+      let diff = 0;
+
+      if (
+        moment(obj_habit.target_date).format('DDMMYYYY') ==
+        moment().format('DDMMYYYY')
+      ) {
+        diff = 0;
+      } else {
+        diff = moment(obj_habit.target_date).diff(moment(), 'days') + 1;
       }
-    });
 
-    let diff = 0;
-
-    if (
-      moment(obj_habit.target_date).format('DDMMYYYY') ==
-      moment(obj_habit.createdAt).format('DDMMYYYY')
-    ) {
-      diff = 0;
-    } else {
-      diff =
-        moment(obj_habit.target_date).diff(
-          moment(obj_habit.createdAt),
-          'days',
-        ) + 1;
-    }
-
-    for (let i = 0; i <= diff; i++) {
-      let day = moment(obj_habit.createdAt).add(i, 'days');
-      if (days.includes(day.format('dddd').toLowerCase())) {
-        let scheduledTime = moment(
-          day.format('DD-MM-YYYY') +
-            ' ' +
-            moment(obj_habit?.reminder_time).format('HH:mm'),
-          'DD-MM-YYYY HH:mm',
-        ).toISOString();
-        if (moment(scheduledTime).isAfter(moment())) {
-          PushNotification.localNotificationSchedule({
-            title: obj_habit?.name,
-            message: "Please complete your today's habit",
-            date: moment(scheduledTime).toDate(),
-            userInfo: {
-              _id: obj_habit?._id,
-              type: 'habit',
-            },
-            channelId: '6007',
-            channelName: 'lifeCoaching',
-          });
+      for (let i = 0; i <= diff; i++) {
+        let day = moment().add(i, 'days');
+        if (days.includes(day.format('dddd').toLowerCase())) {
+          let scheduledTime = moment(
+            day.format('DD-MM-YYYY') +
+              ' ' +
+              moment(obj_habit?.reminder_time).format('HH:mm'),
+            'DD-MM-YYYY HH:mm',
+          ).toISOString();
+          if (moment(scheduledTime).isAfter(moment())) {
+            PushNotification.localNotificationSchedule({
+              title: obj_habit?.name,
+              message: "Please complete your today's habit",
+              date: moment(scheduledTime).toDate(),
+              userInfo: {
+                _id: obj_habit?._id,
+                type: 'habit',
+              },
+              channelId: '6007',
+              channelName: 'lifeCoaching',
+            });
+          }
         }
       }
     }

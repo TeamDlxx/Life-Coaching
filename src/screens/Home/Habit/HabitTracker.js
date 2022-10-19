@@ -477,7 +477,13 @@ const HabitTracker = props => {
   const flatListHeader = () => {
     return (
       <View style={{paddingHorizontal: 20, backgroundColor: Colors.background}}>
-        <Pressable style={{marginTop: 5}}>
+        <Pressable
+          onPress={() =>
+            PushNotification.getScheduledLocalNotifications(list => {
+              console.log('list', list);
+            })
+          }
+          style={{marginTop: 5}}>
           <Text style={other_style.labelText}>
             {moment().format('DD MMM YYYY')}
           </Text>
