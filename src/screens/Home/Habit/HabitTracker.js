@@ -675,10 +675,10 @@ const HabitTracker = props => {
         navigation={props.navigation}
         title={'Habit Tracker'}
         titleAlignLeft
-        rightIcon={require('../../../Assets/Icons/stats.png')}
-        rightIcononPress={() => props.navigation.navigate(screens.habitStats)}
-        rightIcon2={require('../../../Assets/Icons/list.png')}
-        rightIcon2onPress={() => props.navigation.navigate(screens.allHabits)}
+        // rightIcon={require('../../../Assets/Icons/stats.png')}
+        // rightIcononPress={() => props.navigation.navigate(screens.habitStats)}
+        rightIcon={require('../../../Assets/Icons/list.png')}
+        rightIcononPress={() => props.navigation.navigate(screens.allHabits)}
       />
       <View style={mainStyles.innerView}>
         <View style={{flex: 1, marginHorizontal: -20}}>

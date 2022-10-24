@@ -805,9 +805,7 @@ const HabitDetail = props => {
                                 // width: '14.1%',
                                 aspectRatio: 0.7,
                                 justifyContent: 'center',
-                                backgroundColor: checkCompleted(x)
-                                  ? Colors.secondary
-                                  : Colors.white,
+                                backgroundColor: Colors.secondary,
                               }}>
                               <View
                                 style={{
@@ -817,12 +815,8 @@ const HabitDetail = props => {
                                   <Text
                                     style={{
                                       textTransform: 'capitalize',
-                                      fontFamily: checkCompleted(x)
-                                        ? font.bold
-                                        : font.regular,
-                                      color: checkCompleted(x)
-                                        ? Colors.primary
-                                        : Colors.black,
+                                      fontFamily: font.bold,
+                                      color: Colors.primary,
                                     }}>
                                     {moment(x).format('dddd').charAt(0)}
                                   </Text>

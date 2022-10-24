@@ -19,9 +19,7 @@ const App = props => {
     if (Text.defaultProps == null) Text.defaultProps = {};
     Text.defaultProps.allowFontScaling = false;
 
-    if (!__DEV__) {
-      TrackplayerSetup();
-    }
+    TrackplayerSetup();
   }, []);
 
   const TrackplayerSetup = async () => {

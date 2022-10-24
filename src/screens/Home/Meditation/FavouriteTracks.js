@@ -4,8 +4,6 @@ import {
   SafeAreaView,
   StatusBar,
   FlatList,
-  StyleSheet,
-  Pressable,
   Image,
   TouchableOpacity,
   TouchableHighlight,
@@ -16,40 +14,128 @@ import Colors from '../../../Utilities/Colors';
 import {mainStyles} from '../../../Utilities/styles';
 import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
-import play from '../../../Assets/Icons/play.png';
+import CustomImage from '../../../Components/CustomImage';
 
 import favIcon from '../../../Assets/TrackPlayer/favIcon.png';
+
+// For API's calling
+import {useContext} from 'react';
+import Context from '../../../Context';
+import showToast from '../../../functions/showToast';
+import Loader from '../../../Components/Loader';
+import invokeApi from '../../../functions/invokeAPI';
+import {fileURL} from '../../../Utilities/domains';
+import EmptyView from '../../../Components/EmptyView';
+import Pressable from 'react-native/Libraries/Components/Pressable/Pressable';
+
 const FavouriteTracks = props => {
+  const {params} = props.route;
+  const {Token} = useContext(Context);
+  const [isLoading, setisLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [trackList, setTrackList] = useState([]);
-
+  console.log('Params', params);
   //? Navigation Functions
-
-  useEffect(() => {
-    setTrackList(tracksList);
-  }, []);
 
   const gotoTrackPlayer = item => {
     props.navigation.navigate(screens.trackPlayer, {
-      item: item,
-      category: {_id: '1', name: 'Breathe'},
+      item: {
+        ...item,
+        is_favourite: true,
+      },
+      category: item?.category_id[0]?._id?.name,
+      list: trackList,
+      likeUnLikeFunc: params?.likeUnLikeFunc,
+      unLike: unLike,
     });
   };
 
-  const unLike = index => {
+  const unLike = id => {
     let newArray = [...trackList];
-    newArray.splice(index, 1);
-    setTrackList(newArray);
+    let index = newArray.findIndex(x => x._id == id);
+    if (index > -1) {
+      newArray.splice(index, 1);
+      setTrackList(newArray);
+    }
   };
+
+  // todo /////// API's
+
+  const call_favTarackListAPI = () => {
+    setisLoading(true);
+    api_favTracksList();
+  };
+
+  const api_favTracksList = async val => {
+    let res = await invokeApi({
+      path: 'api/track/get_favourite_tracks',
+      method: 'GET',
+      headers: {
+        'x-sh-auth': Token,
+      },
+
+      navigation: props.navigation,
+    });
+
+    if (res) {
+      if (res.code == 200) {
+        console.log('response', res);
+        let newArray = [];
+
+        res?.track.map((x, i) => {
+          newArray.push({
+            ...x,
+            is_favourite: true,
+          });
+        });
+
+        setTrackList(newArray);
+      } else {
+        showToast(res.message);
+      }
+    }
+    setisLoading(false);
+  };
+
+  const api_likeUnLike = async (val, id) => {
+    let res = await invokeApi({
+      path: 'api/track/favourite_track/' + id,
+      method: 'POST',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      postData: {
+        favourite: val,
+      },
+      navigation: props.navigation,
+    });
+
+    if (res) {
+      if (res.code == 200) {
+        console.log('response', res);
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  //* UseEffect
+
+  useEffect(() => {
+    call_favTarackListAPI();
+    return () => {
+      setTrackList([]);
+    };
+  }, []);
 
   //? Views
 
   const renderTrackList = ({item, index}) => {
     return (
-      <TouchableOpacity
+      <Pressable
         onPress={() => {
           gotoTrackPlayer(item);
         }}
-        activeOpacity={1}
         style={{
           marginBottom: 20,
           alignItems: 'center',
@@ -68,7 +154,11 @@ const FavouriteTracks = props => {
             borderWidth: 1,
             borderColor: Colors.gray02,
           }}>
-          <Image source={{uri: item.image}} style={{height: 70, width: 70}} />
+          <CustomImage
+            source={{uri: fileURL + item?.images?.small}}
+            style={{height: 70, width: 70}}
+            indicatorProps={{color: Colors.primary}}
+          />
         </View>
         <View style={{marginLeft: 15, flex: 1}}>
           <Text
@@ -78,7 +168,7 @@ const FavouriteTracks = props => {
               includeFontPadding: false,
               color: Colors.black,
             }}>
-            {item.title}
+            {item?.name}
           </Text>
 
           <View
@@ -88,19 +178,24 @@ const FavouriteTracks = props => {
               marginTop: 5,
             }}>
             <Text
+              numberOfLines={1}
               style={{
                 fontFamily: font.medium,
                 color: Colors.text,
                 fontSize: 12,
               }}>
-              {item.note}
+              {item?.description}
             </Text>
           </View>
         </View>
         <View style={{}}>
           <TouchableHighlight
             underlayColor={Colors.lightPrimary}
-            onPress={() => unLike(index)}
+            onPress={() => {
+              unLike(item?._id);
+              params?.likeUnLikeFunc(item?._id, false);
+              api_likeUnLike(false, item?._id);
+            }}
             style={{
               width: 40,
               height: 40,
@@ -121,14 +216,9 @@ const FavouriteTracks = props => {
             />
           </TouchableHighlight>
         </View>
-      </TouchableOpacity>
+      </Pressable>
     );
   };
-
-  const onFavList = () => {
-    props.navigation.navigate(screens.favTracks);
-  };
-  // Modal
 
   return (
     <SafeAreaView style={mainStyles.MainView}>
@@ -139,10 +229,10 @@ const FavouriteTracks = props => {
 
       <Header navigation={props.navigation} title={'Favorite Tracks'} />
       <View style={mainStyles.innerView}>
+        <Loader enable={isLoading} />
         <View style={{flex: 1, marginHorizontal: -20}}>
           <FlatList
             listKey="main"
-            stickyHeaderHiddenOnScroll={true}
             contentContainerStyle={{paddingVertical: 10, paddingBottom: 50}}
             showsVerticalScrollIndicator={false}
             data={trackList}
@@ -150,6 +240,11 @@ const FavouriteTracks = props => {
             keyExtractor={item => {
               return item._id;
             }}
+            ListEmptyComponent={
+              isLoading == false && (
+                <EmptyView title="No Favourite Tracks" noSubtitle />
+              )
+            }
           />
         </View>
       </View>

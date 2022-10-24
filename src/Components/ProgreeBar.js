@@ -1,24 +1,19 @@
-import React, {Component, useEffect, useState} from 'react';
-import {TrackPlayer, useProgress} from 'react-native-track-player';
+import React, {useEffect, useState} from 'react';
+import {useProgress} from 'react-native-track-player';
 import {Text, View, StyleSheet} from 'react-native';
-// import Slider from 'react-native-slider';
 import Slider from '@react-native-community/slider';
 import {font} from '../Utilities/font';
 import Colors from '../Utilities/Colors';
-var i = 0;
+
+
 const TrackSlider = props => {
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
-  const [isSeeking, setIsSeeking] = useState(false);
-  const [seek, setSeek] = useState(false);
-  const [value, setValue] = useState('');
-
   const progress = useProgress();
 
   useEffect(() => {
     let duration = progress.duration;
     let position = progress.position;
-
     setDuration(parseInt(duration));
     setPosition(parseInt(position));
   }, [progress]);
@@ -29,25 +24,18 @@ const TrackSlider = props => {
       position !== 0 &&
       parseInt(duration) === parseInt(position)
     ) {
-      // if (i === 0) {
-      //   if (props.i === false) {
       props.resetPlayer();
-      // }
-      //   i++;
-      // } else {
-      //   i = 0;
-      // }
     }
 
     let mins = parseInt(timeInSec / 60);
-    let secs = parseInt(Math.round((timeInSec % 60) * 100) / 100);
+    let secs = parseInt(Math.ceil((timeInSec % 60) * 100) / 100);
     if (mins < 10) {
       mins = '0' + mins;
     }
     if (secs < 10) {
       secs = '0' + secs;
     }
-    console.log(mins + ':' + secs, 'progress o track player');
+
     return mins + ':' + secs;
   };
 
@@ -55,10 +43,7 @@ const TrackSlider = props => {
     <View style={styles.container}>
       <Slider
         style={styles.slider}
-        value={
-          // isSeeking ? position : position
-          position
-        }
+        value={position}
         thumbTintColor={Colors.primary}
         minimumTrackTintColor={Colors.primary}
         maximumTrackTintColor={Colors.lightPrimary}
@@ -78,14 +63,12 @@ const TrackSlider = props => {
         animationType="timing"
         maximumValue={duration}
         onValueChange={val => {
-          // TrackPlayer.pause();
-          setIsSeeking(true);
-          setSeek(val);
+          // setIsSeeking(true);
+          // setSeek(val);
         }}
         onSlidingComplete={val => {
-          console.log('sldng complete callng');
           props.moveTo(val);
-          setValue(val);
+          // setValue(val);
         }}
       />
       <View style={{width: '100%', flexDirection: 'row'}}>
@@ -106,6 +89,7 @@ const styles = StyleSheet.create({
     // flexDirection:"row",
     alignItems: 'center',
     justifyContent: 'space-evenly',
+    // backgroundColor: 'pink',
     // width:"%",
   },
   position: {

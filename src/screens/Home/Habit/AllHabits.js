@@ -232,13 +232,30 @@ const AllHabits = props => {
                     }}>
                     {x.day.charAt(0)}
                   </Text>
+                  {/* <View
+                    style={{
+                      position: 'absolute',
+                      top: -2,
+                      right: -2,
+                    }}>
+                    {item.notes.findIndex(
+                      y =>
+                        moment(y.date).format('DDMMYYYY') ==
+                        moment(currentWeek[i]).format('DDMMYYYY'),
+                    ) != -1 && (
+                      <Image
+                        style={{height: 8, width: 8,}}
+                        source={require('../../../Assets/Icons/tick.png')}
+                      />
+                    )}
+                  </View> */}
                 </View>
               );
             })}
           </View>
 
           <View>
-            <View style={{flexDirection: 'row', marginTop: 10}}>
+            <View style={{flexDirection: 'row', marginTop:3}}>
               {currentWeek.map(x => {
                 return (
                   <View
@@ -254,7 +271,7 @@ const AllHabits = props => {
                         moment(x).format('DDMMYYYY'),
                     ) != -1 && (
                       <Image
-                        style={{height: 12, width: 12}}
+                        style={{height: 10, width: 10}}
                         source={require('../../../Assets/Icons/tick.png')}
                       />
                     )}
@@ -268,7 +285,7 @@ const AllHabits = props => {
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              marginTop: 10,
+              // marginTop: 5,
             }}>
             <View
               style={{

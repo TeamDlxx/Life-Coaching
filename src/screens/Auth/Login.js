@@ -73,7 +73,7 @@ const Login = props => {
 
   const scheduleNotifications = list => {
     list.map((x, i) => {
-      if (x.reminder == true && moment(x.target_date).isAfter(moment())) {
+      if (x.reminder == true) {
         let days = [];
         x.frequency.filter(y => {
           if (y.status == true) {
@@ -95,15 +95,17 @@ const Login = props => {
         for (let i = 0; i <= diff; i++) {
           let day = moment().add(i, 'days');
           if (days.includes(day.format('dddd').toLowerCase())) {
-            let scheduledTime =
-              day.format('DD-MM-YYYY') +
-              ' ' +
-              moment(x?.reminder_time).format('HH:mm');
+            let scheduledTime = moment(
+              moment(day).format('DD-MM-YYYY') +
+                ' ' +
+                moment(x?.reminder_time).format('HH:mm'),
+              'DD-MM-YYYY HH:mm',
+            ).toISOString();
             if (moment(scheduledTime).isAfter(moment()))
               PushNotification.localNotificationSchedule({
                 title: x?.name,
                 message: "Please complete your today's habit",
-                date: moment(scheduledTime, 'DD-MM-YYYY HH:mm').toDate(),
+                date: moment(scheduledTime).toDate(),
                 userInfo: {
                   _id: x?._id,
                   type: 'habit',

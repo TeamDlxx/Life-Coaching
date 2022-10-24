@@ -147,9 +147,21 @@ const Home = props => {
 
       <>
         <Pressable
-          disabled={true}
+          // disabled={true}
           onPress={() => {
-            onDisplayNotification();
+            const arr = [
+              {id: 1, chat: false},
+              {id: 2, chat: true},
+              {id: 3, chat: false},
+              {id: 4, chat: true},
+            ];
+
+            arr.sort((a, b) => {
+              if (a.chat == true) return -1;
+              if (a.chat == false) return 1;
+            });
+
+            console.log('arr', arr);
           }}
           style={{
             height: 50,

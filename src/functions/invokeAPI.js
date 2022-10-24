@@ -43,8 +43,10 @@ export default async function invokeApi({
     console.log('<===Api-Error===>\n', error.response.data);
     console.log('<===Api-Error===>\n', error);
     if (error.code == 'ERR_NETWORK') {
-      showToast('', 'No Internet Connection', 'error');
-      return;
+      return {
+        code: 'ERR_NETWORK',
+        message: 'No Internet Connection',
+      };
     } else if (error?.response?.data?.code === 401) {
       if (navigation != undefined) {
         showToast('Please login again!', 'Authentication Failed');

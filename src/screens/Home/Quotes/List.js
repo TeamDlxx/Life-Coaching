@@ -17,6 +17,15 @@ import {mainStyles} from '../../../Utilities/styles';
 import CustomImage from '../../../Components/CustomImage';
 const screen = Dimensions.get('screen');
 
+// For API's calling
+import {useContext} from 'react';
+import Context from '../../../Context';
+import showToast from '../../../functions/showToast';
+import Loader from '../../../Components/Loader';
+import invokeApi from '../../../functions/invokeAPI';
+import {fileURL} from '../../../Utilities/domains';
+import EmptyView from '../../../Components/EmptyView';
+
 //ICONS
 
 import liked from '../../../Assets/Icons/liked.png';
@@ -30,7 +39,10 @@ import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
 
 const List = props => {
-  const [QuoteList, setQuoteList] = useState(Qlist);
+  const {Token} = useContext(Context);
+  const [QuoteList, setQuoteList] = useState();
+  const [loading, setisLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const onFavList = () => {
     props.navigation.navigate(screens.favQuoteList);
@@ -73,6 +85,63 @@ const List = props => {
     }
   }
 
+  //todo API's
+
+  const call_quoteListAPI = () => {
+    setisLoading(true);
+    api_quoteList();
+  };
+
+  const refresh_quoteListAPI = () => {
+    setRefreshing(true);
+    api_quoteList();
+  };
+
+  const api_quoteList = async () => {
+    let res = await invokeApi({
+      path: 'api/quotes/get_active_quotes',
+      method: 'GET',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    setRefreshing(false);
+    if (res) {
+      if (res.code == 200) {
+        setQuoteList(res?.quotes);
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  const api_likeUnLikeQuote = async (val, id) => {
+    let res = await invokeApi({
+      path: 'api/quotes/like_quotes/' + id,
+      method: 'GET',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    if (res) {
+      if (res.code == 200) {
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  useEffect(() => {
+    call_quoteListAPI();
+
+    return () => {
+      setQuoteList([]);
+    };
+  }, []);
+
   const flatItemView = ({item, index}) => {
     return (
       <View
@@ -87,14 +156,14 @@ const List = props => {
         <View>
           <CustomImage
             resizeMode={'cover'}
-            source={{uri: item.image}}
+            source={{uri: fileURL + item?.images?.large}}
             style={{width: '100%', aspectRatio: 1}}
           />
         </View>
 
         <View style={{paddingHorizontal: 5, paddingVertical: 10}}>
           <Text style={{fontSize: 14, fontFamily: font.regular}}>
-            {item.qoute}
+            {item?.description}
           </Text>
         </View>
 
@@ -102,15 +171,12 @@ const List = props => {
           style={{
             flexDirection: 'row',
             backgroundColor: '#FFF',
-            // borderTopWidth: 1,
-            // borderTopColor: Colors.gray02,
           }}>
           <Pressable
-            onPress={() => likeUnLikeFunction(item, index)}
+            onPress={() => api_likeUnLikeQuote(!false, item?._id)}
             style={{
               flex: 1,
               alignItems: 'center',
-              // alignItems:"baseline",
               height: 50,
               justifyContent: 'center',
               flexDirection: 'row',
@@ -131,7 +197,7 @@ const List = props => {
                 letterSpacing: 1,
                 marginTop: 4,
               }}>
-              {kFormatter(item.likes)}
+              {kFormatter(item?.likes)}
             </Text>
           </Pressable>
 
@@ -184,15 +250,18 @@ const List = props => {
         title={'Quotes'}
       />
       <View style={{flex: 1}}>
-        <FlatList
-          contentContainerStyle={{marginTop: 10}}
-          showsVerticalScrollIndicator={false}
-          keyExtractor={(item, index) => {
-            return index.toString();
-          }}
-          data={QuoteList}
-          renderItem={flatItemView}
-        />
+        <Loader enable={loading} />
+        <View style={{flex: 1}}>
+          <FlatList
+            contentContainerStyle={{marginTop: 10}}
+            showsVerticalScrollIndicator={false}
+            keyExtractor={(item, index) => {
+              return index.toString();
+            }}
+            data={QuoteList}
+            renderItem={flatItemView}
+          />
+        </View>
       </View>
     </SafeAreaView>
   );
