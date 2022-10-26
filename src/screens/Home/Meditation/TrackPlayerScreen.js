@@ -45,6 +45,8 @@ const TrackPlayerScreen = props => {
   const [isfav, setIsfav] = useState(params?.item?.is_favourite);
   //? Views
 
+  console.log('params', params);
+
   const moveTo = async val => {
     await TrackPlayer.seekTo(val);
     await TrackPlayer.play();
@@ -101,7 +103,8 @@ const TrackPlayerScreen = props => {
   useEffect(() => {
     LoadtheTrack();
     TrackPlayer.addEventListener('playback-state', ({state}) => {
-      if (state == 'ready' || state == 'playing') {
+      console.log('state: ', state);
+      if (state == 'ready' || state == 'playing' || state < 5) {
         setloading(false);
       }
     });
@@ -249,7 +252,9 @@ const TrackPlayerScreen = props => {
           </Pressable>
           <Text style={_styleTrackPlayer.trackName}>{trackItem.name}</Text>
           <Text style={_styleTrackPlayer.trackCategory}>
-            {params?.category}
+            {params?.from == 'fav'
+              ? trackItem?.category_id[0]?._id?.name
+              : params?.category}
           </Text>
           <Text numberOfLines={4} style={_styleTrackPlayer.trackDescription}>
             {trackItem.description}

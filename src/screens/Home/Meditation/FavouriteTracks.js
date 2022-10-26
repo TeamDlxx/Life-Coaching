@@ -47,6 +47,7 @@ const FavouriteTracks = props => {
       list: trackList,
       likeUnLikeFunc: params?.likeUnLikeFunc,
       unLike: unLike,
+      from: 'fav',
     });
   };
 

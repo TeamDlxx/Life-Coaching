@@ -15,7 +15,10 @@ import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
 import {mainStyles} from '../../../Utilities/styles';
 import CustomImage from '../../../Components/CustomImage';
+import Share from 'react-native-share';
 const screen = Dimensions.get('screen');
+import axios from 'axios';
+import _ from 'buffer';
 
 // For API's calling
 import {useContext} from 'react';
@@ -46,6 +49,35 @@ const List = props => {
 
   const onFavList = () => {
     props.navigation.navigate(screens.favQuoteList);
+  };
+
+  const shareQuote = async image => {
+    return;
+    let res = await GetBase64(fileURL + image);
+    let ext = await image.split('.')[image.split('.').length - 1];
+    let file = `data:image/${ext};base64,${res}`;
+    console.log('extension', ext);
+    console.log('image', ``);
+    await Share.open({
+      title: 'Share via',
+      url: file,
+    })
+      .then(res => {
+        console.log(res);
+      })
+      .catch(err => {
+        err && console.log(err);
+      });
+  };
+
+  const GetBase64 = url => {
+    return axios
+      .get(url, {
+        responseType: 'arraybuffer',
+      })
+      .then(response =>
+        _.Buffer.from(response.data, 'binary').toString('base64'),
+      );
   };
 
   const likeUnLikeFunction = (item, index) => {
@@ -220,6 +252,9 @@ const List = props => {
           </Pressable>
 
           <Pressable
+            onPress={() => {
+              shareQuote(item?.images?.large);
+            }}
             style={{
               flex: 1,
               alignItems: 'center',

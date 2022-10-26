@@ -550,6 +550,8 @@ PODS:
   - RNScreens (3.17.0):
     - React-Core
     - React-RCTImage
+  - RNShare (7.9.1):
+    - React-Core
   - RNSVG (13.2.0):
     - React-Core
   - SDWebImage (5.11.1):
@@ -642,6 +644,7 @@ DEPENDENCIES:
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - RNImageCropPicker (from `../node_modules/react-native-image-crop-picker`)
   - RNScreens (from `../node_modules/react-native-screens`)
+  - RNShare (from `../node_modules/react-native-share`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -781,6 +784,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-image-crop-picker"
   RNScreens:
     :path: "../node_modules/react-native-screens"
+  RNShare:
+    :path: "../node_modules/react-native-share"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   Yoga:
@@ -864,6 +869,7 @@ SPEC CHECKSUMS:
   RNFBMessaging: a57c9c22d2e0a535e5090fecaa68381f0cb2e784
   RNImageCropPicker: ffbba608264885c241cbf3a8f78eb7aeeb978241
   RNScreens: 0df01424e9e0ed7827200d6ed1087ddd06c493f9
+  RNShare: a5dc3b9c53ddc73e155b8cd9a94c70c91913c43c
   RNSVG: 07037623c36f12e41312730622d5f6b3656227ca
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d

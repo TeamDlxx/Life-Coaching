@@ -353,7 +353,7 @@ const Meditation = props => {
       likeUnLikeFunc: likeUnLikeLocally,
     });
   };
-  // Modal
+
 
   return (
     <SafeAreaView style={mainStyles.MainView}>
@@ -400,10 +400,10 @@ const Meditation = props => {
             }
             ListEmptyComponent={
               isLoading == false && (
-                <EmptyView title="No tracks for this category" />
+                <EmptyView title="No Tracks" />
               )
             }
-            onEndReachedThreshold={1}
+            onEndReachedThreshold={0.25}
             ListFooterComponent={
               isLoadingMore == true && (
                 <ActivityIndicator color={Colors.primary} size="small" />
