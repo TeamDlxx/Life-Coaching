@@ -35,6 +35,7 @@ import pauseTrack from '../../../Assets/TrackPlayer/pauseTrack.png';
 import playTrack from '../../../Assets/TrackPlayer/playTrack.png';
 import ic_repeat from '../../../Assets/TrackPlayer/repeat.png';
 import ic_download from '../../../Assets/TrackPlayer/ic_download3.png';
+import ic_share from '../../../Assets/TrackPlayer/share.png';
 
 const TrackPlayerScreen = props => {
   const {navigation} = props;
@@ -263,42 +264,12 @@ const TrackPlayerScreen = props => {
       </View>
       <View style={_styleTrackPlayer.controlsAndTextView}>
         <View style={_styleTrackPlayer.TextView}>
-          <Text style={_styleTrackPlayer.trackName}>{trackItem.name}</Text>
-          <Text style={_styleTrackPlayer.trackCategory}>
-            {params?.from == 'fav'
-              ? trackItem?.category_id[0]?._id?.name
-              : params?.category}
-          </Text>
-          <Text numberOfLines={4} style={_styleTrackPlayer.trackDescription}>
-            {trackItem.description}
-          </Text>
-        </View>
-        <View style={_styleTrackPlayer.controlView}>
-          <View style={{flexDirection: 'row', alignSelf: 'flex-end'}}>
-            <Pressable
-              onPress={toggleRepeat}
-              style={_styleTrackPlayer.favButtonView}>
-              <Image
-                style={[
-                  _styleTrackPlayer.previosAndNextButtonIcon,
-                  {tintColor: repeat ? Colors.primary : Colors.gray05},
-                ]}
-                source={ic_repeat}
-              />
-            </Pressable>
-            <Pressable
-              onPress={() => api_likeUnLike(!isfav, trackItem?._id)}
-              style={_styleTrackPlayer.favButtonView}>
-              <Image
-                style={[
-                  _styleTrackPlayer.favButtonIcon,
-                  {
-                    tintColor: isfav ? Colors.primary : Colors.gray05,
-                  },
-                ]}
-                source={favIcon}
-              />
-            </Pressable>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignSelf: 'flex-end',
+              marginRight: -20,
+            }}>
             <Pressable style={_styleTrackPlayer.favButtonView}>
               <Image
                 style={[
@@ -310,7 +281,29 @@ const TrackPlayerScreen = props => {
                 source={ic_download}
               />
             </Pressable>
+            <Pressable style={_styleTrackPlayer.favButtonView}>
+              <Image
+                style={[
+                  _styleTrackPlayer.favButtonIcon,
+                  {
+                    tintColor: Colors.primary,
+                  },
+                ]}
+                source={ic_share}
+              />
+            </Pressable>
           </View>
+          <Text style={_styleTrackPlayer.trackName}>{trackItem.name}</Text>
+          <Text style={_styleTrackPlayer.trackCategory}>
+            {params?.from == 'fav'
+              ? trackItem?.category_id[0]?._id?.name
+              : params?.category}
+          </Text>
+          <Text numberOfLines={4} style={_styleTrackPlayer.trackDescription}>
+            {trackItem.description}
+          </Text>
+        </View>
+        <View style={_styleTrackPlayer.controlView}>
           <ProgressBar
             resetPlayer={resetTheTrack}
             moveTo={val => {
@@ -319,6 +312,17 @@ const TrackPlayerScreen = props => {
           />
 
           <View style={_styleTrackPlayer.playerButtonsView}>
+            <Pressable
+              onPress={toggleRepeat}
+              style={_styleTrackPlayer.sideButtons}>
+              <Image
+                style={[
+                  _styleTrackPlayer.previosAndNextButtonIcon,
+                  {tintColor: repeat ? Colors.primary : Colors.gray05},
+                ]}
+                source={ic_repeat}
+              />
+            </Pressable>
             <Pressable
               disabled={!checkNextAndPreviosAvailable(trackItem._id, 'prev')}
               onPress={() => changeTrack(-1)}
@@ -362,6 +366,19 @@ const TrackPlayerScreen = props => {
                   },
                 ]}
                 source={nextTrack}
+              />
+            </Pressable>
+            <Pressable
+              onPress={() => api_likeUnLike(!isfav, trackItem?._id)}
+              style={_styleTrackPlayer.sideButtons}>
+              <Image
+                style={[
+                  _styleTrackPlayer.favButtonIcon,
+                  {
+                    tintColor: isfav ? Colors.primary : Colors.gray05,
+                  },
+                ]}
+                source={favIcon}
               />
             </Pressable>
           </View>
@@ -416,6 +433,7 @@ const _styleTrackPlayer = StyleSheet.create({
     borderRadius: 40 / 2,
     justifyContent: 'center',
     alignSelf: 'flex-end',
+    marginLeft: 5,
   },
   favButtonIcon: {
     width: 20,
