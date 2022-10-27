@@ -10,7 +10,8 @@ import {
   BackHandler,
   Alert,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useState} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
 import {mainStyles} from '../../Utilities/styles';
 import Header from '../../Components/Header';
 import Colors from '../../Utilities/Colors';
@@ -384,13 +385,17 @@ const EditProfile = props => {
     return true;
   };
 
-  useEffect(() => {
-    const subscription = BackHandler.addEventListener(
-      'hardwareBackPress',
-      onBackPress,
-    );
-    return () => subscription.remove();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+      return () => {
+        subscription.remove();
+      };
+    }, [user]),
+  );
 
   return (
     <SafeAreaView style={mainStyles.MainView}>

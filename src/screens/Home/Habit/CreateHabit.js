@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import React, {useEffect, useState, useCallback} from 'react';
 import Header from '../../../Components/Header';
+import {useFocusEffect} from '@react-navigation/native';
 import {
   mainStyles,
   other_style,
@@ -402,13 +403,16 @@ const CreateHabit = props => {
     }
     return true;
   };
-
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+      return () => subscription.remove();
+    }, [Habit]),
+  );
   useEffect(() => {
-    const subscription = BackHandler.addEventListener(
-      'hardwareBackPress',
-      onBackPress,
-    );
-
     if (params?.item) {
       let {item} = params;
       let changes = {
@@ -443,7 +447,6 @@ const CreateHabit = props => {
       updateOldData({...changes});
     } else {
     }
-    return () => subscription.remove();
   }, []);
 
   return (

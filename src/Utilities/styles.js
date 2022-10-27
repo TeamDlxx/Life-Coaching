@@ -2,8 +2,121 @@ import {Platform, StyleSheet, Dimensions} from 'react-native';
 import Colors from './Colors';
 import {font} from './font';
 
-
 const screen = Dimensions.get('screen');
+
+export const _styleTrackPlayer = StyleSheet.create({
+  rootView: {
+    flex: 1,
+    backgroundColor: Colors.background,
+    overflow: 'hidden',
+  },
+  posterView: {
+    flex: 0.5,
+    transform: [{scaleX: 2}],
+    borderBottomStartRadius: 200,
+    borderBottomEndRadius: 200,
+    overflow: 'hidden',
+    backgroundColor: Colors.gray02,
+  },
+  posterImageView: {
+    flex: 1,
+    transform: [{scaleX: 0.5}],
+  },
+
+  backButtonView: {
+    height: 40,
+    width: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+    borderRadius: 40 / 2,
+    marginLeft: 10,
+  },
+  backButtonIcon: {height: 20, width: 20},
+  controlsAndTextView: {
+    flex: 0.5,
+    justifyContent: 'space-between',
+    marginBottom: '15%',
+    marginTop: '10%',
+  },
+  TextView: {marginHorizontal: 35, marginTop: -20},
+  favButtonView: {
+    alignItems: 'center',
+    height: 40,
+    width: 40,
+    borderRadius: 40 / 2,
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+    marginLeft: 5,
+  },
+  favButtonIcon: {
+    width: 20,
+    height: 20,
+  },
+  trackName: {
+    fontFamily: font.xbold,
+    fontSize: 21,
+    includeFontPadding: false,
+    color: Colors.black,
+    marginTop: 5,
+  },
+  trackCategory: {
+    fontFamily: font.bold,
+    fontSize: 18,
+    includeFontPadding: false,
+    color: Colors.gray12,
+    marginTop: 5,
+  },
+  trackDescription: {
+    fontFamily: font.bold,
+    fontSize: 14,
+    includeFontPadding: false,
+    color: Colors.gray05,
+    marginTop: 5,
+  },
+  controlView: {marginHorizontal: 35, marginTop: 10},
+  playerButtonsView: {
+    flexDirection: 'row',
+    marginTop: 10,
+    justifyContent: 'center',
+  },
+  downloadButtonView: {
+    alignItems: 'center',
+    height: 40,
+    width: 40,
+    borderRadius: 40 / 2,
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+  },
+  previosAndNextButtonView: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sideButtons: {
+    flex: 0.75,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  previosAndNextButtonIcon: {width: 22, height: 22, tintColor: Colors.primary},
+
+  playPauseButtonView: {
+    flex: 0.75,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  playPauseButtonInnerView: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderColor: Colors.lightPrimary,
+    borderWidth: 7,
+  },
+  playPauseButtonIcon: {width: 22, height: 22, tintColor: Colors.white},
+});
 
 export const mainStyles = StyleSheet.create({
   MainView: {
