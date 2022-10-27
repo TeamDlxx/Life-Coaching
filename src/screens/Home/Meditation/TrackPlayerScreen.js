@@ -13,7 +13,7 @@ import {
 import React, {useEffect, useRef, useState} from 'react';
 import Colors from '../../../Utilities/Colors';
 import {font} from '../../../Utilities/font';
-import TrackPlayer from 'react-native-track-player';
+import TrackPlayer, {Capability} from 'react-native-track-player';
 import ProgressBar from '../../../Components/ProgreeBar';
 import {State} from 'react-native-track-player';
 // For API's calling
@@ -24,6 +24,7 @@ import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
+import Toast from 'react-native-simple-toast';
 
 //Icons
 
@@ -32,6 +33,8 @@ import nextTrack from '../../../Assets/TrackPlayer/nextTrack.png';
 import previousTrack from '../../../Assets/TrackPlayer/previousTrack.png';
 import pauseTrack from '../../../Assets/TrackPlayer/pauseTrack.png';
 import playTrack from '../../../Assets/TrackPlayer/playTrack.png';
+import ic_repeat from '../../../Assets/TrackPlayer/repeat.png';
+import ic_download from '../../../Assets/TrackPlayer/ic_download3.png';
 
 const TrackPlayerScreen = props => {
   const {navigation} = props;
@@ -40,16 +43,16 @@ const TrackPlayerScreen = props => {
   const [tracksList, setTrackList] = useState(params?.list);
   const [trackItem, setTrackItem] = useState(params?.item);
   const [playIcon, setPlayIcon] = useState(pauseTrack);
-  const [DefaultImage, setDefaultImage] = useState(true);
+  const [repeat, setRepeat] = useState(false);
+  const [DefaultImage, setDefaultImage] = useState(false);
   const [loading, setloading] = useState(true);
   const [isfav, setIsfav] = useState(params?.item?.is_favourite);
   //? Views
 
-  console.log('params', params);
-
   const moveTo = async val => {
-    await TrackPlayer.seekTo(val);
-    await TrackPlayer.play();
+    TrackPlayer.seekTo(val);
+    setPlayIcon(pauseTrack);
+    // await TrackPlayer.play();
   };
 
   const changeTrack = action => {
@@ -64,6 +67,11 @@ const TrackPlayerScreen = props => {
     }
   };
 
+  const toggleRepeat = () => {
+    let val = !repeat;
+    setRepeat(val);
+  };
+
   const LoadtheTrack = async () => {
     await TrackPlayer.reset();
     await TrackPlayer.add({
@@ -74,9 +82,14 @@ const TrackPlayerScreen = props => {
       album: '',
       genre: '',
       artwork: fileURL + trackItem?.images?.small,
+      duration: Math.ceil(trackItem?.duration),
     });
+    // await TrackPlayer.updateOptions({
+    //   stoppingAppPausesPlayback: true,
+
+    // });
     await TrackPlayer.play();
-    setPlayIcon(pauseTrack);
+    // setPlayIcon(pauseTrack);
   };
 
   const checkNextAndPreviosAvailable = (id, type) => {
@@ -102,16 +115,21 @@ const TrackPlayerScreen = props => {
 
   useEffect(() => {
     LoadtheTrack();
+  }, [trackItem]);
+
+  useEffect(() => {
+    console.log('state', State);
     TrackPlayer.addEventListener('playback-state', ({state}) => {
       console.log('state: ', state);
-      if (state == 'ready' || state == 'playing' || state < 5) {
+      if (state == 'ready' || state == 'playing' || state == 2) {
         setloading(false);
       }
     });
     return () => {
+      console.log('return');
       TrackPlayer.reset();
     };
-  }, [trackItem]);
+  }, []);
 
   const changeStatus = async () => {
     if (playIcon == playTrack) {
@@ -125,8 +143,13 @@ const TrackPlayerScreen = props => {
 
   const resetTheTrack = async () => {
     await TrackPlayer.seekTo(0);
-    await TrackPlayer.pause();
-    setPlayIcon(playTrack);
+    if (repeat) {
+      await TrackPlayer.play();
+      setPlayIcon(pauseTrack);
+    } else {
+      await TrackPlayer.pause();
+      setPlayIcon(playTrack);
+    }
   };
 
   const goBack = () => {
@@ -188,6 +211,9 @@ const TrackPlayerScreen = props => {
     <View style={_styleTrackPlayer.rootView}>
       <View style={_styleTrackPlayer.posterView}>
         <ImageBackground
+          onLoadStart={() => {
+            setDefaultImage(true);
+          }}
           onLoad={end => {
             setDefaultImage(false);
           }}
@@ -237,19 +263,6 @@ const TrackPlayerScreen = props => {
       </View>
       <View style={_styleTrackPlayer.controlsAndTextView}>
         <View style={_styleTrackPlayer.TextView}>
-          <Pressable
-            onPress={() => api_likeUnLike(!isfav, trackItem?._id)}
-            style={_styleTrackPlayer.favButtonView}>
-            <Image
-              style={[
-                _styleTrackPlayer.favButtonIcon,
-                {
-                  tintColor: isfav ? Colors.primary : Colors.gray05,
-                },
-              ]}
-              source={favIcon}
-            />
-          </Pressable>
           <Text style={_styleTrackPlayer.trackName}>{trackItem.name}</Text>
           <Text style={_styleTrackPlayer.trackCategory}>
             {params?.from == 'fav'
@@ -261,6 +274,43 @@ const TrackPlayerScreen = props => {
           </Text>
         </View>
         <View style={_styleTrackPlayer.controlView}>
+          <View style={{flexDirection: 'row', alignSelf: 'flex-end'}}>
+            <Pressable
+              onPress={toggleRepeat}
+              style={_styleTrackPlayer.favButtonView}>
+              <Image
+                style={[
+                  _styleTrackPlayer.previosAndNextButtonIcon,
+                  {tintColor: repeat ? Colors.primary : Colors.gray05},
+                ]}
+                source={ic_repeat}
+              />
+            </Pressable>
+            <Pressable
+              onPress={() => api_likeUnLike(!isfav, trackItem?._id)}
+              style={_styleTrackPlayer.favButtonView}>
+              <Image
+                style={[
+                  _styleTrackPlayer.favButtonIcon,
+                  {
+                    tintColor: isfav ? Colors.primary : Colors.gray05,
+                  },
+                ]}
+                source={favIcon}
+              />
+            </Pressable>
+            <Pressable style={_styleTrackPlayer.favButtonView}>
+              <Image
+                style={[
+                  _styleTrackPlayer.favButtonIcon,
+                  {
+                    tintColor: Colors.primary,
+                  },
+                ]}
+                source={ic_download}
+              />
+            </Pressable>
+          </View>
           <ProgressBar
             resetPlayer={resetTheTrack}
             moveTo={val => {
@@ -398,8 +448,21 @@ const _styleTrackPlayer = StyleSheet.create({
     marginTop: 10,
     justifyContent: 'center',
   },
+  downloadButtonView: {
+    alignItems: 'center',
+    height: 40,
+    width: 40,
+    borderRadius: 40 / 2,
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+  },
   previosAndNextButtonView: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sideButtons: {
+    flex: 0.75,
     alignItems: 'center',
     justifyContent: 'center',
   },

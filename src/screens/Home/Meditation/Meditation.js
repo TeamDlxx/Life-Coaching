@@ -17,7 +17,7 @@ import Colors from '../../../Utilities/Colors';
 import {mainStyles} from '../../../Utilities/styles';
 import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
-
+import formatTime from '../../../functions/formatTime';
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -179,14 +179,6 @@ const Meditation = props => {
     call_categoryAPI();
   }, []);
 
-  useEffect(() => {
-    console.log('categoryList', categoryList);
-  }, [categoryList]);
-
-  useEffect(() => {
-    console.log('selectedCategory', selectedCategory);
-  }, [selectedCategory]);
-
   //? Views
 
   const renderCategories = ({item, index}) => {
@@ -237,25 +229,21 @@ const Meditation = props => {
   const renderTrackList = React.useCallback(
     ({item, index}) => {
       return (
-        <TouchableOpacity
+        <Pressable
           onPress={() => {
             gotoTrackPlayer(item, index);
           }}
-          activeOpacity={1}
           style={{
-            marginBottom: 20,
+            marginTop: 20,
             alignItems: 'center',
-            borderRadius: 20,
-            paddingHorizontal: 10,
             flexDirection: 'row',
-            marginHorizontal: 12,
-            minHeight: 70,
+            marginHorizontal: 20,
           }}>
           <View
             style={{
               height: 70,
               width: 70,
-              borderRadius: 26,
+              borderRadius: 10,
               overflow: 'hidden',
               borderWidth: 1,
               borderColor: Colors.gray02,
@@ -265,12 +253,29 @@ const Meditation = props => {
               style={{height: 70, width: 70}}
               indicatorProps={{color: Colors.primary}}
             />
+            <View
+              style={{
+                position: 'absolute',
+                height: 20,
+                width: 20,
+                backgroundColor: Colors.white,
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: 999,
+                bottom: 5,
+                right: 5,
+              }}>
+              <Image
+                style={{height: 12, width: 12, tintColor: Colors.primary}}
+                source={play}
+              />
+            </View>
           </View>
           <View style={{marginLeft: 15, flex: 1}}>
             <Text
               style={{
                 fontFamily: font.bold,
-                fontSize: 16,
+                fontSize: 14,
                 includeFontPadding: false,
                 color: Colors.black,
               }}>
@@ -279,12 +284,10 @@ const Meditation = props => {
 
             <View
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginTop: 5,
+                marginTop: 3,
               }}>
               <Text
-                numberOfLines={1}
+                numberOfLines={2}
                 style={{
                   fontFamily: font.medium,
                   color: Colors.text,
@@ -293,42 +296,19 @@ const Meditation = props => {
                 {item.description}
               </Text>
             </View>
-          </View>
-          <View style={{}}>
-            <TouchableOpacity
-              activeOpacity={1}
-              style={{padding: 10}}
-              //   onPress={() => checkboxButton(item)}
-            >
-              <TouchableOpacity
-                onPress={() => {
-                  gotoTrackPlayer(item);
-                }}
+
+            <View style={{marginTop: 3}}>
+              <Text
                 style={{
-                  width: 35,
-                  height: 35,
-                  backgroundColor: Colors.white,
-                  borderRadius: 12,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  shadowColor: Colors.primary,
-                  shadowOffset: {width: 0, height: 1},
-                  shadowOpacity: 0.2,
-                  shadowRadius: 1.41,
-                  elevation: 5,
+                  fontFamily: font.medium,
+                  color: Colors.gray12,
+                  fontSize: 12,
                 }}>
-                <Image
-                  style={{
-                    height: 18,
-                    width: 18,
-                    //   tintColor:Colors.primary
-                  }}
-                  source={play}
-                />
-              </TouchableOpacity>
-            </TouchableOpacity>
+                {formatTime(item.duration)}
+              </Text>
+            </View>
           </View>
-        </TouchableOpacity>
+        </Pressable>
       );
     },
     [categoryList, selectedCategory],
@@ -353,7 +333,6 @@ const Meditation = props => {
       likeUnLikeFunc: likeUnLikeLocally,
     });
   };
-
 
   return (
     <SafeAreaView style={mainStyles.MainView}>
@@ -399,9 +378,7 @@ const Meditation = props => {
               />
             }
             ListEmptyComponent={
-              isLoading == false && (
-                <EmptyView title="No Tracks" />
-              )
+              isLoading == false && <EmptyView title="No Tracks" />
             }
             onEndReachedThreshold={0.25}
             ListFooterComponent={

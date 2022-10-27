@@ -24,7 +24,9 @@ const Header = props => {
               justifyContent: 'center',
             }}
             onPress={() => {
-              props.navigation.goBack();
+              !!props.onBackPress
+                ? props.onBackPress()
+                : props.navigation.goBack();
             }}>
             <Image
               source={require('../Assets/Icons/back.png')}

@@ -708,7 +708,7 @@ const HabitTracker = props => {
               }}
               ListEmptyComponent={() =>
                 isLoading == false && (
-                  <EmptyView title={`No Habits for this date`} />
+                  <EmptyView title={`No Habits for this date`} noSubtitle />
                 )
               }
             />

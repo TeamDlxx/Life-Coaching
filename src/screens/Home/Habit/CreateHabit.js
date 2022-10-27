@@ -9,7 +9,8 @@ import {
   ScrollView,
   Platform,
   Dimensions,
-  TouchableHighlight,
+  BackHandler,
+  Alert,
 } from 'react-native';
 import React, {useEffect, useState, useCallback} from 'react';
 import Header from '../../../Components/Header';
@@ -78,6 +79,28 @@ const CreateHabit = props => {
     },
     frequency: week,
   });
+  const [oldData, setoldData] = useState({
+    image: {
+      uri: '',
+      type: '',
+      name: '',
+    },
+    preDefinedImage: null,
+    localImage: '',
+    title: '',
+    type: null,
+    reminder: {
+      showModal: false,
+      value: false,
+      time: rountToNextmins(5),
+    },
+    targetDate: {
+      showModal: false,
+      value: false,
+      date: moment().add(1, 'week'),
+    },
+    frequency: week,
+  });
   const {
     title,
     type,
@@ -89,6 +112,7 @@ const CreateHabit = props => {
     preDefinedImage,
   } = Habit;
   const updateHabit = updation => setHabit({...Habit, ...updation});
+  const updateOldData = updation => setoldData({...Habit, ...updation});
   const selectDay = day => {
     let newArray = [...frequency];
     let index = newArray.findIndex(x => x.day == day.day);
@@ -354,10 +378,40 @@ const CreateHabit = props => {
 
   // USE EFFECT
 
+  const onBackPress = () => {
+    let arr1 = Habit?.frequency.map(x => x.status);
+    let arr2 = oldData?.frequency.map(x => x.status);
+    if (
+      Habit?.title != oldData?.title ||
+      Habit.type != oldData?.type ||
+      Habit?.localImage != oldData?.localImage ||
+      JSON.stringify(arr1) != JSON.stringify(arr2) ||
+      moment(Habit?.targetDate?.date).format('DDMMYYYY') !=
+        moment(oldData?.targetDate?.date).format('DDMMYYYY') ||
+      Habit?.reminder?.value != oldData?.reminder?.value ||
+      moment(Habit?.reminder?.time).format('HH:mm') !=
+        moment(oldData?.reminder?.time).format('HH:mm')
+    ) {
+      Alert.alert(
+        'Unsaved Changes',
+        'Are you sure you want to discard changes?',
+        [{text: 'No'}, {text: 'Yes', onPress: () => props.navigation.goBack()}],
+      );
+    } else {
+      props.navigation.goBack();
+    }
+    return true;
+  };
+
   useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onBackPress,
+    );
+
     if (params?.item) {
       let {item} = params;
-      updateHabit({
+      let changes = {
         title: item?.name,
         localImage: fileURL + item?.images.large,
         type: item?.type == 'to-do' ? 1 : 0,
@@ -371,20 +425,25 @@ const CreateHabit = props => {
           date: moment(item?.target_date),
         },
         frequency: [...item?.frequency],
-      });
+      };
+      updateHabit({...changes});
+      updateOldData({...changes});
     } else if (params?.habit) {
       let {habit} = params;
-      updateHabit({
+      let changes = {
         title: habit?.name,
         type: params.todo,
         preDefinedImage: habit?.images,
-      });
+      };
+      updateHabit({...changes});
+      updateOldData({...changes});
     } else if (params?.todo != null && params?.todo != undefined) {
-      updateHabit({
-        type: params?.todo,
-      });
+      let changes = {type: params?.todo};
+      updateHabit({...changes});
+      updateOldData({...changes});
     } else {
     }
+    return () => subscription.remove();
   }, []);
 
   return (
@@ -396,6 +455,7 @@ const CreateHabit = props => {
 
       <Header
         navigation={props.navigation}
+        onBackPress={onBackPress}
         title={!!params?.item ? 'Edit Habit' : 'Create Habit'}
       />
       <View style={[mainStyles.innerView, {paddingTop: 10}]}>

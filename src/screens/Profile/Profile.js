@@ -269,14 +269,9 @@ const optionsList = [
     icon: require('../../Assets/Icons/key.png'),
     screen: screens.changePassword,
   },
+
   {
     id: '3',
-    name: 'Settings',
-    icon: require('../../Assets/Icons/setting_filled.png'),
-    screen: screens.settings,
-  },
-  {
-    id: '4',
     name: 'Subscription',
     icon: require('../../Assets/Icons/subscribe.png'),
   },

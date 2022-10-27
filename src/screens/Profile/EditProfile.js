@@ -7,6 +7,8 @@ import {
   Image,
   Platform,
   PermissionsAndroid,
+  BackHandler,
+  Alert,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {mainStyles} from '../../Utilities/styles';
@@ -47,18 +49,32 @@ const EditProfile = props => {
   const [isLoading, setisLoading] = useState(false);
   const [user, updateUser] = useState({
     imageURI: userData.profile_image,
+    selectedImage: null,
     fullName: userData.name,
   });
+
+  const oldData = {
+    imageURI: userData.profile_image,
+    selectedImage: null,
+    fullName: userData.name,
+  };
+
   const setUser = updation => updateUser({...user, ...updation});
 
-  const SaveChangesButton = () => {
+  const SaveChangesButton = async () => {
     let t_name = user.fullName.trim();
-    let t_image = !!user.imageURI ? user.imageURI : '';
+    // let t_image = !!user.imageURI ? user.imageURI : '';
     if (t_name == '') {
       showToast('Please enter your name', 'Alert');
     } else if (!isFirstLetterAlphabet(t_name)) {
       showToast('First letter of name must be an alphabet', 'Alert');
     } else {
+      let t_image = null;
+      if (!!user?.selectedImage) {
+        t_image = await api_fileUpload();
+      } else {
+        t_image = !!user.imageURI ? user.imageURI : '';
+      }
       let obj_editProfile = {
         name: t_name,
         profile_image: t_image,
@@ -117,22 +133,22 @@ const EditProfile = props => {
           console.log('Image', image);
           // setUser({imageURI: image.sourceURL});
 
-          let data = new FormData();
+          let selectedImage = null;
           if (Platform.OS == 'android') {
             let name = image.path.split('/');
-            data.append('image', {
+            selectedImage = {
               uri: image.path,
               name: name[name.length - 1],
               type: image.mime,
-            });
+            };
           } else if (Platform.OS == 'ios') {
-            data.append('image', {
+            selectedImage = {
               uri: image.path,
               name: image.filename,
               type: image.mime,
-            });
+            };
           }
-          api_fileUpload(data);
+          setUser({selectedImage: selectedImage});
         })
         .catch(e => {
           console.log('Error', e);
@@ -172,21 +188,22 @@ const EditProfile = props => {
           .then(image => {
             console.log('Image', image);
             let data = new FormData();
+            let selectedImage = null;
             if (Platform.OS == 'android') {
               let name = image.path.split('/');
-              data.append('image', {
+              selectedImage = {
                 uri: image.path,
                 name: name[name.length - 1],
                 type: image.mime,
-              });
+              };
             } else if (Platform.OS == 'ios') {
-              data.append('image', {
+              selectedImage = {
                 uri: image.path,
                 name: image.filename,
                 type: image.mime,
-              });
+              };
             }
-            api_fileUpload(data);
+            setUser({selectedImage: selectedImage});
           })
           .catch(e => {
             console.log('Error', e);
@@ -198,8 +215,9 @@ const EditProfile = props => {
     }
   };
 
-  const api_fileUpload = async file => {
-    console.log('FIle', file);
+  const api_fileUpload = async () => {
+    let file = new FormData();
+    file.append('image', user?.selectedImage);
     setisLoading(true);
     let res = await invokeApi({
       path: 'api/app_api/upload_image_s3',
@@ -211,11 +229,12 @@ const EditProfile = props => {
       },
       navigation: props.navigation,
     });
-    setisLoading(false);
+
     if (res) {
       if (res.code == 200) {
-        setUser({imageURI: res.path});
+        return res.path;
       } else {
+        setisLoading(false);
         showToast(res.message);
       }
     }
@@ -317,7 +336,7 @@ const EditProfile = props => {
             </Pressable>
             <Pressable
               onPress={() => {
-                setUser({imageURI: ''});
+                setUser({imageURI: '', selectedImage: null});
                 setModalVisibility(false);
               }}
               style={{alignItems: 'center', marginLeft: 30}}>
@@ -348,9 +367,30 @@ const EditProfile = props => {
     );
   };
 
-  const setImage = path => {
-    setUser({imageURI: path});
+  const onBackPress = () => {
+    if (
+      user?.fullName.trim() != oldData?.fullName.trim() ||
+      user?.selectedImage != oldData?.selectedImage ||
+      user?.imageURI != oldData?.imageURI
+    ) {
+      Alert.alert(
+        'Unsaved Changes',
+        'Are you sure you want to discard changes?',
+        [{text: 'No'}, {text: 'Yes', onPress: () => props.navigation.goBack()}],
+      );
+    } else {
+      props.navigation.goBack();
+    }
+    return true;
   };
+
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onBackPress,
+    );
+    return () => subscription.remove();
+  }, []);
 
   return (
     <SafeAreaView style={mainStyles.MainView}>
@@ -358,7 +398,11 @@ const EditProfile = props => {
         backgroundColor={Colors.background}
         barStyle={'dark-content'}
       />
-      <Header title="Edit Profile" navigation={props.navigation} />
+      <Header
+        title="Edit Profile"
+        onBackPress={onBackPress}
+        navigation={props.navigation}
+      />
       <View style={{flex: 1}}>
         <View>
           <Pressable
@@ -377,7 +421,9 @@ const EditProfile = props => {
             }}>
             <CustomImage
               source={
-                !!user?.imageURI
+                !!user?.selectedImage
+                  ? {uri: user?.selectedImage?.uri}
+                  : !!user?.imageURI
                   ? {uri: fileURL + user?.imageURI}
                   : profile_avatar
               }
