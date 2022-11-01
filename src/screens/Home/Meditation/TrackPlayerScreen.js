@@ -49,8 +49,6 @@ const TrackPlayerScreen = props => {
   const [isfav, setIsfav] = useState(params?.item?.is_favourite);
   const [downloaded, setDownloaded] = useState(null);
 
-  //? Views
-
   const moveTo = async val => {
     TrackPlayer.seekTo(val);
     setPlayIcon(pauseTrack);
@@ -74,7 +72,6 @@ const TrackPlayerScreen = props => {
       Alert.alert(
         'Delete Track',
         'Are you sure you want to delete thie track from your local downloads',
-
         [
           {text: 'No'},
           {
@@ -83,8 +80,8 @@ const TrackPlayerScreen = props => {
               let res = await deleteTrack(trackItem._id);
               console.log('res', res);
               setDownloaded(res);
-              if (!!params?.refreshBackScreen) {
-                params?.refreshBackScreen();
+              if (!!params?.localTracksRefresh) {
+                params?.localTracksRefresh();
               }
             },
           },
@@ -134,7 +131,10 @@ const TrackPlayerScreen = props => {
       artist: params?.category,
       album: '',
       genre: '',
-      artwork: trackItem?.images?.small,
+      artwork:
+        params?.from == 'down'
+          ? trackItem?.images?.small
+          : fileURL + trackItem?.images?.small,
       duration: Math.ceil(trackItem?.duration),
     });
 
@@ -344,19 +344,21 @@ const TrackPlayerScreen = props => {
               alignSelf: 'flex-end',
               marginRight: -20,
             }}>
-            <Pressable
-              onPress={() => api_likeUnLike(!isfav, trackItem?._id)}
-              style={_styleTrackPlayer.favButtonView}>
-              <Image
-                style={[
-                  _styleTrackPlayer.favButtonIcon,
-                  {
-                    tintColor: isfav ? Colors.primary : Colors.gray05,
-                  },
-                ]}
-                source={favIcon}
-              />
-            </Pressable>
+            {params?.from != 'down' && (
+              <Pressable
+                onPress={() => api_likeUnLike(!isfav, trackItem?._id)}
+                style={_styleTrackPlayer.favButtonView}>
+                <Image
+                  style={[
+                    _styleTrackPlayer.favButtonIcon,
+                    {
+                      tintColor: isfav ? Colors.primary : Colors.gray05,
+                    },
+                  ]}
+                  source={favIcon}
+                />
+              </Pressable>
+            )}
           </View>
           <Text style={_styleTrackPlayer.trackName}>{trackItem.name}</Text>
           <Text style={_styleTrackPlayer.trackCategory}>

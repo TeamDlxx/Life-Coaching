@@ -39,4 +39,4 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {});
 
 AppRegistry.registerComponent(appName, () => App);
 
-// TrackPlayer.registerPlaybackService(() => require('./service'));
+TrackPlayer.registerPlaybackService(() => require('./service'));

@@ -5,11 +5,9 @@ import {
   StatusBar,
   FlatList,
   Image,
-  TouchableOpacity,
-  TouchableHighlight,
   Pressable,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Header from '../../Components/Header';
 import Colors from '../../Utilities/Colors';
 import {mainStyles} from '../../Utilities/styles';
@@ -24,20 +22,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../Context';
-import showToast from '../../functions/showToast';
 import Loader from '../../Components/Loader';
-import invokeApi from '../../functions/invokeAPI';
-import {fileURL} from '../../Utilities/domains';
 import EmptyView from '../../Components/EmptyView';
 
 const OfflineTracks = props => {
-  const ref = React.useRef([]);
   const {params} = props.route;
-  const {Token} = useContext(Context);
   const [isLoading, setisLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [trackList, setTrackList] = useState([]);
-  console.log('Params', params);
 
   //? Animatable
 
@@ -45,26 +36,12 @@ const OfflineTracks = props => {
 
   const gotoTrackPlayer = item => {
     props.navigation.navigate(screens.trackPlayer, {
-      item: {
-        ...item,
-        is_favourite: true,
-      },
+      item: item,
       category: item?.category,
       list: trackList,
-      likeUnLikeFunc: params?.likeUnLikeFunc,
-      unLike: unLike,
       from: 'down',
-      refreshBackScreen: getDownloadedTracks,
+      localTracksRefresh: getDownloadedTracks,
     });
-  };
-
-  const unLike = id => {
-    let newArray = [...trackList];
-    let index = newArray.findIndex(x => x._id == id);
-    if (index > -1) {
-      newArray.splice(index, 1);
-      setTrackList(newArray);
-    }
   };
 
   // todo /////// API's
@@ -91,7 +68,6 @@ const OfflineTracks = props => {
 
   useEffect(() => {
     call_DownloadedTracks();
-
     return () => {
       setTrackList([]);
     };
@@ -187,34 +163,6 @@ const OfflineTracks = props => {
               </Text>
             </View>
           </View>
-          {/* <View style={{}}>
-            <TouchableHighlight
-              underlayColor={Colors.lightPrimary}
-              onPress={() => {
-                unLike(item?._id);
-                params?.likeUnLikeFunc(item?._id, false);
-                api_likeUnLike(false, item?._id);
-              }}
-              style={{
-                width: 35,
-                height: 35,
-                backgroundColor: Colors.white,
-                borderRadius: 10,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderColor: Colors.gray02,
-                borderWidth: 1,
-              }}>
-              <Image
-                style={{
-                  height: 15,
-                  width: 15,
-                  tintColor: Colors.primary,
-                }}
-                source={favIcon}
-              />
-            </TouchableHighlight>
-          </View> */}
         </Pressable>
       );
     },
@@ -253,21 +201,3 @@ const OfflineTracks = props => {
 };
 
 export default OfflineTracks;
-
-const fadeIn = {
-  from: {
-    opacity: 0,
-  },
-  to: {
-    opacity: 1,
-  },
-};
-
-const fadeOut = {
-  from: {
-    opacity: 1,
-  },
-  to: {
-    opacity: 0,
-  },
-};
