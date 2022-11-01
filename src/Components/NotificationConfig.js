@@ -60,6 +60,20 @@ export default function NotificationConfig(props) {
         });
 
         break;
+      case 'track_download':
+        props.navigation.reset({
+          index: 0,
+          routes: [
+            {
+              name: screens.bottomTabs,
+              params: {
+                screen: screens.profile,
+              },
+            },
+            {name: screens.dowloadedTracks, params: {id: data._id}},
+          ],
+        });
+        break;
     }
   };
 }

@@ -21,6 +21,9 @@ import profile_placeholder from '../../Assets/Icons/dummy.png';
 import CustomImage from '../../Components/CustomImage';
 import {fileURL} from '../../Utilities/domains';
 
+import {useContext} from 'react';
+import Context from '../../Context';
+
 const Profile = props => {
   const [user, setUser] = useState(null);
 
@@ -36,7 +39,6 @@ const Profile = props => {
     if (props.route.params?.updated) {
       getUserDetail();
     }
-    console.log('props.route.params?.updated', props.route.params?.updated);
   }, [props.route.params]);
 
   useEffect(() => {
@@ -102,51 +104,15 @@ const Profile = props => {
               </View>
 
               <View style={profile_styles.statItemView}>
-                <Text style={profile_styles.statItemtext1}>
-                  Favorite Quotes
-                </Text>
+                <Text style={profile_styles.statItemtext1}>Completed</Text>
                 <Text style={profile_styles.statItemtext2}>06</Text>
               </View>
 
               <View style={profile_styles.statItemView}>
-                <Text style={profile_styles.statItemtext1}>Pending Tasks</Text>
+                <Text style={profile_styles.statItemtext1}>Pending</Text>
                 <Text style={profile_styles.statItemtext2}>04</Text>
               </View>
             </View>
-            {/* <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-evenly',
-                // backgroundColor: 'pink',
-                width: '100%',
-              }}>
-              <View>
-                <Text style={{fontFamily: font.bold, textAlign: 'center'}}>
-                  Total Habits
-                </Text>
-                <Text style={{fontFamily: font.regular, textAlign: 'center'}}>
-                  10
-                </Text>
-              </View>
-
-              <View>
-                <Text style={{fontFamily: font.bold, textAlign: 'center'}}>
-                  Favourite Quotes
-                </Text>
-                <Text style={{fontFamily: font.regular, textAlign: 'center'}}>
-                  08
-                </Text>
-              </View>
-            </View>
-
-            <View style={{marginTop:20}}>
-              <Text style={{fontFamily: font.bold, textAlign: 'center'}}>
-                Your Upcoming Tasks
-              </Text>
-              <Text style={{fontFamily: font.regular, textAlign: 'center'}}>
-                10
-              </Text>
-            </View> */}
           </View>
 
           <View style={{paddingHorizontal: 30, marginTop: 40}}>
@@ -164,15 +130,12 @@ const Profile = props => {
                   flexDirection: 'row',
                   alignItems: 'center',
                   paddingVertical: 10,
-                  // backgroundColor:'pink'
                 }}>
                 <View
                   style={{
                     height: 40,
                     width: 40,
-                    // backgroundColor: '#F7F6F9',
                     backgroundColor: '#BDC3C744',
-
                     justifyContent: 'center',
                     alignItems: 'center',
                     borderRadius: 10,
@@ -274,5 +237,11 @@ const optionsList = [
     id: '3',
     name: 'Subscription',
     icon: require('../../Assets/Icons/subscribe.png'),
+  },
+  {
+    id: '4',
+    name: 'Downloaded Meditation Tracks',
+    icon: require('../../Assets/Icons/music.png'),
+    screen: screens.dowloadedTracks,
   },
 ];

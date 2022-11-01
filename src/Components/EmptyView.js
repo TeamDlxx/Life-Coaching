@@ -31,9 +31,9 @@ const EmptyView = props => {
         <Text style={{fontFamily: font.bold}}>
           {!!props.title ? props.title : 'No Data'}
         </Text>
-        {!!props.noSubtitle == false && (
+        {/* {!!props.noSubtitle == false && (
           <Text style={{fontFamily: font.regular}}>Swipe down to refresh</Text>
-        )}
+        )} */}
       </View>
     </View>
   );

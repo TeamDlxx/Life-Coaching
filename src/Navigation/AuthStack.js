@@ -20,6 +20,7 @@ import BottomTabs from './BottomTabs';
 // //? Profile
 import EditProfile from '../screens/Profile/EditProfile';
 import ChangePassword from '../screens/Profile/ChangePassword';
+import OfflineTracks from '../screens/Profile/OfflineTracks';
 
 // //? Habits
 import HabitTracker from '../screens/Home/Habit/HabitTracker';
@@ -105,6 +106,10 @@ const AuthStack = () => {
         />
         <Stack.Screen name={screens.bottomTabs} component={BottomTabs} />
         {/* Profile */}
+        <Stack.Screen
+          name={screens.dowloadedTracks}
+          component={OfflineTracks}
+        />
         <Stack.Screen name={screens.editProfile} component={EditProfile} />
         <Stack.Screen
           name={screens.changePassword}

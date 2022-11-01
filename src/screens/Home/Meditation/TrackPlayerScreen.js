@@ -7,25 +7,22 @@ import {
   Pressable,
   ImageBackground,
   Platform,
-  StyleSheet,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Colors from '../../../Utilities/Colors';
-import {font} from '../../../Utilities/font';
 import TrackPlayer from 'react-native-track-player';
 import ProgressBar from '../../../Components/ProgreeBar';
-import {State} from 'react-native-track-player';
+import {_styleTrackPlayer} from '../../../Utilities/styles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
 import showToast from '../../../functions/showToast';
-import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
-import EmptyView from '../../../Components/EmptyView';
-import Toast from 'react-native-simple-toast';
 
 //Icons
 
@@ -37,12 +34,12 @@ import playTrack from '../../../Assets/TrackPlayer/playTrack.png';
 import ic_repeat from '../../../Assets/TrackPlayer/repeat.png';
 import ic_download from '../../../Assets/TrackPlayer/ic_download3.png';
 import ic_share from '../../../Assets/TrackPlayer/share.png';
-import {_styleTrackPlayer} from '../../../Utilities/styles';
+import ic_tick from '../../../Assets/Icons/tick.png';
 
 const TrackPlayerScreen = props => {
   const {navigation} = props;
   const {params} = props?.route;
-  const {Token} = useContext(Context);
+  const {Token, downloadTrack, progress, deleteTrack} = useContext(Context);
   const [tracksList, setTrackList] = useState(params?.list);
   const [trackItem, setTrackItem] = useState(params?.item);
   const [playIcon, setPlayIcon] = useState(pauseTrack);
@@ -50,12 +47,65 @@ const TrackPlayerScreen = props => {
   const [DefaultImage, setDefaultImage] = useState(false);
   const [loading, setloading] = useState(true);
   const [isfav, setIsfav] = useState(params?.item?.is_favourite);
+  const [downloaded, setDownloaded] = useState(null);
+
   //? Views
 
   const moveTo = async val => {
     TrackPlayer.seekTo(val);
     setPlayIcon(pauseTrack);
-    // await TrackPlayer.play();
+  };
+
+  const downloading = () => {
+    return !!progress.find(x => x._id == trackItem._id);
+  };
+
+  const downloadTheTrack = async () => {
+    if (!downloaded) {
+      let res = await downloadTrack(
+        trackItem,
+        params?.from == 'fav'
+          ? trackItem?.category_id[0]?._id?.name
+          : params?.category,
+      );
+      console.log('res', res);
+      setDownloaded(res);
+    } else {
+      Alert.alert(
+        'Delete Track',
+        'Are you sure you want to delete thie track from your local downloads',
+
+        [
+          {text: 'No'},
+          {
+            text: 'Yes',
+            onPress: async () => {
+              let res = await deleteTrack(trackItem._id);
+              console.log('res', res);
+              setDownloaded(res);
+              if (!!params?.refreshBackScreen) {
+                params?.refreshBackScreen();
+              }
+            },
+          },
+        ],
+      );
+    }
+  };
+
+  const isDownloaded = async () => {
+    return await AsyncStorage.getItem('@tracks')
+      .then(list => {
+        if (list != null) {
+          let nlist = JSON.parse(list);
+          setDownloaded(!!nlist.find(x => x._id == trackItem._id));
+        } else {
+          return false;
+        }
+      })
+      .catch(e => {
+        return false;
+      });
   };
 
   const changeTrack = action => {
@@ -79,20 +129,16 @@ const TrackPlayerScreen = props => {
     await TrackPlayer.reset();
     await TrackPlayer.add({
       id: trackItem._id,
-      url: fileURL + trackItem?.audio,
+      url: params?.from == 'down' ? trackItem?.mp3 : fileURL + trackItem?.audio,
       title: trackItem?.name,
       artist: params?.category,
       album: '',
       genre: '',
-      artwork: fileURL + trackItem?.images?.small,
+      artwork: trackItem?.images?.small,
       duration: Math.ceil(trackItem?.duration),
     });
-    // await TrackPlayer.updateOptions({
-    //   stoppingAppPausesPlayback: true,
 
-    // });
     await TrackPlayer.play();
-    // setPlayIcon(pauseTrack);
   };
 
   const checkNextAndPreviosAvailable = (id, type) => {
@@ -118,18 +164,16 @@ const TrackPlayerScreen = props => {
 
   useEffect(() => {
     LoadtheTrack();
+    isDownloaded();
   }, [trackItem]);
 
   useEffect(() => {
-    console.log('state', State);
     TrackPlayer.addEventListener('playback-state', ({state}) => {
-      console.log('state: ', state);
       if (state == 'ready' || state == 'playing' || state == 2) {
         setloading(false);
       }
     });
     return () => {
-      console.log('return');
       TrackPlayer.reset();
     };
   }, []);
@@ -224,8 +268,13 @@ const TrackPlayerScreen = props => {
             console.log('Error', e);
           }}
           style={_styleTrackPlayer.posterImageView}
-          resizeMode="stretch"
-          source={{uri: fileURL + trackItem?.images?.large}}>
+          resizeMode="cover"
+          source={{
+            uri:
+              params?.from == 'down'
+                ? trackItem?.images?.large
+                : fileURL + trackItem?.images?.large,
+          }}>
           <StatusBar
             barStyle={'dark-content'}
             backgroundColor={'transparent'}
@@ -236,6 +285,8 @@ const TrackPlayerScreen = props => {
               style={{
                 marginTop:
                   Platform.OS == 'android' ? StatusBar.currentHeight : 0,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
               }}>
               <Pressable
                 onPress={goBack}
@@ -245,6 +296,27 @@ const TrackPlayerScreen = props => {
                   source={require('../../../Assets/Icons/back.png')}
                 />
               </Pressable>
+              <View style={{flexDirection: 'row', marginRight: 10}}>
+                <Pressable
+                  disabled={downloading()}
+                  onPress={downloadTheTrack}
+                  style={_styleTrackPlayer.backButtonView}>
+                  {downloading() ? (
+                    <ActivityIndicator color={Colors.black} size="small" />
+                  ) : (
+                    <Image
+                      style={_styleTrackPlayer.backButton2Icon}
+                      source={!!downloaded ? ic_tick : ic_download}
+                    />
+                  )}
+                </Pressable>
+                {/* <Pressable style={_styleTrackPlayer.backButtonView}>
+                  <Image
+                    style={_styleTrackPlayer.backButton2Icon}
+                    source={ic_share}
+                  />
+                </Pressable> */}
+              </View>
             </View>
             {DefaultImage && (
               <View
@@ -272,26 +344,17 @@ const TrackPlayerScreen = props => {
               alignSelf: 'flex-end',
               marginRight: -20,
             }}>
-            <Pressable style={_styleTrackPlayer.favButtonView}>
+            <Pressable
+              onPress={() => api_likeUnLike(!isfav, trackItem?._id)}
+              style={_styleTrackPlayer.favButtonView}>
               <Image
                 style={[
                   _styleTrackPlayer.favButtonIcon,
                   {
-                    tintColor: Colors.primary,
+                    tintColor: isfav ? Colors.primary : Colors.gray05,
                   },
                 ]}
-                source={ic_download}
-              />
-            </Pressable>
-            <Pressable style={_styleTrackPlayer.favButtonView}>
-              <Image
-                style={[
-                  _styleTrackPlayer.favButtonIcon,
-                  {
-                    tintColor: Colors.primary,
-                  },
-                ]}
-                source={ic_share}
+                source={favIcon}
               />
             </Pressable>
           </View>
@@ -311,6 +374,7 @@ const TrackPlayerScreen = props => {
             moveTo={val => {
               moveTo(val);
             }}
+            time={trackItem?.duration}
           />
 
           <View style={_styleTrackPlayer.playerButtonsView}>
@@ -370,19 +434,7 @@ const TrackPlayerScreen = props => {
                 source={nextTrack}
               />
             </Pressable>
-            <Pressable
-              onPress={() => api_likeUnLike(!isfav, trackItem?._id)}
-              style={_styleTrackPlayer.sideButtons}>
-              <Image
-                style={[
-                  _styleTrackPlayer.favButtonIcon,
-                  {
-                    tintColor: isfav ? Colors.primary : Colors.gray05,
-                  },
-                ]}
-                source={favIcon}
-              />
-            </Pressable>
+            <View style={_styleTrackPlayer.sideButtons} />
           </View>
         </View>
       </View>

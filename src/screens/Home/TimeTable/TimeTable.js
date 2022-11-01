@@ -22,6 +22,7 @@ import Menuicon from '../../../Assets/Icons/menu.png';
 import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
 import Modal from 'react-native-modal';
+import RNFS from 'react-native-fs';
 
 const TimeTable = props => {
   // Modal
@@ -190,13 +191,46 @@ const TimeTable = props => {
         barStyle={'dark-content'}
         backgroundColor={Colors.background}
       />
-
+      <Image
+        style={{height: 200, width: 200}}
+        source={{
+          uri: 'file://storage/emulated/0/Android/data/com.coachingoflife.app/files/images/84791de0-552e-11ed-a20a-6d91743bd5ff.jpeg',
+        }}
+      />
       <Header
         navigation={props.navigation}
         title={'Time Table'}
         // titleAlignLeft
       />
       {EditModal()}
+
+      <Pressable
+        onPress={async () => {
+          RNFS.readDir(RNFS.DocumentDirectoryPath + '/images') // On Android, use "RNFS.DocumentDirectoryPath" (MainBundlePath is not defined)
+            .then(result => {
+              console.log('GOT RESULT', result);
+
+              // stat the first file
+            });
+        }}
+        style={{height: 50, width: 50, margin: 10, backgroundColor: 'white'}}>
+        <Text>Write</Text>
+      </Pressable>
+      <Pressable
+        onPress={async () => {
+          RNFS.readFile(
+            RNFS.DocumentDirectoryPath +
+              '/images/ace7ea90-552e-11ed-a20a-6d91743bd5ff.webp',
+          ) // On Android, use "RNFS.DocumentDirectoryPath" (MainBundlePath is not defined)
+            .then(result => {
+              console.log('GOT RESULT', result);
+
+              // stat the first file
+            });
+        }}
+        style={{height: 50, width: 50, margin: 10, backgroundColor: 'white'}}>
+        <Text>Read</Text>
+      </Pressable>
       <View style={mainStyles.innerView}>
         <ScrollView showsVerticalScrollIndicator={false}>
           <View

@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.coachingoflife.app">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.coachingoflife.app">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-feature android:name="android.hardware.camera.front" android:required="false" />
@@ -20,6 +21,9 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.MANAGE_DOCUMENTS"
+        tools:ignore="ProtectedPermissions" />
+
     <application
       android:name=".MainApplication"
       android:label="@string/app_name"

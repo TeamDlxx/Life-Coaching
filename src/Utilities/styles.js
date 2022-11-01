@@ -32,7 +32,15 @@ export const _styleTrackPlayer = StyleSheet.create({
     borderRadius: 40 / 2,
     marginLeft: 10,
   },
-  backButtonIcon: {height: 20, width: 20},
+  backButtonIcon: {
+    height: 20,
+    width: 20,
+  },
+  backButton2Icon: {
+    height: 15,
+    width: 15,
+    tintColor: Colors.black,
+  },
   controlsAndTextView: {
     flex: 0.5,
     justifyContent: 'space-between',

@@ -5,7 +5,6 @@ import Slider from '@react-native-community/slider';
 import {font} from '../Utilities/font';
 import Colors from '../Utilities/Colors';
 
-
 const TrackSlider = props => {
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
@@ -20,9 +19,10 @@ const TrackSlider = props => {
 
   const formatTime = timeInSec => {
     if (
-      duration !== 0 &&
+      (duration != 0 || props?.time != 0) &&
       position !== 0 &&
-      parseInt(duration) === parseInt(position)
+      (parseInt(duration) == parseInt(position) ||
+        parseInt(props?.time) == parseInt(position))
     ) {
       props.resetPlayer();
     }
@@ -61,7 +61,7 @@ const TrackSlider = props => {
         }}
         tapToSeek={true}
         animationType="timing"
-        maximumValue={duration}
+        maximumValue={props?.time}
         onValueChange={val => {
           // setIsSeeking(true);
           // setSeek(val);
@@ -77,7 +77,7 @@ const TrackSlider = props => {
         </View>
 
         <View style={{flex: 1, alignItems: 'flex-end'}}>
-          <Text style={styles.duration}>{formatTime(duration)}</Text>
+          <Text style={styles.duration}>{formatTime(props?.time)}</Text>
         </View>
       </View>
     </View>

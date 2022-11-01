@@ -434,9 +434,6 @@ PODS:
     - RCTTypeSafety
     - React-Core
     - ReactCommon/turbomodule/core
-  - react-native-simple-toast (1.1.4):
-    - React-Core
-    - Toast (~> 4.0.0)
   - react-native-slider (4.3.1):
     - React-Core
   - react-native-splash-screen (3.3.0):
@@ -541,6 +538,8 @@ PODS:
     - FirebaseCoreExtension (= 9.6.0)
     - React-Core
     - RNFBApp
+  - RNFS (2.20.0):
+    - React-Core
   - RNImageCropPicker (0.38.0):
     - React-Core
     - React-RCTImage
@@ -565,7 +564,6 @@ PODS:
     - SDWebImage/Core (~> 5.10)
   - SocketRocket (0.6.0)
   - SwiftAudioEx (0.15.2)
-  - Toast (4.0.0)
   - TOCropViewController (2.6.1)
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
@@ -621,7 +619,6 @@ DEPENDENCIES:
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
-  - react-native-simple-toast (from `../node_modules/react-native-simple-toast`)
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
   - react-native-splash-screen (from `../node_modules/react-native-splash-screen`)
   - react-native-track-player (from `../node_modules/react-native-track-player`)
@@ -647,6 +644,7 @@ DEPENDENCIES:
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBCrashlytics (from `../node_modules/@react-native-firebase/crashlytics`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
+  - RNFS (from `../node_modules/react-native-fs`)
   - RNImageCropPicker (from `../node_modules/react-native-image-crop-picker`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNShare (from `../node_modules/react-native-share`)
@@ -687,7 +685,6 @@ SPEC REPOS:
     - SDWebImageWebPCoder
     - SocketRocket
     - SwiftAudioEx
-    - Toast
     - TOCropViewController
     - YogaKit
 
@@ -736,8 +733,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-image-picker"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
-  react-native-simple-toast:
-    :path: "../node_modules/react-native-simple-toast"
   react-native-slider:
     :path: "../node_modules/@react-native-community/slider"
   react-native-splash-screen:
@@ -788,6 +783,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/crashlytics"
   RNFBMessaging:
     :path: "../node_modules/@react-native-firebase/messaging"
+  RNFS:
+    :path: "../node_modules/react-native-fs"
   RNImageCropPicker:
     :path: "../node_modules/react-native-image-crop-picker"
   RNScreens:
@@ -850,7 +847,6 @@ SPEC CHECKSUMS:
   React-logger: 15c734997c06fe9c9b88e528fb7757601e7a56df
   react-native-image-picker: 4bc9ed38c8be255b515d8c88babbaf74973f91a8
   react-native-safe-area-context: dfe5aa13bee37a0c7e8059d14f72ffc076d120e9
-  react-native-simple-toast: 8ee5d23f0b92b935ab7434cdb65159ce12dfb4b7
   react-native-slider: d3ae4270cf8a8cc45a69912db0cc42b151560d5a
   react-native-splash-screen: 4312f786b13a81b5169ef346d76d33bc0c6dc457
   react-native-track-player: 12c7bdc776f11c382c11fecdade3743ebe0af78c
@@ -876,6 +872,7 @@ SPEC CHECKSUMS:
   RNFBApp: c14c5e27a6b0bf026fc1c60702603ae94eba6fb1
   RNFBCrashlytics: aac7fa5e9545fe7efa3c3cf0bfc89a2a8f78e3c6
   RNFBMessaging: a57c9c22d2e0a535e5090fecaa68381f0cb2e784
+  RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNImageCropPicker: ffbba608264885c241cbf3a8f78eb7aeeb978241
   RNScreens: 0df01424e9e0ed7827200d6ed1087ddd06c493f9
   RNShare: a5dc3b9c53ddc73e155b8cd9a94c70c91913c43c
@@ -884,7 +881,6 @@ SPEC CHECKSUMS:
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
   SwiftAudioEx: 1974c2eb942c9b54f58c3d3f5d704da527e2c5ba
-  Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
   TOCropViewController: edfd4f25713d56905ad1e0b9f5be3fbe0f59c863
   Yoga: c2b1f2494060865ac1f27e49639e72371b1205fa
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
