@@ -83,10 +83,31 @@ const TrackPlayerScreen = props => {
               if (!!params?.localTracksRefresh) {
                 params?.localTracksRefresh();
               }
+              removeTrackFromCurrrentPlayingList(trackItem._id);
             },
           },
         ],
       );
+    }
+  };
+
+  const removeTrackFromCurrrentPlayingList = id => {
+    let list = [...tracksList];
+    let index = list.findIndex(x => x._id == id);
+    let newTrack = undefined;
+    if (list[index + 1]) {
+      newTrack = list[index + 1];
+    } else if (list[index - 1]) {
+      newTrack = list[index - 1];
+    }
+    if (index > -1) {
+      list.splice(index, 1);
+      setTrackList(list);
+      if (trackItem._id == id && newTrack != undefined) {
+        setTrackItem(newTrack);
+      } else {
+        navigation.goBack();
+      }
     }
   };
 

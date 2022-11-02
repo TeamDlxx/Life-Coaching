@@ -90,6 +90,8 @@ const AuthStack = () => {
         screenOptions={{
           headerShown: false,
           orientation: 'portrait',
+          
+
           // animation: 'slide_from_right',
           // animationTypeForReplace:"pop"
         }}

@@ -255,7 +255,7 @@ const AllHabits = props => {
           </View>
 
           <View>
-            <View style={{flexDirection: 'row', marginTop:3}}>
+            <View style={{flexDirection: 'row', marginTop: 3}}>
               {currentWeek.map(x => {
                 return (
                   <View
@@ -271,7 +271,11 @@ const AllHabits = props => {
                         moment(x).format('DDMMYYYY'),
                     ) != -1 && (
                       <Image
-                        style={{height: 10, width: 10}}
+                        style={{
+                          height: 10,
+                          width: 10,
+                          tintColor: Colors.primary,
+                        }}
                         source={require('../../../Assets/Icons/tick.png')}
                       />
                     )}

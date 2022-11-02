@@ -83,7 +83,7 @@ const ContextWrapper = props => {
                       PushNotification.localNotification({
                         channelId: '6007',
                         title: 'Download Complete',
-                        message: 'You track has been suucessfully downloaded',
+                        message: 'Your track has been successfully downloaded',
                         userInfo: {
                           id: obj._id,
                           type: 'track_download',
@@ -150,6 +150,11 @@ const ContextWrapper = props => {
               try {
                 await AsyncStorage.setItem('@tracks', JSON.stringify(list));
                 console.log('unlink sucess');
+                showToast(
+                  'Track has been deleted successfully from your download list',
+                  'Track Deleted',
+                  'success',
+                );
                 return false;
               } catch (e) {
                 return true;
@@ -185,6 +190,7 @@ const ContextWrapper = props => {
     downloadTrack,
     progress,
     deleteTrack,
+    setHabitList,
   };
 
   return (

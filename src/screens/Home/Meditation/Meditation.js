@@ -97,6 +97,8 @@ const Meditation = props => {
       'chcek',
       scategory?.total_tracks > scategory?.category_track.length,
     );
+    console.log('chcek2', scategory?.total_tracks);
+    console.log('check 3 ', scategory?.category_track.length);
     if (
       scategory?.total_tracks > scategory?.category_track.length &&
       isLoadingMore == false
@@ -121,6 +123,7 @@ const Meditation = props => {
                 ...res?.tracks?.track,
               ],
               load_more_url: res?.tracks?.load_more_url,
+              total_tracks: res?.total_tracks,
             });
           }
 

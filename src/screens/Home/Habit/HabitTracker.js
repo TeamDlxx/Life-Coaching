@@ -67,6 +67,7 @@ const HabitTracker = props => {
       ) {
         return true;
       }
+      return false;
     });
   };
 

@@ -764,6 +764,10 @@ const HabitDetail = props => {
                           moment(x).isSameOrAfter(
                             moment(habit?.createdAt),
                             'date',
+                          ) &&
+                          moment(x).isSameOrBefore(
+                            moment(habit?.target_date),
+                            'date',
                           )
                         ) {
                           return (
@@ -830,7 +834,11 @@ const HabitDetail = props => {
                                     }}>
                                     {checkCompleted(x) && (
                                       <Image
-                                        style={{height: 12, width: 12}}
+                                        style={{
+                                          height: 12,
+                                          width: 12,
+                                          tintColor: Colors.primary,
+                                        }}
                                         source={require('../../../Assets/Icons/tick.png')}
                                       />
                                     )}
