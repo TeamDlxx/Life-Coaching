@@ -26,7 +26,7 @@ export default function BottomTabs() {
         headerShown: false,
         keyboardHidesTabBar: true,
         tabBarShowLabel: false,
-
+        detachInactiveScreens: false,
         tabBarStyle: {
           backgroundColor: 'transparent',
           borderTopWidth: 0,

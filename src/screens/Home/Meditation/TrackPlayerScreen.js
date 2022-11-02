@@ -103,6 +103,11 @@ const TrackPlayerScreen = props => {
     if (index > -1) {
       list.splice(index, 1);
       setTrackList(list);
+      showToast(
+        'Track has been deleted successfully from your download list',
+        'Track Deleted',
+        'success',
+      );
       if (trackItem._id == id && newTrack != undefined) {
         setTrackItem(newTrack);
       } else {

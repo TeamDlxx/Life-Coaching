@@ -149,12 +149,7 @@ const ContextWrapper = props => {
               list.splice(index, 1);
               try {
                 await AsyncStorage.setItem('@tracks', JSON.stringify(list));
-                console.log('unlink sucess');
-                showToast(
-                  'Track has been deleted successfully from your download list',
-                  'Track Deleted',
-                  'success',
-                );
+
                 return false;
               } catch (e) {
                 return true;
