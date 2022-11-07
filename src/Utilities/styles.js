@@ -537,12 +537,10 @@ export const allHabit_styles = StyleSheet.create({
 
   hiddenView: {
     justifyContent: 'center',
-    // alignSelf: 'flex-end',
     alignItems: 'flex-end',
     justifyContent: 'center',
     marginHorizontal: 20,
     backgroundColor: Colors.delete,
-
     borderRadius: 20,
     borderBottomEndRadius: 20,
     paddingRight: 20,

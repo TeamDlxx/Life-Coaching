@@ -98,16 +98,12 @@ const Home = props => {
           paddingTop: index % 2 != 0 ? 40 : 0,
           marginLeft: index % 2 == 0 ? 30 : 15,
           marginRight: index % 2 != 0 ? 30 : 15,
+          overflow: 'hidden',
         }}>
         <Pressable
           onPress={() => onNextScreen(item.screen)}
           style={{borderRadius: 20, overflow: 'hidden', elevation: 3}}>
-          <Image
-            // resizeMode="center"
-            // opacity={0.7}
-            source={item.image}
-            style={{height: 200, width: '100%'}}
-          />
+          <Image source={item.image} style={{height: 200, width: '100%'}} />
 
           <View
             style={{
@@ -129,6 +125,40 @@ const Home = props => {
               {item.title}
             </Text>
           </View>
+          {!!item.comingsoon && (
+            <View
+              style={{
+                backgroundColor: Colors.primary,
+                paddingHorizontal: 30,
+                paddingVertical: 5,
+                transform: [{rotateZ: '-45deg'}],
+                position: 'absolute',
+                right: -35,
+                bottom: 20,
+
+                shadowColor: '#000',
+                shadowOffset: {
+                  width: 0,
+                  height: 2,
+                },
+                shadowOpacity: 0.3,
+                shadowRadius: 1.41,
+
+                elevation: 3,
+                zIndex: 2,
+              }}>
+              <Text
+                style={{
+                  color: Colors.white,
+                  fontFamily: font.medium,
+                  fontSize: 10,
+                  textAlign: 'center',
+                  textTransform: 'uppercase',
+                }}>
+                Coming Soon
+              </Text>
+            </View>
+          )}
         </Pressable>
       </Animatable.View>
     );
@@ -210,7 +240,7 @@ const options = [
   },
   {
     id: '3',
-    title: 'Quote',
+    title: 'Quotes',
     image: home6,
     count: 4,
     screen: screens.qouteList,
@@ -223,6 +253,7 @@ const options = [
     count: 7,
     screen: screens.moodTracker,
     color: '#A5A5DB',
+    comingsoon: true,
   },
 
   {
@@ -232,6 +263,7 @@ const options = [
     count: 3,
     screen: screens.timeTable,
     color: '#C4BCB2',
+    comingsoon: true,
   },
 
   {
@@ -241,5 +273,6 @@ const options = [
     count: 7,
     screen: screens.gratitude,
     color: '#44BCDF',
+    comingsoon: true,
   },
 ];

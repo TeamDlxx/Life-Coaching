@@ -94,9 +94,10 @@ const List = props => {
   };
 
   const favUnFavFunction = (item, index) => {
+    api_favOrUnfavQuote(!item?.is_favourite_by_me, item._id);
     let newArray = [...QuoteList];
     let newObj = newArray[index];
-    newObj.fav = !newObj.fav;
+    newObj.is_favourite_by_me = !newObj.is_favourite_by_me;
 
     newArray.splice(index, 1, newObj);
     setQuoteList([...newArray]);
@@ -149,12 +150,15 @@ const List = props => {
     }
   };
 
-  const api_likeUnLikeQuote = async (val, id) => {
+  const api_favOrUnfavQuote = async (val, id) => {
     let res = await invokeApi({
-      path: 'api/quotes/like_quotes/' + id,
-      method: 'GET',
+      path: 'api/quotes/favourite_quotes/' + id,
+      method: 'POST',
       headers: {
         'x-sh-auth': Token,
+      },
+      postData: {
+        favourite: val,
       },
       navigation: props.navigation,
     });
@@ -168,7 +172,6 @@ const List = props => {
 
   useEffect(() => {
     call_quoteListAPI();
-
     return () => {
       setQuoteList([]);
     };
@@ -205,7 +208,7 @@ const List = props => {
             backgroundColor: '#FFF',
           }}>
           <Pressable
-            onPress={() => api_likeUnLikeQuote(!false, item?._id)}
+            onPress={() => favUnFavFunction(item, index)}
             style={{
               flex: 1,
               alignItems: 'center',
@@ -214,11 +217,13 @@ const List = props => {
               flexDirection: 'row',
             }}>
             <Image
-              source={item.liked ? liked : notliked}
+              source={item?.is_favourite_by_me ? Fav : notFav}
               style={{
                 height: 20,
                 width: 20,
-                tintColor: item.liked ? Colors.primary : Colors.placeHolder,
+                tintColor: item?.is_favourite_by_me
+                  ? Colors.primary
+                  : Colors.placeHolder,
               }}
             />
             <Text
@@ -229,26 +234,8 @@ const List = props => {
                 letterSpacing: 1,
                 marginTop: 4,
               }}>
-              {kFormatter(item?.likes)}
+              {kFormatter(item?.favourite)}
             </Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => favUnFavFunction(item, index)}
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              height: 50,
-              justifyContent: 'center',
-            }}>
-            <Image
-              source={item.fav ? Fav : notFav}
-              style={{
-                height: 20,
-                width: 20,
-                tintColor: item.fav ? Colors.primary : Colors.placeHolder,
-              }}
-            />
           </Pressable>
 
           <Pressable
@@ -281,6 +268,7 @@ const List = props => {
         titleAlignLeft
         rightIcon={favList}
         rightIcononPress={onFavList}
+        rightIconStyle={{height: 25, width: 25}}
         navigation={props.navigation}
         title={'Quotes'}
       />

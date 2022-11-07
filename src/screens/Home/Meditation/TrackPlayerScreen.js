@@ -70,8 +70,8 @@ const TrackPlayerScreen = props => {
       setDownloaded(res);
     } else {
       Alert.alert(
-        'Delete Track',
-        'Are you sure you want to delete thie track from your local downloads',
+        'Remove Track',
+        'Are you sure you want to remove this track from your downloads',
         [
           {text: 'No'},
           {
@@ -104,8 +104,8 @@ const TrackPlayerScreen = props => {
       list.splice(index, 1);
       setTrackList(list);
       showToast(
-        'Track has been deleted successfully from your download list',
-        'Track Deleted',
+        'Track has been deleted successfully from your downloads',
+        'Track Removed',
         'success',
       );
       if (trackItem._id == id && newTrack != undefined) {

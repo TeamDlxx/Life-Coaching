@@ -26,7 +26,10 @@ import Loader from '../../Components/Loader';
 import invokeApi from '../../functions/invokeAPI';
 import {fileURL} from '../../Utilities/domains';
 import UploadImage from '../../Components/UploadImage';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {screens} from '../../Navigation/Screens';
+import {useContext} from 'react';
+import Context from '../../Context';
 // Icons
 
 import profile_placeholder from '../../Assets/Images/dummyProfile.png';
@@ -38,10 +41,6 @@ import ic_camera from '../../Assets/Icons/camera.png';
 import ic_cross from '../../Assets/Icons/cross.png';
 import ic_trash from '../../Assets/Icons/trash.png';
 import CustomButton from '../../Components/CustomButton';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {screens} from '../../Navigation/Screens';
-import {useContext} from 'react';
-import Context from '../../Context';
 
 const EditProfile = props => {
   const {Token} = useContext(Context);

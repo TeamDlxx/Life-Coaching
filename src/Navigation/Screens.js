@@ -32,4 +32,6 @@ export const screens = {
   taskDetail: 'TASK_DETAIL',
   gratitude: 'GRATITUDE',
   dowloadedTracks: 'OFFLINE_TRACKS',
+  subscription: 'SUBSCRIPTION',
+  allPackages: 'ALL_PACKAGES',
 };

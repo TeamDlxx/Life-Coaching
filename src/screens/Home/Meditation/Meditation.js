@@ -348,6 +348,7 @@ const Meditation = props => {
         navigation={props.navigation}
         title={'Meditation'}
         rightIcon={favList}
+        rightIconStyle={{height: 25, width: 25}}
         rightIcononPress={onFavList}
       />
       <View style={mainStyles.innerView}>

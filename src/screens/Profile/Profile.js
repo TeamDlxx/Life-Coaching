@@ -20,12 +20,30 @@ import {screens} from '../../Navigation/Screens';
 import profile_placeholder from '../../Assets/Icons/dummy.png';
 import CustomImage from '../../Components/CustomImage';
 import {fileURL} from '../../Utilities/domains';
-
+import moment from 'moment';
+// For API's calling
 import {useContext} from 'react';
 import Context from '../../Context';
+import showToast from '../../functions/showToast';
+import Loader from '../../Components/Loader';
+import invokeApi from '../../functions/invokeAPI';
+import EmptyView from '../../Components/EmptyView';
 
 const Profile = props => {
+  const {Token} = useContext(Context);
   const [user, setUser] = useState(null);
+
+  const [stats, updateStat] = useState({
+    total: 0,
+    complete: 0,
+    pending: 0,
+    loading: true,
+  });
+
+  const setStats = val =>
+    updateStat(prev => {
+      return {...prev, ...val};
+    });
 
   const getUserDetail = async () => {
     AsyncStorage.getItem('@user').then(val => {
@@ -35,6 +53,74 @@ const Profile = props => {
     });
   };
 
+  const findProgress = item => {
+    let freq = [];
+    item.frequency.filter((x, i) => {
+      if (x.status == true) {
+        freq.push(x.day);
+      }
+    });
+    let count = 0;
+    item.notes.map((x, i) => {
+      if (freq.includes(moment(x.date).format('dddd').toLowerCase())) {
+        count = count + 1;
+      }
+    });
+    return count;
+  };
+
+  async function api_habitList() {
+    let res = await invokeApi({
+      path: 'api/habit/habit_list',
+      method: 'GET',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    if (res) {
+      if (res.code == 200) {
+        console.log('response', res);
+        let newArray = res.habits;
+        let completed = 0;
+
+        if (res.habits.length != 0) {
+          newArray.map((x, i) => {
+            if (x.total_days != 0) {
+              if (findProgress(x) / x.total_days == 1) {
+                completed = completed + 1;
+              }
+            }
+          });
+
+          let pending = newArray.length - completed;
+
+          setStats({
+            total:
+              newArray.length < 10 ? '0' + newArray.length : newArray.length,
+            complete: completed < 10 ? '0' + completed : completed,
+            pending: pending < 10 ? '0' + pending : pending,
+            loading: false,
+          });
+        } else {
+          setStats({
+            total: '00',
+            complete: '00',
+            pending: '00',
+            loading: false,
+          });
+        }
+      } else {
+        setStats({
+          total: '00',
+          complete: '00',
+          pending: '00',
+          loading: false,
+        });
+      }
+    }
+  }
+
   useEffect(() => {
     if (props.route.params?.updated) {
       getUserDetail();
@@ -43,7 +129,17 @@ const Profile = props => {
 
   useEffect(() => {
     getUserDetail();
+    api_habitList();
   }, []);
+
+  React.useEffect(() => {
+    const unsubscribe = props.navigation.addListener('tabPress', e => {
+      console.log(e, 'hello bottom');
+      api_habitList();
+    });
+
+    return unsubscribe;
+  }, [props.navigation]);
 
   return (
     <SafeAreaView
@@ -100,17 +196,23 @@ const Profile = props => {
               ]}>
               <View style={[profile_styles.statItemView]}>
                 <Text style={profile_styles.statItemtext1}>Total Habits</Text>
-                <Text style={profile_styles.statItemtext2}>10</Text>
+                <Text style={profile_styles.statItemtext2}>
+                  {stats.loading ? '--' : stats.total}
+                </Text>
               </View>
 
               <View style={profile_styles.statItemView}>
                 <Text style={profile_styles.statItemtext1}>Completed</Text>
-                <Text style={profile_styles.statItemtext2}>06</Text>
+                <Text style={profile_styles.statItemtext2}>
+                  {stats.loading ? '--' : stats.complete}
+                </Text>
               </View>
 
               <View style={profile_styles.statItemView}>
                 <Text style={profile_styles.statItemtext1}>Pending</Text>
-                <Text style={profile_styles.statItemtext2}>04</Text>
+                <Text style={profile_styles.statItemtext2}>
+                  {stats.loading ? '--' : stats.pending}
+                </Text>
               </View>
             </View>
           </View>
@@ -237,10 +339,11 @@ const optionsList = [
     id: '3',
     name: 'Subscription',
     icon: require('../../Assets/Icons/subscribe.png'),
+    screen: screens.allPackages,
   },
   {
     id: '4',
-    name: 'Downloaded Meditation Tracks',
+    name: 'Downloaded Meditations',
     icon: require('../../Assets/Icons/music.png'),
     screen: screens.dowloadedTracks,
   },

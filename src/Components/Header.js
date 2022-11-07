@@ -81,7 +81,10 @@ const Header = props => {
               marginRight: 10,
             }}
             onPress={props.rightIcononPress}>
-            <Image source={props.rightIcon} style={{height: 20, width: 20}} />
+            <Image
+              source={props.rightIcon}
+              style={[{height: 20, width: 20}, props?.rightIconStyle]}
+            />
           </Pressable>
         ) : !!props.menu ? (
           props.menu()

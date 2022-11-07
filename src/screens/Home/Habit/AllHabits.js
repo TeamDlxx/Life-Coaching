@@ -255,7 +255,7 @@ const AllHabits = props => {
           </View>
 
           <View>
-            <View style={{flexDirection: 'row', marginTop: 3}}>
+            <View style={{flexDirection: 'row', marginTop:5}}>
               {currentWeek.map(x => {
                 return (
                   <View
@@ -308,7 +308,7 @@ const AllHabits = props => {
                   : '0%'}
               </Text>
             </View>
-            <View style={{flex: 1}}>
+            <View style={{flex: 1,marginTop:5}}>
               <Progress.Bar
                 color={Colors.primary}
                 height={8}

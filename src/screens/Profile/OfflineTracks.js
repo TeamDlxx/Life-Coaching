@@ -174,8 +174,7 @@ const OfflineTracks = props => {
         barStyle={'dark-content'}
         backgroundColor={Colors.background}
       />
-
-      <Header navigation={props.navigation} title={'Downloaded Tracks'} />
+      <Header navigation={props.navigation} title={'Downloaded Meditations'} />
       <View style={mainStyles.innerView}>
         <Loader enable={isLoading} />
         <View style={{flex: 1, marginHorizontal: -20}}>

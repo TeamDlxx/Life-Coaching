@@ -17,11 +17,14 @@ import ForgotPassword from '../screens/Auth/ForgotPassword';
 import OTP from '../screens/Auth/OTP';
 import BottomTabs from './BottomTabs';
 
+// //? Subscription
+import Subscription from '../screens/Subscriptions/Subscription';
+import AllPackages from '../screens/Subscriptions/AllPackages';
+
 // //? Profile
 import EditProfile from '../screens/Profile/EditProfile';
 import ChangePassword from '../screens/Profile/ChangePassword';
 import OfflineTracks from '../screens/Profile/OfflineTracks';
-
 // //? Habits
 import HabitTracker from '../screens/Home/Habit/HabitTracker';
 import ChooseHabit from '../screens/Home/Habit/ChooseHabit';
@@ -90,10 +93,6 @@ const AuthStack = () => {
         screenOptions={{
           headerShown: false,
           orientation: 'portrait',
-          
-
-          // animation: 'slide_from_right',
-          // animationTypeForReplace:"pop"
         }}
         initialRouteName={whichScreen}>
         <Stack.Screen name={screens.Login} component={Login} />
@@ -113,6 +112,7 @@ const AuthStack = () => {
           component={OfflineTracks}
         />
         <Stack.Screen name={screens.editProfile} component={EditProfile} />
+
         <Stack.Screen
           name={screens.changePassword}
           component={ChangePassword}
@@ -146,6 +146,10 @@ const AuthStack = () => {
         <Stack.Screen name={screens.taskDetail} component={TaskDetail} />
         {/* Gratitude */}
         <Stack.Screen name={screens.gratitude} component={Gratitude} />
+
+        {/* Subscriptions */}
+        <Stack.Screen name={screens.subscription} component={Subscription} />
+        <Stack.Screen name={screens.allPackages} component={AllPackages} />
       </Stack.Navigator>
     );
   } else {
