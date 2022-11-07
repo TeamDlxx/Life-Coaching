@@ -6,7 +6,6 @@ import {
   FlatList,
   Pressable,
   Image,
-  TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
@@ -30,6 +29,7 @@ import EmptyView from '../../../Components/EmptyView';
 //Icons
 import play from '../../../Assets/Icons/play.png';
 import favList from '../../../Assets/Icons/favList.png';
+import ic_default from '../../../Assets/Icons/all.png';
 
 const Meditation = props => {
   const {Token} = useContext(Context);
@@ -50,7 +50,7 @@ const Meditation = props => {
     });
   };
 
-  // todo /////// API's
+  //todo /////// API's
 
   const call_categoryAPI = () => {
     setisLoading(true);
@@ -76,9 +76,9 @@ const Meditation = props => {
     if (res) {
       if (res.code == 200) {
         console.log('response', res);
-        setCategoryList(res?.category);
+        setCategoryList([res?.top_20_tracks, ...res?.category]);
         if (selectedCategory == null && res?.category.length > 0) {
-          setSelectedCategory(res?.category[0]);
+          setSelectedCategory(res?.top_20_tracks);
         } else {
           let obj = res?.category.find(x => x._id == selectedCategory._id);
           if (!!obj) {
@@ -197,7 +197,7 @@ const Meditation = props => {
             borderColor: Colors.gray07,
             borderWidth: 0.8,
             backgroundColor:
-              item._id == selectedCategory?._id
+              item?._id == selectedCategory?._id
                 ? Colors.lightPrimary1
                 : Colors.white,
             paddingHorizontal: 15,
@@ -211,7 +211,11 @@ const Meditation = props => {
                   ? {width: 30, height: 30, tintColor: Colors.primary}
                   : {width: 30, height: 30}
               }
-              source={{uri: fileURL + item?.images?.small}}
+              source={
+                item?._id == 'all'
+                  ? ic_default
+                  : {uri: fileURL + item?.images?.small}
+              }
               indicatorProps={{color: Colors.primary}}
             />
           </View>

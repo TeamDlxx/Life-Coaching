@@ -1,11 +1,9 @@
 import React, {useState} from 'react';
 import {ContextProvider} from '.';
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PushNotification from 'react-native-push-notification';
 import {fileURL} from '../Utilities/domains';
 import RNFS from 'react-native-fs';
-import {WriteTrack} from '../database/meditationCRUD';
 import showToast from '../functions/showToast';
 const ContextWrapper = props => {
   const [Token, setToken] = useState(null);

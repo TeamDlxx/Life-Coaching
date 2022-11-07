@@ -9,6 +9,10 @@ import {
   FlatList,
   ImageBackground,
   Pressable,
+  ActivityIndicator,
+  TouchableOpacity,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Header from '../../../Components/Header';
@@ -16,9 +20,9 @@ import Colors from '../../../Utilities/Colors';
 import {mainStyles} from '../../../Utilities/styles';
 import CustomImage from '../../../Components/CustomImage';
 import Share from 'react-native-share';
-const screen = Dimensions.get('screen');
 import axios from 'axios';
 import _ from 'buffer';
+import RNFetchBlob from 'rn-fetch-blob';
 
 // For API's calling
 import {useContext} from 'react';
@@ -27,80 +31,111 @@ import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
-import EmptyView from '../../../Components/EmptyView';
 
 //ICONS
 
-import liked from '../../../Assets/Icons/liked.png';
-import notliked from '../../../Assets/Icons/notliked.png';
 import Fav from '../../../Assets/Icons/fav.png';
 import notFav from '../../../Assets/Icons/notfav.png';
-import qouteSign from '../../../Assets/Icons/quote.png';
 import favList from '../../../Assets/Icons/favList.png';
 import ic_share from '../../../Assets/Icons/share.png';
+import ic_download from '../../../Assets/Icons/ic_download.png';
 import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
-
+const limit = 10;
 const List = props => {
   const {Token} = useContext(Context);
-  const [QuoteList, setQuoteList] = useState();
+  const [QuoteList, setQuoteList] = useState([]);
   const [loading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [PGN, updatePGN] = useState({
+    pageNumber: 0,
+    isLoadingMore: false,
+    canLoadMore: false,
+  });
+  const {pageNumber, isLoadingMore, canLoadMore} = PGN;
+  const setPGN = val => updatePGN({...PGN, ...val});
 
   const onFavList = () => {
     props.navigation.navigate(screens.favQuoteList);
   };
 
-  const shareQuote = async image => {
-    return;
+  const shareQuote = async (image, description) => {
     let res = await GetBase64(fileURL + image);
     let ext = await image.split('.')[image.split('.').length - 1];
+    if (ext == 'jpg') {
+      ext = 'jpeg';
+    }
     let file = `data:image/${ext};base64,${res}`;
-    console.log('extension', ext);
-    console.log('image', ``);
     await Share.open({
-      title: 'Share via',
+      title: 'Life Coaching | Quotes',
+      message: description,
+      // filename: file,
       url: file,
     })
       .then(res => {
-        console.log(res);
+        console.log('res', res);
       })
       .catch(err => {
         err && console.log(err);
       });
   };
 
-  const GetBase64 = url => {
-    return axios
+  const GetBase64 = async url => {
+    return await axios
       .get(url, {
         responseType: 'arraybuffer',
       })
       .then(response =>
         _.Buffer.from(response.data, 'binary').toString('base64'),
-      );
-  };
-
-  const likeUnLikeFunction = (item, index) => {
-    let newArray = [...QuoteList];
-    let newObj = newArray[index];
-    newObj.liked = !newObj.liked;
-    if (newObj.liked) {
-      newObj.likes = newObj.likes + 1;
-    } else {
-      newObj.likes = newObj.likes - 1;
-    }
-    newArray.splice(index, 1, newObj);
-    setQuoteList([...newArray]);
+      )
+      .catch(err => console.log('Error', err));
   };
 
   const favUnFavFunction = (item, index) => {
     api_favOrUnfavQuote(!item?.is_favourite_by_me, item._id);
-    let newArray = [...QuoteList];
-    let newObj = newArray[index];
-    newObj.is_favourite_by_me = !newObj.is_favourite_by_me;
+    toggleLike(!item?.is_favourite_by_me, item._id);
+  };
 
-    newArray.splice(index, 1, newObj);
-    setQuoteList([...newArray]);
+  const toggleLike = (val, id) => {
+    let newArray = [...QuoteList];
+    let index = newArray.findIndex(x => x._id == id);
+    if (index > -1) {
+      let newObj = newArray[index];
+
+      newObj.is_favourite_by_me = val;
+      if (newObj.is_favourite_by_me) {
+        newObj.favourite = newObj.favourite + 1;
+      } else {
+        newObj.favourite = newObj.favourite - 1;
+      }
+      newArray.splice(index, 1, newObj);
+      setQuoteList([...newArray]);
+    }
+  };
+
+  const downloadFile = async image => {
+    console.log('RNFetchBlob.fs.dirs', RNFetchBlob.fs.dirs);
+    let dir = RNFetchBlob.fs.dirs.PictureDir + '/Life Coaching/';
+    if (Platform.OS == 'android') {
+      dir = RNFetchBlob.fs.dirs.DCIMDir + '/Life Coaching/';
+    }
+
+    let fileName =
+      'Quote' + (await image.split('/')[image.split('/').length - 1]);
+    RNFetchBlob.config({
+      path: dir + fileName,
+      fileCache: true,
+    })
+      .fetch('GET', fileURL + image, {})
+      .then(res => {
+        // the temp file path
+        console.log('The file saved to ', res.path());
+        showToast(
+          'Quote has been saved to your storage',
+          'Qoutes Downloaded',
+          'success',
+        );
+      });
   };
 
   function kFormatter(num) {
@@ -132,7 +167,7 @@ const List = props => {
 
   const api_quoteList = async () => {
     let res = await invokeApi({
-      path: 'api/quotes/get_active_quotes',
+      path: `api/quotes/get_active_quotes?page=${pageNumber}&limit=${limit}`,
       method: 'GET',
       headers: {
         'x-sh-auth': Token,
@@ -141,12 +176,27 @@ const List = props => {
     });
     setisLoading(false);
     setRefreshing(false);
+    setPGN({isLoadingMore: false});
     if (res) {
       if (res.code == 200) {
-        setQuoteList(res?.quotes);
+        let count = QuoteList?.length;
+        setQuoteList([...QuoteList, ...res?.quotes]);
+        count = count + res?.quotes.length;
+        setPGN({
+          pageNumber: pageNumber + 1,
+          canLoadMore: count < res?.count ? true : false,
+        });
       } else {
         showToast(res.message);
       }
+    }
+  };
+
+  const onEndReached = () => {
+    console.log('onEndReached');
+    if (canLoadMore) {
+      setPGN({isLoadingMore: true, canLoadMore: false});
+      api_quoteList();
     }
   };
 
@@ -166,6 +216,7 @@ const List = props => {
       if (res.code == 200) {
       } else {
         showToast(res.message);
+        toggleLike(!val, id);
       }
     }
   };
@@ -192,7 +243,7 @@ const List = props => {
           <CustomImage
             resizeMode={'cover'}
             source={{uri: fileURL + item?.images?.large}}
-            style={{width: '100%', aspectRatio: 1}}
+            style={{width: '100%', height: undefined, aspectRatio: 1}}
           />
         </View>
 
@@ -207,7 +258,7 @@ const List = props => {
             flexDirection: 'row',
             backgroundColor: '#FFF',
           }}>
-          <Pressable
+          <TouchableOpacity
             onPress={() => favUnFavFunction(item, index)}
             style={{
               flex: 1,
@@ -236,11 +287,27 @@ const List = props => {
               }}>
               {kFormatter(item?.favourite)}
             </Text>
-          </Pressable>
+          </TouchableOpacity>
 
-          <Pressable
+          <TouchableOpacity
             onPress={() => {
-              shareQuote(item?.images?.large);
+              downloadFile(item?.images?.large);
+            }}
+            style={{
+              flex: 1,
+              alignItems: 'center',
+              height: 50,
+              justifyContent: 'center',
+            }}>
+            <Image
+              source={ic_download}
+              style={{height: 20, width: 20, tintColor: Colors.placeHolder}}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              shareQuote(item?.images?.large, item?.description);
             }}
             style={{
               flex: 1,
@@ -252,7 +319,7 @@ const List = props => {
               source={ic_share}
               style={{height: 20, width: 20, tintColor: Colors.placeHolder}}
             />
-          </Pressable>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -283,6 +350,12 @@ const List = props => {
             }}
             data={QuoteList}
             renderItem={flatItemView}
+            onEndReached={onEndReached}
+            ListFooterComponent={
+              isLoadingMore && (
+                <ActivityIndicator size={'small'} color={Colors.primary} />
+              )
+            }
           />
         </View>
       </View>
@@ -291,107 +364,3 @@ const List = props => {
 };
 
 export default List;
-
-const Qlist = [
-  {
-    id: '1',
-    qoute: 'The purpose of our lives is to be happy.',
-    author: 'Anonymous',
-    image:
-      'https://i.pinimg.com/564x/f6/74/6a/f6746a74f8e41e911a99d6489073b6e9.jpg',
-    liked: true,
-    fav: false,
-    likes: 2929992,
-  },
-
-  {
-    id: '2',
-    qoute: "Life is what happens when you're busy making other plans.",
-    liked: false,
-    fav: false,
-    author: 'Anonymous',
-    image:
-      'https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/missing-you-quotes-1614923859.jpg',
-    likes: 29832792,
-  },
-
-  {
-    id: '3',
-    qoute: 'You only live once, but if you do it right, once is enough.',
-    liked: true,
-    author: 'Anonymous',
-    fav: true,
-    likes: 12133,
-    image:
-      'https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/best-quotes-ever14-1593566081.jpg',
-  },
-
-  {
-    id: '4',
-    qoute:
-      'Many of life’s failures are people who did not realize how close they were to success when they gave up.',
-    liked: true,
-    fav: true,
-    author: 'Anonymous',
-    likes: 121,
-    image:
-      'https://cdn.lifehack.org/wp-content/uploads/2022/06/strength_quotes_1.jpg',
-  },
-  {
-    id: '5',
-    qoute:
-      'If you want to live a happy life, tie it to a goal, not to people or things.',
-    liked: false,
-    author: 'Anonymous',
-    fav: false,
-    likes: 900,
-    image:
-      'https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/missing-you-quotes-1614923859.jpg',
-  },
-  {
-    id: '6',
-    qoute: 'Never let the fear of striking out keep you from playing the game.',
-    liked: true,
-    fav: true,
-    likes: 1100,
-
-    author: 'Anonymous',
-    image:
-      'https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/missing-you-quotes-1614923859.jpg',
-  },
-  {
-    id: '7',
-    qoute:
-      'Your time is limited, so don’t waste it living someone else’s life. Don’t be trapped by dogma – which is living with the results of other people’s thinking.',
-    liked: true,
-    author: 'Anonymous',
-    likes: 2100000000,
-    fav: false,
-    image:
-      'https://cdn.lifehack.org/wp-content/uploads/2022/06/strength_quotes_1.jpg',
-  },
-
-  {
-    id: '1vergere',
-    qoute: 'The purpose of our lives is to be happy.',
-    liked: true,
-    fav: false,
-    author: 'Anonymous',
-    likes: 2000000,
-
-    image:
-      'https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/change-quotes-1617242152.jpg',
-  },
-
-  {
-    id: 'ergre',
-    qoute: "Life is what happens when you're busy making other plans.",
-    liked: false,
-    fav: false,
-    likes: 900000,
-
-    author: 'Anonymous',
-    image:
-      'https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/home-quotes-v2-albanian-to-austen2-1659715834.jpg',
-  },
-];
