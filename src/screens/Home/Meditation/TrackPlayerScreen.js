@@ -16,6 +16,7 @@ import TrackPlayer from 'react-native-track-player';
 import ProgressBar from '../../../Components/ProgreeBar';
 import {_styleTrackPlayer} from '../../../Utilities/styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import LoginAlert from '../../../Components/LoginAlert';
 
 // For API's calling
 import {useContext} from 'react';
@@ -83,7 +84,9 @@ const TrackPlayerScreen = props => {
               if (!!params?.localTracksRefresh) {
                 params?.localTracksRefresh();
               }
-              removeTrackFromCurrrentPlayingList(trackItem._id);
+              if (params?.from == 'down') {
+                removeTrackFromCurrrentPlayingList(trackItem._id);
+              }
             },
           },
         ],
@@ -195,6 +198,7 @@ const TrackPlayerScreen = props => {
 
   useEffect(() => {
     TrackPlayer.addEventListener('playback-state', ({state}) => {
+      console.log("state: " + state)
       if (state == 'ready' || state == 'playing' || state == 2) {
         setloading(false);
       }
@@ -241,6 +245,23 @@ const TrackPlayerScreen = props => {
       };
       newArray.splice(index, 1, obj);
       setTrackList([...newArray]);
+    }
+  };
+
+  const BTN_LIKE = async (val, id) => {
+    if (Token) {
+      api_likeUnLike(val, id);
+    } else {
+      try {
+        let res = await LoginAlert(props.navigation, props.route?.name);
+        console.log('res', res);
+        if (playIcon == pauseTrack) {
+          TrackPlayer.pause();
+          setPlayIcon(playTrack);
+        }
+      } catch (e) {
+        console.log('Error: ', e.message);
+      }
     }
   };
 
@@ -323,19 +344,21 @@ const TrackPlayerScreen = props => {
                 />
               </Pressable>
               <View style={{flexDirection: 'row', marginRight: 10}}>
-                <Pressable
-                  disabled={downloading()}
-                  onPress={downloadTheTrack}
-                  style={_styleTrackPlayer.backButtonView}>
-                  {downloading() ? (
-                    <ActivityIndicator color={Colors.black} size="small" />
-                  ) : (
-                    <Image
-                      style={_styleTrackPlayer.backButton2Icon}
-                      source={!!downloaded ? ic_tick : ic_download}
-                    />
-                  )}
-                </Pressable>
+                {Token && (
+                  <Pressable
+                    disabled={downloading()}
+                    onPress={downloadTheTrack}
+                    style={_styleTrackPlayer.backButtonView}>
+                    {downloading() ? (
+                      <ActivityIndicator color={Colors.black} size="small" />
+                    ) : (
+                      <Image
+                        style={_styleTrackPlayer.backButton2Icon}
+                        source={!!downloaded ? ic_tick : ic_download}
+                      />
+                    )}
+                  </Pressable>
+                )}
                 {/* <Pressable style={_styleTrackPlayer.backButtonView}>
                   <Image
                     style={_styleTrackPlayer.backButton2Icon}
@@ -372,7 +395,7 @@ const TrackPlayerScreen = props => {
             }}>
             {params?.from != 'down' && (
               <Pressable
-                onPress={() => api_likeUnLike(!isfav, trackItem?._id)}
+                onPress={() => BTN_LIKE(!isfav, trackItem?._id)}
                 style={_styleTrackPlayer.favButtonView}>
                 <Image
                   style={[

@@ -6,7 +6,10 @@ import {
   StyleSheet,
   Dimensions,
   Platform,
+  Pressable,
+  Image,
 } from 'react-native';
+import Colors from '../../Utilities/Colors';
 import React, {useState} from 'react';
 import HeadingText from '../../Components/HeadingText';
 import {
@@ -32,6 +35,7 @@ import {useContext} from 'react';
 import Context from '../../Context';
 const height = Dimensions.get('screen').height;
 const Signup = props => {
+  const {params} = props?.route;
   const {setToken} = useContext(Context);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,6 +44,13 @@ const Signup = props => {
 
   const onLoginScreen = () => {
     props.navigation.navigate(screens.Login);
+  };
+
+  const GuestLogin = () => {
+    props.navigation.reset({
+      index: 0,
+      routes: [{name: screens.bottomTabs}],
+    });
   };
 
   const onBottomTabScreen = data => {
@@ -52,15 +63,23 @@ const Signup = props => {
       .then(() => {
         setToken(data?.token);
         setisLoading(false);
-        props.navigation.reset({
-          index: 0,
-          routes: [{name: screens.bottomTabs}],
-        });
+        if (!!params?.from) {
+          props.navigation.navigate({
+            name: params?.from,
+            params: {loggedIn: true},
+            merge: true,
+          });
+        } else {
+          props.navigation.reset({
+            index: 0,
+            routes: [{name: screens.bottomTabs}],
+          });
+        }
       })
       .catch(e => {
         setisLoading(false);
         console.log('Async Error', e);
-        showToast('Please Sign-in Agin', 'Something went wrong');
+        showToast('Please Sign-in Again', 'Something went wrong');
       });
   };
 
@@ -124,7 +143,24 @@ const Signup = props => {
           barStyle={'dark-content'}
           translucent={true}
         />
-
+        <Pressable
+          onPress={() => props.navigation.goBack()}
+          style={{
+            height: 40,
+            width: 40,
+            borderRadius: 25,
+            marginTop: 50,
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'absolute',
+            left: 10,
+            zIndex: 999,
+          }}>
+          <Image
+            source={require('../../Assets/Icons/back.png')}
+            style={{height: 25, width: 25, tintColor: Colors.black}}
+          />
+        </Pressable>
         <View style={{marginTop: 35}}>
           <View style={loginStyles.headerView}>
             <HeadingText>Sign Up</HeadingText>
@@ -167,6 +203,22 @@ const Signup = props => {
 
             <View style={{marginTop: 30}}>
               <CustomButton onPress={() => SigUpBtn()} title={'Sign Up'} />
+            </View>
+            <View
+              style={{
+                alignItems: 'center',
+                // flex: 1,
+                justifyContent: 'flex-end',
+                marginTop: 20,
+              }}>
+              <Text style={{color: '#313131', fontFamily: font.regular}}>
+                Continue as{' '}
+                <Text
+                  onPress={() => GuestLogin()}
+                  style={{color: colors.primary}}>
+                  Guest
+                </Text>
+              </Text>
             </View>
 
             <View

@@ -23,7 +23,7 @@ import Share from 'react-native-share';
 import axios from 'axios';
 import _ from 'buffer';
 import RNFetchBlob from 'rn-fetch-blob';
-
+import LoginAlert from '../../../Components/LoginAlert';
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -41,7 +41,9 @@ import ic_share from '../../../Assets/Icons/share.png';
 import ic_download from '../../../Assets/Icons/ic_download.png';
 import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
+
 const limit = 10;
+
 const List = props => {
   const {Token} = useContext(Context);
   const [QuoteList, setQuoteList] = useState([]);
@@ -56,7 +58,11 @@ const List = props => {
   const setPGN = val => updatePGN({...PGN, ...val});
 
   const onFavList = () => {
-    props.navigation.navigate(screens.favQuoteList);
+    if (Token) {
+      props.navigation.navigate(screens.favQuoteList);
+    } else {
+      LoginAlert(props.navigation, props.route?.name);
+    }
   };
 
   const shareQuote = async (image, description) => {
@@ -92,8 +98,12 @@ const List = props => {
   };
 
   const favUnFavFunction = (item, index) => {
-    api_favOrUnfavQuote(!item?.is_favourite_by_me, item._id);
-    toggleLike(!item?.is_favourite_by_me, item._id);
+    if (Token) {
+      api_favOrUnfavQuote(!item?.is_favourite_by_me, item._id);
+      toggleLike(!item?.is_favourite_by_me, item._id);
+    } else {
+      LoginAlert(props.navigation, props.route?.name);
+    }
   };
 
   const toggleLike = (val, id) => {
@@ -166,14 +176,24 @@ const List = props => {
   };
 
   const api_quoteList = async () => {
-    let res = await invokeApi({
-      path: `api/quotes/get_active_quotes?page=${pageNumber}&limit=${limit}`,
-      method: 'GET',
-      headers: {
-        'x-sh-auth': Token,
-      },
-      navigation: props.navigation,
-    });
+    let res;
+    if (Token) {
+      res = await invokeApi({
+        path: `api/quotes/get_active_quotes?page=${pageNumber}&limit=${limit}`,
+        method: 'GET',
+        headers: {
+          'x-sh-auth': Token,
+        },
+        navigation: props.navigation,
+      });
+    } else {
+      res = await invokeApi({
+        path: `api/quotes/get_guest_active_quotes?page=${pageNumber}&limit=${limit}`,
+        method: 'GET',
+
+        navigation: props.navigation,
+      });
+    }
     setisLoading(false);
     setRefreshing(false);
     setPGN({isLoadingMore: false});

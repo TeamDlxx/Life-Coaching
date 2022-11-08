@@ -68,9 +68,13 @@ const Home = props => {
     }
   };
 
-  const onNextScreen = screen => {
-    if (!!screen) {
-      props.navigation.navigate(screen);
+  const onNextScreen = item => {
+    if (!!item?.comingsoon) {
+      props.navigation.navigate(screens.comingSoon, {
+        title: item?.title,
+      });
+    } else if (!!item?.screen) {
+      props.navigation.navigate(item?.screen);
     }
   };
 
@@ -101,7 +105,7 @@ const Home = props => {
           overflow: 'hidden',
         }}>
         <Pressable
-          onPress={() => onNextScreen(item.screen)}
+          onPress={() => onNextScreen(item)}
           style={{borderRadius: 20, overflow: 'hidden', elevation: 3}}>
           <Image source={item.image} style={{height: 200, width: '100%'}} />
 

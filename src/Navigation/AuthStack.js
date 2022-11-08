@@ -17,6 +17,9 @@ import ForgotPassword from '../screens/Auth/ForgotPassword';
 import OTP from '../screens/Auth/OTP';
 import BottomTabs from './BottomTabs';
 
+// ? Extra
+import ComingSoon from '../screens/Extra/ComingSoon';
+
 // //? Subscription
 import Subscription from '../screens/Subscriptions/Subscription';
 import AllPackages from '../screens/Subscriptions/AllPackages';
@@ -71,11 +74,20 @@ const AuthStack = () => {
   const checkOBoarding = async () => {
     let seen = await AsyncStorage.multiGet(['@onboarding', '@token']);
     console.log(seen[1][1]);
-    if (seen[1][1] != null) {
+    // if (seen[1][1] != null) {
+    //   setWhichScreen(screens.bottomTabs);
+    //   setToken(seen[1][1]);
+    // } else if (seen[0][1] != null) {
+    //   setWhichScreen(screens.landing);
+    // } else {
+    //   setWhichScreen(screens.onboarding);
+    // }
+
+    if (seen[0][1] != null) {
+      if (seen[1][1] != null) {
+        setToken(seen[1][1]);
+      }
       setWhichScreen(screens.bottomTabs);
-      setToken(seen[1][1]);
-    } else if (seen[0][1] != null) {
-      setWhichScreen(screens.landing);
     } else {
       setWhichScreen(screens.onboarding);
     }
@@ -106,6 +118,7 @@ const AuthStack = () => {
           component={ForgotPassword}
         />
         <Stack.Screen name={screens.bottomTabs} component={BottomTabs} />
+        <Stack.Screen name={screens.comingSoon} component={ComingSoon} />
         {/* Profile */}
         <Stack.Screen
           name={screens.dowloadedTracks}

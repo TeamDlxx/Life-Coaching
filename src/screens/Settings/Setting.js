@@ -140,60 +140,65 @@ const Setting = props => {
       <View style={{flex: 1}}>
         <ScrollView>
           <View style={{paddingHorizontal: 30, marginTop: 40}}>
-            {settings.map((x, i) => (
-              <Pressable
-                key={x.id}
-                onPress={() => performAction(x.action)}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  paddingVertical: 10,
-                }}>
-                <View
+            {settings.map((x, i) => {
+              if (x.id == 'logout' && !Token) {
+                return;
+              }
+              return (
+                <Pressable
+                  key={x.id}
+                  onPress={() => performAction(x.action)}
                   style={{
-                    height: 40,
-                    width: 40,
-                    backgroundColor:
-                      x.id == 'logout' ? '#D24D5733' : '#BDC3C744',
-
-                    justifyContent: 'center',
+                    flexDirection: 'row',
                     alignItems: 'center',
-                    borderRadius: 10,
+                    paddingVertical: 10,
                   }}>
-                  <Image
-                    source={x.icon}
+                  <View
                     style={{
-                      height: 20,
-                      width: 20,
-                      tintColor:
-                        x.id == 'logout' ? Colors.logout : Colors.black,
-                    }}
-                  />
-                </View>
-                <View style={{flex: 1, marginLeft: 15}}>
-                  <Text
-                    style={{
-                      fontFamily: font.medium,
-                      fontSize: 16,
-                      letterSpacing: 0.6,
-                      color: x.id == 'logout' ? Colors.logout : Colors.black,
+                      height: 40,
+                      width: 40,
+                      backgroundColor:
+                        x.id == 'logout' ? '#D24D5733' : '#BDC3C744',
+
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      borderRadius: 10,
                     }}>
-                    {x.name}
-                  </Text>
-                </View>
-                <View>
-                  <Image
-                    source={require('../../Assets/Icons/right_arrow.png')}
-                    style={{
-                      height: 15,
-                      width: 15,
-                      tintColor:
-                        x.id == 'logout' ? Colors.logout : Colors.black,
-                    }}
-                  />
-                </View>
-              </Pressable>
-            ))}
+                    <Image
+                      source={x.icon}
+                      style={{
+                        height: 20,
+                        width: 20,
+                        tintColor:
+                          x.id == 'logout' ? Colors.logout : Colors.black,
+                      }}
+                    />
+                  </View>
+                  <View style={{flex: 1, marginLeft: 15}}>
+                    <Text
+                      style={{
+                        fontFamily: font.medium,
+                        fontSize: 16,
+                        letterSpacing: 0.6,
+                        color: x.id == 'logout' ? Colors.logout : Colors.black,
+                      }}>
+                      {x.name}
+                    </Text>
+                  </View>
+                  <View>
+                    <Image
+                      source={require('../../Assets/Icons/right_arrow.png')}
+                      style={{
+                        height: 15,
+                        width: 15,
+                        tintColor:
+                          x.id == 'logout' ? Colors.logout : Colors.black,
+                      }}
+                    />
+                  </View>
+                </Pressable>
+              );
+            })}
           </View>
         </ScrollView>
 

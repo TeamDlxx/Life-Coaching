@@ -24,8 +24,8 @@ import {screens} from '../../../Navigation/Screens';
 import CustomImage from '../../../Components/CustomImage';
 import Toast from 'react-native-toast-message';
 import PushNotification from 'react-native-push-notification';
-import PushNotificationIOS from '@react-native-community/push-notification-ios';
-
+import LoginAlert from '../../../Components/LoginAlert';
+// import {useLoginAlert} from '../../../hooks/useLoginAlert';
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -38,6 +38,8 @@ import EmptyView from '../../../Components/EmptyView';
 const ic_nodata = require('../../../Assets/Icons/empty-box.png');
 
 const HabitTracker = props => {
+  // const checkLogin = useLoginAlert();
+
   const {Token, habitList, setHabitList} = useContext(Context);
   const [isLoading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -80,6 +82,14 @@ const HabitTracker = props => {
       return false;
     } else {
       return true;
+    }
+  };
+
+  const btn_add = () => {
+    if (Token) {
+      setVisibleAddHabitModal(true);
+    } else {
+      LoginAlert(props.navigation, props.route?.name);
     }
   };
 
@@ -270,7 +280,9 @@ const HabitTracker = props => {
 
   useEffect(() => {
     daysInMonth();
-    callHabitListAPI();
+    if (Token) {
+      callHabitListAPI();
+    }
     return () => {
       setHabitList([]);
     };
@@ -716,9 +728,7 @@ const HabitTracker = props => {
           </View>
         </View>
 
-        <Pressable
-          style={FAB_style.View}
-          onPress={() => setVisibleAddHabitModal(true)}>
+        <Pressable style={FAB_style.View} onPress={btn_add}>
           <Image
             source={require('../../../Assets/Icons/plus.png')}
             style={FAB_style.image}

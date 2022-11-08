@@ -10,6 +10,8 @@ import {
   Dimensions,
   TouchableOpacity,
   Platform,
+  Image,
+  Pressable,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import HeadingText from '../../Components/HeadingText';
@@ -32,20 +34,32 @@ import {useContext} from 'react';
 import Context from '../../Context';
 import moment from 'moment';
 import PushNotification from 'react-native-push-notification';
+import Colors from '../../Utilities/Colors';
 
 const height = Dimensions.get('screen').height;
 const Login = props => {
+  console.log('props', props);
+  const {params} = props?.route;
   const {setToken} = useContext(Context);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setisLoading] = useState(false);
 
   const onSignUpScreen = () => {
-    props.navigation.navigate(screens.signup);
+    props.navigation.navigate(screens.signup, {
+      from: params?.from,
+    });
   };
 
   const onForgotPasswordScreen = () => {
     props.navigation.navigate(screens.forgotPassword);
+  };
+
+  const GuestLogin = () => {
+    props.navigation.reset({
+      index: 0,
+      routes: [{name: screens.bottomTabs}],
+    });
   };
 
   const onBottomTabScreen = async data => {
@@ -58,10 +72,18 @@ const Login = props => {
       .then(() => {
         setisLoading(false);
         setToken(data?.token);
-        props.navigation.reset({
-          index: 0,
-          routes: [{name: screens.bottomTabs}],
-        });
+        if (!!params?.from) {
+          props.navigation.navigate({
+            name: params?.from,
+            params: {loggedIn: true},
+            merge: true,
+          });
+        } else {
+          props.navigation.reset({
+            index: 0,
+            routes: [{name: screens.bottomTabs}],
+          });
+        }
         scheduleNotifications(data?.habit);
       })
       .catch(e => {
@@ -193,6 +215,25 @@ const Login = props => {
           translucent={true}
         />
 
+        <Pressable
+          onPress={() => props.navigation.goBack()}
+          style={{
+            height: 40,
+            width: 40,
+            borderRadius: 25,
+            marginTop: 50,
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'absolute',
+            left: 10,
+            zIndex: 999,
+          }}>
+          <Image
+            source={require('../../Assets/Icons/back.png')}
+            style={{height: 25, width: 25, tintColor: Colors.black}}
+          />
+        </Pressable>
+
         <View style={{marginTop: 35}}>
           <View style={loginStyles.headerView}>
             <HeadingText>Sign In</HeadingText>
@@ -229,6 +270,23 @@ const Login = props => {
 
             <View style={{marginVertical: 20}}>
               <CustomButton onPress={btn_Login} title={'Sign In'} />
+            </View>
+
+            <View
+              style={{
+                alignItems: 'center',
+                // flex: 1,
+                justifyContent: 'flex-end',
+                marginTop: 20,
+              }}>
+              <Text style={{color: '#313131', fontFamily: font.regular}}>
+                Continue as{' '}
+                <Text
+                  onPress={() => GuestLogin()}
+                  style={{color: colors.primary}}>
+                  Guest
+                </Text>
+              </Text>
             </View>
 
             <View

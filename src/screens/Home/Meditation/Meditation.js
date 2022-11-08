@@ -17,6 +17,7 @@ import {mainStyles} from '../../../Utilities/styles';
 import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
 import formatTime from '../../../functions/formatTime';
+import LoginAlert from '../../../Components/LoginAlert';
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -54,12 +55,31 @@ const Meditation = props => {
 
   const call_categoryAPI = () => {
     setisLoading(true);
-    api_CategoryWithTracksList();
+    if (Token) {
+      api_CategoryWithTracksList();
+    } else {
+      api_GuestCategoryWithTracksList();
+    }
   };
 
   const refresh_categoryAPI = () => {
     setRefreshing(true);
-    api_CategoryWithTracksList();
+    if (Token) {
+      api_CategoryWithTracksList();
+    } else {
+      api_GuestCategoryWithTracksList();
+    }
+  };
+
+  const api_GuestCategoryWithTracksList = async () => {
+    let res = await invokeApi({
+      path: 'api/category/get_guest_active_categories',
+      method: 'GET',
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    setRefreshing(false);
+    handleResponse(res);
   };
 
   const api_CategoryWithTracksList = async () => {
@@ -73,6 +93,10 @@ const Meditation = props => {
     });
     setisLoading(false);
     setRefreshing(false);
+    handleResponse(res);
+  };
+
+  const handleResponse = res => {
     if (res) {
       if (res.code == 200) {
         console.log('response', res);
@@ -104,15 +128,24 @@ const Meditation = props => {
       isLoadingMore == false
     ) {
       setIsLoadingMore(true);
-      let res = await invokeApi({
-        path: 'api' + selectedCategory?.load_more_url,
-        method: 'GET',
-        headers: {
-          'x-sh-auth': Token,
-        },
-        navigation: props.navigation,
-      });
-      setIsLoadingMore(false);
+      let res;
+      if (Token) {
+        res = await invokeApi({
+          path: 'api' + selectedCategory?.load_more_url,
+          method: 'GET',
+          headers: {
+            'x-sh-auth': Token,
+          },
+          navigation: props.navigation,
+        });
+      } else {
+        res = await invokeApi({
+          path: 'api' + selectedCategory?.load_more_url,
+          method: 'GET',
+          navigation: props.navigation,
+        });
+      }
+
       if (res) {
         if (res.code == 200) {
           if (res?.tracks?.category_id == selectedCategory?._id) {
@@ -147,6 +180,7 @@ const Meditation = props => {
       } else {
         showToast(res.message);
       }
+      setIsLoadingMore(false);
     }
   };
 
@@ -336,9 +370,13 @@ const Meditation = props => {
   };
 
   const onFavList = () => {
-    props.navigation.navigate(screens.favTracks, {
-      likeUnLikeFunc: likeUnLikeLocally,
-    });
+    if (Token) {
+      props.navigation.navigate(screens.favTracks, {
+        likeUnLikeFunc: likeUnLikeLocally,
+      });
+    } else {
+      LoginAlert(props.navigation, props.route?.name);
+    }
   };
 
   return (

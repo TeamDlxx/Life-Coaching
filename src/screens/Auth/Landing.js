@@ -23,8 +23,11 @@ export default function Landing({navigation}) {
     navigation.navigate(screens.Login);
   };
 
-  const onSignUpScreen = () => {
-    navigation.navigate(screens.signup);
+  const onGuestMode = () => {
+    navigation.reset({
+      index: 0,
+      routes: [{name: screens.bottomTabs}],
+    });
   };
 
   return (
@@ -53,9 +56,9 @@ export default function Landing({navigation}) {
             <View style={{flex: 1}} />
             <View style={_style.buttonsInner}>
               <Pressable
-                onPress={() => onSignUpScreen()}
+                onPress={() => onGuestMode()}
                 style={[_style.buttonView, _style.button1]}>
-                <Text style={_style.buttonText1}>Register</Text>
+                <Text style={_style.buttonText1}>Guest</Text>
               </Pressable>
               <Pressable
                 onPress={() => onLoginScreen()}

@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Settings,
   Pressable,
+  Image,
+  Dimensions,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {mainStyles} from '../../Utilities/styles';
@@ -29,7 +31,12 @@ import Loader from '../../Components/Loader';
 import invokeApi from '../../functions/invokeAPI';
 import EmptyView from '../../Components/EmptyView';
 
+// icon
+
+const ic_logo = require('../../Assets/logo/logo.png');
+const screen = Dimensions.get('screen');
 const Profile = props => {
+  console.log('props', props);
   const {Token} = useContext(Context);
   const [user, setUser] = useState(null);
 
@@ -39,6 +46,12 @@ const Profile = props => {
     pending: 0,
     loading: true,
   });
+
+  const onLoginSignUpScreen = screen => {
+    props.navigation.navigate(screen, {
+      from: props?.route?.name,
+    });
+  };
 
   const setStats = val =>
     updateStat(prev => {
@@ -122,14 +135,22 @@ const Profile = props => {
   }
 
   useEffect(() => {
-    if (props.route.params?.updated) {
-      getUserDetail();
+    if (Token) {
+      if (props.route.params?.updated) {
+        getUserDetail();
+      }
+      if (props.route.params?.loggedIn) {
+        getUserDetail();
+        api_habitList();
+      }
     }
   }, [props.route.params]);
 
   useEffect(() => {
-    getUserDetail();
-    api_habitList();
+    if (Token) {
+      getUserDetail();
+      api_habitList();
+    }
   }, []);
 
   React.useEffect(() => {
@@ -152,122 +173,211 @@ const Profile = props => {
         barStyle={'dark-content'}
       />
       <Header title="Profile" />
-
-      <View style={{flex: 1}}>
-        <ScrollView>
-          <View style={{alignItems: 'center'}}>
-            <View
-              style={{
-                height: 110,
-                width: 110,
-                borderRadius: 110 / 2,
-                alignSelf: 'center',
-                marginTop: 30,
-                borderWidth: 1,
-                borderColor: Colors.gray05,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              <CustomImage
-                source={
-                  !!user && !!user.profile_image
-                    ? {uri: fileURL + user?.profile_image}
-                    : profile_placeholder
-                }
-                style={{height: 100, width: 100}}
-                imageStyle={{borderRadius: 100 / 2}}
-              />
-            </View>
-            <View style={{marginTop: 10}}>
-              <Text
+      {Token ? (
+        <View style={{flex: 1}}>
+          <ScrollView>
+            <View style={{alignItems: 'center'}}>
+              <View
                 style={{
-                  fontFamily: font.bold,
-                  fontSize: 18,
-                  letterSpacing: 0.5,
-                }}>
-                {!!user && user?.name}
-              </Text>
-            </View>
-
-            <View
-              style={[
-                profile_styles.statRow,
-                {justifyContent: 'space-evenly', width: '100%'},
-              ]}>
-              <View style={[profile_styles.statItemView]}>
-                <Text style={profile_styles.statItemtext1}>Total Habits</Text>
-                <Text style={profile_styles.statItemtext2}>
-                  {stats.loading ? '--' : stats.total}
-                </Text>
-              </View>
-
-              <View style={profile_styles.statItemView}>
-                <Text style={profile_styles.statItemtext1}>Completed</Text>
-                <Text style={profile_styles.statItemtext2}>
-                  {stats.loading ? '--' : stats.complete}
-                </Text>
-              </View>
-
-              <View style={profile_styles.statItemView}>
-                <Text style={profile_styles.statItemtext1}>Pending</Text>
-                <Text style={profile_styles.statItemtext2}>
-                  {stats.loading ? '--' : stats.pending}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={{paddingHorizontal: 30, marginTop: 40}}>
-            {optionsList.map((x, i) => (
-              <Pressable
-                key={x.id}
-                onPress={() => {
-                  if (!!x.screen) {
-                    props.navigation.navigate(x.screen, {
-                      user: x.screen == screens.editProfile ? user : null,
-                    });
-                  }
-                }}
-                style={{
-                  flexDirection: 'row',
+                  height: 110,
+                  width: 110,
+                  borderRadius: 110 / 2,
+                  alignSelf: 'center',
+                  marginTop: 30,
+                  borderWidth: 1,
+                  borderColor: Colors.gray05,
                   alignItems: 'center',
-                  paddingVertical: 10,
+                  justifyContent: 'center',
                 }}>
-                <View
+                <CustomImage
+                  source={
+                    !!user && !!user.profile_image
+                      ? {uri: fileURL + user?.profile_image}
+                      : profile_placeholder
+                  }
+                  style={{height: 100, width: 100}}
+                  imageStyle={{borderRadius: 100 / 2}}
+                />
+              </View>
+              <View style={{marginTop: 10}}>
+                <Text
                   style={{
-                    height: 40,
-                    width: 40,
-                    backgroundColor: '#BDC3C744',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    borderRadius: 10,
+                    fontFamily: font.bold,
+                    fontSize: 18,
+                    letterSpacing: 0.5,
                   }}>
-                  <CustomImage
-                    source={x.icon}
-                    style={{height: 20, width: 20}}
-                  />
-                </View>
-                <View style={{flex: 1, marginLeft: 15}}>
-                  <Text
-                    style={{
-                      fontFamily: font.medium,
-                      fontSize: 16,
-                      letterSpacing: 0.6,
-                    }}>
-                    {x.name}
+                  {!!user && user?.name}
+                </Text>
+              </View>
+
+              <View
+                style={[
+                  profile_styles.statRow,
+                  {justifyContent: 'space-evenly', width: '100%'},
+                ]}>
+                <View style={[profile_styles.statItemView]}>
+                  <Text style={profile_styles.statItemtext1}>Total Habits</Text>
+                  <Text style={profile_styles.statItemtext2}>
+                    {stats.loading ? '--' : stats.total}
                   </Text>
                 </View>
-                <View>
-                  <CustomImage
-                    source={require('../../Assets/Icons/right_arrow.png')}
-                    style={{height: 15, width: 15}}
-                  />
+
+                <View style={profile_styles.statItemView}>
+                  <Text style={profile_styles.statItemtext1}>Completed</Text>
+                  <Text style={profile_styles.statItemtext2}>
+                    {stats.loading ? '--' : stats.complete}
+                  </Text>
                 </View>
-              </Pressable>
-            ))}
+
+                <View style={profile_styles.statItemView}>
+                  <Text style={profile_styles.statItemtext1}>Pending</Text>
+                  <Text style={profile_styles.statItemtext2}>
+                    {stats.loading ? '--' : stats.pending}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={{paddingHorizontal: 30, marginTop: 40}}>
+              {optionsList.map((x, i) => (
+                <Pressable
+                  key={x.id}
+                  onPress={() => {
+                    if (!!x.screen) {
+                      props.navigation.navigate(x.screen, {
+                        user: x.screen == screens.editProfile ? user : null,
+                      });
+                    }
+                  }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingVertical: 10,
+                  }}>
+                  <View
+                    style={{
+                      height: 40,
+                      width: 40,
+                      backgroundColor: '#BDC3C744',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      borderRadius: 10,
+                    }}>
+                    <CustomImage
+                      source={x.icon}
+                      style={{height: 20, width: 20}}
+                    />
+                  </View>
+                  <View style={{flex: 1, marginLeft: 15}}>
+                    <Text
+                      style={{
+                        fontFamily: font.medium,
+                        fontSize: 16,
+                        letterSpacing: 0.6,
+                      }}>
+                      {x.name}
+                    </Text>
+                  </View>
+                  <View>
+                    <CustomImage
+                      source={require('../../Assets/Icons/right_arrow.png')}
+                      style={{height: 15, width: 15}}
+                    />
+                  </View>
+                </Pressable>
+              ))}
+            </View>
+          </ScrollView>
+        </View>
+      ) : (
+        <View style={{flex: 1}}>
+          <View style={{alignItems: 'center', flex: 1, marginTop: '10%'}}>
+            <Image
+              source={ic_logo}
+              style={{width: screen.width / 2, height: screen.width / 2}}
+            />
+            <View
+              style={{
+                alignItems: 'center',
+                marginTop: 10,
+                marginHorizontal: 20,
+              }}>
+              <View>
+                <Text
+                  style={{
+                    fontFamily: font.bold,
+                    fontSize: 24,
+                    letterSpacing: 0.5,
+                    textAlign: 'center',
+                  }}>
+                  LIFE COACHING
+                </Text>
+              </View>
+              <View style={{marginTop: 10}}>
+                <Text
+                  style={{
+                    fontFamily: font.regular,
+                    fontSize: 14,
+                    letterSpacing: 0.5,
+                    textAlign: 'center',
+                    color: Colors.gray13,
+                  }}>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                </Text>
+              </View>
+            </View>
           </View>
-        </ScrollView>
-      </View>
+
+          <View
+            style={{
+              justifyContent: 'center',
+              marginHorizontal: 30,
+              flex: 1,
+            }}>
+            <Pressable
+              onPress={() => onLoginSignUpScreen(screens.Login)}
+              style={{
+                backgroundColor: Colors.primary,
+                borderRadius: 10,
+                height: 55,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <Text
+                style={{
+                  color: Colors.white,
+                  fontFamily: font.bold,
+                  textAlign: 'center',
+                  fontSize: 16,
+                }}>
+                Login
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => onLoginSignUpScreen(screens.signup)}
+              style={{
+                backgroundColor: Colors.lightPrimary1,
+                borderRadius: 10,
+                height: 55,
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginTop: 10,
+              }}>
+              <Text
+                style={{
+                  color: Colors.primary,
+                  fontFamily: font.bold,
+                  textAlign: 'center',
+                  fontSize: 16,
+                }}>
+                Signup
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };

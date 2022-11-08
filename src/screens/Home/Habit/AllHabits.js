@@ -28,6 +28,7 @@ import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
 import PushNotification from 'react-native-push-notification';
+
 const screen = Dimensions.get('screen');
 
 const AllHabits = props => {
@@ -162,7 +163,9 @@ const AllHabits = props => {
 
   React.useEffect(() => {
     makeDaysArray();
-    callHabitListApi();
+    if (Token) {
+      callHabitListApi();
+    }
     return () => {
       setSHabitList([]);
     };
@@ -255,7 +258,7 @@ const AllHabits = props => {
           </View>
 
           <View>
-            <View style={{flexDirection: 'row', marginTop:5}}>
+            <View style={{flexDirection: 'row', marginTop: 5}}>
               {currentWeek.map(x => {
                 return (
                   <View
@@ -308,7 +311,7 @@ const AllHabits = props => {
                   : '0%'}
               </Text>
             </View>
-            <View style={{flex: 1,marginTop:5}}>
+            <View style={{flex: 1, marginTop: 5}}>
               <Progress.Bar
                 color={Colors.primary}
                 height={8}
