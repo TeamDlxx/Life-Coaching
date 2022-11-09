@@ -97,7 +97,11 @@ const EditProfile = props => {
     setisLoading(false);
     if (res) {
       if (res.code == 200) {
-        EditAsyncData(res.customer);
+        EditAsyncData({
+          name: res?.customer?.name,
+          profile_image: res?.customer?.profile_image,
+          user_id: res?.customer?.user_id,
+        });
       } else {
         showToast(res.message);
       }

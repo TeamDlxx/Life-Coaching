@@ -283,9 +283,7 @@ const HabitTracker = props => {
     if (Token) {
       callHabitListAPI();
     }
-    return () => {
-      setHabitList([]);
-    };
+    return () => {};
   }, []);
 
   useEffect(() => {

@@ -56,7 +56,14 @@ const Signup = props => {
   const onBottomTabScreen = data => {
     const asyncData = [
       ['@token', data?.token],
-      ['@user', JSON.stringify(data)],
+      [
+        '@user',
+        JSON.stringify({
+          name: data?.customer?.name,
+          profile_image: data?.customer?.profile_image,
+          user_id: data?.customer?.user_id,
+        }),
+      ],
     ];
     console.log('Async Data', asyncData);
     AsyncStorage.multiSet(asyncData)

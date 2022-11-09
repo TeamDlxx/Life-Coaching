@@ -1,14 +1,40 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {ContextProvider} from '.';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PushNotification from 'react-native-push-notification';
 import {fileURL} from '../Utilities/domains';
 import RNFS from 'react-native-fs';
 import showToast from '../functions/showToast';
+import moment from 'moment';
 const ContextWrapper = props => {
   const [Token, setToken] = useState(null);
   const [habitList, setHabitList] = useState([]);
   const [progress, setProgress] = useState([]);
+
+  const findProgress = item => {
+    let freq = [];
+    item.frequency.filter((x, i) => {
+      if (x.status == true) {
+        freq.push(x.day);
+      }
+    });
+    let count = 0;
+    item.notes.map((x, i) => {
+      if (freq.includes(moment(x.date).format('dddd').toLowerCase())) {
+        count = count + 1;
+      }
+    });
+    return count;
+  };
+
+  let completed = 0;
+  habitList.map((x, i) => {
+    if (x.total_days != 0) {
+      if (findProgress(x) / x.total_days == 1) {
+        completed = completed + 1;
+      }
+    }
+  });
 
   // Tracks download functions
   const downloadTrack = async (track, cat) => {
@@ -176,6 +202,12 @@ const ContextWrapper = props => {
     setProgress(newProgress);
   };
 
+  useEffect(() => {
+    return () => {
+      setHabitList([]);
+    };
+  }, []);
+
   const object = {
     Token,
     setToken,
@@ -184,6 +216,7 @@ const ContextWrapper = props => {
     progress,
     deleteTrack,
     setHabitList,
+    completed,
   };
 
   return (
