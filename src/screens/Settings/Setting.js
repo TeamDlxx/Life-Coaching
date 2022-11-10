@@ -28,13 +28,14 @@ import PushNotification from 'react-native-push-notification';
 
 const Setting = props => {
   const [isLoading, setisLoading] = useState(false);
-  const {Token, setToken} = useContext(Context);
+  const {Token, setToken,setHabitList} = useContext(Context);
 
   const logout = async () => {
     try {
       let res = await AsyncStorage.multiRemove(['@token', '@user']);
       console.log('res', res);
       setToken(null);
+      setHabitList([])
       props.navigation.reset({
         index: 0,
         routes: [{name: screens.landing}],
@@ -45,6 +46,7 @@ const Setting = props => {
         index: 0,
         routes: [{name: screens.landing}],
       });
+      setHabitList([])
       PushNotification.cancelAllLocalNotifications();
     }
   };

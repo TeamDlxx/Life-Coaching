@@ -51,6 +51,10 @@ const Meditation = props => {
     });
   };
 
+  const findCategoryName = (id)=>{
+    categoryList.find(x=>x.categoryList)
+  }
+
   //todo /////// API's
 
   const call_categoryAPI = () => {

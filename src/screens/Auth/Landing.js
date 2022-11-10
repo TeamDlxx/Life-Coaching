@@ -7,16 +7,19 @@ import {
   Pressable,
   StatusBar,
 } from 'react-native';
-import React from 'react';
+import React, {useContext} from 'react';
 import {font} from '../../Utilities/font';
 import Colors from '../../Utilities/Colors';
 import {screens} from '../../Navigation/Screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SplashScreen from 'react-native-splash-screen';
+import Context from '../../Context';
 
 export default function Landing({navigation}) {
+  const {setToken} = useContext(Context);
   React.useEffect(() => {
     SplashScreen.hide();
+    setToken(null);
   }, []);
 
   const onLoginScreen = () => {

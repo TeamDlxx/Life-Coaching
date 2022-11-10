@@ -198,7 +198,7 @@ const TrackPlayerScreen = props => {
 
   useEffect(() => {
     TrackPlayer.addEventListener('playback-state', ({state}) => {
-      console.log("state: " + state)
+      console.log('state: ' + state);
       if (state == 'ready' || state == 'playing' || state == 2) {
         setloading(false);
       }
@@ -411,7 +411,7 @@ const TrackPlayerScreen = props => {
           </View>
           <Text style={_styleTrackPlayer.trackName}>{trackItem.name}</Text>
           <Text style={_styleTrackPlayer.trackCategory}>
-            {params?.from == 'fav'
+            {params?.from == 'fav' || params?.category == 'all'
               ? trackItem?.category_id[0]?._id?.name
               : params?.category}
           </Text>

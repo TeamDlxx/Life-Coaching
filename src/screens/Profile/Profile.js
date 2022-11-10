@@ -96,7 +96,7 @@ const Profile = props => {
       getUserDetail();
       api_profile();
     }
-  }, []);
+  }, [Token]);
 
   // React.useEffect(() => {
   //   const unsubscribe = props.navigation.addListener('tabPress', e => {

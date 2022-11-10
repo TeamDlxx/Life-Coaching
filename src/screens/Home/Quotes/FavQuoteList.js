@@ -23,7 +23,7 @@ import Share from 'react-native-share';
 const screen = Dimensions.get('screen');
 import axios from 'axios';
 import _ from 'buffer';
-import RNFetchBlob from 'rn-fetch-blob';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 
 // For API's calling
 import {useContext} from 'react';
@@ -48,10 +48,12 @@ import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
 const limit = 10;
 const FavQuoteList = props => {
-  const {Token} = useContext(Context);
+  const {params} = props?.route;
+  const {Token, downloadQuote} = useContext(Context);
   const [QuoteList, setQuoteList] = useState([]);
   const [loading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [isSharing, setIsSharing] = useState(null);
   const [PGN, updatePGN] = useState({
     pageNumber: 0,
     isLoadingMore: false,
@@ -64,25 +66,32 @@ const FavQuoteList = props => {
     props.navigation.navigate(screens.favQuoteList);
   };
 
-  const shareQuote = async (image, description) => {
-    let res = await GetBase64(fileURL + image);
-    let ext = await image.split('.')[image.split('.').length - 1];
-    if (ext == 'jpg') {
-      ext = 'jpeg';
-    }
-    let file = `data:image/${ext};base64,${res}`;
-    await Share.open({
-      title: 'Life Coaching | Quotes',
-      message: description,
-      // filename: file,
-      url: file,
-    })
-      .then(res => {
-        console.log('res', res);
+  const shareQuote = async item => {
+    setIsSharing(item._id);
+    try {
+      let image = item?.images?.large;
+      let description = item?.description;
+      let res = await GetBase64(fileURL + image);
+      let ext = await image.split('.')[image.split('.').length - 1];
+      if (ext == 'jpg') {
+        ext = 'jpeg';
+      }
+      let file = `data:image/${ext};base64,${res}`;
+      setIsSharing(null);
+      await Share.open({
+        title: 'Life Coaching | Quotes',
+        message: description,
+        url: file,
       })
-      .catch(err => {
-        err && console.log(err);
-      });
+        .then(res => {
+          console.log('res', res);
+        })
+        .catch(err => {
+          err && console.log(err);
+        });
+    } catch (e) {
+      setIsSharing(null);
+    }
   };
 
   const GetBase64 = async url => {
@@ -97,33 +106,12 @@ const FavQuoteList = props => {
   };
 
   const favUnFavFunction = (item, index) => {
-    api_favOrUnfavQuote(!item?.is_favourite_by_me, item._id);
-    toggleLike(!item?.is_favourite_by_me, item._id);
-  };
-
-  const downloadFile = async image => {
-    console.log('RNFetchBlob.fs.dirs', RNFetchBlob.fs.dirs);
-    let dir = RNFetchBlob.fs.dirs.PictureDir + '/Life Coaching/';
-    if (Platform.OS == 'android') {
-      dir = RNFetchBlob.fs.dirs.DCIMDir + '/Life Coaching/';
+    let val = !item?.is_favourite_by_me;
+    api_favOrUnfavQuote(val, item._id);
+    toggleLike(val, item._id);
+    if (!!params?.toggleBackScreenLike) {
+      params?.toggleBackScreenLike(val, item._id);
     }
-
-    let fileName =
-      'Quote' + (await image.split('/')[image.split('/').length - 1]);
-    RNFetchBlob.config({
-      path: dir + fileName,
-      fileCache: true,
-    })
-      .fetch('GET', fileURL + image, {})
-      .then(res => {
-        // the temp file path
-        console.log('The file saved to ', res.path());
-        showToast(
-          'Quote has been saved to your storage',
-          'Qoutes Downloaded',
-          'success',
-        );
-      });
   };
 
   function kFormatter(num) {
@@ -233,6 +221,9 @@ const FavQuoteList = props => {
         setTimeout(() => removeLiked(id), 500);
       } else {
         toggleLike(!val, id);
+        if (!!params?.toggleBackScreenLike) {
+          params?.toggleBackScreenLike(!val, item._id);
+        }
         showToast(res.message);
       }
     }
@@ -308,7 +299,7 @@ const FavQuoteList = props => {
 
           <TouchableOpacity
             onPress={() => {
-              downloadFile(item?.images?.large);
+              downloadQuote(item?.images?.large);
             }}
             style={{
               flex: 1,
@@ -324,7 +315,7 @@ const FavQuoteList = props => {
 
           <TouchableOpacity
             onPress={() => {
-              shareQuote(item?.images?.large, item?.description);
+              shareQuote(item);
             }}
             style={{
               flex: 1,
@@ -332,10 +323,14 @@ const FavQuoteList = props => {
               height: 50,
               justifyContent: 'center',
             }}>
-            <Image
-              source={ic_share}
-              style={{height: 20, width: 20, tintColor: Colors.placeHolder}}
-            />
+            {isSharing != item._id ? (
+              <Image
+                source={ic_share}
+                style={{height: 20, width: 20, tintColor: Colors.placeHolder}}
+              />
+            ) : (
+              <ActivityIndicator color={Colors.placeHolder} size="small" />
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -357,7 +352,7 @@ const FavQuoteList = props => {
         <Loader enable={loading} />
         <View style={{flex: 1}}>
           <FlatList
-            contentContainerStyle={{marginTop: 10}}
+            contentContainerStyle={{marginTop: 10, marginBottom: 10}}
             showsVerticalScrollIndicator={false}
             keyExtractor={(item, index) => {
               return index.toString();

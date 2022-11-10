@@ -5,6 +5,8 @@ export default colors = {
   lightPrimary: '#deddee',
   lightPrimary1: '#cdcce6',
   lightPrimary2: '#efeef6',
+  lightPrimary3: '#8b87c4',
+  darkPrimary: '#242244',
   primary2: '#8b87c4',
   primary3: '#7b76bc',
   text: '#A4A4A4',

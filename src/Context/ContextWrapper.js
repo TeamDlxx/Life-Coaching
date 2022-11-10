@@ -6,6 +6,10 @@ import {fileURL} from '../Utilities/domains';
 import RNFS from 'react-native-fs';
 import showToast from '../functions/showToast';
 import moment from 'moment';
+import ReactNativeBlobUtil from 'react-native-blob-util';
+import axios from 'axios';
+import {Platform} from 'react-native';
+
 const ContextWrapper = props => {
   const [Token, setToken] = useState(null);
   const [habitList, setHabitList] = useState([]);
@@ -142,6 +146,51 @@ const ContextWrapper = props => {
     }
   };
 
+  const downloadQuote = async image => {
+    console.log('RNFS', RNFS);
+    let dir;
+    if (Platform.OS == 'android') {
+      dir = RNFS.PicturesDirectoryPath;
+    } else {
+      dir = RNFS.DocumentDirectoryPath;
+    }
+
+    if (!(await RNFS.exists(dir + '/Lifecoaching/'))) {
+      await RNFS.mkdir(dir + '/Lifecoaching/');
+    }
+
+    let ext = await image.split('.');
+    let imagePath =
+      // 'file://' +
+      dir +
+      '/Lifecoaching/' +
+      'quote-' +
+      moment().valueOf() +
+      '.' +
+      ext[ext.length - 1];
+
+    try {
+      return RNFS.downloadFile({
+        fromUrl: fileURL + image,
+        toFile: imagePath,
+      })
+        .promise.then(async res1 => {
+          console.log('imageDownloaded:', res1);
+          showToast(
+            'Quote has been saved to your storage',
+            'Qoute Downloaded',
+            'success',
+          );
+        })
+        .catch(e => {
+          console.log('RNFS error', e);
+          showToast('', 'Already Downloaded', 'success');
+        });
+    } catch (e) {
+      showToast('No internet connection', 'Error');
+    }
+  };
+
   const deleteTrack = async id => {
     try {
       let res = await AsyncStorage.getItem('@tracks');
@@ -217,6 +266,7 @@ const ContextWrapper = props => {
     deleteTrack,
     setHabitList,
     completed,
+    downloadQuote,
   };
 
   return (

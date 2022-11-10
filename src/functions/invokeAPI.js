@@ -56,6 +56,7 @@ export default async function invokeApi({
             index: 0,
             routes: [{name: screens.landing}],
           });
+
         } catch (e) {
           navigation.reset({
             index: 0,

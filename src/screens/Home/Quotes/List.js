@@ -22,8 +22,9 @@ import CustomImage from '../../../Components/CustomImage';
 import Share from 'react-native-share';
 import axios from 'axios';
 import _ from 'buffer';
-import RNFetchBlob from 'rn-fetch-blob';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 import LoginAlert from '../../../Components/LoginAlert';
+import RNFS from 'react-native-fs';
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -31,7 +32,7 @@ import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
-
+import EmptyView from '../../../Components/EmptyView';
 //ICONS
 
 import Fav from '../../../Assets/Icons/fav.png';
@@ -45,8 +46,9 @@ import {screens} from '../../../Navigation/Screens';
 const limit = 10;
 
 const List = props => {
-  const {Token} = useContext(Context);
+  const {Token, downloadQuote} = useContext(Context);
   const [QuoteList, setQuoteList] = useState([]);
+  const [isSharing, setIsSharing] = useState(null);
   const [loading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [PGN, updatePGN] = useState({
@@ -59,31 +61,40 @@ const List = props => {
 
   const onFavList = () => {
     if (Token) {
-      props.navigation.navigate(screens.favQuoteList);
+      props.navigation.navigate(screens.favQuoteList, {
+        toggleBackScreenLike: toggleLike,
+      });
     } else {
       LoginAlert(props.navigation, props.route?.name);
     }
   };
 
-  const shareQuote = async (image, description) => {
-    let res = await GetBase64(fileURL + image);
-    let ext = await image.split('.')[image.split('.').length - 1];
-    if (ext == 'jpg') {
-      ext = 'jpeg';
-    }
-    let file = `data:image/${ext};base64,${res}`;
-    await Share.open({
-      title: 'Life Coaching | Quotes',
-      message: description,
-      // filename: file,
-      url: file,
-    })
-      .then(res => {
-        console.log('res', res);
+  const shareQuote = async item => {
+    setIsSharing(item._id);
+    try {
+      let image = item?.images?.large;
+      let description = item?.description;
+      let res = await GetBase64(fileURL + image);
+      let ext = await image.split('.')[image.split('.').length - 1];
+      if (ext == 'jpg') {
+        ext = 'jpeg';
+      }
+      let file = `data:image/${ext};base64,${res}`;
+      setIsSharing(null);
+      await Share.open({
+        title: 'Life Coaching | Quotes',
+        message: description,
+        url: file,
       })
-      .catch(err => {
-        err && console.log(err);
-      });
+        .then(res => {
+          console.log('res', res);
+        })
+        .catch(err => {
+          err && console.log(err);
+        });
+    } catch (e) {
+      setIsSharing(null);
+    }
   };
 
   const GetBase64 = async url => {
@@ -123,30 +134,7 @@ const List = props => {
     }
   };
 
-  const downloadFile = async image => {
-    console.log('RNFetchBlob.fs.dirs', RNFetchBlob.fs.dirs);
-    let dir = RNFetchBlob.fs.dirs.PictureDir + '/Life Coaching/';
-    if (Platform.OS == 'android') {
-      dir = RNFetchBlob.fs.dirs.DCIMDir + '/Life Coaching/';
-    }
-
-    let fileName =
-      'Quote' + (await image.split('/')[image.split('/').length - 1]);
-    RNFetchBlob.config({
-      path: dir + fileName,
-      fileCache: true,
-    })
-      .fetch('GET', fileURL + image, {})
-      .then(res => {
-        // the temp file path
-        console.log('The file saved to ', res.path());
-        showToast(
-          'Quote has been saved to your storage',
-          'Qoutes Downloaded',
-          'success',
-        );
-      });
-  };
+ 
 
   function kFormatter(num) {
     {
@@ -202,6 +190,7 @@ const List = props => {
         let count = QuoteList?.length;
         setQuoteList([...QuoteList, ...res?.quotes]);
         count = count + res?.quotes.length;
+        console.log('count', count);
         setPGN({
           pageNumber: pageNumber + 1,
           canLoadMore: count < res?.count ? true : false,
@@ -311,7 +300,7 @@ const List = props => {
 
           <TouchableOpacity
             onPress={() => {
-              downloadFile(item?.images?.large);
+              downloadQuote(item?.images?.large);
             }}
             style={{
               flex: 1,
@@ -326,8 +315,9 @@ const List = props => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            disabled={isSharing != null}
             onPress={() => {
-              shareQuote(item?.images?.large, item?.description);
+              shareQuote(item);
             }}
             style={{
               flex: 1,
@@ -335,10 +325,14 @@ const List = props => {
               height: 50,
               justifyContent: 'center',
             }}>
-            <Image
-              source={ic_share}
-              style={{height: 20, width: 20, tintColor: Colors.placeHolder}}
-            />
+            {isSharing != item._id ? (
+              <Image
+                source={ic_share}
+                style={{height: 20, width: 20, tintColor: Colors.placeHolder}}
+              />
+            ) : (
+              <ActivityIndicator color={Colors.placeHolder} size="small" />
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -363,7 +357,7 @@ const List = props => {
         <Loader enable={loading} />
         <View style={{flex: 1}}>
           <FlatList
-            contentContainerStyle={{marginTop: 10}}
+            contentContainerStyle={{marginTop: 10, marginBottom: 10}}
             showsVerticalScrollIndicator={false}
             keyExtractor={(item, index) => {
               return index.toString();
@@ -371,6 +365,9 @@ const List = props => {
             data={QuoteList}
             renderItem={flatItemView}
             onEndReached={onEndReached}
+            ListEmptyComponent={
+              loading == false && <EmptyView title="No Quotes" />
+            }
             ListFooterComponent={
               isLoadingMore && (
                 <ActivityIndicator size={'small'} color={Colors.primary} />
