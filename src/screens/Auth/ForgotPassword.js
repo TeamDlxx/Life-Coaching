@@ -48,7 +48,7 @@ const ForgotPassword = props => {
     if (t_email == '') {
       showToast('Please enter your email', 'Alert');
     } else if (validateEmail(t_email) == '') {
-      showToast('Please enter validate email', 'Alert');
+      showToast('Please enter  email', 'Alert');
     } else {
       let obj_sendEmail = {
         email: t_email,

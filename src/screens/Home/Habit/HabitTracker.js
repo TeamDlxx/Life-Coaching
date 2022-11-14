@@ -281,10 +281,12 @@ const HabitTracker = props => {
   useEffect(() => {
     daysInMonth();
     if (Token) {
-      callHabitListAPI();
+      if (habitList.length == 0) {
+        callHabitListAPI();
+      }
     }
     return () => {};
-  }, []);
+  }, [Token]);
 
   useEffect(() => {
     let index = daysList.findIndex(

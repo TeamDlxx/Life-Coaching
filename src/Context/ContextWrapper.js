@@ -178,7 +178,7 @@ const ContextWrapper = props => {
           console.log('imageDownloaded:', res1);
           showToast(
             'Quote has been saved to your storage',
-            'Qoute Downloaded',
+            'Quote Downloaded',
             'success',
           );
         })

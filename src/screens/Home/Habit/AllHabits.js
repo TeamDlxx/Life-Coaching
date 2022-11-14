@@ -37,6 +37,8 @@ const AllHabits = props => {
   const [isLoading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [currentWeek, setCurrentWeekDays] = useState([]);
+
+  
   const makeDaysArray = () => {
     let selectedWeekDays = [];
     for (let i = 0; i < 7; i++) {
@@ -176,6 +178,7 @@ const AllHabits = props => {
     let progress = findProgress(item);
     return (
       <Pressable
+        key={item._id}
         onPress={() => {
           props.navigation.navigate(screens.habitDetail, {
             id: item._id,
@@ -389,6 +392,7 @@ const AllHabits = props => {
             renderHiddenItem={({item, index}) => {
               return (
                 <Pressable
+                  key={item._id}
                   onPress={() =>
                     Alert.alert(
                       'Delete Habit',

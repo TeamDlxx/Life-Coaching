@@ -157,7 +157,7 @@ const CreateHabit = props => {
       fd_editHabit.append('frequency', JSON.stringify(t_frequency));
       fd_editHabit.append(
         'target_date',
-        moment(t_targetDate).format('MM-DD-YYYY'),
+        moment(t_targetDate).format('YYYY-MM-DD'),
       );
       fd_editHabit.append('reminder', t_reminder.value);
       fd_editHabit.append(
@@ -181,7 +181,7 @@ const CreateHabit = props => {
       },
       navigation: props.navigation,
     });
-
+    setisLoading(false);
     if (res) {
       if (res.code == 200) {
         if (res?.habit?.reminder) {
@@ -190,7 +190,7 @@ const CreateHabit = props => {
         } else {
           RemoveThisHabitScheduleNotifications(res?.habit?._id);
         }
-        setisLoading(false);
+
         showToast(
           'Habit has been updated successfully',
           'Habit Updated',
@@ -264,11 +264,12 @@ const CreateHabit = props => {
       }
 
       fd_createhabit.append('name', t_habitName);
+      fd_createhabit.append('start_date', moment().toISOString());
       fd_createhabit.append('type', t_type == 0 ? 'not-to-do' : 'to-do');
       fd_createhabit.append('frequency', JSON.stringify(t_frequency));
       fd_createhabit.append(
         'target_date',
-        moment(t_targetDate).format('MM-DD-YYYY'),
+        moment(t_targetDate).format('YYYY-MM-DD'),
       );
       fd_createhabit.append('reminder', t_reminder.value);
       fd_createhabit.append(

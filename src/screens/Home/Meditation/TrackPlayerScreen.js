@@ -359,12 +359,6 @@ const TrackPlayerScreen = props => {
                     )}
                   </Pressable>
                 )}
-                {/* <Pressable style={_styleTrackPlayer.backButtonView}>
-                  <Image
-                    style={_styleTrackPlayer.backButton2Icon}
-                    source={ic_share}
-                  />
-                </Pressable> */}
               </View>
             </View>
             {DefaultImage && (

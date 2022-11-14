@@ -57,7 +57,7 @@ const AllPackages = props => {
         <View style={{marginTop: 20}}>
           <Text
             style={{fontFamily: font.bold, fontSize: 30, color: Colors.black}}>
-            Get Access to all Features
+            Get Access to more Features
           </Text>
         </View>
 
@@ -73,7 +73,7 @@ const AllPackages = props => {
           </Text>
         </View>
 
-        <View style={{marginTop: 25, minHeight: 200}}>
+        <View style={{marginTop: 25}}>
           {selectedPkg?.description.map((x, i) => {
             return (
               <View
@@ -81,7 +81,6 @@ const AllPackages = props => {
                   flexDirection: 'row',
                   alignItems: 'center',
                   marginVertical: 5,
-
                 }}>
                 <Image
                   source={ic_filledTick}
@@ -100,7 +99,7 @@ const AllPackages = props => {
             );
           })}
         </View>
-        <View style={{}}>
+        <View style={{marginTop: 25}}>
           <Text
             style={{
               color: Colors.darkPrimary,
@@ -190,7 +189,7 @@ const AllPackages = props => {
             ListHeaderComponent={FlatListHeader()}
             renderItem={pkgView}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{paddingBottom:20}}
+            contentContainerStyle={{paddingBottom: 20}}
           />
         </View>
         <View style={{}}>
@@ -246,7 +245,7 @@ const packages = [
     description: ['Unlimited Habits', 'Unlimited time for Habits', 'Reminder'],
     price: 3,
     type: 'star',
-    duration: 'monthlty',
+    duration: 'monthly',
   },
   {
     _id: '2',
@@ -254,7 +253,7 @@ const packages = [
     description: ['Access to all tracks', 'Download & listen without internet'],
     price: 3,
     type: 'star',
-    duration: 'monthlty',
+    duration: 'monthly',
   },
   {
     _id: '3',

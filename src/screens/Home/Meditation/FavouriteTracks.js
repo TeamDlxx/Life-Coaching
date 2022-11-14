@@ -360,7 +360,7 @@ const FavouriteTracks = props => {
         backgroundColor={Colors.background}
       />
 
-      <Header navigation={props.navigation} title={'Favorite Tracks'} />
+      <Header navigation={props.navigation} title={'Favourite Tracks'} />
       <View style={mainStyles.innerView}>
         <Loader enable={isLoading} />
         <View style={{flex: 1, marginHorizontal: -20}}>

@@ -167,7 +167,7 @@ const Login = props => {
     if (t_email == '') {
       showToast('Please enter your email', 'Alert');
     } else if (validateEmail(t_email) == '') {
-      showToast('Please enter validate email', 'Alert');
+      showToast('Please enter valid email', 'Alert');
     } else if (t_password == '') {
       showToast('Please enter your password', 'Alert');
     } else if (checkSpace(t_password)) {

@@ -59,9 +59,9 @@ const Signup = props => {
       [
         '@user',
         JSON.stringify({
-          name: data?.customer?.name,
-          profile_image: data?.customer?.profile_image,
-          user_id: data?.customer?.user_id,
+          name: data?.name,
+          profile_image: data?.profile_image,
+          user_id: data?.user_id,
         }),
       ],
     ];
@@ -101,7 +101,7 @@ const Signup = props => {
     } else if (t_email == '') {
       showToast('Please enter your email', 'Alert');
     } else if (validateEmail(t_email) == '') {
-      showToast('Please enter validate email', 'Alert');
+      showToast('Please enter valid email', 'Alert');
     } else if (t_password == '') {
       showToast('Please enter your password', 'Alert');
     } else if (checkSpace(t_password)) {

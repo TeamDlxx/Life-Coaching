@@ -108,7 +108,7 @@ const FavQuoteList = props => {
   const favUnFavFunction = (item, index) => {
     let val = !item?.is_favourite_by_me;
     api_favOrUnfavQuote(val, item._id);
-    toggleLike(val, item._id);
+    removeLiked(item?._id);
     if (!!params?.toggleBackScreenLike) {
       params?.toggleBackScreenLike(val, item._id);
     }
@@ -197,8 +197,6 @@ const FavQuoteList = props => {
     let newArray = [...QuoteList];
     let index = newArray.findIndex(x => x._id == id);
     if (index > -1) {
-      let newObj = newArray[index];
-
       newArray.splice(index, 1);
       setQuoteList([...newArray]);
     }
@@ -218,7 +216,6 @@ const FavQuoteList = props => {
     });
     if (res) {
       if (res.code == 200) {
-        setTimeout(() => removeLiked(id), 500);
       } else {
         toggleLike(!val, id);
         if (!!params?.toggleBackScreenLike) {
