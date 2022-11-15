@@ -5,17 +5,11 @@ import {
   StatusBar,
   Pressable,
   Image,
-  Platform,
-  PermissionsAndroid,
-  BackHandler,
-  Alert,
-  ScrollView,
   FlatList,
-  StyleSheet,
   Dimensions,
   TouchableOpacity,
 } from 'react-native';
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useState, useRef} from 'react';
 import {useFocusEffect} from '@react-navigation/native';
 import {mainStyles} from '../../Utilities/styles';
 import Header from '../../Components/Header';
@@ -27,6 +21,7 @@ import CustomButton from '../../Components/CustomButton';
 import {useContext} from 'react';
 import Context from '../../Context';
 import Subscription from './Subscription';
+import Collapsible from 'react-native-collapsible';
 
 const screen = Dimensions.get('screen');
 
@@ -41,6 +36,7 @@ const ic_tick = require('../../Assets/Icons/tick.png');
 const AllPackages = props => {
   const {Token} = useContext(Context);
   const {navigation} = props;
+  const list = useRef();
   const {params} = props.route;
   const [selectedPkg, setSelectedPkg] = useState(packages[0]);
 
@@ -60,7 +56,7 @@ const AllPackages = props => {
             Get Access to more Features
           </Text>
         </View>
-
+        {/* 
         <View style={{marginTop: 15}}>
           <Text
             style={{
@@ -71,9 +67,9 @@ const AllPackages = props => {
             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
             eiusmod tempor incididunt ut
           </Text>
-        </View>
+        </View> */}
 
-        <View style={{marginTop: 25}}>
+        {/* <View style={{marginTop: 25}}>
           {selectedPkg?.description.map((x, i) => {
             return (
               <View
@@ -98,7 +94,7 @@ const AllPackages = props => {
               </View>
             );
           })}
-        </View>
+        </View> */}
         <View style={{marginTop: 25}}>
           <Text
             style={{
@@ -106,7 +102,7 @@ const AllPackages = props => {
               fontSize: 16,
               fontFamily: font.bold,
             }}>
-            Select your subscription
+            Select your subscription plan
           </Text>
         </View>
       </View>
@@ -116,64 +112,163 @@ const AllPackages = props => {
   const pkgView = ({item, index}) => {
     return (
       <Pressable
-        onPress={() => setSelectedPkg(item)}
-        style={{
-          marginTop: 10,
-          backgroundColor: Colors.white,
-          flexDirection: 'row',
-          alignItems: 'center',
-          borderWidth: selectedPkg._id == item._id ? 2 : 1,
-          borderColor:
-            selectedPkg._id == item._id ? Colors.primary : Colors.gray02,
-          minHeight: 80,
-          paddingHorizontal: 10,
-          borderRadius: 20,
+        onPress={() => {
+          setSelectedPkg(item);
         }}>
-        <Image
-          source={
-            item?.type == 'star'
-              ? ic_star
-              : item?.type == 'diamond'
-              ? ic_diamond
-              : item?.type == 'crown'
-              ? ic_crown
-              : null
-          }
-          style={{height: 50, width: 50}}
-        />
-        <View style={{flex: 1, marginLeft: 10}}>
-          <Text
-            style={{
-              fontFamily: font.bold,
-              fontSize: 16,
-              textTransform: 'capitalize',
-            }}>
-            {item.duration}
-          </Text>
-          <Text
-            style={{
-              fontFamily: font.regular,
-              fontSize: 12,
-              marginTop: 5,
-            }}>
-            {item.name}
-          </Text>
-        </View>
+        <View
+          style={{
+            marginTop: 10,
+            backgroundColor: Colors.white,
 
-        <View style={{marginLeft: 10}}>
-          <Text
+            borderWidth: selectedPkg._id == item._id ? 2 : 1,
+            borderColor:
+              selectedPkg._id == item._id ? Colors.primary : Colors.gray02,
+            // minHeight: 80,
+
+            borderRadius: 20,
+          }}>
+          <View
             style={{
-              fontFamily: font.bold,
-              fontSize: 18,
-              textTransform: 'capitalize',
-              color: Colors.primary,
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 10,
+              paddingVertical: 10,
             }}>
-            {`$ ${formatPrice(item.price)}`}
-          </Text>
+            <Image
+              source={
+                item?.type == 'star'
+                  ? ic_star
+                  : item?.type == 'diamond'
+                  ? ic_diamond
+                  : item?.type == 'crown'
+                  ? ic_crown
+                  : null
+              }
+              style={{height: 50, width: 50}}
+            />
+            <View style={{flex: 1, marginLeft: 10}}>
+              <Text
+                style={{
+                  fontFamily: font.bold,
+                  fontSize: 16,
+                  textTransform: 'capitalize',
+                }}>
+                {item.duration}
+              </Text>
+              <Text
+                style={{
+                  fontFamily: font.regular,
+                  fontSize: 12,
+                  marginTop: 5,
+                }}>
+                {item.name}
+              </Text>
+            </View>
+
+            <View style={{marginLeft: 10}}>
+              <Text
+                style={{
+                  fontFamily: font.bold,
+                  fontSize: 18,
+                  textTransform: 'capitalize',
+                  color: Colors.primary,
+                }}>
+                {`$ ${formatPrice(item.price)}`}
+              </Text>
+            </View>
+          </View>
+          <Collapsible collapsed={item._id != selectedPkg._id}>
+            <View style={{padding: 10}}>
+              {item.description.map(x => (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginVertical: 5,
+                  }}>
+                  <Image
+                    source={ic_filledTick}
+                    style={{height: 15, width: 15, tintColor: Colors.completed}}
+                  />
+                  <Text
+                    style={{
+                      fontFamily: font.regular,
+                      fontSize: 14,
+                      color: Colors.black,
+                      marginLeft: 5,
+                    }}>
+                    {x}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </Collapsible>
         </View>
       </Pressable>
     );
   };
+
+  // const pkgView = ({item, index}) => {
+  //   return (
+  //     <Pressable
+  //       style={{
+  //         marginTop: 10,
+  //         backgroundColor: Colors.white,
+  //         flexDirection: 'row',
+  //         alignItems: 'center',
+  //         borderWidth: selectedPkg._id == item._id ? 2 : 1,
+  //         borderColor:
+  //           selectedPkg._id == item._id ? Colors.primary : Colors.gray02,
+  //         minHeight: 80,
+  //         paddingHorizontal: 10,
+  //         borderRadius: 20,
+  //       }}
+  //       onPress={() => setSelectedPkg(item)}>
+  //       <Image
+  //         source={
+  //           item?.type == 'star'
+  //             ? ic_star
+  //             : item?.type == 'diamond'
+  //             ? ic_diamond
+  //             : item?.type == 'crown'
+  //             ? ic_crown
+  //             : null
+  //         }
+  //         style={{height: 50, width: 50}}
+  //       />
+  //       <View style={{flex: 1, marginLeft: 10}}>
+  //         <Text
+  //           style={{
+  //             fontFamily: font.bold,
+  //             fontSize: 16,
+  //             textTransform: 'capitalize',
+  //           }}>
+  //           {item.duration}
+  //         </Text>
+  //         <Text
+  //           style={{
+  //             fontFamily: font.regular,
+  //             fontSize: 12,
+  //             marginTop: 5,
+  //           }}>
+  //           {item.name}
+  //         </Text>
+  //       </View>
+
+  //       <View style={{marginLeft: 10}}>
+  //         <Text
+  //           style={{
+  //             fontFamily: font.bold,
+  //             fontSize: 18,
+  //             textTransform: 'capitalize',
+  //             color: Colors.primary,
+  //           }}>
+  //           {`$ ${formatPrice(item.price)}`}
+  //         </Text>
+  //       </View>
+  //     </Pressable>
+  //   );
+  // };
 
   return (
     <SafeAreaView style={mainStyles.MainView}>
@@ -201,7 +296,7 @@ const AllPackages = props => {
               height: 60,
               backgroundColor: Colors.primary,
               borderRadius: 30,
-              paddingHorizontal: 5,
+              paddingHorizontal: 7,
             }}>
             <View style={{height: 50, width: 50}} />
             <View

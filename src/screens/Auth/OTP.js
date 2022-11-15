@@ -21,6 +21,7 @@ import {screens} from '../../Navigation/Screens';
 import Header from '../../Components/Header';
 import Colors from '../../Utilities/Colors';
 import {CodeField, Cursor} from 'react-native-confirmation-code-field';
+import {isIphoneX, getStatusBarHeight} from 'react-native-iphone-x-helper';
 
 import showToast from '../../functions/showToast';
 import {validateEmail, checkSpace} from '../../functions/regex';
@@ -121,7 +122,15 @@ const OTP = props => {
           resizeMode="stretch"
           style={{height: height, width: '100%', backgroundColor: '#fff'}}
           source={require('../../Assets/Images/loginBackgorund.png')}>
-          <View style={{marginTop: 50}}>
+          <View
+            style={{
+              marginTop:
+                Platform.OS == 'android'
+                  ? 50
+                  : isIphoneX()
+                  ? 50
+                  : 50 - getStatusBarHeight(),
+            }}>
             <Header navigation={props.navigation} title={'Verify Email'} />
 
             <View

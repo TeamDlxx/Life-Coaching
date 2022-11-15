@@ -542,6 +542,8 @@ PODS:
     - RNFBApp
   - RNFS (2.20.0):
     - React-Core
+  - RNIap (10.1.0):
+    - React-Core
   - RNImageCropPicker (0.38.0):
     - React-Core
     - React-RCTImage
@@ -648,6 +650,7 @@ DEPENDENCIES:
   - "RNFBCrashlytics (from `../node_modules/@react-native-firebase/crashlytics`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - RNFS (from `../node_modules/react-native-fs`)
+  - RNIap (from `../node_modules/react-native-iap`)
   - RNImageCropPicker (from `../node_modules/react-native-image-crop-picker`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNShare (from `../node_modules/react-native-share`)
@@ -790,6 +793,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/messaging"
   RNFS:
     :path: "../node_modules/react-native-fs"
+  RNIap:
+    :path: "../node_modules/react-native-iap"
   RNImageCropPicker:
     :path: "../node_modules/react-native-image-crop-picker"
   RNScreens:
@@ -879,6 +884,7 @@ SPEC CHECKSUMS:
   RNFBCrashlytics: aac7fa5e9545fe7efa3c3cf0bfc89a2a8f78e3c6
   RNFBMessaging: a57c9c22d2e0a535e5090fecaa68381f0cb2e784
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
+  RNIap: b8c963312cb6e1a63c1492d92fe8310263a5524f
   RNImageCropPicker: ffbba608264885c241cbf3a8f78eb7aeeb978241
   RNScreens: 0df01424e9e0ed7827200d6ed1087ddd06c493f9
   RNShare: a5dc3b9c53ddc73e155b8cd9a94c70c91913c43c

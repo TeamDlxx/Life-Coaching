@@ -20,11 +20,9 @@ import Colors from '../../../Utilities/Colors';
 import {mainStyles} from '../../../Utilities/styles';
 import CustomImage from '../../../Components/CustomImage';
 import Share from 'react-native-share';
-const screen = Dimensions.get('screen');
 import axios from 'axios';
 import _ from 'buffer';
-import ReactNativeBlobUtil from 'react-native-blob-util';
-
+import kFormatter from '../../../functions/kFormatter';
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -113,21 +111,6 @@ const FavQuoteList = props => {
       params?.toggleBackScreenLike(val, item._id);
     }
   };
-
-  function kFormatter(num) {
-    {
-      if (num >= 1000000000) {
-        return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
-      }
-      if (num >= 1000000) {
-        return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-      }
-      if (num >= 1000) {
-        return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-      }
-      return num;
-    }
-  }
 
   //todo API's
 

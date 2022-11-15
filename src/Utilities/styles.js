@@ -1,6 +1,7 @@
 import {Platform, StyleSheet, Dimensions} from 'react-native';
 import Colors from './Colors';
 import {font} from './font';
+import {isIphoneX} from 'react-native-iphone-x-helper';
 
 const screen = Dimensions.get('screen');
 
@@ -152,7 +153,7 @@ export const FAB_style = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
-    bottom: Platform.OS == 'ios' ? 0 : 20,
+    bottom: Platform.OS == 'ios' ? (isIphoneX() ? 0 : 20) : 20,
     right: 20,
     shadowColor: '#000',
     shadowOffset: {

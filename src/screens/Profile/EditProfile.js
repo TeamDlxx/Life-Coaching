@@ -30,6 +30,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {screens} from '../../Navigation/Screens';
 import {useContext} from 'react';
 import Context from '../../Context';
+import moment from 'moment';
 // Icons
 
 import profile_placeholder from '../../Assets/Images/dummyProfile.png';
@@ -201,9 +202,12 @@ const EditProfile = props => {
                 type: image.mime,
               };
             } else if (Platform.OS == 'ios') {
+              let name = image.path.split('/');
               selectedImage = {
                 uri: image.path,
-                name: image.filename,
+                name: !!image.filename
+                  ? image.filename
+                  : name[name.length - 1],
                 type: image.mime,
               };
             }

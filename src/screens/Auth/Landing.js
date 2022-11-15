@@ -42,7 +42,7 @@ export default function Landing({navigation}) {
       <View style={_style.firstView}>
         <View style={_style.imageView}>
           <Image
-            source={require('../../Assets/Images/landing.webp')}
+            source={require('../../Assets/Images/landing.jpeg')}
             style={_style.mainImage}
           />
         </View>
@@ -77,7 +77,7 @@ export default function Landing({navigation}) {
 }
 
 const _style = StyleSheet.create({
-  mainImage: {width: '100%', height: '100%'},
+  mainImage: {width: '100%', height: '100%',},
   imageView: {flex: 1, borderRadius: 25, overflow: 'hidden'},
   firstView: {flex: 1, padding: 10},
   heading: {

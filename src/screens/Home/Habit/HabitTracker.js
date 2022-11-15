@@ -25,6 +25,7 @@ import CustomImage from '../../../Components/CustomImage';
 import Toast from 'react-native-toast-message';
 import PushNotification from 'react-native-push-notification';
 import LoginAlert from '../../../Components/LoginAlert';
+
 // import {useLoginAlert} from '../../../hooks/useLoginAlert';
 // For API's calling
 import {useContext} from 'react';
@@ -274,8 +275,10 @@ const HabitTracker = props => {
   };
 
   const refreshFlatList = () => {
-    setRefreshing(true);
-    api_myHabits();
+    if (Token) {
+      setRefreshing(true);
+      api_myHabits();
+    }
   };
 
   useEffect(() => {

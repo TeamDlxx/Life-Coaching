@@ -14,7 +14,7 @@ moment.updateLocale('en', {
   },
 });
 
-console.log('Capabilities', Capability);
+console.log('Capabilities', TrackPlayer);
 
 const App = props => {
   React.useEffect(() => {
@@ -30,6 +30,27 @@ const App = props => {
     });
     await TrackPlayer.updateOptions({
       stoppingAppPausesPlayback: true,
+      notificationCapabilities: [
+        Capability.Play,
+        Capability.Pause,
+        Capability.JumpBackward,
+        Capability.JumpForward,
+        Capability.SeekTo,
+      ],
+      capabilities: [
+        Capability.Play,
+        Capability.Pause,
+        Capability.JumpBackward,
+        Capability.JumpForward,
+        Capability.SeekTo,
+      ],
+      compactCapabilities: [
+        Capability.Play,
+        Capability.Pause,
+        // Capability.JumpBackward,
+        // Capability.JumpForward,
+        // Capability.SeekTo,
+      ],
     });
   };
 

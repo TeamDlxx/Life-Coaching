@@ -1,6 +1,11 @@
 import TrackPlayer from 'react-native-track-player';
 
 module.exports = async function () {
+  TrackPlayer.addEventListener('remote-seek', async ({position}) => {
+    console.log('seek to ' + position);
+    await TrackPlayer.seekTo(position);
+  });
+
   TrackPlayer.addEventListener('remote-play', async () => {
     await TrackPlayer.play();
   });

@@ -157,7 +157,10 @@ const TrackPlayerScreen = props => {
       id: trackItem._id,
       url: params?.from == 'down' ? trackItem?.mp3 : fileURL + trackItem?.audio,
       title: trackItem?.name,
-      artist: params?.category,
+      artist:
+        params?.from == 'fav' || params?.category == 'all'
+          ? trackItem?.category_id[0]?._id?.name
+          : params?.category,
       album: '',
       genre: '',
       artwork:

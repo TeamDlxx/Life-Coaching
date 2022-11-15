@@ -190,7 +190,6 @@ const CreateHabit = props => {
         } else {
           RemoveThisHabitScheduleNotifications(res?.habit?._id);
         }
-
         showToast(
           'Habit has been updated successfully',
           'Habit Updated',
@@ -367,11 +366,12 @@ const CreateHabit = props => {
         localImage: img.path,
       });
     } else if (Platform.OS == 'ios') {
+      let name = img.path.split('/');
       updateHabit({
         image: {
           uri: img.path,
           type: img.mime,
-          name: img.filename,
+          name: !!img.filename ? img.filename : name[name.length - 1],
         },
         localImage: img.path,
       });
@@ -718,7 +718,7 @@ const CreateHabit = props => {
         isVisible={targetDate.showModal}
         mode="date"
         date={moment(targetDate.date).toDate()}
-        display={Platform.OS == 'android' ? 'default' : 'inline'}
+        display={Platform.OS == 'android' ? 'default' : 'spinner'}
         is24Hour={false}
         minimumDate={moment().toDate()}
         onConfirm={val =>

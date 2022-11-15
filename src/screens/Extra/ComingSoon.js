@@ -84,6 +84,7 @@ const ComingSoon = props => {
               justifyContent: 'center',
             }}>
             <Pressable
+              onPress={() => props.navigation.goBack()}
               style={{
                 backgroundColor: Colors.primary,
                 paddingHorizontal: 15,

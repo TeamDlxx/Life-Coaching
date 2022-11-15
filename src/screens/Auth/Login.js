@@ -25,6 +25,7 @@ import {font} from '../../Utilities/font';
 import {screens} from '../../Navigation/Screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging, {firebase} from '@react-native-firebase/messaging';
+import {isIphoneX, getStatusBarHeight} from 'react-native-iphone-x-helper';
 
 import showToast from '../../functions/showToast';
 import {validateEmail, checkSpace} from '../../functions/regex';
@@ -228,7 +229,12 @@ const Login = props => {
             height: 40,
             width: 40,
             borderRadius: 25,
-            marginTop: 50,
+            marginTop:
+              Platform.OS == 'android'
+                ? 50
+                : isIphoneX()
+                ? 50
+                : 50 - getStatusBarHeight(),
             alignItems: 'center',
             justifyContent: 'center',
             position: 'absolute',

@@ -25,6 +25,7 @@ import _ from 'buffer';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import LoginAlert from '../../../Components/LoginAlert';
 import RNFS from 'react-native-fs';
+import kFormatter from '../../../functions/kFormatter';
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -135,21 +136,6 @@ const List = props => {
   };
 
  
-
-  function kFormatter(num) {
-    {
-      if (num >= 1000000000) {
-        return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
-      }
-      if (num >= 1000000) {
-        return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-      }
-      if (num >= 1000) {
-        return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-      }
-      return num;
-    }
-  }
 
   //todo API's
 
@@ -357,7 +343,7 @@ const List = props => {
         <Loader enable={loading} />
         <View style={{flex: 1}}>
           <FlatList
-            contentContainerStyle={{marginTop: 10, marginBottom: 10}}
+            contentContainerStyle={{marginTop: 10, paddingBottom: 10}}
             showsVerticalScrollIndicator={false}
             keyExtractor={(item, index) => {
               return index.toString();
