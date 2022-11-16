@@ -183,19 +183,7 @@ const Home = props => {
         <Pressable
           // disabled={true}
           onPress={() => {
-            const arr = [
-              {id: 1, chat: false},
-              {id: 2, chat: true},
-              {id: 3, chat: false},
-              {id: 4, chat: true},
-            ];
-
-            arr.sort((a, b) => {
-              if (a.chat == true) return -1;
-              if (a.chat == false) return 1;
-            });
-
-            console.log('arr', arr);
+            props.navigation.navigate(screens.subscription)
           }}
           style={{
             height: 50,

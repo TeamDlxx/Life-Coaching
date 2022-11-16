@@ -97,8 +97,6 @@ const Signup = props => {
     let t_password = password;
     if (t_name == '') {
       showToast('Please enter your name', 'Alert');
-    } else if (!isFirstLetterAlphabet(t_name)) {
-      showToast('First letter of name must be an alphabet', 'Alert');
     } else if (t_email == '') {
       showToast('Please enter your email', 'Alert');
     } else if (validateEmail(t_email) == '') {

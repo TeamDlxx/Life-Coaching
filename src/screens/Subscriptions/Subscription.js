@@ -24,6 +24,7 @@ import Modal from 'react-native-modal';
 import CustomButton from '../../Components/CustomButton';
 import {useContext} from 'react';
 import Context from '../../Context';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 
 const Subscription = props => {
   const {Token} = useContext(Context);
@@ -146,6 +147,36 @@ const Subscription = props => {
       </View>
     );
   };
+
+  const dirs = ReactNativeBlobUtil.fs.dirs;
+
+  return (
+    <SafeAreaView style={mainStyles.MainView}>
+      <StatusBar
+        backgroundColor={Colors.background}
+        barStyle={'dark-content'}
+      />
+      <Header titleAlignLeft title="RN DIR" navigation={props.navigation} />
+      <View style={{flex: 1}}>
+        {Object.keys(dirs).map(x => (
+          <View
+            style={{
+              flexDirection: 'row',
+              borderWidth: 1,
+              borderColor: Colors.black,
+              alignItems: 'center',
+            }}>
+            <View style={{flex: 1}}>
+              <Text>{x}</Text>
+            </View>
+            <View style={{flex: 2, borderLeftWidth: 1,padding:5}}>
+              <Text>{dirs[x]}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+    </SafeAreaView>
+  );
 
   return (
     <SafeAreaView style={mainStyles.MainView}>

@@ -68,8 +68,14 @@ const HabitDetail = props => {
   const updateNote = updation => setNote({...note, ...updation});
 
   const onPreviousWeek = () => {
-    setCurrentWeek(moment(currentWeek).subtract(1, 'week'));
-    // makeDaysArray();
+    if (
+      moment(currentWeek).startOf('week').valueOf() >
+      moment(habit?.createdAt).startOf('week').valueOf()
+    ) {
+      setCurrentWeek(moment(currentWeek).subtract(1, 'week'));
+    } else {
+      showToast('Your habit start from this week', 'Alert');
+    }
   };
 
   useEffect(() => {
@@ -77,7 +83,19 @@ const HabitDetail = props => {
   }, [currentWeek]);
 
   const onNextWeek = () => {
-    setCurrentWeek(moment(currentWeek).add(1, 'week'));
+    if (
+      moment(currentWeek).endOf('week').valueOf() <
+        moment(habit?.target_date).endOf('week').valueOf() &&
+      moment(currentWeek).endOf('week').valueOf() <= moment().valueOf()
+    ) {
+      setCurrentWeek(moment(currentWeek).add(1, 'week'));
+    } else if (
+      moment(currentWeek).endOf('week').valueOf() <= moment().valueOf()
+    ) {
+      showToast('This is last week of your habit', 'Alert');
+    } else {
+      showToast("You can't go to future week ", 'Alert');
+    }
     // makeDaysArray();
   };
 
@@ -193,6 +211,7 @@ const HabitDetail = props => {
           <View style={{marginTop: 10}}>
             <CustomMultilineTextInput
               lable={note.update == false ? 'Add Note' : 'Edit Note'}
+              subLabel={'(Optional)'}
               placeholder={'Please enter a note for completing this Habit'}
               lableBold
               lableColor={Colors.black}
@@ -509,7 +528,9 @@ const HabitDetail = props => {
         />
         <View style={{flex: 1}}>
           {habit != null && (
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{paddingBottom: 30}}>
               <View style={{flex: 1}}>
                 <View
                   style={{
@@ -645,19 +666,23 @@ const HabitDetail = props => {
                   {/* Notes */}
 
                   <View style={HabitDetail_style.ItemView}>
+                    <Text style={HabitDetail_style.lable}>
+                      Click the arrow to switch weeks and days to complete the
+                      habit.{' '}
+                    </Text>
                     <View
                       style={{
                         flexDirection: 'row',
                         alignItems: 'center',
-                        marginTop: 10,
+                        // marginTop: 10,
                       }}>
                       <Pressable
-                        disabled={
-                          !(
-                            moment(currentWeek).startOf('week').valueOf() >
-                            moment(habit?.createdAt).startOf('week').valueOf()
-                          )
-                        }
+                        // disabled={
+                        //   !(
+                        //     moment(currentWeek).startOf('week').valueOf() >
+                        //     moment(habit?.createdAt).startOf('week').valueOf()
+                        //   )
+                        // }
                         onPress={onPreviousWeek}
                         style={{
                           height: 40,
@@ -678,7 +703,7 @@ const HabitDetail = props => {
                               moment(currentWeek).startOf('week').valueOf() >
                               moment(habit?.createdAt).startOf('week').valueOf()
                                 ? Colors.black
-                                : Colors.placeHolder,
+                                : Colors.gray05,
                           }}
                         />
                       </Pressable>
@@ -715,16 +740,16 @@ const HabitDetail = props => {
                           marginVertical: 10,
                         }}>
                         <Pressable
-                          disabled={
-                            !(
-                              moment(currentWeek).endOf('week').valueOf() <
-                                moment(habit?.target_date)
-                                  .endOf('week')
-                                  .valueOf() &&
-                              moment(currentWeek).endOf('week').valueOf() <=
-                                moment().valueOf()
-                            )
-                          }
+                          // disabled={
+                          //   !(
+                          //     moment(currentWeek).endOf('week').valueOf() <
+                          //       moment(habit?.target_date)
+                          //         .endOf('week')
+                          //         .valueOf() &&
+                          //     moment(currentWeek).endOf('week').valueOf() <=
+                          //       moment().valueOf()
+                          //   )
+                          // }
                           onPress={onNextWeek}
                           style={{
                             height: 40,
@@ -745,13 +770,12 @@ const HabitDetail = props => {
                                 moment(currentWeek).endOf('week').valueOf() <=
                                   moment().valueOf()
                                   ? Colors.black
-                                  : Colors.placeHolder,
+                                  : Colors.gray05,
                             }}
                           />
                         </Pressable>
                       </View>
                     </View>
-
                     <View style={{flexDirection: 'row'}}>
                       {currentWeekDays.map((x, i) => {
                         if (
@@ -890,7 +914,15 @@ const HabitDetail = props => {
                         }
                       })}
                     </View>
-                    <View style={{marginVertical: 10}}>
+                    <Pressable
+                      onPress={onViewAllNotes}
+                      style={{
+                        marginVertical: 10,
+                        // backgroundColor: Colors.primary,
+                        // borderRadius: 10,
+                        // height: 50,
+                        // justifyContent: 'center',
+                      }}>
                       <Text
                         style={{
                           color: Colors.black,
@@ -900,23 +932,36 @@ const HabitDetail = props => {
                         }}>
                         Notes
                       </Text>
-                    </View>
-
-                    <Pressable
-                      onPress={onViewAllNotes}
-                      style={{
-                        alignSelf: 'flex-end',
-                        padding: 5,
-                      }}>
-                      <Text
-                        style={{
-                          color: Colors.black,
-                          fontSize: 12,
-                          fontFamily: font.bold,
-                        }}>
-                        View All
-                      </Text>
                     </Pressable>
+                    {checkNotesforthisweek(habit.notes) != 0 && (
+                      <Pressable
+                        onPress={onViewAllNotes}
+                        style={{
+                          alignSelf: 'flex-end',
+                          // padding: 5,
+                          // backgroundColor: Colors.primary,
+                          // borderRadius: 10,
+                          // marginTop: 10,
+                          // padding: 8,
+                          borderBottomWidth: 1,
+                          borderBottomColor: Colors.black,
+                          // paddingVertical: 3,
+                        }}>
+                        <Text
+                          style={{
+                            color: Colors.black,
+                            fontSize: 12,
+                            fontFamily: font.medium,
+                            includeFontPadding: false,
+                          }}>
+                          {/* {`View other ${
+                            habit.notes.filter(x => x.note_text != '').length
+                          } Notes`} */}
+                          View All (
+                          {habit.notes.filter(x => x.note_text != '').length})
+                        </Text>
+                      </Pressable>
+                    )}
                     <View style={{}}>
                       {checkNotesforthisweek(habit.notes).length == 0 && (
                         <EmptyView
@@ -927,6 +972,33 @@ const HabitDetail = props => {
                           }}
                           noSubtitle
                           title="No Notes for this week"
+                          subView={
+                            habit.notes.filter(x => x.note_text != '').length !=
+                              0 && (
+                              <Pressable
+                                onPress={onViewAllNotes}
+                                style={{
+                                  // padding: 5,
+                                  backgroundColor: Colors.primary,
+                                  borderRadius: 10,
+                                  marginTop: 10,
+                                  padding: 8,
+                                }}>
+                                <Text
+                                  style={{
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontFamily: font.bold,
+                                    includeFontPadding: false,
+                                  }}>
+                                  {`View other ${
+                                    habit.notes.filter(x => x.note_text != '')
+                                      .length
+                                  } Notes`}
+                                </Text>
+                              </Pressable>
+                            )
+                          }
                         />
                       )}
                       <>

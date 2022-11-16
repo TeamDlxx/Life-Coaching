@@ -23,6 +23,7 @@ import Share from 'react-native-share';
 import axios from 'axios';
 import _ from 'buffer';
 import kFormatter from '../../../functions/kFormatter';
+import ImageZoomer from '../../../Components/ImageZoomer';
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -50,6 +51,7 @@ const FavQuoteList = props => {
   const {Token, downloadQuote} = useContext(Context);
   const [QuoteList, setQuoteList] = useState([]);
   const [loading, setisLoading] = useState(false);
+  const [modalImage, setModalImage] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isSharing, setIsSharing] = useState(null);
   const [PGN, updatePGN] = useState({
@@ -216,6 +218,14 @@ const FavQuoteList = props => {
     };
   }, []);
 
+  const showImageModal = image => {
+    setModalImage(image);
+  };
+
+  const hideImageModal = () => {
+    setModalImage(null);
+  };
+
   const flatItemView = ({item, index}) => {
     return (
       <View
@@ -227,13 +237,13 @@ const FavQuoteList = props => {
           borderWidth: 1,
           backgroundColor: Colors.white,
         }}>
-        <View>
+        <Pressable onPress={() => showImageModal(item?.images?.large)}>
           <CustomImage
             resizeMode={'cover'}
             source={{uri: fileURL + item?.images?.large}}
             style={{width: '100%', height: undefined, aspectRatio: 1}}
           />
-        </View>
+        </Pressable>
 
         <View style={{paddingHorizontal: 5, paddingVertical: 10}}>
           <Text style={{fontSize: 14, fontFamily: font.regular}}>
@@ -321,7 +331,7 @@ const FavQuoteList = props => {
     <SafeAreaView style={mainStyles.MainView}>
       <StatusBar
         barStyle={'dark-content'}
-        backgroundColor={Colors.background}
+        backgroundColor={!!modalImage ? Colors.black : Colors.background}
       />
       <Header
         titleAlignLeft
@@ -351,6 +361,11 @@ const FavQuoteList = props => {
           />
         </View>
       </View>
+      <ImageZoomer
+        closeModal={hideImageModal}
+        visible={!!modalImage}
+        url={modalImage}
+      />
     </SafeAreaView>
   );
 };

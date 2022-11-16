@@ -14,7 +14,7 @@ moment.updateLocale('en', {
   },
 });
 
-console.log('Capabilities', TrackPlayer);
+console.log('Capabilities', Capability);
 
 const App = props => {
   React.useEffect(() => {

@@ -661,6 +661,7 @@ const HabitTracker = props => {
           <View style={{marginTop: 10}}>
             <CustomMultilineTextInput
               lable={'Add Note'}
+              subLabel={'(Optional)'}
               placeholder={'Please enter a note for completing this Habit'}
               lableBold
               lableColor={Colors.black}

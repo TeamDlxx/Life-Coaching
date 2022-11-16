@@ -8,7 +8,8 @@ import showToast from '../functions/showToast';
 import moment from 'moment';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import axios from 'axios';
-import {Platform} from 'react-native';
+import {Platform, PermissionsAndroid, DevSettings} from 'react-native';
+import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 
 const ContextWrapper = props => {
   const [Token, setToken] = useState(null);
@@ -146,8 +147,24 @@ const ContextWrapper = props => {
     }
   };
 
-  const downloadQuote = async image => {
-    console.log('RNFS', RNFS);
+  const downloadQuote1 = async image => {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        {
+          title: 'Storage Permission Required',
+          message: 'App needs access to your storage to download Photos',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        // Once user grant the permission start downloading
+        console.log('Storage Permission Granted.');
+      } else {
+        // If permission denied then show alert
+        showToast('Storage Permission Not Granted', 'Permission Denied');
+        return;
+      }
+    }
     let dir;
     if (Platform.OS == 'android') {
       dir = RNFS.PicturesDirectoryPath;
@@ -155,20 +172,15 @@ const ContextWrapper = props => {
       dir = RNFS.DocumentDirectoryPath;
     }
 
-    if (!(await RNFS.exists(dir + '/Lifecoaching/'))) {
-      await RNFS.mkdir(dir + '/Lifecoaching/');
-    }
+    // if (!(await RNFS.exists(dir + '/Lifecoaching/'))) {
+    //   await RNFS.mkdir(dir + '/Lifecoaching/');
+    // }
 
-    let ext = await image.split('.');
+    let ext = await image.split('.').pop();
     let imagePath =
       // 'file://' +
-      dir +
-      '/Lifecoaching/' +
-      'quote-' +
-      moment().valueOf() +
-      '.' +
-      ext[ext.length - 1];
-
+      dir + '/quote_' + moment().valueOf() + '.' + ext;
+    console.log('imagePath', imagePath);
     try {
       return RNFS.downloadFile({
         fromUrl: fileURL + image,
@@ -188,6 +200,147 @@ const ContextWrapper = props => {
         });
     } catch (e) {
       showToast('No internet connection', 'Error');
+    }
+  };
+
+  const downloadQuote2 = async image_URL => {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        {
+          title: 'Storage Permission Required',
+          message: 'App needs access to your storage to download Photos',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        // Once user grant the permission start downloading
+        console.log('Storage Permission Granted.');
+      } else {
+        // If permission denied then show alert
+        alert('Storage   Not Granted');
+        return;
+      }
+    }
+    const {config, fs} = ReactNativeBlobUtil;
+    console.log('fs', fs);
+    let ext = await image_URL.split('.')[image_URL.split('.').length - 1];
+    let PictureDir = fs.dirs.DownloadDir;
+    console.log(await fs.isDir(PictureDir), 'Before isDir');
+
+    if (!(await fs.isDir(PictureDir))) {
+      await fs.mkdir(PictureDir);
+    }
+    console.log(await fs.isDir(PictureDir), 'After isDir');
+    console.log('ext', ext);
+    let options = {
+      fileCache: true,
+      addAndroidDownloads: {
+        //Related to the Android only
+        useDownloadManager: true,
+        notification: true,
+        path: PictureDir + '/image_' + moment().valueOf() + '.' + ext,
+        description: 'Image',
+      },
+    };
+    let ext1;
+    if (ext == 'jpg') {
+      ext1 = 'jpeg';
+    } else {
+      ext1 = ext;
+    }
+    config(options)
+      .fetch('GET', fileURL + image_URL)
+      .then(res => {
+        //Showing alert after successful downloading
+        console.log('res -> ', JSON.stringify(res));
+        showToast(
+          'Quote has been saved to your storage',
+          'Quote Downloaded',
+          'success',
+        );
+      });
+  };
+
+  const downloadQuote = async image => {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        {
+          title: 'Storage Permission Required',
+          message: 'App needs access to your storage to download Photos',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        // Once user grant the permission start downloading
+        console.log('Storage Permission Granted.');
+      } else {
+        // If permission denied then show alert
+        alert('Storage   Not Granted');
+        return;
+      }
+    }
+    console.log('ReactNativeBlobUtil ==>', ReactNativeBlobUtil);
+    let imgUrl = fileURL + image;
+    console.log(imgUrl, 'imgUrl');
+    let newImgUri = imgUrl.lastIndexOf('/');
+    let ext = imgUrl.split('.').pop();
+    let imageName = '/image_' + imgUrl.split('/').pop();
+    console.log('ext', ext);
+    console.log('newImgUri', newImgUri);
+    console.log('imageName', imageName);
+    let dirs = ReactNativeBlobUtil.fs.dirs;
+    console.log('dirs ==>', dirs);
+    let path =
+      Platform.OS === 'ios'
+        ? dirs['MainBundleDir'] + imageName
+        : dirs.PictureDir + imageName;
+
+    if (Platform.OS == 'android') {
+      ReactNativeBlobUtil.config({
+        fileCache: true,
+        appendExt: ext,
+        indicator: true,
+        IOSBackgroundTask: true,
+        path: path,
+
+        addAndroidDownloads: {
+          useDownloadManager: true,
+          notification: true,
+          path: path,
+          description: 'Image',
+          mediaScannable: true,
+        },
+      })
+        .fetch('GET', imgUrl)
+        .then(async res => {
+          console.log(res, 'end downloaded');
+          let pathnew =
+            await ReactNativeBlobUtil.MediaCollection.createMediafile(
+              {
+                name: imageName,
+                parentFolder: 'Pictures',
+                mimeType: `image/${ext1}`,
+              },
+              'Download',
+            );
+          await ReactNativeBlobUtil.MediaCollection.writeToMediafile(
+            pathnew,
+            res.path(),
+          );
+          showToast(
+            'Quote has been saved to your storage',
+            'Quote Downloaded',
+            'success',
+          );
+        });
+    } else {
+      CameraRoll.save(imgUrl);
+      // alert('File saved into gallery.');
+      showToast(
+        'Quote has been saved to your storage',
+        'Quote Downloaded',
+        'success',
+      );
     }
   };
 

@@ -17,7 +17,7 @@ import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
 import {SwipeListView} from 'react-native-swipe-list-view';
 import * as Progress from 'react-native-progress';
-import moment, {normalizeUnits} from 'moment';
+import moment from 'moment';
 import CustomImage from '../../../Components/CustomImage';
 // fro API calling
 import {useContext} from 'react';
@@ -38,7 +38,6 @@ const AllHabits = props => {
   const [refreshing, setRefreshing] = useState(false);
   const [currentWeek, setCurrentWeekDays] = useState([]);
 
-  
   const makeDaysArray = () => {
     let selectedWeekDays = [];
     for (let i = 0; i < 7; i++) {

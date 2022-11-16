@@ -26,6 +26,7 @@ import ReactNativeBlobUtil from 'react-native-blob-util';
 import LoginAlert from '../../../Components/LoginAlert';
 import RNFS from 'react-native-fs';
 import kFormatter from '../../../functions/kFormatter';
+import ImageZoomer from '../../../Components/ImageZoomer';
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -49,6 +50,7 @@ const limit = 10;
 const List = props => {
   const {Token, downloadQuote} = useContext(Context);
   const [QuoteList, setQuoteList] = useState([]);
+  const [modalImage, setModalImage] = useState(null);
   const [isSharing, setIsSharing] = useState(null);
   const [loading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -135,8 +137,6 @@ const List = props => {
     }
   };
 
- 
-
   //todo API's
 
   const call_quoteListAPI = () => {
@@ -216,6 +216,14 @@ const List = props => {
     }
   };
 
+  const showImageModal = image => {
+    setModalImage(image);
+  };
+
+  const hideImageModal = () => {
+    setModalImage(null);
+  };
+
   useEffect(() => {
     call_quoteListAPI();
     return () => {
@@ -234,20 +242,19 @@ const List = props => {
           borderWidth: 1,
           backgroundColor: Colors.white,
         }}>
-        <View>
+        <Pressable onPress={() => showImageModal(item?.images?.large)}>
           <CustomImage
             resizeMode={'cover'}
             source={{uri: fileURL + item?.images?.large}}
             style={{width: '100%', height: undefined, aspectRatio: 1}}
           />
-        </View>
+        </Pressable>
 
         <View style={{paddingHorizontal: 5, paddingVertical: 10}}>
           <Text style={{fontSize: 14, fontFamily: font.regular}}>
             {item?.description}
           </Text>
         </View>
-
         <View
           style={{
             flexDirection: 'row',
@@ -329,8 +336,9 @@ const List = props => {
     <SafeAreaView style={mainStyles.MainView}>
       <StatusBar
         barStyle={'dark-content'}
-        backgroundColor={Colors.background}
+        backgroundColor={!!modalImage ? Colors.black : Colors.background}
       />
+
       <Header
         titleAlignLeft
         rightIcon={favList}
@@ -362,6 +370,11 @@ const List = props => {
           />
         </View>
       </View>
+      <ImageZoomer
+        closeModal={hideImageModal}
+        visible={!!modalImage}
+        url={modalImage}
+      />
     </SafeAreaView>
   );
 };

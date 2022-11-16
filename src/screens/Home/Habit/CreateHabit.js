@@ -141,8 +141,6 @@ const CreateHabit = props => {
 
     if (t_habitName == '') {
       showToast('Please enter Habit name', 'Alert');
-    } else if (!isFirstLetterAlphabet(t_habitName)) {
-      showToast('Habit name must start with alphabet [A-Z,a-z]', 'Alert');
     } else if (t_type == null) {
       showToast('Please select type of frequency', 'Alert');
     } else if (!t_frequency.some(x => x.status == true)) {
@@ -241,8 +239,6 @@ const CreateHabit = props => {
       showToast('Please select an image', 'Alert');
     } else if (t_habitName == '') {
       showToast('Please enter Habit name', 'Alert');
-    } else if (!isFirstLetterAlphabet(t_habitName)) {
-      showToast('Habit name must start with alphabet [A-Z,a-z]', 'Alert');
     } else if (t_type == null) {
       showToast('Please select type of frequency', 'Alert');
     } else if (!t_frequency.some(x => x.status == true)) {

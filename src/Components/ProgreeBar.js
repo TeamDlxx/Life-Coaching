@@ -4,6 +4,7 @@ import {Text, View, StyleSheet} from 'react-native';
 import Slider from '@react-native-community/slider';
 import {font} from '../Utilities/font';
 import Colors from '../Utilities/Colors';
+import moment from 'moment';
 
 const TrackSlider = props => {
   const [duration, setDuration] = useState(0);
@@ -11,32 +12,26 @@ const TrackSlider = props => {
   const progress = useProgress();
 
   useEffect(() => {
-    let duration = progress.duration;
+    let duration = parseInt(progress.duration);
     let position = progress.position;
-    setDuration(parseInt(duration));
-    setPosition(parseInt(position));
+    setDuration(duration);
+    setPosition(position);
+    console.log('duration', duration);
+    console.log('position', position);
   }, [progress]);
 
   const formatTime = timeInSec => {
-    if (
-      (duration != 0 || props?.time != 0) &&
-      position !== 0 &&
-      (parseInt(duration) == parseInt(position) ||
-        parseInt(props?.time) == parseInt(position))
-    ) {
-      props.resetPlayer();
-    }
+    return moment(timeInSec * 1000).format('mm:ss');
+    // let mins = parseInt(Math.floor(timeInSec / 60));
+    // let secs = parseInt(Math.ceil((timeInSec % 60) * 100) / 100);
+    // if (mins < 10) {
+    //   mins = '0' + mins;
+    // }
+    // if (secs < 10) {
+    //   secs = '0' + secs;
+    // }
 
-    let mins = parseInt(timeInSec / 60);
-    let secs = parseInt(Math.ceil((timeInSec % 60) * 100) / 100);
-    if (mins < 10) {
-      mins = '0' + mins;
-    }
-    if (secs < 10) {
-      secs = '0' + secs;
-    }
-
-    return mins + ':' + secs;
+    // return mins + ':' + secs;
   };
 
   return (
@@ -61,7 +56,7 @@ const TrackSlider = props => {
         }}
         tapToSeek={true}
         animationType="timing"
-        maximumValue={props?.time}
+        maximumValue={duration}
         onValueChange={val => {
           // setIsSeeking(true);
           // setSeek(val);
@@ -77,7 +72,7 @@ const TrackSlider = props => {
         </View>
 
         <View style={{flex: 1, alignItems: 'flex-end'}}>
-          <Text style={styles.duration}>{formatTime(props?.time)}</Text>
+          <Text style={styles.duration}>{formatTime(duration)}</Text>
         </View>
       </View>
     </View>

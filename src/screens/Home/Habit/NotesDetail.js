@@ -146,6 +146,7 @@ const NotesDetail = props => {
             <CustomMultilineTextInput
               lable={note.update == false ? 'Add Note' : 'Edit Note'}
               placeholder={'Please enter a note for completing this Habit'}
+              subLabel={'(Optional)'}
               lableBold
               lableColor={Colors.black}
               value={note.text}

@@ -61,6 +61,16 @@ export function CustomMultilineTextInput(props) {
             letterSpacing: 0.5,
           }}>
           {props.lable}
+          {!!props.subLabel && (
+            <Text
+              style={{
+                fontSize: 12,
+                fontFamily: font.regular,
+                letterSpacing: 0.8,
+              }}>
+              {' ' + props.subLabel}
+            </Text>
+          )}
         </Text>
       </View>
       <View

@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Image,
   StatusBar,
+  Dimensions,
 } from 'react-native';
 import React, {useRef, useEffect} from 'react';
 import AppIntroSlider from 'react-native-app-intro-slider';
@@ -14,6 +15,8 @@ import {font} from '../../Utilities/font';
 import {screens} from '../../Navigation/Screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SplashScreen from 'react-native-splash-screen';
+
+const screen = Dimensions.get('screen');
 
 const Onboarding = ({navigation}) => {
   const slider = useRef();
@@ -144,8 +147,13 @@ const _styleOB = StyleSheet.create({
     textAlign: 'center',
   },
   image: {
-    height: 350,
-    width: 350,
-    marginTop: 50,
+    height: screen.width * 0.8,
+    width: screen.width * 0.8,
+    marginTop: screen.height * 0.1,
   },
+  // image: {
+  //   height: 350,
+  //   width: 350,
+  //   marginTop:50,
+  // },
 });

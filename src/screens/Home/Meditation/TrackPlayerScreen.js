@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Colors from '../../../Utilities/Colors';
-import TrackPlayer from 'react-native-track-player';
+import TrackPlayer, {RepeatMode} from 'react-native-track-player';
 import ProgressBar from '../../../Components/ProgreeBar';
 import {_styleTrackPlayer} from '../../../Utilities/styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -36,6 +36,7 @@ import ic_repeat from '../../../Assets/TrackPlayer/repeat.png';
 import ic_download from '../../../Assets/TrackPlayer/ic_download3.png';
 import ic_share from '../../../Assets/TrackPlayer/share.png';
 import ic_tick from '../../../Assets/Icons/tick.png';
+import {duration} from 'moment';
 
 const TrackPlayerScreen = props => {
   const {navigation} = props;
@@ -50,9 +51,14 @@ const TrackPlayerScreen = props => {
   const [isfav, setIsfav] = useState(params?.item?.is_favourite);
   const [downloaded, setDownloaded] = useState(null);
 
+  console.log('tracks', TrackPlayer);
   const moveTo = async val => {
     TrackPlayer.seekTo(val);
-    setPlayIcon(pauseTrack);
+    let isPlaying = await TrackPlayer.getState();
+    // if (isPlaying != 2 || isPlaying != 'playing') {
+    //   setPlayIcon(pauseTrack);
+    //   TrackPlayer.play();
+    // }
   };
 
   const downloading = () => {
@@ -146,8 +152,14 @@ const TrackPlayerScreen = props => {
     }
   };
 
-  const toggleRepeat = () => {
+  const toggleRepeat = async () => {
     let val = !repeat;
+    if (val) {
+      await TrackPlayer.setRepeatMode(1);
+    } else {
+      await TrackPlayer.setRepeatMode(0);
+    }
+    console.log('RepeatMode', await TrackPlayer.getRepeatMode());
     setRepeat(val);
   };
 
@@ -200,11 +212,23 @@ const TrackPlayerScreen = props => {
   }, [trackItem]);
 
   useEffect(() => {
-    TrackPlayer.addEventListener('playback-state', ({state}) => {
+    TrackPlayer.addEventListener('playback-state', async ({state}) => {
       console.log('state: ' + state);
-      if (state == 'ready' || state == 'playing' || state == 2) {
+      if (state == 'playing' || state == 2) {
         setloading(false);
+        setPlayIcon(pauseTrack);
       }
+      if (state == 'paused' || state == 3) {
+        setPlayIcon(playTrack);
+      }
+      if (state == 'stopped' || state == 4) {
+        setPlayIcon(playTrack);
+      }
+    });
+
+    TrackPlayer.addEventListener("remote-play", async ({state}) => {
+      console.log('state: ' + state);
+     
     });
     return () => {
       TrackPlayer.reset();
@@ -212,12 +236,25 @@ const TrackPlayerScreen = props => {
   }, []);
 
   const changeStatus = async () => {
-    if (playIcon == playTrack) {
+    let duration = parseInt(await TrackPlayer.getDuration());
+    let position = parseInt(await TrackPlayer.getPosition());
+    let position1 = parseInt(await TrackPlayer.getPosition()) + 1;
+    let isPlaying = await TrackPlayer.getState();
+    if (
+      (isPlaying != 2 || isPlaying != 'playing') &&
+      (duration == position1 || duration == position)
+    ) {
+      TrackPlayer.seekTo(0);
       TrackPlayer.play();
       setPlayIcon(pauseTrack);
     } else {
-      TrackPlayer.pause();
-      setPlayIcon(playTrack);
+      if (playIcon == playTrack) {
+        TrackPlayer.play();
+        setPlayIcon(pauseTrack);
+      } else {
+        TrackPlayer.pause();
+        setPlayIcon(playTrack);
+      }
     }
   };
 
