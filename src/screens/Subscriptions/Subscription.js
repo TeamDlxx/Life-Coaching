@@ -158,22 +158,24 @@ const Subscription = props => {
       />
       <Header titleAlignLeft title="RN DIR" navigation={props.navigation} />
       <View style={{flex: 1}}>
-        {Object.keys(dirs).map(x => (
-          <View
-            style={{
-              flexDirection: 'row',
-              borderWidth: 1,
-              borderColor: Colors.black,
-              alignItems: 'center',
-            }}>
-            <View style={{flex: 1}}>
-              <Text>{x}</Text>
+        <ScrollView>
+          {Object.keys(dirs).map(x => (
+            <View
+              style={{
+                flexDirection: 'row',
+                borderWidth: 1,
+                borderColor: Colors.black,
+                alignItems: 'center',
+              }}>
+              <View style={{flex: 1}}>
+                <Text>{x}</Text>
+              </View>
+              <View style={{flex: 2, borderLeftWidth: 1, padding: 5}}>
+                <Text>{dirs[x]}</Text>
+              </View>
             </View>
-            <View style={{flex: 2, borderLeftWidth: 1,padding:5}}>
-              <Text>{dirs[x]}</Text>
-            </View>
-          </View>
-        ))}
+          ))}
+        </ScrollView>
       </View>
     </SafeAreaView>
   );

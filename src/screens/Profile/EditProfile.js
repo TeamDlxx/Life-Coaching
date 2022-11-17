@@ -205,9 +205,7 @@ const EditProfile = props => {
               let name = image.path.split('/');
               selectedImage = {
                 uri: image.path,
-                name: !!image.filename
-                  ? image.filename
-                  : name[name.length - 1],
+                name: !!image.filename ? image.filename : name[name.length - 1],
                 type: image.mime,
               };
             }
@@ -342,33 +340,35 @@ const EditProfile = props => {
                 Gallery
               </Text>
             </Pressable>
-            <Pressable
-              onPress={() => {
-                setUser({imageURI: '', selectedImage: null});
-                setModalVisibility(false);
-              }}
-              style={{alignItems: 'center', marginLeft: 30}}>
-              <View
-                style={{
-                  backgroundColor: '#BDC3C744',
-                  height: 50,
-                  width: 50,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: 25,
-                }}>
-                <Image source={ic_trash} style={{height: 20, width: 20}} />
-              </View>
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontFamily: font.medium,
-                  letterSpacing: 0.5,
-                  marginTop: 5,
-                }}>
-                Remove
-              </Text>
-            </Pressable>
+            {(user?.imageURI != '' || user?.selectedImage != null) && (
+              <Pressable
+                onPress={() => {
+                  setUser({imageURI: '', selectedImage: null});
+                  setModalVisibility(false);
+                }}
+                style={{alignItems: 'center', marginLeft: 30}}>
+                <View
+                  style={{
+                    backgroundColor: '#BDC3C744',
+                    height: 50,
+                    width: 50,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 25,
+                  }}>
+                  <Image source={ic_trash} style={{height: 20, width: 20}} />
+                </View>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontFamily: font.medium,
+                    letterSpacing: 0.5,
+                    marginTop: 5,
+                  }}>
+                  Remove
+                </Text>
+              </Pressable>
+            )}
           </View>
         </View>
       </Modal>

@@ -37,6 +37,7 @@ import {fileURL} from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
 
 const ic_nodata = require('../../../Assets/Icons/empty-box.png');
+const ic_Hplaceholder = require('../../../Assets/Icons/h_placeholder1.png');
 
 const HabitTracker = props => {
   // const checkLogin = useLoginAlert();
@@ -392,13 +393,34 @@ const HabitTracker = props => {
             borderWidth: 1,
             borderColor: Colors.gray02,
           }}>
-          <CustomImage
-            source={{uri: fileURL + item?.images?.small}}
-            style={{height: 50, width: 50}}
-            indicatorProps={{
-              color: Colors.primary,
-            }}
-          />
+          {item?.images ? (
+            <CustomImage
+              source={{uri: fileURL + item?.images?.small}}
+              style={{height: 50, width: 50}}
+              indicatorProps={{
+                color: Colors.primary,
+              }}
+            />
+          ) : (
+            <View
+              style={{
+                height: '100%',
+                width: '100%',
+                justifyContent: 'center',
+                alignItems: 'center',
+                overflow: 'hidden',
+                backgroundColor: Colors.background,
+              }}>
+              <Image
+                source={ic_Hplaceholder}
+                style={{
+                  height: '50%',
+                  width: '50%',
+                  tintColor: Colors.placeHolder,
+                }}
+              />
+            </View>
+          )}
         </View>
         <View style={{marginLeft: 10, flex: 1}}>
           <Text

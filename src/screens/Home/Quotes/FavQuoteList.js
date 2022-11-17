@@ -289,7 +289,7 @@ const FavQuoteList = props => {
 
           <TouchableOpacity
             onPress={() => {
-              downloadQuote(item?.images?.large);
+              downloadQuote(item?.images?.large, item?._id);
             }}
             style={{
               flex: 1,

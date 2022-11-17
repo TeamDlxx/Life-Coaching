@@ -157,12 +157,16 @@ const CreateHabit = props => {
         'target_date',
         moment(t_targetDate).format('YYYY-MM-DD'),
       );
+      if (Habit?.localImage == '' && Habit?.image?.uri == '') {
+        fd_editHabit.append('remove_image', true);
+      } else {
+        fd_editHabit.append('remove_image', false);
+      }
       fd_editHabit.append('reminder', t_reminder.value);
       fd_editHabit.append(
         'reminder_time',
         moment(t_reminder.time).toISOString(),
       );
-
       api_editHabit(fd_editHabit);
     }
   };
@@ -230,14 +234,13 @@ const CreateHabit = props => {
   const btn_addHabit = async () => {
     let t_image = {...Habit.image};
     let t_preDefinedImage = Habit.preDefinedImage;
+    console.log('preDefinedImage', t_preDefinedImage);
     let t_habitName = Habit.title.trim();
     let t_type = Habit.type;
     let t_reminder = Habit.reminder;
     let t_targetDate = Habit.targetDate.date;
     let t_frequency = Habit.frequency;
-    if (t_image?.uri == '' && t_preDefinedImage == null) {
-      showToast('Please select an image', 'Alert');
-    } else if (t_habitName == '') {
+    if (t_habitName == '') {
       showToast('Please enter Habit name', 'Alert');
     } else if (t_type == null) {
       showToast('Please select type of frequency', 'Alert');
@@ -245,7 +248,10 @@ const CreateHabit = props => {
       showToast('Please select at least one frequency', 'Alert');
     } else {
       let fd_createhabit = new FormData();
-      if (t_image?.uri != '') {
+      if (t_image?.uri == '' && t_preDefinedImage == null) {
+        // fd_createhabit.append('image', '');
+        fd_createhabit.append('images', JSON.stringify({}));
+      } else if (t_image?.uri != '') {
         fd_createhabit.append('image', t_image);
         fd_createhabit.append('images', JSON.stringify({}));
       } else {
@@ -350,26 +356,39 @@ const CreateHabit = props => {
 
   const setImage = img => {
     console.log('img', img);
-    if (Platform.OS == 'android') {
-      let name = img.path.split('/');
 
+    if (img) {
+      if (Platform.OS == 'android') {
+        let name = img.path.split('/');
+
+        updateHabit({
+          image: {
+            uri: img.path,
+            type: img.mime,
+            name: name[name.length - 1],
+          },
+          localImage: img.path,
+        });
+      } else if (Platform.OS == 'ios') {
+        let name = img.path.split('/');
+        updateHabit({
+          image: {
+            uri: img.path,
+            type: img.mime,
+            name: !!img.filename ? img.filename : name[name.length - 1],
+          },
+          localImage: img.path,
+        });
+      }
+    } else {
       updateHabit({
         image: {
-          uri: img.path,
-          type: img.mime,
-          name: name[name.length - 1],
+          uri: '',
+          type: '',
+          name: '',
         },
-        localImage: img.path,
-      });
-    } else if (Platform.OS == 'ios') {
-      let name = img.path.split('/');
-      updateHabit({
-        image: {
-          uri: img.path,
-          type: img.mime,
-          name: !!img.filename ? img.filename : name[name.length - 1],
-        },
-        localImage: img.path,
+        preDefinedImage: null,
+        localImage: '',
       });
     }
   };
@@ -414,7 +433,7 @@ const CreateHabit = props => {
       let {item} = params;
       let changes = {
         title: item?.name,
-        localImage: fileURL + item?.images.large,
+        localImage: item?.images && fileURL + item?.images.large,
         type: item?.type == 'to-do' ? 1 : 0,
         reminder: {
           ...reminder,
@@ -474,6 +493,9 @@ const CreateHabit = props => {
               setImage={setImage}
               borderRadius={20}
               width={screen.width / 3}
+              removeImage={
+                !!Habit?.image?.uri || !!localImage || !!preDefinedImage?.large
+              }
             />
           </View>
           <View style={{marginTop: 10}}>

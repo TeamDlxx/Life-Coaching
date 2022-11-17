@@ -48,12 +48,13 @@ import {screens} from '../../../Navigation/Screens';
 const limit = 10;
 
 const List = props => {
-  const {Token, downloadQuote} = useContext(Context);
+  const {Token, downloadQuote, downloading} = useContext(Context);
   const [QuoteList, setQuoteList] = useState([]);
   const [modalImage, setModalImage] = useState(null);
   const [isSharing, setIsSharing] = useState(null);
   const [loading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  console.log('downloading', downloading);
   const [PGN, updatePGN] = useState({
     pageNumber: 0,
     isLoadingMore: false,
@@ -224,6 +225,10 @@ const List = props => {
     setModalImage(null);
   };
 
+  const isDownloading = id => {
+    return !!downloading.find(x => x == id);
+  };
+
   useEffect(() => {
     call_quoteListAPI();
     return () => {
@@ -293,7 +298,7 @@ const List = props => {
 
           <TouchableOpacity
             onPress={() => {
-              downloadQuote(item?.images?.large);
+              downloadQuote(item?.images?.large, item?._id);
             }}
             style={{
               flex: 1,

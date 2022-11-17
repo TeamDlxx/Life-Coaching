@@ -30,7 +30,7 @@ import EmptyView from '../../../Components/EmptyView';
 import PushNotification from 'react-native-push-notification';
 
 const screen = Dimensions.get('screen');
-
+const ic_Hplaceholder = require('../../../Assets/Icons/h_placeholder1.png');
 const AllHabits = props => {
   const {Token, habitList, setHabitList} = useContext(Context);
   const [sHabitList, setSHabitList] = useState([]);
@@ -187,11 +187,31 @@ const AllHabits = props => {
         }}
         style={allHabit_styles.itemView}>
         <View style={allHabit_styles.imageView}>
-          <CustomImage
-            source={{uri: fileURL + item.images?.small}}
-            indicatorProps={{color: Colors.primary}}
-            style={allHabit_styles.itemImage}
-          />
+          {!!item?.images?.large ? (
+            <CustomImage
+              source={{uri: fileURL + item.images?.small}}
+              indicatorProps={{color: Colors.primary}}
+              style={allHabit_styles.itemImage}
+            />
+          ) : (
+            <View
+              style={{
+                height: '100%',
+                width: '100%',
+                backgroundColor: Colors.background,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <Image
+                source={ic_Hplaceholder}
+                style={{
+                  height: '50%',
+                  width: '50%',
+                  tintColor: Colors.placeHolder,
+                }}
+              />
+            </View>
+          )}
         </View>
         <View style={allHabit_styles.detailView}>
           <View style={{flex: 1}}>

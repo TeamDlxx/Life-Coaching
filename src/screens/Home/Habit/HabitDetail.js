@@ -35,7 +35,7 @@ import {fileURL} from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
 import Toast from 'react-native-toast-message';
 import PushNotification from 'react-native-push-notification';
-
+const ic_Hplaceholder = require('../../../Assets/Icons/h_placeholder1.png');
 const screen = Dimensions.get('screen');
 
 const HabitDetail = props => {
@@ -384,6 +384,7 @@ const HabitDetail = props => {
   };
 
   const updateHabitLocally = item => {
+    console.log('--> habit <--', item);
     setHabitDetail(item);
   };
 
@@ -560,20 +561,40 @@ const HabitDetail = props => {
                       marginTop: -screen.width / 5,
                       backgroundColor: Colors.white,
                     }}>
-                    <CustomImage
-                      source={{uri: fileURL + habit.images?.large}}
-                      style={{
-                        flex: 1,
-                        width: '100%',
-                        height: '100%',
-                      }}
-                      imageStyle={{
-                        borderRadius: 20,
-                      }}
-                      indicatorProps={{
-                        color: Colors.primary,
-                      }}
-                    />
+                    {!!habit.images ? (
+                      <CustomImage
+                        source={{uri: fileURL + habit.images?.large}}
+                        style={{
+                          flex: 1,
+                          width: '100%',
+                          height: '100%',
+                        }}
+                        imageStyle={{
+                          borderRadius: 20,
+                        }}
+                        indicatorProps={{
+                          color: Colors.primary,
+                        }}
+                      />
+                    ) : (
+                      <View
+                        style={{
+                          height: '100%',
+                          width: '100%',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          overflow: 'hidden',
+                        }}>
+                        <Image
+                          source={ic_Hplaceholder}
+                          style={{
+                            height: '40%',
+                            width: '40%',
+                            tintColor: Colors.placeHolder,
+                          }}
+                        />
+                      </View>
+                    )}
                   </View>
                   <View style={{marginTop: 30}}>
                     <Text style={HabitDetail_style.lable}>Habit Name</Text>

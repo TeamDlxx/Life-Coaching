@@ -261,7 +261,7 @@ const ContextWrapper = props => {
       });
   };
 
-  const downloadQuote = async image => {
+  const downloadQuote = async (image, id) => {
     if (Platform.OS === 'android') {
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
@@ -279,21 +279,26 @@ const ContextWrapper = props => {
         return;
       }
     }
-    console.log('ReactNativeBlobUtil ==>', ReactNativeBlobUtil);
+
     let imgUrl = fileURL + image;
-    console.log(imgUrl, 'imgUrl');
+    console.log('ReactNativeBlobUtil', ReactNativeBlobUtil);
     let newImgUri = imgUrl.lastIndexOf('/');
     let ext = imgUrl.split('.').pop();
     let imageName = '/image_' + imgUrl.split('/').pop();
+    // imageName = imageName.split('.').shift();
     console.log('ext', ext);
     console.log('newImgUri', newImgUri);
     console.log('imageName', imageName);
     let dirs = ReactNativeBlobUtil.fs.dirs;
     console.log('dirs ==>', dirs);
-    let path =
-      Platform.OS === 'ios'
-        ? dirs['MainBundleDir'] + imageName
-        : dirs.PictureDir + imageName;
+    let path = !!dirs.LegacyDownloadDir
+      ? dirs.LegacyDownloadDir + '/Life Coaching' + imageName
+      : dirs.PictureDir + imageName;
+
+    let ext1 = ext;
+    if (ext1 == 'jpg') {
+      ext1 = 'jpeg';
+    }
 
     if (Platform.OS == 'android') {
       ReactNativeBlobUtil.config({
@@ -313,34 +318,47 @@ const ContextWrapper = props => {
       })
         .fetch('GET', imgUrl)
         .then(async res => {
-          console.log(res, 'end downloaded');
-          let pathnew =
-            await ReactNativeBlobUtil.MediaCollection.createMediafile(
-              {
-                name: imageName,
-                parentFolder: 'Pictures',
-                mimeType: `image/${ext1}`,
-              },
-              'Download',
-            );
-          await ReactNativeBlobUtil.MediaCollection.writeToMediafile(
-            pathnew,
-            res.path(),
-          );
+          console.log(res.path(), 'end downloaded');
+          if (!!dirs.LegacyDownloadDir == false) {
+            let pathnew =
+              await ReactNativeBlobUtil.MediaCollection.createMediafile(
+                {
+                  name: imageName,
+                  parentFolder: 'Life Coaching',
+                  mimeType: `image/${ext1}`,
+                },
+                'Download',
+              );
+            console.log('pathnew', pathnew);
+            let res1 =
+              await ReactNativeBlobUtil.MediaCollection.writeToMediafile(
+                pathnew,
+                res.path(),
+              );
+            let ok = await ReactNativeBlobUtil.fs.unlink(path);
+            console.log('ok', ok);
+          }
           showToast(
             'Quote has been saved to your storage',
             'Quote Downloaded',
             'success',
           );
+        })
+        .catch(e => {
+          showToast('Quote downloading failed', 'Something went wrong');
         });
     } else {
-      CameraRoll.save(imgUrl);
-      // alert('File saved into gallery.');
-      showToast(
-        'Quote has been saved to your storage',
-        'Quote Downloaded',
-        'success',
-      );
+      try {
+        CameraRoll.save(imgUrl);
+
+        showToast(
+          'Quote has been saved to your storage',
+          'Quote Downloaded',
+          'success',
+        );
+      } catch (e) {
+        showToast('Quote downloading failed', 'Something went wrong');
+      }
     }
   };
 
