@@ -27,6 +27,7 @@ import LoginAlert from '../../../Components/LoginAlert';
 import RNFS from 'react-native-fs';
 import kFormatter from '../../../functions/kFormatter';
 import ImageZoomer from '../../../Components/ImageZoomer';
+import AutoHeightImage from '../../../Components/AutoHeightImage';
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -46,7 +47,7 @@ import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
 
 const limit = 10;
-
+const win = Dimensions.get('window');
 const List = props => {
   const {Token, downloadQuote, downloading} = useContext(Context);
   const [QuoteList, setQuoteList] = useState([]);
@@ -169,11 +170,15 @@ const List = props => {
         navigation: props.navigation,
       });
     }
-    setisLoading(false);
-    setRefreshing(false);
-    setPGN({isLoadingMore: false});
+
     if (res) {
       if (res.code == 200) {
+        // let newArray = [];
+        // res?.quotes.forEach(async element => {
+        //   let res = await Image.getSize(fileURL + element?.images?.large);
+        //   console.log('sizes', res);
+        // });
+
         let count = QuoteList?.length;
         setQuoteList([...QuoteList, ...res?.quotes]);
         count = count + res?.quotes.length;
@@ -186,6 +191,9 @@ const List = props => {
         showToast(res.message);
       }
     }
+    setisLoading(false);
+    setRefreshing(false);
+    setPGN({isLoadingMore: false});
   };
 
   const onEndReached = () => {
@@ -235,8 +243,19 @@ const List = props => {
       setQuoteList([]);
     };
   }, []);
-
+  console.log(
+    'size',
+    Image.getSize(
+      'https://metalogix-inhouse-bucket.s3.amazonaws.com/QUOTES/11f462a0-60b1-11ed-8fc4-430a39f4e6b7.jpeg',
+    ),
+  );
   const flatItemView = ({item, index}) => {
+    console.log(
+      'width',
+
+      fileURL + item?.images?.large,
+    );
+
     return (
       <View
         style={{
@@ -248,11 +267,13 @@ const List = props => {
           backgroundColor: Colors.white,
         }}>
         <Pressable onPress={() => showImageModal(item?.images?.large)}>
-          <CustomImage
-            resizeMode={'cover'}
+          {/* <CustomImage
+            // resizeMode={'cover'}
+            resizeMode="contain"
             source={{uri: fileURL + item?.images?.large}}
-            style={{width: '100%', height: undefined, aspectRatio: 1}}
-          />
+            // style={{width: '100%', aspectRatio: 1}}
+          /> */}
+          <AutoHeightImage url={item?.images?.large} />
         </Pressable>
 
         <View style={{paddingHorizontal: 5, paddingVertical: 10}}>

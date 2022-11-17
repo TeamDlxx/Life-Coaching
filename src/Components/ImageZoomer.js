@@ -64,10 +64,10 @@ const ImageZoomer = props => {
           />
         </Pressable>
         <View style={{flex: 1, justifyContent: 'center'}}>
-          {/* <ImageViewer
+          <ImageViewer
             style={{
               width: Dimensions.get("screen").width,
-              aspectRatio: 1,
+              // aspectRatio: 1,
             }}
 
             loadingRender={() => (
@@ -78,13 +78,13 @@ const ImageZoomer = props => {
             index={0}
             useNativeDriver={true}
             renderIndicator={() => <></>}
-          /> */}
+          />
 
-          <CustomImage
+          {/* <CustomImage
             resizeMode={'cover'}
             source={{uri: fileURL + props?.url}}
             style={{width: '100%', height: undefined, aspectRatio: 1}}
-          />
+          /> */}
         </View>
       </View>
     </Modal>

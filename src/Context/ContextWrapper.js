@@ -16,6 +16,11 @@ const ContextWrapper = props => {
   const [habitList, setHabitList] = useState([]);
   const [progress, setProgress] = useState([]);
 
+  const [purchases, setPurchases] = useState({
+    habits: false,
+    meditation: false,
+  });
+
   const findProgress = item => {
     let freq = [];
     item.frequency.filter((x, i) => {

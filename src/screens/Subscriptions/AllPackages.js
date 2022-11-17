@@ -42,9 +42,9 @@ const AllPackages = props => {
 
   const formatPrice = price => {
     if (price < 10) {
-      return '0' + price + '.00';
+      return '0' + price;
     }
-    return price + '.00';
+    return price;
   };
 
   const FlatListHeader = () => {
@@ -173,7 +173,7 @@ const AllPackages = props => {
                   textTransform: 'capitalize',
                   color: Colors.primary,
                 }}>
-                {`$ ${formatPrice(item.price)}`}
+                {`$${item.price}`}
               </Text>
             </View>
           </View>
@@ -338,7 +338,7 @@ const packages = [
     _id: '1',
     name: 'Habits',
     description: ['Unlimited Habits', 'Unlimited time for Habits', 'Reminder'],
-    price: 3,
+    price: 2.99,
     type: 'star',
     duration: 'monthly',
   },
@@ -346,7 +346,7 @@ const packages = [
     _id: '2',
     name: 'Meditations',
     description: ['Access to all tracks', 'Download & listen without internet'],
-    price: 3,
+    price: 2.99,
     type: 'star',
     duration: 'monthly',
   },
@@ -360,7 +360,7 @@ const packages = [
       'Unlimited time for Habits',
       'Reminder',
     ],
-    price: 5,
+    price: 4.99,
     type: 'diamond',
     duration: 'monthly',
   },
@@ -374,7 +374,7 @@ const packages = [
       'Unlimited time for Habits',
       'Reminder',
     ],
-    price: 15,
+    price: 44.99,
     type: 'crown',
     duration: 'lifetime',
   },

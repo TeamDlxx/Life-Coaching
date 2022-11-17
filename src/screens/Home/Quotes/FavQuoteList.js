@@ -32,7 +32,7 @@ import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
-
+import AutoHeightImage from '../../../Components/AutoHeightImage';
 //ICONS
 
 import liked from '../../../Assets/Icons/liked.png';
@@ -238,11 +238,12 @@ const FavQuoteList = props => {
           backgroundColor: Colors.white,
         }}>
         <Pressable onPress={() => showImageModal(item?.images?.large)}>
-          <CustomImage
+          {/* <CustomImage
             resizeMode={'cover'}
             source={{uri: fileURL + item?.images?.large}}
             style={{width: '100%', height: undefined, aspectRatio: 1}}
-          />
+          /> */}
+          <AutoHeightImage url={item?.images?.large} />
         </Pressable>
 
         <View style={{paddingHorizontal: 5, paddingVertical: 10}}>

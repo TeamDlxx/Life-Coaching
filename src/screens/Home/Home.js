@@ -181,10 +181,6 @@ const Home = props => {
 
       <>
         <Pressable
-          // disabled={true}
-          onPress={() => {
-            props.navigation.navigate(screens.subscription)
-          }}
           style={{
             height: 50,
             justifyContent: 'center',
