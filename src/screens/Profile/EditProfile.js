@@ -130,7 +130,6 @@ const EditProfile = props => {
         height: 400,
         cropping: true,
         mediaType: 'photo',
-
         cropperStatusBarColor: Colors.background,
         cropperToolbarColor: Colors.background,
       })
@@ -157,6 +156,13 @@ const EditProfile = props => {
         })
         .catch(e => {
           console.log('Error', e);
+          console.log('HI', JSON.stringify(e));
+          if (e.code == 'E_NO_LIBRARY_PERMISSION') {
+            showToast(
+              'Please allow permssion in settings first',
+              'Permission denied',
+            );
+          }
         });
     }, 500);
   };

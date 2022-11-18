@@ -25,6 +25,8 @@ import moment from 'moment';
 import LinearGradient from 'react-native-linear-gradient';
 import Modal from 'react-native-modal';
 import CustomImage from '../../../Components/CustomImage';
+import FastImage from 'react-native-fast-image';
+import ImageProgress from 'react-native-image-progress';
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -119,6 +121,9 @@ const HabitDetail = props => {
     } else {
       return true;
     }
+  };
+  const checkMissed = x => {
+    return moment(x).isBefore(moment(), 'dates') && !checkCompleted(x);
   };
 
   const forNextScreen = habit => {
@@ -561,13 +566,25 @@ const HabitDetail = props => {
                       marginTop: -screen.width / 5,
                       backgroundColor: Colors.white,
                     }}>
-                    {!!habit.images ? (
+                    {console.log('check images', !!habit?.images?.large)}
+                    {console.log(
+                      'check images',
+                      fileURL + habit?.images?.large,
+                    )}
+                    {!!habit?.images?.large ? (
                       <CustomImage
-                        source={{uri: fileURL + habit.images?.large}}
+                        onLoadEnd={res => console.log('end', res)}
+                        onLoad={load => console.log('load', load)}
+                        source={{
+                          uri: fileURL + habit?.images?.large,
+                          priority: FastImage.priority.high,
+                        }}
+                        resizeMode="cover"
                         style={{
-                          flex: 1,
-                          width: '100%',
-                          height: '100%',
+                          // flex: 1,
+                          width: screen.width / 3,
+                          aspectRatio: 1,
+                          // borderRadius: 20,
                         }}
                         imageStyle={{
                           borderRadius: 20,
@@ -846,7 +863,9 @@ const HabitDetail = props => {
                               }}
                               style={{
                                 borderWidth: 1,
-                                borderColor: Colors.gray02,
+                                borderColor: checkMissed(x)
+                                  ? Colors.lightRed
+                                  : Colors.gray02,
                                 borderRadius: 10,
                                 // padding: 5,
                                 margin: 5,
@@ -854,7 +873,9 @@ const HabitDetail = props => {
                                 // width: '14.1%',
                                 aspectRatio: 0.7,
                                 justifyContent: 'center',
-                                backgroundColor: Colors.secondary,
+                                backgroundColor: checkMissed(x)
+                                  ? Colors.lightRed
+                                  : Colors.secondary,
                               }}>
                               <View
                                 style={{
@@ -865,7 +886,9 @@ const HabitDetail = props => {
                                     style={{
                                       textTransform: 'capitalize',
                                       fontFamily: font.bold,
-                                      color: Colors.primary,
+                                      color: checkMissed(x)
+                                        ? Colors.white
+                                        : Colors.primary,
                                     }}>
                                     {moment(x).format('dddd').charAt(0)}
                                   </Text>
@@ -880,11 +903,11 @@ const HabitDetail = props => {
                                     {checkCompleted(x) && (
                                       <Image
                                         style={{
-                                          height: 12,
-                                          width: 12,
-                                          tintColor: Colors.primary,
+                                          height: 15,
+                                          width: 15,
+                                          // tintColor: Colors.primary,
                                         }}
-                                        source={require('../../../Assets/Icons/tick.png')}
+                                        source={require('../../../Assets/Icons/check.png')}
                                       />
                                     )}
                                   </View>

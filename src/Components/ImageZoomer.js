@@ -56,8 +56,8 @@ const ImageZoomer = props => {
           <Image
             style={{
               tintColor: '#000',
-              height: 20,
-              width: 20,
+              height: 25,
+              width: 25,
             }}
             source={ic_cross}
             resizeMode="stretch"
@@ -66,10 +66,10 @@ const ImageZoomer = props => {
         <View style={{flex: 1, justifyContent: 'center'}}>
           <ImageViewer
             style={{
-              width: Dimensions.get("screen").width,
+              width: Dimensions.get('screen').width,
               // aspectRatio: 1,
             }}
-
+            // doubleClickInterval={1}
             loadingRender={() => (
               <ActivityIndicator color={Colors.primary} size={'large'} />
             )}
@@ -81,7 +81,7 @@ const ImageZoomer = props => {
           />
 
           {/* <CustomImage
-            resizeMode={'cover'}
+            resizeMode={'contain'}
             source={{uri: fileURL + props?.url}}
             style={{width: '100%', height: undefined, aspectRatio: 1}}
           /> */}

@@ -40,6 +40,7 @@ import {fileURL} from '../../../Utilities/domains';
 import {isFirstLetterAlphabet} from '../../../functions/regex';
 import rountToNextmins from '../../../functions/rountToNextmins';
 import PushNotification from 'react-native-push-notification';
+import FastImage from 'react-native-fast-image';
 const screen = Dimensions.get('screen');
 const week = [
   {day: 'monday', status: false},
@@ -197,13 +198,13 @@ const CreateHabit = props => {
           'Habit Updated',
           'success',
         );
+        updateHabitList(res.habit);
         if (!!params?.updateHabitDetail) {
           params?.updateHabitDetail(res.habit);
         }
         if (!!params?.updateHabit) {
           params?.updateHabit(res.habit);
         }
-        updateHabitList(res.habit);
         navigation.goBack();
       } else {
         showToast(res.message);
@@ -356,7 +357,6 @@ const CreateHabit = props => {
 
   const setImage = img => {
     console.log('img', img);
-
     if (img) {
       if (Platform.OS == 'android') {
         let name = img.path.split('/');

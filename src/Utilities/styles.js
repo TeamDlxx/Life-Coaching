@@ -34,12 +34,12 @@ export const _styleTrackPlayer = StyleSheet.create({
     marginLeft: 10,
   },
   backButtonIcon: {
-    height: 20,
-    width: 20,
+    height: 25,
+    width: 25,
   },
   backButton2Icon: {
-    height: 15,
-    width: 15,
+    height: 20,
+    width: 20,
     tintColor: Colors.black,
   },
   controlsAndTextView: {

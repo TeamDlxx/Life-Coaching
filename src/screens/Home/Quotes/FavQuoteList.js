@@ -62,9 +62,7 @@ const FavQuoteList = props => {
   const {pageNumber, isLoadingMore, canLoadMore} = PGN;
   const setPGN = val => updatePGN({...PGN, ...val});
 
-  const onFavList = () => {
-    props.navigation.navigate(screens.favQuoteList);
-  };
+ 
 
   const shareQuote = async item => {
     setIsSharing(item._id);
@@ -238,12 +236,18 @@ const FavQuoteList = props => {
           backgroundColor: Colors.white,
         }}>
         <Pressable onPress={() => showImageModal(item?.images?.large)}>
-          {/* <CustomImage
+          <CustomImage
             resizeMode={'cover'}
             source={{uri: fileURL + item?.images?.large}}
-            style={{width: '100%', height: undefined, aspectRatio: 1}}
-          /> */}
-          <AutoHeightImage url={item?.images?.large} />
+            style={{
+              width: '100%',
+              aspectRatio:
+                item?.image_height != 0
+                  ? item?.image_width / item?.image_height
+                  : 1,
+            }}
+          />
+          {/* <AutoHeightImage url={item?.images?.large} /> */}
         </Pressable>
 
         <View style={{paddingHorizontal: 5, paddingVertical: 10}}>

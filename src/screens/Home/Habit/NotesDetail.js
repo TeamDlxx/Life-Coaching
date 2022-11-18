@@ -81,7 +81,9 @@ const NotesDetail = props => {
           </TouchableHighlight>
         }>
         <MenuItem onPress={editNote}>
-          <Text style={{fontFamily: font.bold}}>Edit Note</Text>
+          <Text style={{fontFamily: font.bold}}>
+            {!!noteText?.note_text ? 'Edit Note' : 'Add Note'}
+          </Text>
         </MenuItem>
         <MenuDivider />
         <MenuItem

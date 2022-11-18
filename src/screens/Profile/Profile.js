@@ -22,7 +22,7 @@ import {screens} from '../../Navigation/Screens';
 import profile_placeholder from '../../Assets/Icons/dummy.png';
 import CustomImage from '../../Components/CustomImage';
 import {fileURL} from '../../Utilities/domains';
-import moment from 'moment';
+import ImageZoomer from '../../Components/ImageZoomer';
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../Context';
@@ -40,6 +40,7 @@ const Profile = props => {
   const {Token, habitList, setHabitList, completed} = useContext(Context);
   const [user, setUser] = useState(null);
   const [loading, setisLoading] = useState(true);
+  const [modalImage, setModalImage] = useState(null);
 
   const onLoginSignUpScreen = screen => {
     props.navigation.navigate(screen, {
@@ -71,6 +72,18 @@ const Profile = props => {
     }
     setisLoading(false);
   }
+
+  const hideImageModal = () => {
+    setModalImage(null);
+  };
+
+  const ShowImageModal = link => {
+    if (!!link) {
+      setModalImage(link);
+    } else {
+      showToast('Image not available', 'Alert');
+    }
+  };
 
   const appendZero = val => {
     if (val < 10) {
@@ -119,9 +132,15 @@ const Profile = props => {
       <Header title="Profile" />
       {Token ? (
         <View style={{flex: 1}}>
+          <ImageZoomer
+            closeModal={hideImageModal}
+            visible={!!modalImage}
+            url={modalImage}
+          />
           <ScrollView>
             <View style={{alignItems: 'center'}}>
-              <View
+              <Pressable
+                onPress={() => ShowImageModal(user.profile_image)}
                 style={{
                   height: 110,
                   width: 110,
@@ -142,7 +161,7 @@ const Profile = props => {
                   style={{height: 100, width: 100}}
                   imageStyle={{borderRadius: 100 / 2}}
                 />
-              </View>
+              </Pressable>
               <View style={{marginTop: 10}}>
                 <Text
                   style={{

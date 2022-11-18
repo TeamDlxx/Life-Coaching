@@ -20,6 +20,7 @@ export default colors = {
   progress: '#fff200',
   delete: '#ff4d4d',
   logout: '#D24D57',
+  lightRed: '#ff8080',
 
   grey01: '#bfbfbf',
 

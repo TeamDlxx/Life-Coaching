@@ -9,6 +9,7 @@ import {
   Share,
   Alert,
   Image,
+  Platform,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import VersionCheck from 'react-native-version-check';
@@ -25,17 +26,18 @@ import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import {useContext} from 'react';
 import Context from '../../Context';
 import PushNotification from 'react-native-push-notification';
+import DeviceInfo from 'react-native-device-info';
 
 const Setting = props => {
   const [isLoading, setisLoading] = useState(false);
-  const {Token, setToken,setHabitList} = useContext(Context);
+  const {Token, setToken, setHabitList} = useContext(Context);
 
   const logout = async () => {
     try {
       let res = await AsyncStorage.multiRemove(['@token', '@user']);
       console.log('res', res);
       setToken(null);
-      setHabitList([])
+      setHabitList([]);
       props.navigation.reset({
         index: 0,
         routes: [{name: screens.landing}],
@@ -46,7 +48,7 @@ const Setting = props => {
         index: 0,
         routes: [{name: screens.landing}],
       });
-      setHabitList([])
+      setHabitList([]);
       PushNotification.cancelAllLocalNotifications();
     }
   };
@@ -110,11 +112,7 @@ const Setting = props => {
         break;
 
       case 'report':
-        Linking.openURL(
-          'mailto:support@lifeCoaching.com?subject=Report a Problem',
-        ).catch(e => {
-          console.log('Mail open error', e);
-        });
+        fn_report();
         break;
 
       case 'logout':
@@ -124,6 +122,39 @@ const Setting = props => {
         ]);
 
         break;
+    }
+  };
+
+  const fn_report = async () => {
+    console.log('getUserEmail', await getUserEmail());
+    let email = await getUserEmail();
+    let subject = `Life Coaching Feedback, Platform: ${
+      Platform.OS
+    }, Brand: ${DeviceInfo.getBrand()}, OS Version: ${DeviceInfo.getSystemVersion()}, App Version: ${VersionCheck.getCurrentVersion()}`;
+
+    if (email) {
+      subject = subject + `, User Email: ${email}`;
+    }
+    Linking.openURL('mailto:support@lifeCoaching.com?subject=' + subject).catch(
+      e => {
+        console.log('Mail open error', e);
+      },
+    );
+  };
+
+  const getUserEmail = async () => {
+    if (Token) {
+      return await AsyncStorage.getItem('@user').then(async user => {
+        if (user != null) {
+          let newUser = await JSON.parse(user);
+          console.log('newUser', newUser);
+          return newUser.user_id.email;
+        } else {
+          return false;
+        }
+      });
+    } else {
+      return false;
     }
   };
 

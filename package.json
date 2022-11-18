@@ -44,6 +44,7 @@
     "react-native-calendars": "^1.1289.0",
     "react-native-collapsible": "^1.6.0",
     "react-native-confirmation-code-field": "^7.3.1",
+    "react-native-device-info": "^10.3.0",
     "react-native-fast-image": "^8.6.1",
     "react-native-fs": "^2.20.0",
     "react-native-iap": "10.1.0",

@@ -9,7 +9,8 @@
 #import <RNCPushNotificationIOS.h>
 #import <Firebase.h>
 #import "RNSplashScreen.h"  // here
-
+#import "SDImageCodersManager.h"
+#import <SDWebImageWebPCoder/SDImageWebPCoder.h>
 #if RCT_NEW_ARCH_ENABLED
 #import <React/CoreModulesPlugins.h>
 #import <React/RCTCxxBridgeDelegate.h>
@@ -93,7 +94,7 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
   
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
     center.delegate = self;
-  
+  [SDImageCodersManager.sharedManager addCoder:SDImageWebPCoder.sharedCoder];
   [RNSplashScreen show]; 
   return YES;
 }
