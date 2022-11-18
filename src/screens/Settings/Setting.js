@@ -130,7 +130,7 @@ const Setting = props => {
     let email = await getUserEmail();
     let subject = `Life Coaching Feedback, Platform: ${
       Platform.OS
-    }, Brand: ${DeviceInfo.getBrand()}, OS Version: ${DeviceInfo.getSystemVersion()}, App Version: ${VersionCheck.getCurrentVersion()}`;
+    }, Brand: ${DeviceInfo.getBrand()}, OS Version: ${DeviceInfo.getSystemVersion()}, App Version: ${VersionCheck.getCurrentVersion()} (${VersionCheck.getCurrentBuildNumber()})`;
 
     if (email) {
       subject = subject + `, User Email: ${email}`;

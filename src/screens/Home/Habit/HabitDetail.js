@@ -896,16 +896,15 @@ const HabitDetail = props => {
                                 <View>
                                   <View
                                     style={{
-                                      height: 12,
-                                      width: 12,
-                                      marginTop: 10,
+                                      height: 13,
+                                      width: 13,
+                                      marginTop: 5,
                                     }}>
                                     {checkCompleted(x) && (
                                       <Image
                                         style={{
-                                          height: 15,
-                                          width: 15,
-                                          // tintColor: Colors.primary,
+                                          height: 13,
+                                          width: 13,
                                         }}
                                         source={require('../../../Assets/Icons/check.png')}
                                       />
