@@ -67,6 +67,7 @@
     "react-native-svg": "^13.2.0",
     "react-native-svg-charts": "^5.4.0",
     "react-native-swipe-list-view": "^3.2.9",
+    "react-native-swipeable-list": "^0.1.2",
     "react-native-toast-message": "^2.1.5",
     "react-native-track-player": "3.1",
     "react-native-version-check": "^3.4.3"

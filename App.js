@@ -7,6 +7,7 @@ import {Capability} from 'react-native-track-player';
 import Toast from 'react-native-toast-message';
 import ContextWrapper from './src/Context/ContextWrapper';
 import {Text} from 'react-native';
+import {withIAPContext} from 'react-native-iap';
 
 moment.updateLocale('en', {
   week: {
@@ -64,4 +65,4 @@ const App = props => {
   );
 };
 
-export default App;
+export default withIAPContext(App);

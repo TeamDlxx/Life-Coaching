@@ -547,6 +547,7 @@ export const allHabit_styles = StyleSheet.create({
     paddingRight: 20,
     marginBottom: 15,
     flex: 1,
+
     margin: 2,
   },
   hiddenIcon: {height: 25, width: 25, tintColor: Colors.white},

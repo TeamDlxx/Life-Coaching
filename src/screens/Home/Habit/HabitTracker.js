@@ -11,6 +11,7 @@ import {
   Platform,
   TouchableHighlight,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
@@ -42,7 +43,8 @@ const ic_Hplaceholder = require('../../../Assets/Icons/h_placeholder1.png');
 const HabitTracker = props => {
   // const checkLogin = useLoginAlert();
 
-  const {Token, habitList, setHabitList} = useContext(Context);
+  const {Token, habitList, setHabitList, isHabitPurchased} =
+    useContext(Context);
   const [isLoading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const daysFlatList = React.useRef();
@@ -89,7 +91,25 @@ const HabitTracker = props => {
 
   const btn_add = () => {
     if (Token) {
-      setVisibleAddHabitModal(true);
+      if (habitList.length < 6 || isHabitPurchased == true) {
+        setVisibleAddHabitModal(true);
+      } else {
+        Alert.alert(
+          'Subscription',
+          'Your Habit limit is over\nPlease buy subcription to add more?',
+          [
+            {text: 'No'},
+            {
+              text: 'Yes',
+              onPress: () => {
+                props.navigation.navigate(screens.allPackages, {
+                  from: 'habit',
+                });
+              },
+            },
+          ],
+        );
+      }
     } else {
       LoginAlert(props.navigation, props.route?.name);
     }

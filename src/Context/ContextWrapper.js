@@ -17,7 +17,7 @@ const ContextWrapper = props => {
   const [progress, setProgress] = useState([]);
 
   const [purchases, setPurchases] = useState({
-    habits: false,
+    habit: false,
     meditation: false,
   });
 
@@ -443,6 +443,8 @@ const ContextWrapper = props => {
     setHabitList,
     completed,
     downloadQuote,
+    isMeditationPurchased: purchases?.meditation,
+    isHabitPurchased: purchases?.habit,
   };
 
   return (

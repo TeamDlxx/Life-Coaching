@@ -21,7 +21,7 @@ import BottomTabs from './BottomTabs';
 import ComingSoon from '../screens/Extra/ComingSoon';
 
 // //? Subscription
-import Subscription from '../screens/Subscriptions/Subscription';
+
 import AllPackages from '../screens/Subscriptions/AllPackages';
 
 // //? Profile
@@ -161,7 +161,7 @@ const AuthStack = () => {
         <Stack.Screen name={screens.gratitude} component={Gratitude} />
 
         {/* Subscriptions */}
-        <Stack.Screen name={screens.subscription} component={Subscription} />
+
         <Stack.Screen name={screens.allPackages} component={AllPackages} />
       </Stack.Navigator>
     );

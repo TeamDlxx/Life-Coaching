@@ -1,3 +1,4 @@
+import React, {useContext, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -9,23 +10,13 @@ import {
   Dimensions,
   TouchableOpacity,
 } from 'react-native';
-import React, {useCallback, useState, useRef} from 'react';
-import {useFocusEffect} from '@react-navigation/native';
-import {mainStyles} from '../../Utilities/styles';
 import Header from '../../Components/Header';
+import {mainStyles} from '../../Utilities/styles';
+import Context from '../../Context';
 import Colors from '../../Utilities/Colors';
 import {font} from '../../Utilities/font';
-import ImagePicker from 'react-native-image-crop-picker';
-import Modal from 'react-native-modal';
-import CustomButton from '../../Components/CustomButton';
-import {useContext} from 'react';
-import Context from '../../Context';
-import Subscription from './Subscription';
 import Collapsible from 'react-native-collapsible';
-
-const screen = Dimensions.get('screen');
-
-//Icons
+import {requestPurchase, useIAP} from 'react-native-iap';
 
 const ic_filledTick = require('../../Assets/Icons/circleFilledCheck.png');
 const ic_star = require('../../Assets/pkgIcons/star.png');
@@ -40,12 +31,36 @@ const AllPackages = props => {
   const {params} = props.route;
   const [selectedPkg, setSelectedPkg] = useState(packages[0]);
 
-  const formatPrice = price => {
-    if (price < 10) {
-      return '0' + price;
-    }
-    return price;
+  const {
+    connected,
+    products,
+    promotedProductsIOS,
+    subscriptions,
+    purchaseHistories,
+    availablePurchases,
+    currentPurchase,
+    currentPurchaseError,
+    initConnectionError,
+    finishTransaction,
+    getProducts,
+    getSubscriptions,
+    getAvailablePurchases,
+    getPurchaseHistories,
+  } = useIAP();
+
+  const ProductsDetail = async () => {
+    let p = await getProducts([
+      'meditation.monthly.subscription',
+      'lifetime.purchase',
+      'habits.monthly.subscription',
+      'all_in_one.monthly.subscription',
+    ]);
+    console.log('product', p);
   };
+
+  React.useEffect(() => {
+    ProductsDetail();
+  }, []);
 
   const FlatListHeader = () => {
     return (
@@ -56,7 +71,7 @@ const AllPackages = props => {
             Get Access to more Features
           </Text>
         </View>
-        {/* 
+        {/*
         <View style={{marginTop: 15}}>
           <Text
             style={{
@@ -110,165 +125,111 @@ const AllPackages = props => {
   };
 
   const pkgView = ({item, index}) => {
-    return (
-      <Pressable
-        onPress={() => {
-          setSelectedPkg(item);
-        }}>
-        <View
-          style={{
-            marginTop: 10,
-            backgroundColor: Colors.white,
-
-            borderWidth: selectedPkg._id == item._id ? 2 : 1,
-            borderColor:
-              selectedPkg._id == item._id ? Colors.primary : Colors.gray02,
-            // minHeight: 80,
-
-            borderRadius: 20,
+    if (
+      params?.from == undefined ||
+      !!item.service.find(x => x.toLowerCase() == params?.from.toLowerCase())
+    )
+      return (
+        <Pressable
+          onPress={() => {
+            setSelectedPkg(item);
           }}>
           <View
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingHorizontal: 10,
-              paddingVertical: 10,
+              marginTop: 10,
+              backgroundColor: Colors.white,
+
+              borderWidth: selectedPkg._id == item._id ? 2 : 1,
+              borderColor:
+                selectedPkg._id == item._id ? Colors.primary : Colors.gray02,
+              minHeight: 80,
+
+              borderRadius: 20,
             }}>
-            <Image
-              source={
-                item?.type == 'star'
-                  ? ic_star
-                  : item?.type == 'diamond'
-                  ? ic_diamond
-                  : item?.type == 'crown'
-                  ? ic_crown
-                  : null
-              }
-              style={{height: 50, width: 50}}
-            />
-            <View style={{flex: 1, marginLeft: 10}}>
-              <Text
-                style={{
-                  fontFamily: font.bold,
-                  fontSize: 16,
-                  textTransform: 'capitalize',
-                }}>
-                {item.duration}
-              </Text>
-              <Text
-                style={{
-                  fontFamily: font.regular,
-                  fontSize: 12,
-                  marginTop: 5,
-                }}>
-                {item.name}
-              </Text>
-            </View>
-
-            <View style={{marginLeft: 10}}>
-              <Text
-                style={{
-                  fontFamily: font.bold,
-                  fontSize: 18,
-                  textTransform: 'capitalize',
-                  color: Colors.primary,
-                }}>
-                {`$${item.price}`}
-              </Text>
-            </View>
-          </View>
-          <Collapsible collapsed={item._id != selectedPkg._id}>
-            <View style={{padding: 10}}>
-              {item.description.map(x => (
-                <View
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: 10,
+                paddingVertical: 10,
+              }}>
+              <Image
+                source={
+                  item?.type == 'star'
+                    ? ic_star
+                    : item?.type == 'diamond'
+                    ? ic_diamond
+                    : item?.type == 'crown'
+                    ? ic_crown
+                    : null
+                }
+                style={{height: 50, width: 50}}
+              />
+              <View style={{flex: 1, marginLeft: 10}}>
+                <Text
                   style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginVertical: 5,
+                    fontFamily: font.bold,
+                    fontSize: 16,
+                    textTransform: 'capitalize',
                   }}>
-                  <Image
-                    source={ic_filledTick}
-                    style={{height: 15, width: 15, tintColor: Colors.completed}}
-                  />
-                  <Text
-                    style={{
-                      fontFamily: font.regular,
-                      fontSize: 14,
-                      color: Colors.black,
-                      marginLeft: 5,
-                    }}>
-                    {x}
-                  </Text>
-                </View>
-              ))}
+                  {item.duration}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: font.regular,
+                    fontSize: 12,
+                    marginTop: 5,
+                  }}>
+                  {item.name}
+                </Text>
+              </View>
+
+              <View style={{marginLeft: 10}}>
+                <Text
+                  style={{
+                    fontFamily: font.bold,
+                    fontSize: 18,
+                    textTransform: 'capitalize',
+                    color: Colors.primary,
+                  }}>
+                  {`$${item.price}`}
+                </Text>
+              </View>
             </View>
-          </Collapsible>
-        </View>
-      </Pressable>
-    );
+            <Collapsible collapsed={item._id != selectedPkg._id}>
+              <View style={{padding: 10}}>
+                {item.description.map(x => (
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      marginVertical: 5,
+                    }}>
+                    <Image
+                      source={ic_filledTick}
+                      style={{
+                        height: 15,
+                        width: 15,
+                        tintColor: Colors.completed,
+                      }}
+                    />
+                    <Text
+                      style={{
+                        fontFamily: font.regular,
+                        fontSize: 14,
+                        color: Colors.black,
+                        marginLeft: 5,
+                      }}>
+                      {x}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </Collapsible>
+          </View>
+        </Pressable>
+      );
   };
-
-  // const pkgView = ({item, index}) => {
-  //   return (
-  //     <Pressable
-  //       style={{
-  //         marginTop: 10,
-  //         backgroundColor: Colors.white,
-  //         flexDirection: 'row',
-  //         alignItems: 'center',
-  //         borderWidth: selectedPkg._id == item._id ? 2 : 1,
-  //         borderColor:
-  //           selectedPkg._id == item._id ? Colors.primary : Colors.gray02,
-  //         minHeight: 80,
-  //         paddingHorizontal: 10,
-  //         borderRadius: 20,
-  //       }}
-  //       onPress={() => setSelectedPkg(item)}>
-  //       <Image
-  //         source={
-  //           item?.type == 'star'
-  //             ? ic_star
-  //             : item?.type == 'diamond'
-  //             ? ic_diamond
-  //             : item?.type == 'crown'
-  //             ? ic_crown
-  //             : null
-  //         }
-  //         style={{height: 50, width: 50}}
-  //       />
-  //       <View style={{flex: 1, marginLeft: 10}}>
-  //         <Text
-  //           style={{
-  //             fontFamily: font.bold,
-  //             fontSize: 16,
-  //             textTransform: 'capitalize',
-  //           }}>
-  //           {item.duration}
-  //         </Text>
-  //         <Text
-  //           style={{
-  //             fontFamily: font.regular,
-  //             fontSize: 12,
-  //             marginTop: 5,
-  //           }}>
-  //           {item.name}
-  //         </Text>
-  //       </View>
-
-  //       <View style={{marginLeft: 10}}>
-  //         <Text
-  //           style={{
-  //             fontFamily: font.bold,
-  //             fontSize: 18,
-  //             textTransform: 'capitalize',
-  //             color: Colors.primary,
-  //           }}>
-  //           {`$ ${formatPrice(item.price)}`}
-  //         </Text>
-  //       </View>
-  //     </Pressable>
-  //   );
-  // };
 
   return (
     <SafeAreaView style={mainStyles.MainView}>
@@ -277,9 +238,11 @@ const AllPackages = props => {
         barStyle={'dark-content'}
       />
       <Header title="Subscriptions" navigation={props.navigation} />
+
       <View style={{flex: 1, paddingHorizontal: 20}}>
         <View style={{flex: 1}}>
           <FlatList
+            // keyExtractor={(item, index) => index.toString()}
             data={packages}
             ListHeaderComponent={FlatListHeader()}
             renderItem={pkgView}
@@ -287,7 +250,7 @@ const AllPackages = props => {
             contentContainerStyle={{paddingBottom: 20}}
           />
         </View>
-        <View style={{}}>
+        <View>
           <TouchableOpacity
             style={{
               flexDirection: 'row',
@@ -337,6 +300,7 @@ const packages = [
   {
     _id: '1',
     name: 'Habits',
+    service: ['habit'],
     description: ['Unlimited Habits', 'Unlimited time for Habits', 'Reminder'],
     price: 2.99,
     type: 'star',
@@ -345,6 +309,7 @@ const packages = [
   {
     _id: '2',
     name: 'Meditations',
+    service: ['meditation'],
     description: ['Access to all tracks', 'Download & listen without internet'],
     price: 2.99,
     type: 'star',
@@ -353,6 +318,7 @@ const packages = [
   {
     _id: '3',
     name: 'All in one',
+    service: ['habit', 'meditation'],
     description: [
       'Access to all tracks',
       'Download & listen without internet',
@@ -367,6 +333,7 @@ const packages = [
   {
     _id: '4',
     name: 'Access to all features',
+    service: ['habit', 'meditation'],
     description: [
       'Access to all tracks',
       'Download & listen without internet',

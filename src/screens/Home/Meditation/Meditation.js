@@ -8,6 +8,7 @@ import {
   Image,
   RefreshControl,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import CustomImage from '../../../Components/CustomImage';
@@ -18,6 +19,7 @@ import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
 import formatTime from '../../../functions/formatTime';
 import LoginAlert from '../../../Components/LoginAlert';
+
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -31,9 +33,10 @@ import EmptyView from '../../../Components/EmptyView';
 import play from '../../../Assets/Icons/play.png';
 import favList from '../../../Assets/Icons/favList.png';
 import ic_default from '../../../Assets/Icons/all.png';
+import ic_lock from '../../../Assets/Icons/locked.png';
 
 const Meditation = props => {
-  const {Token} = useContext(Context);
+  const {Token, isMeditationPurchased} = useContext(Context);
   const [isLoading, setisLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -43,18 +46,43 @@ const Meditation = props => {
   //? Navigation Functions
 
   const gotoTrackPlayer = (item, index) => {
-    props.navigation.navigate(screens.trackPlayer, {
-      item: item,
-      category: selectedCategory?.name,
-      list: selectedCategory?.category_track,
-      likeUnLikeFunc: likeUnLikeLocally,
-    });
+    if (chooseScreenOnPurchasesAndLockedTrack(item?.is_locked)) {
+      props.navigation.navigate(screens.trackPlayer, {
+        item: item,
+        category: selectedCategory?.name,
+        list: selectedCategory?.category_track,
+        likeUnLikeFunc: likeUnLikeLocally,
+      });
+    } else {
+      Alert.alert(
+        'Subscription',
+        'Are you sure you want to buy subscription?',
+        [
+          {text: 'No'},
+          {
+            text: 'Yes',
+            onPress: () => {
+              props.navigation.navigate(screens.allPackages, {
+                from: 'meditation',
+              });
+            },
+          },
+        ],
+      );
+    }
   };
 
-  const findCategoryName = (id)=>{
-    categoryList.find(x=>x.categoryList)
-  }
+  const findCategoryName = id => {
+    categoryList.find(x => x.categoryList);
+  };
 
+  const chooseScreenOnPurchasesAndLockedTrack = (trackLockedOrNot = false) => {
+    if (trackLockedOrNot == false && isMeditationPurchased == false) {
+      return true;
+    } else {
+      return false;
+    }
+  };
   //todo /////// API's
 
   const call_categoryAPI = () => {
@@ -264,6 +292,7 @@ const Meditation = props => {
             color: Colors.black,
             textAlign: 'center',
             fontSize: 12,
+            textTransform: item?._id == 'all' ? 'capitalize' : 'none',
           }}>
           {item.name}
         </Text>
@@ -342,7 +371,12 @@ const Meditation = props => {
               </Text>
             </View>
 
-            <View style={{marginTop: 3}}>
+            <View
+              style={{
+                marginTop: 3,
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}>
               <Text
                 style={{
                   fontFamily: font.medium,
@@ -351,6 +385,14 @@ const Meditation = props => {
                 }}>
                 {formatTime(item.duration)}
               </Text>
+              <View style={{marginLeft: 5}}>
+                {!chooseScreenOnPurchasesAndLockedTrack(item?.is_locked) && (
+                  <Image
+                    source={ic_lock}
+                    style={{height: 10, width: 10, tintColor: Colors.gray12}}
+                  />
+                )}
+              </View>
             </View>
           </View>
         </Pressable>
@@ -399,6 +441,7 @@ const Meditation = props => {
       />
       <View style={mainStyles.innerView}>
         <Loader enable={isLoading} />
+
         <View style={{flex: 1, marginHorizontal: -20}}>
           <FlatList
             listKey="main"

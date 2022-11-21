@@ -16,7 +16,7 @@ import CustomImage from './CustomImage';
 
 const ic_cross = require('../Assets/Icons/cross.png');
 const ImageZoomer = props => {
-  console.log('props', fileURL + props?.url);
+  console.log('ImageViewer', ImageViewer);
   return (
     <Modal
       isVisible={props?.visible}
@@ -34,7 +34,8 @@ const ImageZoomer = props => {
         style={{
           flex: 1,
           alignItems: 'center',
-          backgroundColor: Colors.black,
+          backgroundColor: Colors.background,
+          // backgroundColor:"#000000DD",
           justifyContent: 'center',
         }}>
         {/* <StatusBar barStyle="light-content" backgroundColor={'#000'} /> */}
@@ -43,33 +44,47 @@ const ImageZoomer = props => {
           style={{
             position: 'absolute',
             top: Platform.OS == 'ios' ? 50 : 10,
-            right: Platform.OS == 'ios' ? 20 : 5,
-            backgroundColor: '#fff',
-            height: 40,
-            width: 40,
-            borderRadius: 50,
-            overflow: 'hidden',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1,
+            right: Platform.OS == 'ios' ? 10 : 10,
+            zIndex: 2,
           }}>
-          <Image
+          <View
             style={{
-              tintColor: '#000',
-              height: 25,
-              width: 25,
-            }}
-            source={ic_cross}
-            resizeMode="stretch"
-          />
+              height: 40,
+              width: 40,
+              borderRadius: 50,
+              backgroundColor: '#fff',
+              justifyContent: 'center',
+              alignItems: 'center',
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}>
+            <Image
+              style={{
+                tintColor: '#000',
+                height: 25,
+                width: 25,
+              }}
+              source={ic_cross}
+              resizeMode="stretch"
+            />
+          </View>
         </Pressable>
         <View style={{flex: 1, justifyContent: 'center'}}>
           <ImageViewer
             style={{
               width: Dimensions.get('screen').width,
+              // width:200,
+              // height:200
               // aspectRatio: 1,
             }}
             // doubleClickInterval={1}
+            backgroundColor={'transparent'}
             loadingRender={() => (
               <ActivityIndicator color={Colors.primary} size={'large'} />
             )}

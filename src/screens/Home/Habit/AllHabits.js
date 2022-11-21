@@ -28,6 +28,7 @@ import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
 import PushNotification from 'react-native-push-notification';
+import SwipeableFlatList from 'react-native-swipeable-list';
 
 const screen = Dimensions.get('screen');
 const ic_Hplaceholder = require('../../../Assets/Icons/h_placeholder1.png');
@@ -395,20 +396,45 @@ const AllHabits = props => {
       <View style={{flex: 1}}>
         <Loader enable={isLoading} />
         <View style={{flex: 1}}>
-          <SwipeListView
-            useFlatList={true}
+          <SwipeableFlatList
+            // useFlatList={true}
             contentContainerStyle={{paddingVertical: 10}}
             showsVerticalScrollIndicator={false}
             data={sHabitList}
             renderItem={renderHabitsList}
-            rightOpenValue={-60}
-            disableRightSwipe={true}
-            closeOnRowBeginSwipe={true}
-            closeOnRowPress={true}
+            // rightOpenValue={-60}
+            // disableRightSwipe={true}
+            shouldBounceOnMount={true}
+            // closeOnRowBeginSwipe={true}
+            // closeOnRowPress={true}
+            maxSwipeDistance={70}
             keyExtractor={item => {
               return item._id;
             }}
-            renderHiddenItem={({item, index}) => {
+            // renderHiddenItem={({item, index}) => {
+            //   console.log('renderHiddenItem', item);
+            //   return (
+            //     <Pressable
+            //       key={item._id}
+            //       onPress={() =>
+            //         Alert.alert(
+            //           'Delete Habit',
+            //           'Are you sure you want to delete this Habit',
+            //           [
+            //             {text: 'No'},
+            //             {text: 'Yes', onPress: () => api_deleteHabit(item._id)},
+            //           ],
+            //         )
+            //       }
+            //       style={allHabit_styles.hiddenView}>
+            //       <Image
+            //         source={require('../../../Assets/Icons/trash.png')}
+            //         style={allHabit_styles.hiddenIcon}
+            //       />
+            //     </Pressable>
+            //   );
+            // }}
+            renderQuickActions={({item, index}) => {
               return (
                 <Pressable
                   key={item._id}

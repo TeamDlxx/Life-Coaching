@@ -364,7 +364,8 @@ const List = props => {
     <SafeAreaView style={mainStyles.MainView}>
       <StatusBar
         barStyle={'dark-content'}
-        backgroundColor={!!modalImage ? Colors.black : Colors.background}
+        backgroundColor={Colors.background}
+        translucent={!!modalImage?true:false}
       />
 
       <Header
