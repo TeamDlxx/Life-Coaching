@@ -16,7 +16,6 @@ import CustomImage from './CustomImage';
 
 const ic_cross = require('../Assets/Icons/cross.png');
 const ImageZoomer = props => {
-  console.log('ImageViewer', ImageViewer);
   return (
     <Modal
       isVisible={props?.visible}

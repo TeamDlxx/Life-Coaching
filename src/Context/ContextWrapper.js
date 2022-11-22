@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {ContextProvider} from '.';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PushNotification from 'react-native-push-notification';
-import {fileURL} from '../Utilities/domains';
+import {baseURL, fileURL} from '../Utilities/domains';
 import RNFS from 'react-native-fs';
 import showToast from '../functions/showToast';
 import moment from 'moment';
@@ -10,9 +10,11 @@ import ReactNativeBlobUtil from 'react-native-blob-util';
 import axios from 'axios';
 import {Platform, PermissionsAndroid, DevSettings} from 'react-native';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
+import invokeApi from '../functions/invokeAPI';
 
 const ContextWrapper = props => {
   const [Token, setToken] = useState(null);
+  const [adminURLsAndEmail, setAdminURLsAndEmail] = useState(null);
   const [habitList, setHabitList] = useState([]);
   const [progress, setProgress] = useState([]);
 
@@ -427,7 +429,19 @@ const ContextWrapper = props => {
     setProgress(newProgress);
   };
 
+  const api_getAdminURLAndEmail = async () => {
+    let res = await invokeApi({
+      path: 'api/website_setting/get_user_website_setting',
+    });
+    if (res) {
+      if (res.code == 200) {
+        setAdminURLsAndEmail(res.setting);
+      }
+    }
+  };
+
   useEffect(() => {
+    api_getAdminURLAndEmail();
     return () => {
       setHabitList([]);
     };
@@ -445,6 +459,8 @@ const ContextWrapper = props => {
     downloadQuote,
     isMeditationPurchased: purchases?.meditation,
     isHabitPurchased: purchases?.habit,
+    setPurchases,
+    adminURLsAndEmail,
   };
 
   return (

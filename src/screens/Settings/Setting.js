@@ -4,12 +4,12 @@ import {
   SafeAreaView,
   StatusBar,
   Pressable,
-  ScrollView,
   Linking,
   Share,
   Alert,
   Image,
   Platform,
+  FlatList,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import VersionCheck from 'react-native-version-check';
@@ -30,8 +30,9 @@ import DeviceInfo from 'react-native-device-info';
 
 const Setting = props => {
   const [isLoading, setisLoading] = useState(false);
-  const {Token, setToken, setHabitList} = useContext(Context);
-
+  const {Token, setToken, setHabitList, adminURLsAndEmail} =
+    useContext(Context);
+  console.log('adminURLsAndEmail', useContext(Context));
   const logout = async () => {
     try {
       let res = await AsyncStorage.multiRemove(['@token', '@user']);
@@ -76,6 +77,24 @@ const Setting = props => {
 
   const performAction = async type => {
     switch (type) {
+      case 'terms_of_use':
+        try {
+          let {terms_and_conditions_link} = adminURLsAndEmail;
+          await Linking.openURL(terms_and_conditions_link);
+        } catch (e) {
+          console.log('Link Open Error', e);
+        }
+        break;
+
+      case 'privacy_policy':
+        try {
+          let {privacy_policy_link} = adminURLsAndEmail;
+          await Linking.openURL(privacy_policy_link);
+        } catch (e) {
+          console.log('Link Open Error', e);
+        }
+        break;
+
       case 'share_app':
         try {
           const result = await Share.share({
@@ -100,14 +119,10 @@ const Setting = props => {
 
       case 'rate_us':
         let url = 'https://www.google.com/';
-        // Linking.openURL(url);
-
-        const supported = await Linking.canOpenURL(url);
-
-        if (supported) {
+        try {
           await Linking.openURL(url);
-        } else {
-          Alert.alert(`Don't know how to open this URL: ${url}`);
+        } catch (e) {
+          console.log('Link Open Error', e);
         }
         break;
 
@@ -135,11 +150,10 @@ const Setting = props => {
     if (email) {
       subject = subject + `, User Email: ${email}`;
     }
-    Linking.openURL('mailto:support@lifeCoaching.com?subject=' + subject).catch(
-      e => {
-        console.log('Mail open error', e);
-      },
-    );
+    let {support_email} = adminURLsAndEmail;
+    Linking.openURL(`mailto:${support_email}?subject=${subject}`).catch(e => {
+      console.log('Mail open error', e);
+    });
   };
 
   const getUserEmail = async () => {
@@ -158,6 +172,63 @@ const Setting = props => {
     }
   };
 
+  const ItemView = ({item, index}) => {
+    if (item.id == 'logout' && !Token) {
+      return;
+    }
+    return (
+      <Pressable
+        key={item.id}
+        onPress={() => performAction(item.action)}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingVertical: 10,
+        }}>
+        <View
+          style={{
+            height: 40,
+            width: 40,
+            backgroundColor: item.id == 'logout' ? '#D24D5733' : '#BDC3C744',
+
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderRadius: 10,
+          }}>
+          <Image
+            source={item.icon}
+            style={{
+              height: 20,
+              width: 20,
+              tintColor: item.id == 'logout' ? Colors.logout : Colors.black,
+            }}
+          />
+        </View>
+        <View style={{flex: 1, marginLeft: 15}}>
+          <Text
+            style={{
+              fontFamily: font.medium,
+              fontSize: 16,
+              letterSpacing: 0.6,
+              color: item.id == 'logout' ? Colors.logout : Colors.black,
+            }}>
+            {item.name}
+          </Text>
+        </View>
+        <View>
+          <Image
+            source={require('../../Assets/Icons/right_arrow.png')}
+            style={{
+              height: 15,
+              width: 15,
+              tintColor: item.id == 'logout' ? Colors.logout : Colors.black,
+            }}
+          />
+        </View>
+      </Pressable>
+    );
+  };
+
   return (
     <SafeAreaView
       style={[
@@ -171,69 +242,16 @@ const Setting = props => {
       <Header title="Settings" />
 
       <View style={{flex: 1}}>
-        <ScrollView>
-          <View style={{paddingHorizontal: 30, marginTop: 40}}>
-            {settings.map((x, i) => {
-              if (x.id == 'logout' && !Token) {
-                return;
-              }
-              return (
-                <Pressable
-                  key={x.id}
-                  onPress={() => performAction(x.action)}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    paddingVertical: 10,
-                  }}>
-                  <View
-                    style={{
-                      height: 40,
-                      width: 40,
-                      backgroundColor:
-                        x.id == 'logout' ? '#D24D5733' : '#BDC3C744',
-
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      borderRadius: 10,
-                    }}>
-                    <Image
-                      source={x.icon}
-                      style={{
-                        height: 20,
-                        width: 20,
-                        tintColor:
-                          x.id == 'logout' ? Colors.logout : Colors.black,
-                      }}
-                    />
-                  </View>
-                  <View style={{flex: 1, marginLeft: 15}}>
-                    <Text
-                      style={{
-                        fontFamily: font.medium,
-                        fontSize: 16,
-                        letterSpacing: 0.6,
-                        color: x.id == 'logout' ? Colors.logout : Colors.black,
-                      }}>
-                      {x.name}
-                    </Text>
-                  </View>
-                  <View>
-                    <Image
-                      source={require('../../Assets/Icons/right_arrow.png')}
-                      style={{
-                        height: 15,
-                        width: 15,
-                        tintColor:
-                          x.id == 'logout' ? Colors.logout : Colors.black,
-                      }}
-                    />
-                  </View>
-                </Pressable>
-              );
-            })}
-          </View>
-        </ScrollView>
+        <View style={{flex: 1}}>
+          <FlatList
+            contentContainerStyle={{
+              paddingHorizontal: 30,
+              paddingTop: 20,
+            }}
+            data={settings}
+            renderItem={ItemView}
+          />
+        </View>
 
         <View style={{alignItems: 'center', marginBottom: 10}}>
           <Text
@@ -259,15 +277,15 @@ export default Setting;
 const settings = [
   {
     id: '1',
-    name: 'Share App',
-    icon: require('../../Assets/Icons/shareApp.png'),
-    action: 'share_app',
+    name: 'Terms of Use',
+    icon: require('../../Assets/Icons/ic_terms.png'),
+    action: 'terms_of_use',
   },
   {
     id: '2',
-    name: 'Rate Us',
-    icon: require('../../Assets/Icons/star.png'),
-    action: 'rate_us',
+    name: 'Privacy Policy',
+    icon: require('../../Assets/Icons/ic_privacypolicy.png'),
+    action: 'privacy_policy',
   },
   {
     id: '3',
@@ -275,6 +293,19 @@ const settings = [
     icon: require('../../Assets/Icons/problem.png'),
     action: 'report',
   },
+  {
+    id: '4',
+    name: 'Share App',
+    icon: require('../../Assets/Icons/shareApp.png'),
+    action: 'share_app',
+  },
+  {
+    id: '5',
+    name: 'Rate Us',
+    icon: require('../../Assets/Icons/star.png'),
+    action: 'rate_us',
+  },
+
   {
     id: 'logout',
     name: 'Logout',

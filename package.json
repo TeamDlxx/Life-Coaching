@@ -47,7 +47,7 @@
     "react-native-device-info": "^10.3.0",
     "react-native-fast-image": "^8.6.1",
     "react-native-fs": "^2.20.0",
-    "react-native-iap": "10.1.0",
+    "react-native-iap": "^12.4.4",
     "react-native-image-crop-picker": "^0.38.0",
     "react-native-image-picker": "^4.10.0",
     "react-native-image-progress": "^1.2.0",

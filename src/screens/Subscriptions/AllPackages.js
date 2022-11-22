@@ -1,4 +1,4 @@
-import React, {useContext, useRef, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   FlatList,
   Dimensions,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import Header from '../../Components/Header';
 import {mainStyles} from '../../Utilities/styles';
@@ -16,50 +17,187 @@ import Context from '../../Context';
 import Colors from '../../Utilities/Colors';
 import {font} from '../../Utilities/font';
 import Collapsible from 'react-native-collapsible';
-import {requestPurchase, useIAP} from 'react-native-iap';
-
+import * as RNIap from 'react-native-iap';
+import showToast from '../../functions/showToast';
+import Loader from '../../Components/Loader';
 const ic_filledTick = require('../../Assets/Icons/circleFilledCheck.png');
 const ic_star = require('../../Assets/pkgIcons/star.png');
 const ic_diamond = require('../../Assets/pkgIcons/diamond.png');
 const ic_crown = require('../../Assets/pkgIcons/crown.png');
 const ic_tick = require('../../Assets/Icons/tick.png');
 
+let purchaseUpdateSubscription = null;
+
+let purchaseErrorSubscription = null;
+
+const itemsPurchase = Platform.select({
+  ios: [],
+  android: [
+    'habits.monthly.subscription',
+    'meditation.monthly.subscription',
+    'all_in_one.monthly.subscription',
+    'lifetime.purchase',
+  ],
+});
+
 const AllPackages = props => {
-  const {Token} = useContext(Context);
+  const {Token, setPurchases} = useContext(Context);
+  const [loading, setisLoading] = useState(false);
   const {navigation} = props;
   const list = useRef();
   const {params} = props.route;
+  const [pkgList, setPkgList] = useState([]);
   const [selectedPkg, setSelectedPkg] = useState(packages[0]);
 
-  const {
-    connected,
-    products,
-    promotedProductsIOS,
-    subscriptions,
-    purchaseHistories,
-    availablePurchases,
-    currentPurchase,
-    currentPurchaseError,
-    initConnectionError,
-    finishTransaction,
-    getProducts,
-    getSubscriptions,
-    getAvailablePurchases,
-    getPurchaseHistories,
-  } = useIAP();
+  const initilizeIAPConnection = async () => {
+    await RNIap.flushFailedPurchasesCachedAsPendingAndroid()
+      .then(async consumed => {
+        console.log('consumed all items?', consumed);
+      })
+      .catch(err => {
+        console.log(
+          `flushFailedPurchasesCachedAsPendingAndroid ERROR ${err.code}`,
+          err.message,
+        );
+      });
+  };
 
-  const ProductsDetail = async () => {
-    let p = await getProducts([
-      'meditation.monthly.subscription',
-      'lifetime.purchase',
-      'habits.monthly.subscription',
-      'all_in_one.monthly.subscription',
-    ]);
-    console.log('product', p);
+  const PurchaseSubscription = async () => {
+    let item = selectedPkg;
+    console.log(item, 'selectedPkg...');
+    try {
+      if (item.isSubscription) {
+        subscribeIAP(item?.sku[0], item?.playStoreData?.offerToken);
+      } else {
+        puchaseIAP(item?.sku[0]);
+      }
+    } catch (err) {
+      console.log('IAP error', err);
+      showToast(err, 'Error');
+      // setError(err.message);
+    }
+  };
+
+  const subscribeIAP = async (sku, offerToken) => {
+    console.log('requestSubscription...', sku, offerToken);
+
+    try {
+      // await RNIap.requestSubscription(
+      //   {sku},
+      //   ...(offerToken && {subscriptionOffers: [{sku, offerToken}]}),
+      // );
+      await RNIap.requestSubscription({
+        // sku: sku,
+        // subscriptionOffers: [offerToken],
+        sku: sku,
+        subscriptionOffers: [
+          {
+            offerToken: offerToken,
+            sku: sku,
+          },
+        ],
+      });
+    } catch (err) {
+      console.log(err.code, err.message);
+    }
+  };
+
+  const puchaseIAP = async sku => {
+    console.log('requestPurchase SKU', sku);
+    try {
+      await RNIap.requestPurchase({
+        skus: [sku],
+        andDangerouslyFinishTransactionAutomaticallyIOS: false,
+      });
+    } catch (err) {
+      console.log(err.code, err.message);
+    }
+  };
+
+  const Check = async () => {
+    let p = await RNIap.getAvailablePurchases();
+    console.log('p', p);
+  };
+
+  const getIAPProductsAndSubscriptions = async () => {
+    setisLoading(true);
+    if (Platform.OS == 'android') {
+      const subscription = await RNIap.getSubscriptions({
+        skus: itemsPurchase,
+      });
+      const Products = await RNIap.getProducts({skus: itemsPurchase});
+      let IAP_list = [...subscription, ...Products];
+
+      let newArray = [];
+      packages.forEach(pakage => {
+        let playStoreData = IAP_list.find(x => pakage.sku[0] == x.productId);
+        let data;
+        if (playStoreData.productType == 'subs') {
+          let temp = playStoreData.subscriptionOfferDetails[0];
+          data = {
+            offerToken: temp.offerToken,
+            formattedPrice:
+              temp.pricingPhases.pricingPhaseList[0].formattedPrice,
+          };
+        } else {
+          let temp = playStoreData.oneTimePurchaseOfferDetails;
+          data = {
+            formattedPrice: temp.formattedPrice,
+          };
+        }
+        newArray.push({...pakage, playStoreData: data});
+      });
+
+      setPkgList(newArray);
+      setisLoading(false);
+    }
   };
 
   React.useEffect(() => {
-    ProductsDetail();
+    getIAPProductsAndSubscriptions();
+    Check();
+    purchaseUpdateSubscription = RNIap.purchaseUpdatedListener(
+      async purchase => {
+        console.log('purchase', purchase);
+        const receipt = JSON.parse(purchase.transactionReceipt);
+        console.log('receipt', receipt);
+        if (receipt) {
+          try {
+            if (Platform.OS === 'ios') {
+              RNIap.finishTransactionIOS(purchase.transactionId);
+            } else if (Platform.OS === 'android') {
+              let acknowledgePurchaseAndroid =
+                await RNIap.acknowledgePurchaseAndroid({
+                  token: purchase.purchaseToken,
+                });
+              console.log(
+                'acknowledgePurchaseAndroid',
+                acknowledgePurchaseAndroid,
+              );
+            }
+
+            await RNIap.finishTransaction(purchase, true);
+          } catch (ackErr) {
+            //       console.log('ackErr INAPP>>>>', ackErr);
+          }
+        }
+      },
+    );
+
+    purchaseErrorSubscription = RNIap.purchaseErrorListener(error => {
+      console.log('purchaseErrorListener INAPP>>>>', error);
+    });
+
+    return () => {
+      if (purchaseUpdateSubscription) {
+        purchaseUpdateSubscription.remove();
+        purchaseUpdateSubscription = null;
+      }
+      if (purchaseErrorSubscription) {
+        purchaseErrorSubscription.remove();
+        purchaseErrorSubscription = null;
+      }
+    };
   }, []);
 
   const FlatListHeader = () => {
@@ -131,6 +269,7 @@ const AllPackages = props => {
     )
       return (
         <Pressable
+          key={item._id}
           onPress={() => {
             setSelectedPkg(item);
           }}>
@@ -192,14 +331,15 @@ const AllPackages = props => {
                     textTransform: 'capitalize',
                     color: Colors.primary,
                   }}>
-                  {`$${item.price}`}
+                  {item?.playStoreData?.formattedPrice}
                 </Text>
               </View>
             </View>
             <Collapsible collapsed={item._id != selectedPkg._id}>
               <View style={{padding: 10}}>
-                {item.description.map(x => (
+                {item.description.map((x, i) => (
                   <View
+                    key={i.toString()}
                     style={{
                       flexDirection: 'row',
                       alignItems: 'center',
@@ -240,55 +380,67 @@ const AllPackages = props => {
       <Header title="Subscriptions" navigation={props.navigation} />
 
       <View style={{flex: 1, paddingHorizontal: 20}}>
-        <View style={{flex: 1}}>
-          <FlatList
-            // keyExtractor={(item, index) => index.toString()}
-            data={packages}
-            ListHeaderComponent={FlatListHeader()}
-            renderItem={pkgView}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{paddingBottom: 20}}
-          />
-        </View>
-        <View>
-          <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: 60,
-              backgroundColor: Colors.primary,
-              borderRadius: 30,
-              paddingHorizontal: 7,
-            }}>
-            <View style={{height: 50, width: 50}} />
-            <View
-              style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-              <Text
-                style={{
-                  fontFamily: font.medium,
-                  color: Colors.white,
-                  fontSize: 16,
-                }}>
-                Subscribe Now
-              </Text>
-            </View>
-            <View
-              style={{
-                height: 40,
-                width: 40,
-                backgroundColor: Colors.lightPrimary3,
-                borderRadius: 40 / 2,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              <Image
-                source={ic_tick}
-                style={{height: 20, width: 20, tintColor: Colors.white}}
+        <Loader enable={loading} />
+        {!loading && (
+          <>
+            <View style={{flex: 1}}>
+              <FlatList
+                keyExtractor={(item, index) => {
+                  return item._id;
+                }}
+                data={pkgList}
+                ListHeaderComponent={FlatListHeader()}
+                renderItem={pkgView}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{paddingBottom: 20}}
               />
             </View>
-          </TouchableOpacity>
-        </View>
+            <View>
+              <TouchableOpacity
+                onPress={PurchaseSubscription}
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  height: 60,
+                  backgroundColor: Colors.primary,
+                  borderRadius: 30,
+                  paddingHorizontal: 7,
+                }}>
+                <View style={{height: 50, width: 50}} />
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <Text
+                    style={{
+                      fontFamily: font.medium,
+                      color: Colors.white,
+                      fontSize: 16,
+                    }}>
+                    Subscribe Now
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    height: 40,
+                    width: 40,
+                    backgroundColor: Colors.lightPrimary3,
+                    borderRadius: 40 / 2,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                  <Image
+                    source={ic_tick}
+                    style={{height: 20, width: 20, tintColor: Colors.white}}
+                  />
+                </View>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -305,6 +457,11 @@ const packages = [
     price: 2.99,
     type: 'star',
     duration: 'monthly',
+    sku: Platform.select({
+      ios: [],
+      android: ['habits.monthly.subscription'],
+    }),
+    isSubscription: true,
   },
   {
     _id: '2',
@@ -314,6 +471,11 @@ const packages = [
     price: 2.99,
     type: 'star',
     duration: 'monthly',
+    sku: Platform.select({
+      ios: [],
+      android: ['meditation.monthly.subscription'],
+    }),
+    isSubscription: true,
   },
   {
     _id: '3',
@@ -329,6 +491,11 @@ const packages = [
     price: 4.99,
     type: 'diamond',
     duration: 'monthly',
+    sku: Platform.select({
+      ios: [],
+      android: ['all_in_one.monthly.subscription'],
+    }),
+    isSubscription: true,
   },
   {
     _id: '4',
@@ -344,5 +511,10 @@ const packages = [
     price: 44.99,
     type: 'crown',
     duration: 'lifetime',
+    sku: Platform.select({
+      ios: [],
+      android: ['lifetime.purchase'],
+    }),
+    isSubscription: false,
   },
 ];

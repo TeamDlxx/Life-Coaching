@@ -7,7 +7,7 @@ import {Capability} from 'react-native-track-player';
 import Toast from 'react-native-toast-message';
 import ContextWrapper from './src/Context/ContextWrapper';
 import {Text} from 'react-native';
-import {withIAPContext} from 'react-native-iap';
+import {initConnection, endConnection} from 'react-native-iap';
 
 moment.updateLocale('en', {
   week: {
@@ -15,14 +15,19 @@ moment.updateLocale('en', {
   },
 });
 
-console.log('Capabilities', Capability);
-
 const App = props => {
   React.useEffect(() => {
     if (Text.defaultProps == null) Text.defaultProps = {};
     Text.defaultProps.allowFontScaling = false;
-
-    TrackplayerSetup();
+    if (!__DEV__) {
+      TrackplayerSetup();
+    }
+    initConnection().then(x => {
+      console.log('initConnection', x);
+    });
+    return () => {
+      endConnection();
+    };
   }, []);
 
   const TrackplayerSetup = async () => {
@@ -45,13 +50,7 @@ const App = props => {
         Capability.JumpForward,
         Capability.SeekTo,
       ],
-      compactCapabilities: [
-        Capability.Play,
-        Capability.Pause,
-        // Capability.JumpBackward,
-        // Capability.JumpForward,
-        // Capability.SeekTo,
-      ],
+      compactCapabilities: [Capability.Play, Capability.Pause],
     });
   };
 
@@ -65,4 +64,4 @@ const App = props => {
   );
 };
 
-export default withIAPContext(App);
+export default App;
