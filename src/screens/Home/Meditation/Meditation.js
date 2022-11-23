@@ -330,6 +330,38 @@ const Meditation = props => {
             style={{height: 70, width: 70}}
             indicatorProps={{color: Colors.primary}}
           />
+          {/* {chooseScreenOnPurchasesAndLockedTrack(item.is_locked) ? (
+            <View
+              style={{
+                position: 'absolute',
+                height: 70,
+                width: 70,
+                borderRadius: 10,
+                backgroundColor: '#FFFFFF66',
+                // justifyContent: 'center',
+                // alignItems: 'center',
+                zIndex: 2,
+              }}>
+              <View
+                // opacity={0.7}
+                style={{
+                  height: 20,
+                  width: 20,
+                  borderRadius: 30 / 2,
+                  backgroundColor: Colors.primary,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  position: 'absolute',
+                  bottom: 5,
+                  right: 5,
+                }}>
+                <Image
+                  style={{height: 12, width: 12, tintColor: Colors.white}}
+                  source={ic_lock}
+                />
+              </View>
+            </View>
+          ) : ( */}
           <View
             style={{
               position: 'absolute',
@@ -347,6 +379,7 @@ const Meditation = props => {
               source={play}
             />
           </View>
+          {/* )} */}
         </View>
         <View style={{marginLeft: 15, flex: 1}}>
           <Text
@@ -390,10 +423,19 @@ const Meditation = props => {
             </Text>
             <View style={{marginLeft: 5}}>
               {chooseScreenOnPurchasesAndLockedTrack(item.is_locked) && (
-                <Image
-                  source={ic_lock}
-                  style={{height: 10, width: 10, tintColor: Colors.gray12}}
-                />
+                <View
+                  style={{
+                    backgroundColor: Colors.primary,
+                    padding: 3,
+                    borderRadius: 999,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                  <Image
+                    source={ic_lock}
+                    style={{height: 10, width: 10, tintColor: Colors.white}}
+                  />
+                </View>
               )}
             </View>
           </View>

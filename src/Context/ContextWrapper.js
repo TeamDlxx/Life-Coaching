@@ -445,6 +445,7 @@ const ContextWrapper = props => {
 
   const CheckPurchases = async () => {
     let p = await RNIap.getAvailablePurchases();
+    console.log('getAvailablePurchases', p);
     let arr = [];
     let habit_flag = false;
     let meditation_flag = false;
@@ -465,13 +466,7 @@ const ContextWrapper = props => {
         meditation_flag = true;
       }
     });
-    console.log(
-      'habit_flag',
-      habit_flag,
-      '\n',
-      'meditation_flag',
-      meditation_flag,
-    );
+
     setPurchases({
       habit: habit_flag,
       meditation: meditation_flag,

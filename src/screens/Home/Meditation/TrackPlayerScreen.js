@@ -24,6 +24,7 @@ import Context from '../../../Context';
 import showToast from '../../../functions/showToast';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
+import analytics from '@react-native-firebase/analytics';
 
 //Icons
 
@@ -73,7 +74,8 @@ const TrackPlayerScreen = props => {
           ? trackItem?.category_id[0]?._id?.name
           : params?.category,
       );
-      console.log('res', res);
+      await analytics().logEvent(`DOWNLOAD_TRACK_EVENT_${trackItem.name}`);
+
       setDownloaded(res);
     } else {
       Alert.alert(
@@ -156,6 +158,7 @@ const TrackPlayerScreen = props => {
     let val = !repeat;
     if (val) {
       await TrackPlayer.setRepeatMode(1);
+      await analytics().logEvent(`REPEAT_TRACK_EVENT_${trackItem.name}`);
     } else {
       await TrackPlayer.setRepeatMode(0);
     }
@@ -226,9 +229,8 @@ const TrackPlayerScreen = props => {
       }
     });
 
-    TrackPlayer.addEventListener("remote-play", async ({state}) => {
+    TrackPlayer.addEventListener('remote-play', async ({state}) => {
       console.log('state: ' + state);
-     
     });
     return () => {
       TrackPlayer.reset();
@@ -251,6 +253,7 @@ const TrackPlayerScreen = props => {
       if (playIcon == playTrack) {
         TrackPlayer.play();
         setPlayIcon(pauseTrack);
+        await analytics().logEvent(`PLAY_TRACK_EVENT_${trackItem.name}`);
       } else {
         TrackPlayer.pause();
         setPlayIcon(playTrack);
@@ -289,6 +292,9 @@ const TrackPlayerScreen = props => {
   };
 
   const BTN_LIKE = async (val, id) => {
+    if (val) {
+      await analytics().logEvent(`LIKE_TRACK_BUTTON_${trackItem.name}`);
+    }
     if (Token) {
       api_likeUnLike(val, id);
     } else {

@@ -30,15 +30,12 @@ let purchaseUpdateSubscription = null;
 
 let purchaseErrorSubscription = null;
 
-const itemsPurchase = Platform.select({
-  ios: [],
-  android: [
-    'habits.monthly.subscription',
-    'meditation.monthly.subscription',
-    'all_in_one.monthly.subscription',
-    'lifetime.purchase',
-  ],
-});
+const itemsPurchase = [
+  'habits.monthly.subscription',
+  'meditation.monthly.subscription',
+  'all_in_one.monthly.subscription',
+  'lifetime.purchase',
+];
 
 const AllPackages = props => {
   const {Token, CheckPurchases, purchasedSKUs} = useContext(Context);
@@ -115,37 +112,40 @@ const AllPackages = props => {
   };
 
   const getIAPProductsAndSubscriptions = async () => {
-    setisLoading(true);
-    if (Platform.OS == 'android') {
-      const subscription = await RNIap.getSubscriptions({
-        skus: itemsPurchase,
-      });
-      const Products = await RNIap.getProducts({skus: itemsPurchase});
-      let IAP_list = [...subscription, ...Products];
+    // setisLoading(true);
+    // if (Platform.OS == 'android') {
+    const subscription = await RNIap.getSubscriptions({
+      skus: itemsPurchase,
+    });
+    console.log("subscription",subscription)
+    const Products = await RNIap.getProducts({skus: itemsPurchase});
+    console.log("Products",Products)
+    let IAP_list = [...subscription, ...Products];
+    console.log('IAP_list', IAP_list);
+    return;
+    let newArray = [];
+    packages.forEach(pakage => {
+      let playStoreData = IAP_list.find(x => pakage.sku[0] == x.productId);
+      let data;
 
-      let newArray = [];
-      packages.forEach(pakage => {
-        let playStoreData = IAP_list.find(x => pakage.sku[0] == x.productId);
-        let data;
-        if (playStoreData.productType == 'subs') {
-          let temp = playStoreData.subscriptionOfferDetails[0];
-          data = {
-            offerToken: temp.offerToken,
-            formattedPrice:
-              temp.pricingPhases.pricingPhaseList[0].formattedPrice,
-          };
-        } else {
-          let temp = playStoreData.oneTimePurchaseOfferDetails;
-          data = {
-            formattedPrice: temp.formattedPrice,
-          };
-        }
-        newArray.push({...pakage, playStoreData: data});
-      });
-      setSelectedPkg(newArray[0]);
-      setPkgList(newArray);
-      setisLoading(false);
-    }
+      if (playStoreData.productType == 'subs') {
+        let temp = playStoreData.subscriptionOfferDetails[0];
+        data = {
+          offerToken: temp.offerToken,
+          formattedPrice: temp.pricingPhases.pricingPhaseList[0].formattedPrice,
+        };
+      } else {
+        let temp = playStoreData.oneTimePurchaseOfferDetails;
+        data = {
+          formattedPrice: temp.formattedPrice,
+        };
+      }
+      newArray.push({...pakage, playStoreData: data});
+    });
+    setSelectedPkg(newArray[0]);
+    setPkgList(newArray);
+    setisLoading(false);
+    // }
   };
 
   React.useEffect(() => {
@@ -437,10 +437,7 @@ const packages = [
     price: 2.99,
     type: 'star',
     duration: 'monthly',
-    sku: Platform.select({
-      ios: [],
-      android: ['habits.monthly.subscription'],
-    }),
+    sku: ['habits.monthly.subscription'],
     isSubscription: true,
   },
   {
@@ -451,10 +448,7 @@ const packages = [
     price: 2.99,
     type: 'star',
     duration: 'monthly',
-    sku: Platform.select({
-      ios: [],
-      android: ['meditation.monthly.subscription'],
-    }),
+    sku: ['meditation.monthly.subscription'],
     isSubscription: true,
   },
   {
@@ -471,10 +465,7 @@ const packages = [
     price: 4.99,
     type: 'diamond',
     duration: 'monthly',
-    sku: Platform.select({
-      ios: [],
-      android: ['all_in_one.monthly.subscription'],
-    }),
+    sku: ['all_in_one.monthly.subscription'],
     isSubscription: true,
   },
   {
@@ -491,10 +482,7 @@ const packages = [
     price: 44.99,
     type: 'crown',
     duration: 'lifetime',
-    sku: Platform.select({
-      ios: [],
-      android: ['lifetime.purchase'],
-    }),
+    sku: ['lifetime.purchase'],
     isSubscription: false,
   },
 ];

@@ -27,6 +27,7 @@ import LoginAlert from '../../../Components/LoginAlert';
 import RNFS from 'react-native-fs';
 import kFormatter from '../../../functions/kFormatter';
 import ImageZoomer from '../../../Components/ImageZoomer';
+import analytics from '@react-native-firebase/analytics';
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -112,10 +113,13 @@ const List = props => {
       .catch(err => console.log('Error', err));
   };
 
-  const favUnFavFunction = (item, index) => {
+  const favUnFavFunction = async (item, index) => {
     if (Token) {
       api_favOrUnfavQuote(!item?.is_favourite_by_me, item._id);
       toggleLike(!item?.is_favourite_by_me, item._id);
+      if (!item?.is_favourite_by_me) {
+        await analytics().logEvent(`LIKE_QUOTE_EVENT`);
+      }
     } else {
       LoginAlert(props.navigation, props.route?.name);
     }
@@ -126,7 +130,6 @@ const List = props => {
     let index = newArray.findIndex(x => x._id == id);
     if (index > -1) {
       let newObj = newArray[index];
-
       newObj.is_favourite_by_me = val;
       if (newObj.is_favourite_by_me) {
         newObj.favourite = newObj.favourite + 1;
@@ -320,8 +323,9 @@ const List = props => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => {
-              downloadQuote(item?.images?.large, item?._id);
+            onPress={async () => {
+              await downloadQuote(item?.images?.large, item?._id);
+              await analytics.logEvent('QUOTE_DOWLOAD_EVENT');
             }}
             style={{
               flex: 1,
@@ -337,8 +341,9 @@ const List = props => {
 
           <TouchableOpacity
             disabled={isSharing != null}
-            onPress={() => {
-              shareQuote(item);
+            onPress={async () => {
+              await shareQuote(item);
+              await analytics.logEvent('QUOTE_SHARE_EVENT');
             }}
             style={{
               flex: 1,
@@ -365,7 +370,7 @@ const List = props => {
       <StatusBar
         barStyle={'dark-content'}
         backgroundColor={Colors.background}
-        translucent={!!modalImage?true:false}
+        translucent={!!modalImage ? true : false}
       />
 
       <Header

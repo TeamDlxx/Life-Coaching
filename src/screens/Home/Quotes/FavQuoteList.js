@@ -24,6 +24,7 @@ import axios from 'axios';
 import _ from 'buffer';
 import kFormatter from '../../../functions/kFormatter';
 import ImageZoomer from '../../../Components/ImageZoomer';
+import analytics from '@react-native-firebase/analytics';
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -61,8 +62,6 @@ const FavQuoteList = props => {
   });
   const {pageNumber, isLoadingMore, canLoadMore} = PGN;
   const setPGN = val => updatePGN({...PGN, ...val});
-
- 
 
   const shareQuote = async item => {
     setIsSharing(item._id);
@@ -293,8 +292,9 @@ const FavQuoteList = props => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => {
-              downloadQuote(item?.images?.large, item?._id);
+            onPress={async () => {
+              await downloadQuote(item?.images?.large, item?._id);
+              await analytics.logEvent('QUOTE_DOWLOAD_EVENT');
             }}
             style={{
               flex: 1,
@@ -309,8 +309,9 @@ const FavQuoteList = props => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => {
-              shareQuote(item);
+            onPress={async () => {
+              await shareQuote(item);
+              await analytics.logEvent('QUOTE_SHARE_EVENT');
             }}
             style={{
               flex: 1,

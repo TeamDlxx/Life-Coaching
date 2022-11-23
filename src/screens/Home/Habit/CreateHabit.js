@@ -30,6 +30,8 @@ import moment from 'moment';
 import Modal from 'react-native-modal';
 import ImagePicker from 'react-native-image-crop-picker';
 import UploadImage from '../../../Components/UploadImage';
+import analytics from '@react-native-firebase/analytics';
+
 // For API's
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -298,6 +300,7 @@ const CreateHabit = props => {
 
     if (res) {
       if (res.code == 200) {
+        await analytics().logEvent('HABIT_CREATED_BY_USER_EVENT');
         if (res?.habit?.reminder) {
           scheduleNotification(res?.habit);
         }

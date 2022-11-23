@@ -8,6 +8,7 @@ import Toast from 'react-native-toast-message';
 import ContextWrapper from './src/Context/ContextWrapper';
 import {Text} from 'react-native';
 import {initConnection, endConnection} from 'react-native-iap';
+import analytics from '@react-native-firebase/analytics';
 
 moment.updateLocale('en', {
   week: {
@@ -16,6 +17,9 @@ moment.updateLocale('en', {
 });
 
 const App = props => {
+  const routeNameRef = React.useRef();
+  const navigationRef = React.useRef();
+
   React.useEffect(() => {
     if (Text.defaultProps == null) Text.defaultProps = {};
     Text.defaultProps.allowFontScaling = false;
@@ -54,7 +58,25 @@ const App = props => {
 
   return (
     <ContextWrapper>
-      <NavigationContainer>
+      <NavigationContainer
+        ref={navigationRef}
+        onReady={() => {
+          routeNameRef.current =
+            navigationRef?.current?.getCurrentRoute()?.name;
+        }}
+        onStateChange={async () => {
+          const previousRouteName = routeNameRef?.current;
+          const currentRouteName =
+            navigationRef?.current?.getCurrentRoute()?.name;
+
+          if (previousRouteName !== currentRouteName) {
+            await analytics().logScreenView({
+              screen_name: currentRouteName,
+              screen_class: currentRouteName,
+            });
+          }
+          routeNameRef.current = currentRouteName;
+        }}>
         <AuthStack />
         <Toast />
       </NavigationContainer>
