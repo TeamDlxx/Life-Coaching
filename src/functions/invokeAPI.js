@@ -54,13 +54,26 @@ export default async function invokeApi({
           let res = await AsyncStorage.multiRemove(['@token', '@user']);
           navigation.reset({
             index: 0,
-            routes: [{name: screens.landing}],
+            routes: [
+              {
+                name: screens.landing,
+                params: {
+                  logout: true,
+                },
+              },
+            ],
           });
-
         } catch (e) {
           navigation.reset({
             index: 0,
-            routes: [{name: screens.landing}],
+            routes: [
+              {
+                name: screens.landing,
+                params: {
+                  logout: true,
+                },
+              },
+            ],
           });
         }
       }

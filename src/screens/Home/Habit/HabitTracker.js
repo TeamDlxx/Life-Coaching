@@ -58,6 +58,8 @@ const HabitTracker = props => {
     item: null,
   });
 
+  console.log('isHabitPurchased', isHabitPurchased);
+
   const filterSelectedDayHabits = list => {
     return list.slice().filter(x => {
       if (
@@ -91,7 +93,7 @@ const HabitTracker = props => {
 
   const btn_add = () => {
     if (Token) {
-      if (habitList.length < 6 || isHabitPurchased == true) {
+      if (habitList.length < 5 || isHabitPurchased == true) {
         setVisibleAddHabitModal(true);
       } else {
         Alert.alert(

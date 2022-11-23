@@ -19,9 +19,7 @@ const App = props => {
   React.useEffect(() => {
     if (Text.defaultProps == null) Text.defaultProps = {};
     Text.defaultProps.allowFontScaling = false;
-    if (!__DEV__) {
-      TrackplayerSetup();
-    }
+    TrackplayerSetup();
     initConnection().then(x => {
       console.log('initConnection', x);
     });

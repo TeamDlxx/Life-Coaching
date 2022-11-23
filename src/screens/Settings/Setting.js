@@ -41,13 +41,27 @@ const Setting = props => {
       setHabitList([]);
       props.navigation.reset({
         index: 0,
-        routes: [{name: screens.landing}],
+        routes: [
+          {
+            name: screens.landing,
+            params: {
+              logout: true,
+            },
+          },
+        ],
       });
       PushNotification.cancelAllLocalNotifications();
     } catch (e) {
       props.navigation.reset({
         index: 0,
-        routes: [{name: screens.landing}],
+        routes: [
+          {
+            name: screens.landing,
+            params: {
+              logout: true,
+            },
+          },
+        ],
       });
       setHabitList([]);
       PushNotification.cancelAllLocalNotifications();
@@ -176,6 +190,7 @@ const Setting = props => {
     if (item.id == 'logout' && !Token) {
       return;
     }
+
     return (
       <Pressable
         key={item.id}

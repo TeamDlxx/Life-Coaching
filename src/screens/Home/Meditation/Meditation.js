@@ -43,17 +43,19 @@ const Meditation = props => {
   const [categoryList, setCategoryList] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
+  console.log('Token', Token);
+  console.log('isMeditationPurchased', isMeditationPurchased);
   //? Navigation Functions
 
   const gotoTrackPlayer = (item, index) => {
-    if (chooseScreenOnPurchasesAndLockedTrack(item?.is_locked)) {
+    if (!chooseScreenOnPurchasesAndLockedTrack(item.is_locked)) {
       props.navigation.navigate(screens.trackPlayer, {
         item: item,
         category: selectedCategory?.name,
         list: selectedCategory?.category_track,
         likeUnLikeFunc: likeUnLikeLocally,
       });
-    } else {
+    } else if (Token) {
       Alert.alert(
         'Subscription',
         'Are you sure you want to buy subscription?',
@@ -69,6 +71,8 @@ const Meditation = props => {
           },
         ],
       );
+    } else {
+      LoginAlert(props.navigation, props.route?.name);
     }
   };
 
@@ -76,8 +80,8 @@ const Meditation = props => {
     categoryList.find(x => x.categoryList);
   };
 
-  const chooseScreenOnPurchasesAndLockedTrack = (trackLockedOrNot = false) => {
-    if (trackLockedOrNot == false && isMeditationPurchased == false) {
+  const chooseScreenOnPurchasesAndLockedTrack = trackLockedOrNot => {
+    if (trackLockedOrNot == true && isMeditationPurchased == false) {
       return true;
     } else {
       return false;
@@ -300,106 +304,103 @@ const Meditation = props => {
     );
   };
 
-  const renderTrackList = React.useCallback(
-    ({item, index}) => {
-      return (
-        <Pressable
-          onPress={() => {
-            gotoTrackPlayer(item, index);
-          }}
+  const renderTrackList = ({item, index}) => {
+    return (
+      <Pressable
+        onPress={() => {
+          gotoTrackPlayer(item, index);
+        }}
+        style={{
+          marginTop: 20,
+          alignItems: 'center',
+          flexDirection: 'row',
+          marginHorizontal: 20,
+        }}>
+        <View
           style={{
-            marginTop: 20,
-            alignItems: 'center',
-            flexDirection: 'row',
-            marginHorizontal: 20,
+            height: 70,
+            width: 70,
+            borderRadius: 10,
+            overflow: 'hidden',
+            borderWidth: 1,
+            borderColor: Colors.gray02,
           }}>
+          <CustomImage
+            source={{uri: fileURL + item?.images?.small}}
+            style={{height: 70, width: 70}}
+            indicatorProps={{color: Colors.primary}}
+          />
           <View
             style={{
-              height: 70,
-              width: 70,
-              borderRadius: 10,
-              overflow: 'hidden',
-              borderWidth: 1,
-              borderColor: Colors.gray02,
+              position: 'absolute',
+              height: 20,
+              width: 20,
+              backgroundColor: Colors.white,
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderRadius: 999,
+              bottom: 5,
+              right: 5,
             }}>
-            <CustomImage
-              source={{uri: fileURL + item?.images?.small}}
-              style={{height: 70, width: 70}}
-              indicatorProps={{color: Colors.primary}}
+            <Image
+              style={{height: 12, width: 12, tintColor: Colors.primary}}
+              source={play}
             />
-            <View
-              style={{
-                position: 'absolute',
-                height: 20,
-                width: 20,
-                backgroundColor: Colors.white,
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderRadius: 999,
-                bottom: 5,
-                right: 5,
-              }}>
-              <Image
-                style={{height: 12, width: 12, tintColor: Colors.primary}}
-                source={play}
-              />
-            </View>
           </View>
-          <View style={{marginLeft: 15, flex: 1}}>
+        </View>
+        <View style={{marginLeft: 15, flex: 1}}>
+          <Text
+            style={{
+              fontFamily: font.bold,
+              fontSize: 14,
+              includeFontPadding: false,
+              color: Colors.black,
+            }}>
+            {item?.name}
+          </Text>
+
+          <View
+            style={{
+              marginTop: 3,
+            }}>
+            <Text
+              numberOfLines={2}
+              style={{
+                fontFamily: font.medium,
+                color: Colors.text,
+                fontSize: 12,
+              }}>
+              {item.description}
+            </Text>
+          </View>
+
+          <View
+            style={{
+              marginTop: 3,
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}>
             <Text
               style={{
-                fontFamily: font.bold,
-                fontSize: 14,
-                includeFontPadding: false,
-                color: Colors.black,
+                fontFamily: font.medium,
+                color: Colors.gray12,
+                fontSize: 12,
               }}>
-              {item?.name}
+              {formatTime(item.duration)}
             </Text>
-
-            <View
-              style={{
-                marginTop: 3,
-              }}>
-              <Text
-                numberOfLines={2}
-                style={{
-                  fontFamily: font.medium,
-                  color: Colors.text,
-                  fontSize: 12,
-                }}>
-                {item.description}
-              </Text>
-            </View>
-
-            <View
-              style={{
-                marginTop: 3,
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}>
-              <Text
-                style={{
-                  fontFamily: font.medium,
-                  color: Colors.gray12,
-                  fontSize: 12,
-                }}>
-                {formatTime(item.duration)}
-              </Text>
-              <View style={{marginLeft: 5}}>
-                {!chooseScreenOnPurchasesAndLockedTrack(item?.is_locked) && (
-                  <Image
-                    source={ic_lock}
-                    style={{height: 10, width: 10, tintColor: Colors.gray12}}
-                  />
-                )}
-              </View>
+            <View style={{marginLeft: 5}}>
+              {chooseScreenOnPurchasesAndLockedTrack(item.is_locked) && (
+                <Image
+                  source={ic_lock}
+                  style={{height: 10, width: 10, tintColor: Colors.gray12}}
+                />
+              )}
             </View>
           </View>
-        </Pressable>
-      );
-    },
-    [categoryList, selectedCategory],
-  );
+        </View>
+      </Pressable>
+    );
+  };
 
   const flatListHeader = () => {
     return (

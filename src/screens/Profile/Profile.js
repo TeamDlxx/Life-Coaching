@@ -36,8 +36,8 @@ import EmptyView from '../../Components/EmptyView';
 const ic_logo = require('../../Assets/logo/logo.png');
 const screen = Dimensions.get('screen');
 const Profile = props => {
-  console.log('props', props);
-  const {Token, habitList, setHabitList, completed} = useContext(Context);
+  const {Token, habitList, setHabitList, completed, purchasedSKUs} =
+    useContext(Context);
   const [user, setUser] = useState(null);
   const [loading, setisLoading] = useState(true);
   const [modalImage, setModalImage] = useState(null);
@@ -202,53 +202,61 @@ const Profile = props => {
             </View>
 
             <View style={{paddingHorizontal: 30, marginTop: 40}}>
-              {optionsList.map((x, i) => (
-                <Pressable
-                  key={x.id}
-                  onPress={() => {
-                    if (!!x.screen) {
-                      props.navigation.navigate(x.screen, {
-                        user: x.screen == screens.editProfile ? user : null,
-                      });
-                    }
-                  }}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    paddingVertical: 10,
-                  }}>
-                  <View
+              {optionsList.map((x, i) => {
+                if (
+                  x.id == 'sub' &&
+                  !!purchasedSKUs.find(x => x == 'lifetime.purchase') == true
+                ) {
+                  return;
+                }
+                return (
+                  <Pressable
+                    key={x.id}
+                    onPress={() => {
+                      if (!!x.screen) {
+                        props.navigation.navigate(x.screen, {
+                          user: x.screen == screens.editProfile ? user : null,
+                        });
+                      }
+                    }}
                     style={{
-                      height: 40,
-                      width: 40,
-                      backgroundColor: '#BDC3C744',
-                      justifyContent: 'center',
+                      flexDirection: 'row',
                       alignItems: 'center',
-                      borderRadius: 10,
+                      paddingVertical: 10,
                     }}>
-                    <CustomImage
-                      source={x.icon}
-                      style={{height: 20, width: 20}}
-                    />
-                  </View>
-                  <View style={{flex: 1, marginLeft: 15}}>
-                    <Text
+                    <View
                       style={{
-                        fontFamily: font.medium,
-                        fontSize: 16,
-                        letterSpacing: 0.6,
+                        height: 40,
+                        width: 40,
+                        backgroundColor: '#BDC3C744',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        borderRadius: 10,
                       }}>
-                      {x.name}
-                    </Text>
-                  </View>
-                  <View>
-                    <CustomImage
-                      source={require('../../Assets/Icons/right_arrow.png')}
-                      style={{height: 15, width: 15}}
-                    />
-                  </View>
-                </Pressable>
-              ))}
+                      <CustomImage
+                        source={x.icon}
+                        style={{height: 20, width: 20}}
+                      />
+                    </View>
+                    <View style={{flex: 1, marginLeft: 15}}>
+                      <Text
+                        style={{
+                          fontFamily: font.medium,
+                          fontSize: 16,
+                          letterSpacing: 0.6,
+                        }}>
+                        {x.name}
+                      </Text>
+                    </View>
+                    <View>
+                      <CustomImage
+                        source={require('../../Assets/Icons/right_arrow.png')}
+                        style={{height: 15, width: 15}}
+                      />
+                    </View>
+                  </Pressable>
+                );
+              })}
             </View>
           </ScrollView>
         </View>
@@ -409,7 +417,7 @@ const optionsList = [
   },
 
   {
-    id: '3',
+    id: 'sub',
     name: 'Subscription',
     icon: require('../../Assets/Icons/subscribe.png'),
     screen: screens.allPackages,

@@ -7,10 +7,12 @@ import RNFS from 'react-native-fs';
 import showToast from '../functions/showToast';
 import moment from 'moment';
 import ReactNativeBlobUtil from 'react-native-blob-util';
-import axios from 'axios';
+import * as RNIap from 'react-native-iap';
 import {Platform, PermissionsAndroid, DevSettings} from 'react-native';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import invokeApi from '../functions/invokeAPI';
+
+// Icon
 
 const ContextWrapper = props => {
   const [Token, setToken] = useState(null);
@@ -21,6 +23,7 @@ const ContextWrapper = props => {
   const [purchases, setPurchases] = useState({
     habit: false,
     meditation: false,
+    skus: [],
   });
 
   const findProgress = item => {
@@ -440,6 +443,61 @@ const ContextWrapper = props => {
     }
   };
 
+  const CheckPurchases = async () => {
+    let p = await RNIap.getAvailablePurchases();
+    let arr = [];
+    let habit_flag = false;
+    let meditation_flag = false;
+    p.forEach(x => {
+      arr.push(x.productId);
+      if (
+        x.productId == 'habits.monthly.subscription' ||
+        x.productId == 'all_in_one.monthly.subscription' ||
+        x.productId == 'lifetime.purchase'
+      ) {
+        habit_flag = true;
+      }
+      if (
+        x.productId == 'meditation.monthly.subscription' ||
+        x.productId == 'all_in_one.monthly.subscription' ||
+        x.productId == 'lifetime.purchase'
+      ) {
+        meditation_flag = true;
+      }
+    });
+    console.log(
+      'habit_flag',
+      habit_flag,
+      '\n',
+      'meditation_flag',
+      meditation_flag,
+    );
+    setPurchases({
+      habit: habit_flag,
+      meditation: meditation_flag,
+      skus: arr,
+    });
+  };
+
+  const resetPurchase = () => {
+    setPurchases({
+      habit: false,
+      meditation: false,
+      skus: [],
+    });
+  };
+
+  useEffect(() => {
+    if (Token) {
+      console.log('CheckPurchases');
+      CheckPurchases();
+    } else {
+      console.log('resetPurchase');
+      resetPurchase();
+    }
+    return () => {};
+  }, [Token]);
+
   useEffect(() => {
     api_getAdminURLAndEmail();
     return () => {
@@ -459,8 +517,10 @@ const ContextWrapper = props => {
     downloadQuote,
     isMeditationPurchased: purchases?.meditation,
     isHabitPurchased: purchases?.habit,
-    setPurchases,
+    purchasedSKUs: purchases?.skus,
+    CheckPurchases,
     adminURLsAndEmail,
+    resetPurchase,
   };
 
   return (

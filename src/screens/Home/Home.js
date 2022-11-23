@@ -196,7 +196,7 @@ const Home = props => {
               {item.title}
             </Text>
           </View>
-          {/* {!!item.comingsoon && (
+          {!!item.comingsoon && (
             <View
               style={{
                 backgroundColor: Colors.primary,
@@ -229,7 +229,7 @@ const Home = props => {
                 Coming Soon
               </Text>
             </View>
-          )} */}
+          )}
         </Pressable>
       </Animatable.View>
     );

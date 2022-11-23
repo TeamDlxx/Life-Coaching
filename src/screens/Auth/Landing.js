@@ -15,9 +15,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import SplashScreen from 'react-native-splash-screen';
 import Context from '../../Context';
 
-export default function Landing({navigation}) {
+export default function Landing({navigation}, props) {
   const {setToken} = useContext(Context);
   React.useEffect(() => {
+    console.log('props', props);
     SplashScreen.hide();
     setToken(null);
   }, []);
@@ -77,7 +78,7 @@ export default function Landing({navigation}) {
 }
 
 const _style = StyleSheet.create({
-  mainImage: {width: '100%', height: '100%',},
+  mainImage: {width: '100%', height: '100%'},
   imageView: {flex: 1, borderRadius: 25, overflow: 'hidden'},
   firstView: {flex: 1, padding: 10},
   heading: {

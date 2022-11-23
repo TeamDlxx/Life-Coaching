@@ -41,13 +41,14 @@ const itemsPurchase = Platform.select({
 });
 
 const AllPackages = props => {
-  const {Token, setPurchases} = useContext(Context);
+  const {Token, CheckPurchases, purchasedSKUs} = useContext(Context);
+  console.log('purchasedSKUs', purchasedSKUs);
   const [loading, setisLoading] = useState(false);
   const {navigation} = props;
   const list = useRef();
   const {params} = props.route;
   const [pkgList, setPkgList] = useState([]);
-  const [selectedPkg, setSelectedPkg] = useState(packages[0]);
+  const [selectedPkg, setSelectedPkg] = useState(null);
 
   const initilizeIAPConnection = async () => {
     await RNIap.flushFailedPurchasesCachedAsPendingAndroid()
@@ -103,7 +104,6 @@ const AllPackages = props => {
   };
 
   const puchaseIAP = async sku => {
-    console.log('requestPurchase SKU', sku);
     try {
       await RNIap.requestPurchase({
         skus: [sku],
@@ -112,11 +112,6 @@ const AllPackages = props => {
     } catch (err) {
       console.log(err.code, err.message);
     }
-  };
-
-  const Check = async () => {
-    let p = await RNIap.getAvailablePurchases();
-    console.log('p', p);
   };
 
   const getIAPProductsAndSubscriptions = async () => {
@@ -147,7 +142,7 @@ const AllPackages = props => {
         }
         newArray.push({...pakage, playStoreData: data});
       });
-
+      setSelectedPkg(newArray[0]);
       setPkgList(newArray);
       setisLoading(false);
     }
@@ -155,7 +150,6 @@ const AllPackages = props => {
 
   React.useEffect(() => {
     getIAPProductsAndSubscriptions();
-    Check();
     purchaseUpdateSubscription = RNIap.purchaseUpdatedListener(
       async purchase => {
         console.log('purchase', purchase);
@@ -170,6 +164,13 @@ const AllPackages = props => {
                 await RNIap.acknowledgePurchaseAndroid({
                   token: purchase.purchaseToken,
                 });
+              await CheckPurchases();
+
+              if (params?.from != undefined) {
+                setTimeout(() => {
+                  props.navigation.goBack();
+                }, 300);
+              }
               console.log(
                 'acknowledgePurchaseAndroid',
                 acknowledgePurchaseAndroid,
@@ -209,45 +210,7 @@ const AllPackages = props => {
             Get Access to more Features
           </Text>
         </View>
-        {/*
-        <View style={{marginTop: 15}}>
-          <Text
-            style={{
-              fontFamily: font.regular,
-              fontSize: 14,
-              color: Colors.gray10,
-            }}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut
-          </Text>
-        </View> */}
 
-        {/* <View style={{marginTop: 25}}>
-          {selectedPkg?.description.map((x, i) => {
-            return (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginVertical: 5,
-                }}>
-                <Image
-                  source={ic_filledTick}
-                  style={{height: 15, width: 15, tintColor: Colors.completed}}
-                />
-                <Text
-                  style={{
-                    fontFamily: font.regular,
-                    fontSize: 14,
-                    color: Colors.black,
-                    marginLeft: 5,
-                  }}>
-                  {x}
-                </Text>
-              </View>
-            );
-          })}
-        </View> */}
         <View style={{marginTop: 25}}>
           <Text
             style={{
@@ -282,8 +245,8 @@ const AllPackages = props => {
               borderColor:
                 selectedPkg._id == item._id ? Colors.primary : Colors.gray02,
               minHeight: 80,
-
               borderRadius: 20,
+              overflow: 'hidden',
             }}>
             <View
               style={{
@@ -305,14 +268,28 @@ const AllPackages = props => {
                 style={{height: 50, width: 50}}
               />
               <View style={{flex: 1, marginLeft: 10}}>
-                <Text
-                  style={{
-                    fontFamily: font.bold,
-                    fontSize: 16,
-                    textTransform: 'capitalize',
-                  }}>
-                  {item.duration}
-                </Text>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Text
+                    style={{
+                      fontFamily: font.bold,
+                      fontSize: 16,
+                      textTransform: 'capitalize',
+                    }}>
+                    {item.duration}
+                  </Text>
+                  {!!purchasedSKUs.find(x => x == item?.sku[0]) && (
+                    <View style={{marginLeft: 5}}>
+                      <Image
+                        source={ic_filledTick}
+                        style={{
+                          height: 15,
+                          width: 15,
+                          tintColor: Colors.completed,
+                        }}
+                      />
+                    </View>
+                  )}
+                </View>
                 <Text
                   style={{
                     fontFamily: font.regular,
@@ -395,50 +372,53 @@ const AllPackages = props => {
                 contentContainerStyle={{paddingBottom: 20}}
               />
             </View>
-            <View>
-              <TouchableOpacity
-                onPress={PurchaseSubscription}
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  height: 60,
-                  backgroundColor: Colors.primary,
-                  borderRadius: 30,
-                  paddingHorizontal: 7,
-                }}>
-                <View style={{height: 50, width: 50}} />
-                <View
+
+            {!!purchasedSKUs.find(x => x == selectedPkg?.sku[0]) == false && (
+              <View>
+                <TouchableOpacity
+                  onPress={PurchaseSubscription}
                   style={{
-                    flex: 1,
+                    flexDirection: 'row',
                     justifyContent: 'center',
                     alignItems: 'center',
+                    height: 60,
+                    backgroundColor: Colors.primary,
+                    borderRadius: 30,
+                    paddingHorizontal: 7,
                   }}>
-                  <Text
+                  <View style={{height: 50, width: 50}} />
+                  <View
                     style={{
-                      fontFamily: font.medium,
-                      color: Colors.white,
-                      fontSize: 16,
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
                     }}>
-                    Subscribe Now
-                  </Text>
-                </View>
-                <View
-                  style={{
-                    height: 40,
-                    width: 40,
-                    backgroundColor: Colors.lightPrimary3,
-                    borderRadius: 40 / 2,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                  <Image
-                    source={ic_tick}
-                    style={{height: 20, width: 20, tintColor: Colors.white}}
-                  />
-                </View>
-              </TouchableOpacity>
-            </View>
+                    <Text
+                      style={{
+                        fontFamily: font.medium,
+                        color: Colors.white,
+                        fontSize: 16,
+                      }}>
+                      Subscribe Now
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      height: 40,
+                      width: 40,
+                      backgroundColor: Colors.lightPrimary3,
+                      borderRadius: 40 / 2,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                    <Image
+                      source={ic_tick}
+                      style={{height: 20, width: 20, tintColor: Colors.white}}
+                    />
+                  </View>
+                </TouchableOpacity>
+              </View>
+            )}
           </>
         )}
       </View>
