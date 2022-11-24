@@ -18,6 +18,7 @@ import CustomImage from '../../../Components/CustomImage';
 import formatTime from '../../../functions/formatTime';
 import favIcon from '../../../Assets/TrackPlayer/favIcon.png';
 import play from '../../../Assets/Icons/play.png';
+import analytics from '@react-native-firebase/analytics';
 
 // For API's calling
 import {useContext} from 'react';
@@ -125,6 +126,9 @@ const FavouriteTracks = props => {
 
   useEffect(() => {
     call_favTarackListAPI();
+
+    analytics().logEvent(props?.route?.name);
+
     return () => {
       setTrackList([]);
     };

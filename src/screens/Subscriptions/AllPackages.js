@@ -20,6 +20,8 @@ import Collapsible from 'react-native-collapsible';
 import * as RNIap from 'react-native-iap';
 import showToast from '../../functions/showToast';
 import Loader from '../../Components/Loader';
+import analytics from '@react-native-firebase/analytics';
+
 const ic_filledTick = require('../../Assets/Icons/circleFilledCheck.png');
 const ic_star = require('../../Assets/pkgIcons/star.png');
 const ic_diamond = require('../../Assets/pkgIcons/diamond.png');
@@ -117,12 +119,10 @@ const AllPackages = props => {
     const subscription = await RNIap.getSubscriptions({
       skus: itemsPurchase,
     });
-    console.log("subscription",subscription)
+    console.log('subscription', subscription);
     const Products = await RNIap.getProducts({skus: itemsPurchase});
-    console.log("Products",Products)
+    console.log('Products', Products);
     let IAP_list = [...subscription, ...Products];
-    console.log('IAP_list', IAP_list);
-    return;
     let newArray = [];
     packages.forEach(pakage => {
       let playStoreData = IAP_list.find(x => pakage.sku[0] == x.productId);
@@ -142,7 +142,13 @@ const AllPackages = props => {
       }
       newArray.push({...pakage, playStoreData: data});
     });
-    setSelectedPkg(newArray[0]);
+    if (newArray.length > 0) {
+      if (params?.from == 'meditation') {
+        setSelectedPkg(newArray[1]);
+      } else {
+        setSelectedPkg(newArray[0]);
+      }
+    }
     setPkgList(newArray);
     setisLoading(false);
     // }
@@ -188,6 +194,8 @@ const AllPackages = props => {
     purchaseErrorSubscription = RNIap.purchaseErrorListener(error => {
       console.log('purchaseErrorListener INAPP>>>>', error);
     });
+
+    analytics().logEvent(props?.route?.name);
 
     return () => {
       if (purchaseUpdateSubscription) {

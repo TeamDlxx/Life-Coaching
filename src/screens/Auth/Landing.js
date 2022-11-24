@@ -14,6 +14,7 @@ import {screens} from '../../Navigation/Screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SplashScreen from 'react-native-splash-screen';
 import Context from '../../Context';
+import analytics from '@react-native-firebase/analytics';
 
 export default function Landing({navigation}, props) {
   const {setToken} = useContext(Context);

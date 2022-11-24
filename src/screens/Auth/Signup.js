@@ -22,6 +22,7 @@ import {font} from '../../Utilities/font';
 import {screens} from '../../Navigation/Screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {isIphoneX, getStatusBarHeight} from 'react-native-iphone-x-helper';
+import analytics from '@react-native-firebase/analytics';
 
 import showToast from '../../functions/showToast';
 import {
@@ -127,12 +128,17 @@ const Signup = props => {
     if (res) {
       if (res.code == 200) {
         onBottomTabScreen(res.customer);
+        await analytics().logEvent('USER_SIGNUP');
       } else {
         setisLoading(false);
         showToast(res.message);
       }
     }
   };
+
+  React.useEffect(() => {
+    analytics().logEvent(props?.route?.name);
+  }, []);
 
   return (
     <KeyboardAwareScrollView

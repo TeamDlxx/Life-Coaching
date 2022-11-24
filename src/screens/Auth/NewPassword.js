@@ -13,7 +13,7 @@ import {
   Image,
   Platform,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import HeadingText from '../../Components/HeadingText';
 import {
   CustomSimpleTextInput,
@@ -30,6 +30,7 @@ import showToast from '../../functions/showToast';
 import {validateEmail, checkSpace} from '../../functions/regex';
 import Loader from '../../Components/Loader';
 import invokeApi from '../../functions/invokeAPI';
+import analytics from '@react-native-firebase/analytics';
 
 const height = Dimensions.get('screen').height;
 
@@ -79,6 +80,10 @@ const NewPassword = props => {
   const onLoginScreen = () => {
     props.navigation.navigate(screens.Login);
   };
+
+  useEffect(() => {
+    analytics().logEvent(props?.route?.name);
+  }, []);
 
   return (
     <>

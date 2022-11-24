@@ -24,6 +24,9 @@ PODS:
   - Firebase/Crashlytics (9.6.0):
     - Firebase/CoreOnly
     - FirebaseCrashlytics (~> 9.6.0)
+  - Firebase/DynamicLinks (9.6.0):
+    - Firebase/CoreOnly
+    - FirebaseDynamicLinks (~> 9.6.0)
   - Firebase/Messaging (9.6.0):
     - Firebase/CoreOnly
     - FirebaseMessaging (~> 9.6.0)
@@ -66,6 +69,8 @@ PODS:
     - GoogleUtilities/Environment (~> 7.7)
     - nanopb (< 2.30910.0, >= 2.30908.0)
     - PromisesObjC (~> 2.1)
+  - FirebaseDynamicLinks (9.6.0):
+    - FirebaseCore (~> 9.0)
   - FirebaseInstallations (9.6.0):
     - FirebaseCore (~> 9.0)
     - GoogleUtilities/Environment (~> 7.7)
@@ -539,6 +544,11 @@ PODS:
     - FirebaseCoreExtension (= 9.6.0)
     - React-Core
     - RNFBApp
+  - RNFBDynamicLinks (15.6.0):
+    - Firebase/DynamicLinks (= 9.6.0)
+    - GoogleUtilities/AppDelegateSwizzler
+    - React-Core
+    - RNFBApp
   - RNFBMessaging (15.6.0):
     - Firebase/Messaging (= 9.6.0)
     - FirebaseCoreExtension (= 9.6.0)
@@ -654,6 +664,7 @@ DEPENDENCIES:
   - "RNFBAnalytics (from `../node_modules/@react-native-firebase/analytics`)"
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBCrashlytics (from `../node_modules/@react-native-firebase/crashlytics`)"
+  - "RNFBDynamicLinks (from `../node_modules/@react-native-firebase/dynamic-links`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - RNFS (from `../node_modules/react-native-fs`)
   - RNIap (from `../node_modules/react-native-iap`)
@@ -674,6 +685,7 @@ SPEC REPOS:
     - FirebaseCoreExtension
     - FirebaseCoreInternal
     - FirebaseCrashlytics
+    - FirebaseDynamicLinks
     - FirebaseInstallations
     - FirebaseMessaging
     - Flipper
@@ -800,6 +812,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/app"
   RNFBCrashlytics:
     :path: "../node_modules/@react-native-firebase/crashlytics"
+  RNFBDynamicLinks:
+    :path: "../node_modules/@react-native-firebase/dynamic-links"
   RNFBMessaging:
     :path: "../node_modules/@react-native-firebase/messaging"
   RNFS:
@@ -831,6 +845,7 @@ SPEC CHECKSUMS:
   FirebaseCoreExtension: e83465d1236b166d1d445bbf0e82b65acb30b73b
   FirebaseCoreInternal: bca76517fe1ed381e989f5e7d8abb0da8d85bed3
   FirebaseCrashlytics: 3210572ddb77801e5a0bd9d7bc890769f2066a0c
+  FirebaseDynamicLinks: 894ee3b4e56a77abee067d371c9a23e7b5a3c686
   FirebaseInstallations: 0a115432c4e223c5ab20b0dbbe4cbefa793a0e8e
   FirebaseMessaging: a4d7910e4af663c9cbfc1071c5bef34651690949
   Flipper: 26fc4b7382499f1281eb8cb921e5c3ad6de91fe0
@@ -895,6 +910,7 @@ SPEC CHECKSUMS:
   RNFBAnalytics: 0c7c1378e1eef64920df02fa620a3780fec014bb
   RNFBApp: c14c5e27a6b0bf026fc1c60702603ae94eba6fb1
   RNFBCrashlytics: aac7fa5e9545fe7efa3c3cf0bfc89a2a8f78e3c6
+  RNFBDynamicLinks: 9e51e3ceb97bebfe445fe99fdf95c7330f847fbf
   RNFBMessaging: a57c9c22d2e0a535e5090fecaa68381f0cb2e784
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNIap: 3bcd6982cf99503339cf9243e4ba70a45ea2cf72

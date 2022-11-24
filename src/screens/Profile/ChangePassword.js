@@ -13,6 +13,7 @@ import invokeApi from '../../functions/invokeAPI';
 import getTokenFromAsync from '../../functions/getTokenFromAsync';
 import {fileURL} from '../../Utilities/domains';
 import {checkSpace} from '../../functions/regex';
+import analytics from '@react-native-firebase/analytics';
 
 import {useContext} from 'react';
 import Context from '../../Context';
@@ -82,6 +83,9 @@ const ChangePassword = props => {
     }
   };
 
+  useEffect(() => {
+    analytics().logEvent(props?.route?.name);
+  }, []);
 
   return (
     <SafeAreaView style={mainStyles.MainView}>

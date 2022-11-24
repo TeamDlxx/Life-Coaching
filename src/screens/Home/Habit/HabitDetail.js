@@ -27,6 +27,8 @@ import Modal from 'react-native-modal';
 import CustomImage from '../../../Components/CustomImage';
 import FastImage from 'react-native-fast-image';
 import ImageProgress from 'react-native-image-progress';
+import analytics from '@react-native-firebase/analytics';
+
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -463,6 +465,9 @@ const HabitDetail = props => {
 
   useEffect(() => {
     callHabitDetailApi();
+
+    analytics().logEvent(props?.route?.name);
+
     return () => {};
   }, []);
 

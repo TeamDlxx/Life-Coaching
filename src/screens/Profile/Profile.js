@@ -23,6 +23,8 @@ import profile_placeholder from '../../Assets/Icons/dummy.png';
 import CustomImage from '../../Components/CustomImage';
 import {fileURL} from '../../Utilities/domains';
 import ImageZoomer from '../../Components/ImageZoomer';
+import analytics from '@react-native-firebase/analytics';
+
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../Context';
@@ -110,6 +112,10 @@ const Profile = props => {
       api_profile();
     }
   }, [Token]);
+
+  useEffect(() => {
+    analytics().logEvent(props?.route?.name);
+  }, []);
 
   // React.useEffect(() => {
   //   const unsubscribe = props.navigation.addListener('tabPress', e => {

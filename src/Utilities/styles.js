@@ -492,7 +492,7 @@ export const allHabit_styles = StyleSheet.create({
     paddingVertical: 10,
     marginHorizontal: 20,
     flex: 1,
-    overflow: 'hidden',
+    // overflow: 'hidden',
   },
   imageView: {
     // height: 110,
@@ -547,8 +547,8 @@ export const allHabit_styles = StyleSheet.create({
     paddingRight: 20,
     marginBottom: 15,
     flex: 1,
-
-    margin: 2,
+    borderColor: Colors.background,
+    borderWidth: 3,
   },
   hiddenIcon: {height: 25, width: 25, tintColor: Colors.white},
 });

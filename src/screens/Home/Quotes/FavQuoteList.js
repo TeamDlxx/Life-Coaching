@@ -80,11 +80,12 @@ const FavQuoteList = props => {
         message: description,
         url: file,
       })
-        .then(res => {
+        .then(async res => {
           console.log('res', res);
+          await analytics().logEvent('QUOTE_SHARE_EVENT');
         })
         .catch(err => {
-          err && console.log(err);
+          console.log('error', err);
         });
     } catch (e) {
       setIsSharing(null);
@@ -210,6 +211,9 @@ const FavQuoteList = props => {
 
   useEffect(() => {
     call_quoteListAPI();
+
+    analytics().logEvent(props?.route?.name);
+
     return () => {
       setQuoteList([]);
     };
@@ -294,7 +298,7 @@ const FavQuoteList = props => {
           <TouchableOpacity
             onPress={async () => {
               await downloadQuote(item?.images?.large, item?._id);
-              await analytics.logEvent('QUOTE_DOWLOAD_EVENT');
+              await analytics().logEvent('QUOTE_DOWLOAD_EVENT');
             }}
             style={{
               flex: 1,
@@ -311,7 +315,6 @@ const FavQuoteList = props => {
           <TouchableOpacity
             onPress={async () => {
               await shareQuote(item);
-              await analytics.logEvent('QUOTE_SHARE_EVENT');
             }}
             style={{
               flex: 1,

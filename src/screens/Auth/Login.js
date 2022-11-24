@@ -26,7 +26,7 @@ import {screens} from '../../Navigation/Screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging, {firebase} from '@react-native-firebase/messaging';
 import {isIphoneX, getStatusBarHeight} from 'react-native-iphone-x-helper';
-
+import analytics from '@react-native-firebase/analytics';
 import showToast from '../../functions/showToast';
 import {validateEmail, checkSpace} from '../../functions/regex';
 import Loader from '../../Components/Loader';
@@ -205,6 +205,7 @@ const Login = props => {
 
   useEffect(() => {
     checkNotificationPermission();
+    analytics().logEvent(props?.route?.name);
   }, []);
 
   return (

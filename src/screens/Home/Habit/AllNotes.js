@@ -26,6 +26,8 @@ import moment from 'moment';
 import LinearGradient from 'react-native-linear-gradient';
 import Modal from 'react-native-modal';
 import CustomImage from '../../../Components/CustomImage';
+import analytics from '@react-native-firebase/analytics';
+
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -213,6 +215,8 @@ const AllNotes = props => {
     if (params?.habit) {
       setHabitDetail(params?.habit);
     }
+
+    analytics().logEvent(props?.route?.name);
   }, []);
 
   return (

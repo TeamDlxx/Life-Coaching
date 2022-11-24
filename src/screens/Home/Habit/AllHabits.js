@@ -29,6 +29,7 @@ import {fileURL} from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
 import PushNotification from 'react-native-push-notification';
 import SwipeableFlatList from 'react-native-swipeable-list';
+import analytics from '@react-native-firebase/analytics';
 
 const screen = Dimensions.get('screen');
 const ic_Hplaceholder = require('../../../Assets/Icons/h_placeholder1.png');
@@ -165,6 +166,9 @@ const AllHabits = props => {
 
   React.useEffect(() => {
     makeDaysArray();
+
+    analytics().logEvent(props?.route?.name);
+
     if (Token) {
       callHabitListApi();
     }

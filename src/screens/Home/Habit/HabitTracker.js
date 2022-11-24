@@ -26,6 +26,7 @@ import CustomImage from '../../../Components/CustomImage';
 import Toast from 'react-native-toast-message';
 import PushNotification from 'react-native-push-notification';
 import LoginAlert from '../../../Components/LoginAlert';
+import analytics from '@react-native-firebase/analytics';
 
 // import {useLoginAlert} from '../../../hooks/useLoginAlert';
 // For API's calling
@@ -327,6 +328,10 @@ const HabitTracker = props => {
       }, 500);
     }
   }, [daysList]);
+
+  useEffect(() => {
+    analytics().logEvent(props?.route?.name);
+  }, []);
 
   //? Views
 

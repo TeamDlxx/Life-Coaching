@@ -11,7 +11,7 @@ import {
   Share,
   Image,
 } from 'react-native';
-import React, {useState, useEffect, useContext} from 'react';
+import React, {useState, useEffect} from 'react';
 import {mainStyles} from '../../Utilities/styles';
 import Colors from '../../Utilities/Colors';
 import {font} from '../../Utilities/font';
@@ -21,17 +21,10 @@ import NotificationConfig from '../../Components/NotificationConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SplashScreen from 'react-native-splash-screen';
 import Context from '../../Context';
-import messaging from '@react-native-firebase/messaging';
-const height = Dimensions.get('screen').width;
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
-import {
-  initConnection,
-  purchaseErrorListener,
-  purchaseUpdatedListener,
-  ProductPurchase,
-  PurchaseError,
-  flushFailedPurchasesCachedAsPendingAndroid,
-} from 'react-native-iap';
+import analytics from '@react-native-firebase/analytics';
+
+const height = Dimensions.get('screen').width;
 // background
 
 const home1 = require('../../Assets/Images/home3.jpg');
@@ -44,73 +37,16 @@ const home6 = require('../../Assets/Images/home5.jpg');
 const Home = props => {
   const habit = React.useContext(Context);
   const [opt, setOpt] = useState([]);
-  let purchaseUpdateSubscription = null;
-  let purchaseErrorSubscription = null;
-
-  const IAP_Check = () => {
-    initConnection().then(() => {
-      // we make sure that "ghost" pending payment are removed
-      // (ghost = failed pending payment that are still marked as pending in Google's native Vending module cache)
-      flushFailedPurchasesCachedAsPendingAndroid()
-        .catch(() => {
-          // exception can happen here if:
-          // - there are pending purchases that are still pending (we can't consume a pending purchase)
-          // in any case, you might not want to do anything special with the error
-        })
-        .then(() => {
-          purchaseUpdateSubscription = purchaseUpdatedListener(purchase => {
-            console.log('purchaseUpdatedListener', purchase);
-            const receipt = purchase.transactionReceipt;
-            if (receipt) {
-              yourAPI
-                .deliverOrDownloadFancyInAppPurchase(
-                  purchase.transactionReceipt,
-                )
-                .then(async deliveryResult => {
-                  if (isSuccess(deliveryResult)) {
-                    // Tell the store that you have delivered what has been paid for.
-                    // Failure to do this will result in the purchase being refunded on Android and
-                    // the purchase event will reappear on every relaunch of the app until you succeed
-                    // in doing the below. It will also be impossible for the user to purchase consumables
-                    // again until you do this.
-
-                    // If consumable (can be purchased again)
-                    await finishTransaction({purchase, isConsumable: true});
-                    // If not consumable
-                    await finishTransaction({purchase, isConsumable: false});
-                  } else {
-                    // Retry / conclude the purchase is fraudulent, etc...
-                  }
-                });
-            }
-          });
-
-          purchaseErrorSubscription = purchaseErrorListener(error => {
-            console.warn('purchaseErrorListener', error);
-          });
-        });
-    });
-  };
 
   useEffect(() => {
     NotificationConfig(props);
-    // IAP_Check();
-
+    analytics().logEvent(props?.route?.name);
     setTimeout(() => {
       SplashScreen.hide();
       setOpt(options);
     }, 500);
 
-    return () => {
-      // if (purchaseUpdateSubscription) {
-      //   purchaseUpdateSubscription.remove();
-      //   purchaseUpdateSubscription = null;
-      // }
-      // if (purchaseErrorSubscription) {
-      //   purchaseErrorSubscription.remove();
-      //   purchaseErrorSubscription = null;
-      // }
-    };
+    return () => {};
   }, []);
 
   const onDisplayNotification = async () => {

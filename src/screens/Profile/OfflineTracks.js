@@ -18,6 +18,7 @@ import formatTime from '../../functions/formatTime';
 import favIcon from '../../Assets/TrackPlayer/favIcon.png';
 import play from '../../Assets/Icons/play.png';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import analytics from '@react-native-firebase/analytics';
 
 // For API's calling
 import {useContext} from 'react';
@@ -68,6 +69,9 @@ const OfflineTracks = props => {
 
   useEffect(() => {
     call_DownloadedTracks();
+
+    analytics().logEvent(props?.route?.name);
+
     return () => {
       setTrackList([]);
     };

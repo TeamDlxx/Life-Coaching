@@ -26,6 +26,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import Modal from 'react-native-modal';
 import CustomImage from '../../../Components/CustomImage';
 import PushNotification from 'react-native-push-notification';
+import analytics from '@react-native-firebase/analytics';
 
 // For API's calling
 import {useContext} from 'react';
@@ -311,6 +312,8 @@ const NotesDetail = props => {
     if (!!params?.date) {
       setDate(params?.date);
     }
+
+    analytics().logEvent(props?.route?.name);
   }, []);
 
   return (

@@ -15,6 +15,7 @@ import {font} from '../../Utilities/font';
 import {screens} from '../../Navigation/Screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SplashScreen from 'react-native-splash-screen';
+import analytics from '@react-native-firebase/analytics';
 
 const screen = Dimensions.get('screen');
 
@@ -36,6 +37,7 @@ const Onboarding = ({navigation}) => {
   useEffect(() => {
     SplashScreen.hide();
     OnboardingChecked();
+    analytics().logEvent(props?.route?.name);
   }, []);
 
   const renderItem = ({item, index}) => {

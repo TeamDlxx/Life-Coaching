@@ -19,6 +19,7 @@ import {font} from '../../Utilities/font';
 import ImagePicker from 'react-native-image-crop-picker';
 import Modal from 'react-native-modal';
 import {CustomSimpleTextInput} from '../../Components/CustomTextInput';
+import analytics from '@react-native-firebase/analytics';
 
 import showToast from '../../functions/showToast';
 import {isFirstLetterAlphabet} from '../../functions/regex';
@@ -409,6 +410,10 @@ const EditProfile = props => {
       };
     }, [user]),
   );
+
+  React.useEffect(() => {
+    analytics().logEvent(props?.route?.name);
+  }, []);
 
   return (
     <SafeAreaView style={mainStyles.MainView}>

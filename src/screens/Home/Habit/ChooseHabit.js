@@ -15,6 +15,7 @@ import Colors from '../../../Utilities/Colors';
 import {font} from '../../../Utilities/font';
 import CustomButton from '../../../Components/CustomButton';
 import {screens} from '../../../Navigation/Screens';
+import analytics from '@react-native-firebase/analytics';
 
 // For API's
 import {useContext} from 'react';
@@ -72,6 +73,8 @@ const ChooseHabit = props => {
 
   React.useEffect(() => {
     callAdminHabitsListAPI();
+
+    analytics().logEvent(props?.route?.name);
 
     return () => {
       setPreDefinedHabits([]);
@@ -192,6 +195,3 @@ const ChooseHabit = props => {
 };
 
 export default ChooseHabit;
-
-
-

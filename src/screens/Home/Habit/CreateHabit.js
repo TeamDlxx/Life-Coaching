@@ -300,7 +300,10 @@ const CreateHabit = props => {
 
     if (res) {
       if (res.code == 200) {
-        await analytics().logEvent('HABIT_CREATED_BY_USER_EVENT');
+        await analytics().logEvent('HABIT_CREATED_BY_USER_EVENT', {
+          name: res?.habit?.name,
+          reminder: res?.habit?.reminder,
+        });
         if (res?.habit?.reminder) {
           scheduleNotification(res?.habit);
         }
@@ -466,6 +469,7 @@ const CreateHabit = props => {
       updateOldData({...changes});
     } else {
     }
+    analytics().logEvent(props?.route?.name);
   }, []);
 
   return (

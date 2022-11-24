@@ -32,6 +32,6 @@ export const screens = {
   taskDetail: 'TASK_DETAIL_SCREEN',
   gratitude: 'GRATITUDE_SCREEN',
   dowloadedTracks: 'OFFLINE_TRACKS_SCREEN',
-  allPackages: 'ALL_PACKAGES_SCREEN',
+  allPackages: 'SUBSCRIPTIONS_SCREEN',
   comingSoon: 'COMINGSOON_SCREEN',
 };

@@ -26,11 +26,11 @@ import {screens} from '../../Navigation/Screens';
 import Header from '../../Components/Header';
 import Colors from '../../Utilities/Colors';
 import {isIphoneX, getStatusBarHeight} from 'react-native-iphone-x-helper';
-
 import showToast from '../../functions/showToast';
 import {validateEmail, checkSpace} from '../../functions/regex';
 import Loader from '../../Components/Loader';
 import invokeApi from '../../functions/invokeAPI';
+import analytics from '@react-native-firebase/analytics';
 
 const height = Dimensions.get('screen').height;
 
@@ -74,6 +74,10 @@ const ForgotPassword = props => {
       }
     }
   };
+
+  React.useEffect(() => {
+    analytics().logEvent(props?.route?.name);
+  });
 
   return (
     <>

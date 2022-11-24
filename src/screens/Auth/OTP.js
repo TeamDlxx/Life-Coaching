@@ -22,6 +22,7 @@ import Header from '../../Components/Header';
 import Colors from '../../Utilities/Colors';
 import {CodeField, Cursor} from 'react-native-confirmation-code-field';
 import {isIphoneX, getStatusBarHeight} from 'react-native-iphone-x-helper';
+import analytics from '@react-native-firebase/analytics';
 
 import showToast from '../../functions/showToast';
 import {validateEmail, checkSpace} from '../../functions/regex';
@@ -105,6 +106,10 @@ const OTP = props => {
     }
     return () => clearInterval(interval);
   }, [countDown]);
+
+  useEffect(() => {
+    analytics().logEvent(props?.route?.name);
+  }, []);
   return (
     <>
       <StatusBar

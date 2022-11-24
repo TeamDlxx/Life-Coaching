@@ -17,6 +17,7 @@ import ProgressBar from '../../../Components/ProgreeBar';
 import {_styleTrackPlayer} from '../../../Utilities/styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoginAlert from '../../../Components/LoginAlert';
+import analytics from '@react-native-firebase/analytics';
 
 // For API's calling
 import {useContext} from 'react';
@@ -24,7 +25,6 @@ import Context from '../../../Context';
 import showToast from '../../../functions/showToast';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
-import analytics from '@react-native-firebase/analytics';
 
 //Icons
 
@@ -74,7 +74,9 @@ const TrackPlayerScreen = props => {
           ? trackItem?.category_id[0]?._id?.name
           : params?.category,
       );
-      await analytics().logEvent(`DOWNLOAD_TRACK_EVENT_${trackItem.name}`);
+      await analytics().logEvent(`DOWNLOAD_TRACK_EVENT`, {
+        item_brand: trackItem.name,
+      });
 
       setDownloaded(res);
     } else {
@@ -158,7 +160,9 @@ const TrackPlayerScreen = props => {
     let val = !repeat;
     if (val) {
       await TrackPlayer.setRepeatMode(1);
-      await analytics().logEvent(`REPEAT_TRACK_EVENT_${trackItem.name}`);
+      await analytics().logEvent(`REPEAT_TRACK_EVENT`, {
+        TrackName: trackItem.name,
+      });
     } else {
       await TrackPlayer.setRepeatMode(0);
     }
@@ -186,6 +190,9 @@ const TrackPlayerScreen = props => {
     });
 
     await TrackPlayer.play();
+    await analytics().logEvent(`REPEAT_TRACK_EVENT`, {
+      item_name: trackItem.name,
+    });
   };
 
   const checkNextAndPreviosAvailable = (id, type) => {
@@ -232,6 +239,9 @@ const TrackPlayerScreen = props => {
     TrackPlayer.addEventListener('remote-play', async ({state}) => {
       console.log('state: ' + state);
     });
+
+    analytics().logEvent(props?.route?.name);
+
     return () => {
       TrackPlayer.reset();
     };
@@ -253,7 +263,9 @@ const TrackPlayerScreen = props => {
       if (playIcon == playTrack) {
         TrackPlayer.play();
         setPlayIcon(pauseTrack);
-        await analytics().logEvent(`PLAY_TRACK_EVENT_${trackItem.name}`);
+        await analytics().logEvent(`PLAY_TRACK_EVENT`, {
+          item_name: trackItem.name,
+        });
       } else {
         TrackPlayer.pause();
         setPlayIcon(playTrack);
@@ -293,7 +305,9 @@ const TrackPlayerScreen = props => {
 
   const BTN_LIKE = async (val, id) => {
     if (val) {
-      await analytics().logEvent(`LIKE_TRACK_BUTTON_${trackItem.name}`);
+      await analytics().logEvent(`LIKE_TRACK_BUTTON`, {
+        item_name: trackItem.name,
+      });
     }
     if (Token) {
       api_likeUnLike(val, id);

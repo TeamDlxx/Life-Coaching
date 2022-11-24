@@ -9,6 +9,7 @@ import ContextWrapper from './src/Context/ContextWrapper';
 import {Text} from 'react-native';
 import {initConnection, endConnection} from 'react-native-iap';
 import analytics from '@react-native-firebase/analytics';
+import dynamicLinks from '@react-native-firebase/dynamic-links';
 
 moment.updateLocale('en', {
   week: {
@@ -20,6 +21,10 @@ const App = props => {
   const routeNameRef = React.useRef();
   const navigationRef = React.useRef();
 
+  const handleDynamicLink = link => {
+    console.log('handleDynamicLink', link);
+  };
+
   React.useEffect(() => {
     if (Text.defaultProps == null) Text.defaultProps = {};
     Text.defaultProps.allowFontScaling = false;
@@ -27,8 +32,15 @@ const App = props => {
     initConnection().then(x => {
       console.log('initConnection', x);
     });
+    const unsubscribe = dynamicLinks().onLink(handleDynamicLink);
+    dynamicLinks()
+      .getInitialLink()
+      .then(link => {
+        console.log('getInitialLink', link);
+      });
     return () => {
       endConnection();
+      unsubscribe();
     };
   }, []);
 
@@ -63,13 +75,22 @@ const App = props => {
         onReady={() => {
           routeNameRef.current =
             navigationRef?.current?.getCurrentRoute()?.name;
+          console.log(
+            'previous route',
+            navigationRef?.current?.getCurrentRoute(),
+          );
         }}
         onStateChange={async () => {
           const previousRouteName = routeNameRef?.current;
           const currentRouteName =
             navigationRef?.current?.getCurrentRoute()?.name;
 
+          console.log(
+            'getCurrentRoute',
+            navigationRef?.current?.getCurrentRoute(),
+          );
           if (previousRouteName !== currentRouteName) {
+            // console.log('currentRouteName', currentRouteName);
             await analytics().logScreenView({
               screen_name: currentRouteName,
               screen_class: currentRouteName,

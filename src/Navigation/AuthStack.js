@@ -92,6 +92,9 @@ const AuthStack = () => {
   if (whichScreen != undefined) {
     return (
       <Stack.Navigator
+      screenListeners={()=>{
+        
+      }}
         screenOptions={{
           headerShown: false,
           orientation: 'portrait',

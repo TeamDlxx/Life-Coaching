@@ -27,6 +27,8 @@ import {useContext} from 'react';
 import Context from '../../Context';
 import PushNotification from 'react-native-push-notification';
 import DeviceInfo from 'react-native-device-info';
+import {deepLinkQuote} from '../../Utilities/domains';
+import analytics from '@react-native-firebase/analytics';
 
 const Setting = props => {
   const [isLoading, setisLoading] = useState(false);
@@ -113,9 +115,8 @@ const Setting = props => {
         try {
           const result = await Share.share({
             title: 'Life Coaching',
-            message:
-              'Please install this app and stay safe , AppLink :https://play.google.com/store/apps',
-            url: 'https://play.google.com/store/apps',
+            message: `Please install this app and stay safe , AppLink :${deepLinkQuote}`,
+            url: deepLinkQuote,
           });
           if (result.action === Share.sharedAction) {
             if (result.activityType) {
@@ -243,6 +244,10 @@ const Setting = props => {
       </Pressable>
     );
   };
+
+  useEffect(() => {
+    analytics().logEvent(props?.route?.name);
+  }, []);
 
   return (
     <SafeAreaView

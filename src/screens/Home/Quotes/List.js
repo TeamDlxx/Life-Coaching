@@ -28,13 +28,14 @@ import RNFS from 'react-native-fs';
 import kFormatter from '../../../functions/kFormatter';
 import ImageZoomer from '../../../Components/ImageZoomer';
 import analytics from '@react-native-firebase/analytics';
+
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
 import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
-import {fileURL} from '../../../Utilities/domains';
+import {fileURL, deepLinkQuote} from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
 //ICONS
 
@@ -78,26 +79,31 @@ const List = props => {
     setIsSharing(item._id);
     try {
       let image = item?.images?.large;
-      let description = item?.description;
+      let description = !!item?.description ? item?.description : '';
       let res = await GetBase64(fileURL + image);
       let ext = await image.split('.')[image.split('.').length - 1];
       if (ext == 'jpg') {
         ext = 'jpeg';
       }
       let file = `data:image/${ext};base64,${res}`;
+
       setIsSharing(null);
-      await Share.open({
+      let objShare = {
         title: 'Life Coaching | Quotes',
-        message: description,
+        message: description + '\n' + deepLinkQuote,
         url: file,
-      })
-        .then(res => {
+      };
+      console.log('objShare', objShare);
+      await Share.open(objShare)
+        .then(async res => {
+          await analytics().logEvent('QUOTE_SHARE_EVENT');
           console.log('res', res);
         })
         .catch(err => {
-          err && console.log(err);
+          console.log('error', err);
         });
     } catch (e) {
+      console.log('error1', e);
       setIsSharing(null);
     }
   };
@@ -251,6 +257,8 @@ const List = props => {
 
   useEffect(() => {
     call_quoteListAPI();
+
+    analytics().logEvent(props?.route?.name);
     return () => {
       setQuoteList([]);
     };
@@ -325,7 +333,7 @@ const List = props => {
           <TouchableOpacity
             onPress={async () => {
               await downloadQuote(item?.images?.large, item?._id);
-              await analytics.logEvent('QUOTE_DOWLOAD_EVENT');
+              await analytics().logEvent('QUOTE_DOWLOAD_EVENT');
             }}
             style={{
               flex: 1,
@@ -343,7 +351,6 @@ const List = props => {
             disabled={isSharing != null}
             onPress={async () => {
               await shareQuote(item);
-              await analytics.logEvent('QUOTE_SHARE_EVENT');
             }}
             style={{
               flex: 1,

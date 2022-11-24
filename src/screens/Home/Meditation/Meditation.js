@@ -19,6 +19,7 @@ import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
 import formatTime from '../../../functions/formatTime';
 import LoginAlert from '../../../Components/LoginAlert';
+import analytics from '@react-native-firebase/analytics';
 
 // For API's calling
 import {useContext} from 'react';
@@ -250,6 +251,8 @@ const Meditation = props => {
 
   useEffect(() => {
     call_categoryAPI();
+
+    analytics().logEvent(props?.route?.name);
   }, []);
 
   //? Views
