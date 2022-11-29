@@ -237,6 +237,15 @@ const options = [
     screen: screens.qouteList,
     color: '#E48281',
   },
+
+  {
+    id: '5',
+    title: 'Notes',
+    image: home4,
+    count: 3,
+    screen: screens.notesList,
+    color: '#C4BCB2',
+  },
   {
     id: '4',
     title: 'Mood Tracker',
@@ -246,17 +255,6 @@ const options = [
     color: '#A5A5DB',
     comingsoon: true,
   },
-
-  {
-    id: '5',
-    title: 'Time Table',
-    image: home4,
-    count: 3,
-    screen: screens.timeTable,
-    color: '#C4BCB2',
-    comingsoon: true,
-  },
-
   {
     id: '6',
     title: 'Gratitude',

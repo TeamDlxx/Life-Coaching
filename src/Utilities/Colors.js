@@ -52,3 +52,22 @@ export const Bcolors = [
   {dark: '#C1D5FF', light: '#C1D5FF55'},
   {dark: '#FFB6BC', light: '#FFB6BC55'},
 ];
+
+export const notesColors = [
+  {
+    dark: '#438BFA',
+    light: '#F6FAFF',
+  },
+  {
+    dark: '#FFC545',
+    light: '#FEF9ED',
+  },
+  {
+    dark: '#54D35D',
+    light: '#EDFFEF',
+  },
+  {
+    dark: '#E86AFF',
+    light: '#F0DEF4',
+  },
+];

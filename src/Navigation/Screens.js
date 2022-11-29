@@ -34,4 +34,8 @@ export const screens = {
   dowloadedTracks: 'OFFLINE_TRACKS_SCREEN',
   allPackages: 'SUBSCRIPTIONS_SCREEN',
   comingSoon: 'COMINGSOON_SCREEN',
+
+  //? Notes
+  notesList: 'NOTES_LIST',
+  noteEditor: 'NOTE_EDITOR',
 };

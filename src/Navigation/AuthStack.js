@@ -61,6 +61,10 @@ import TaskDetail from '../screens/Home/TimeTable/TaskDetail';
 import Gratitude from '../screens/Home/Gratitude/Gratitude';
 import messaging from '@react-native-firebase/messaging';
 
+// //? Notes
+import NotesList from '../screens/Home/Notes/NotesList';
+import Editor from '../screens/Home/Notes/Editor';
+
 // import Colors from '../Utilities/Colors';
 import Context from '../Context';
 import {useContext} from 'react';
@@ -92,9 +96,7 @@ const AuthStack = () => {
   if (whichScreen != undefined) {
     return (
       <Stack.Navigator
-      screenListeners={()=>{
-        
-      }}
+        screenListeners={() => {}}
         screenOptions={{
           headerShown: false,
           orientation: 'portrait',
@@ -146,6 +148,11 @@ const AuthStack = () => {
           name={screens.trackPlayer}
           component={TrackPlayerScreen}
         />
+        {/* Notes */}
+
+        <Stack.Screen name={screens.notesList} component={NotesList} />
+        <Stack.Screen name={screens.noteEditor} component={Editor} />
+
         {/* TimeTable */}
         <Stack.Screen name={screens.timeTable} component={TimeTable} />
         <Stack.Screen name={screens.addTask} component={AddTask} />
