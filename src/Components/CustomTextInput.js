@@ -44,6 +44,7 @@ export function CustomSimpleTextInput(props) {
           value={props.value}
           onChangeText={props.onChangeText}
           selectionColor={Colors.primary}
+          keyboardType={!!props?.type ? props?.type : 'default'}
         />
       </View>
     </View>

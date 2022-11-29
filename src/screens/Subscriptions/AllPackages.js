@@ -32,12 +32,20 @@ let purchaseUpdateSubscription = null;
 
 let purchaseErrorSubscription = null;
 
-const itemsPurchase = [
-  'habits.monthly.subscription',
-  'meditation.monthly.subscription',
-  'all_in_one.monthly.subscription',
-  'lifetime.purchase',
-];
+const itemsPurchase = Platform.select({
+  ios: [
+    'habits.monthly.subscription',
+    'meditation.monthly.subscription',
+    'all_in_one.monthly.subscription',
+    'lifetime.purchase',
+  ],
+  android: [
+    'habits.monthly.subscription',
+    'meditation.monthly.subscription',
+    'all_in_one.monthly.subscription',
+    'lifetime.purchase',
+  ],
+});
 
 const AllPackages = props => {
   const {Token, CheckPurchases, purchasedSKUs} = useContext(Context);
@@ -106,6 +114,7 @@ const AllPackages = props => {
     try {
       await RNIap.requestPurchase({
         skus: [sku],
+        sku: sku,
         andDangerouslyFinishTransactionAutomaticallyIOS: false,
       });
     } catch (err) {
@@ -114,43 +123,58 @@ const AllPackages = props => {
   };
 
   const getIAPProductsAndSubscriptions = async () => {
-    // setisLoading(true);
-    // if (Platform.OS == 'android') {
-    const subscription = await RNIap.getSubscriptions({
-      skus: itemsPurchase,
-    });
-    console.log('subscription', subscription);
-    const Products = await RNIap.getProducts({skus: itemsPurchase});
-    console.log('Products', Products);
-    let IAP_list = [...subscription, ...Products];
-    let newArray = [];
-    packages.forEach(pakage => {
-      let playStoreData = IAP_list.find(x => pakage.sku[0] == x.productId);
-      let data;
 
-      if (playStoreData.productType == 'subs') {
-        let temp = playStoreData.subscriptionOfferDetails[0];
-        data = {
-          offerToken: temp.offerToken,
-          formattedPrice: temp.pricingPhases.pricingPhaseList[0].formattedPrice,
-        };
-      } else {
-        let temp = playStoreData.oneTimePurchaseOfferDetails;
-        data = {
-          formattedPrice: temp.formattedPrice,
-        };
+    setisLoading(true);
+    // if (Platform.OS == 'android') {
+    // const subscription = await RNIap.getSubscriptions({
+    //   skus: itemsPurchase,
+    // });
+
+    try {
+      console.log('itemsPurchase....', itemsPurchase);
+      const subscription = await RNIap.getSubscriptions({
+        skus: itemsPurchase,
+      });
+      console.log('subscription....', subscription);
+
+      const Products = await RNIap.getProducts({skus: itemsPurchase});
+      console.log('Products...', Products);
+      let IAP_list = [...subscription, ...Products];
+      let newArray = [];
+      if (IAP_list.length != 0) {
+        packages.forEach(pakage => {
+          let playStoreData = IAP_list.find(x => pakage.sku[0] == x.productId);
+          let data;
+
+          if (playStoreData.productType == 'subs') {
+            let temp = playStoreData.subscriptionOfferDetails[0];
+            data = {
+              offerToken: temp.offerToken,
+              formattedPrice:
+                temp.pricingPhases.pricingPhaseList[0].formattedPrice,
+            };
+          } else {
+            let temp = playStoreData.oneTimePurchaseOfferDetails;
+            data = {
+              formattedPrice: temp.formattedPrice,
+            };
+          }
+          newArray.push({...pakage, playStoreData: data});
+        });
       }
-      newArray.push({...pakage, playStoreData: data});
-    });
-    if (newArray.length > 0) {
-      if (params?.from == 'meditation') {
-        setSelectedPkg(newArray[1]);
-      } else {
-        setSelectedPkg(newArray[0]);
+      if (newArray.length > 0) {
+        if (params?.from == 'meditation') {
+          setSelectedPkg(newArray[1]);
+        } else {
+          setSelectedPkg(newArray[0]);
+        }
       }
+      setPkgList(newArray);
+      setisLoading(false);
+    } catch (err) {
+      console.log('Error get products', err);
+      setisLoading(false);
     }
-    setPkgList(newArray);
-    setisLoading(false);
     // }
   };
 
@@ -381,52 +405,54 @@ const AllPackages = props => {
               />
             </View>
 
-            {!!purchasedSKUs.find(x => x == selectedPkg?.sku[0]) == false && (
-              <View>
-                <TouchableOpacity
-                  onPress={PurchaseSubscription}
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    height: 60,
-                    backgroundColor: Colors.primary,
-                    borderRadius: 30,
-                    paddingHorizontal: 7,
-                  }}>
-                  <View style={{height: 50, width: 50}} />
-                  <View
+            {!!purchasedSKUs.find(x => x == selectedPkg?.sku[0]) == false &&
+              pkgList.length != 0 && (
+                <View>
+                  <TouchableOpacity
+                    onPress={PurchaseSubscription}
                     style={{
-                      flex: 1,
+                      flexDirection: 'row',
                       justifyContent: 'center',
                       alignItems: 'center',
+                      height: 60,
+                      backgroundColor: Colors.primary,
+                      borderRadius: 30,
+                      paddingHorizontal: 7,
+                      marginBottom: 5,
                     }}>
-                    <Text
+                    <View style={{height: 50, width: 50}} />
+                    <View
                       style={{
-                        fontFamily: font.medium,
-                        color: Colors.white,
-                        fontSize: 16,
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
                       }}>
-                      Subscribe Now
-                    </Text>
-                  </View>
-                  <View
-                    style={{
-                      height: 40,
-                      width: 40,
-                      backgroundColor: Colors.lightPrimary3,
-                      borderRadius: 40 / 2,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}>
-                    <Image
-                      source={ic_tick}
-                      style={{height: 20, width: 20, tintColor: Colors.white}}
-                    />
-                  </View>
-                </TouchableOpacity>
-              </View>
-            )}
+                      <Text
+                        style={{
+                          fontFamily: font.medium,
+                          color: Colors.white,
+                          fontSize: 16,
+                        }}>
+                        Subscribe Now
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        height: 40,
+                        width: 40,
+                        backgroundColor: Colors.lightPrimary3,
+                        borderRadius: 40 / 2,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                      <Image
+                        source={ic_tick}
+                        style={{height: 20, width: 20, tintColor: Colors.white}}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              )}
           </>
         )}
       </View>

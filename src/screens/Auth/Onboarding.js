@@ -19,7 +19,8 @@ import analytics from '@react-native-firebase/analytics';
 
 const screen = Dimensions.get('screen');
 
-const Onboarding = ({navigation}) => {
+const Onboarding = props => {
+  const {navigation} = props;
   const slider = useRef();
 
   const onLandingScreen = () => {

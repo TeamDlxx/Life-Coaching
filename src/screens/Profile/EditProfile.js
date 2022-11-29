@@ -127,8 +127,8 @@ const EditProfile = props => {
     setModalVisibility(false);
     setTimeout(() => {
       ImagePicker.openPicker({
-        width: 400,
-        height: 400,
+        width: 800,
+        height: 800,
         cropping: true,
         mediaType: 'photo',
         cropperStatusBarColor: Colors.background,
@@ -189,8 +189,8 @@ const EditProfile = props => {
     if (granted) {
       setTimeout(() => {
         ImagePicker.openCamera({
-          width: 400,
-          height: 400,
+          width: 800,
+          height: 800,
           cropping: true,
           mediaType: 'photo',
 

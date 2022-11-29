@@ -59,7 +59,7 @@ const HabitTracker = props => {
     item: null,
   });
 
-  console.log('isHabitPurchased', isHabitPurchased);
+  // console.log('isHabitPurchased', isHabitPurchased);
 
   const filterSelectedDayHabits = list => {
     return list.slice().filter(x => {
@@ -97,6 +97,10 @@ const HabitTracker = props => {
       if (habitList.length < 5 || isHabitPurchased == true) {
         setVisibleAddHabitModal(true);
       } else {
+        props.navigation.navigate(screens.allPackages, {
+          from: 'habit',
+        });
+        return;
         Alert.alert(
           'Subscription',
           'Your Habit limit is over\nPlease buy subcription to add more?',

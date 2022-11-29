@@ -324,7 +324,7 @@ const List = props => {
                 fontFamily: font.medium,
                 color: Colors.placeHolder,
                 letterSpacing: 1,
-                marginTop: 4,
+                includeFontPadding: false,
               }}>
               {kFormatter(item?.favourite)}
             </Text>

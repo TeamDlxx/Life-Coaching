@@ -57,21 +57,24 @@ const Meditation = props => {
         likeUnLikeFunc: likeUnLikeLocally,
       });
     } else if (Token) {
-      Alert.alert(
-        'Subscription',
-        'Are you sure you want to buy subscription?',
-        [
-          {text: 'No'},
-          {
-            text: 'Yes',
-            onPress: () => {
-              props.navigation.navigate(screens.allPackages, {
-                from: 'meditation',
-              });
-            },
-          },
-        ],
-      );
+      props.navigation.navigate(screens.allPackages, {
+        from: 'meditation',
+      });
+      // Alert.alert(
+      //   'Subscription',
+      //   'Are you sure you want to buy subscription?',
+      //   [
+      //     {text: 'No'},
+      //     {
+      //       text: 'Yes',
+      //       onPress: () => {
+      //         props.navigation.navigate(screens.allPackages, {
+      //           from: 'meditation',
+      //         });
+      //       },
+      //     },
+      //   ],
+      // );
     } else {
       LoginAlert(props.navigation, props.route?.name);
     }

@@ -70,34 +70,7 @@ const App = props => {
 
   return (
     <ContextWrapper>
-      <NavigationContainer
-        ref={navigationRef}
-        onReady={() => {
-          routeNameRef.current =
-            navigationRef?.current?.getCurrentRoute()?.name;
-          console.log(
-            'previous route',
-            navigationRef?.current?.getCurrentRoute(),
-          );
-        }}
-        onStateChange={async () => {
-          const previousRouteName = routeNameRef?.current;
-          const currentRouteName =
-            navigationRef?.current?.getCurrentRoute()?.name;
-
-          console.log(
-            'getCurrentRoute',
-            navigationRef?.current?.getCurrentRoute(),
-          );
-          if (previousRouteName !== currentRouteName) {
-            // console.log('currentRouteName', currentRouteName);
-            await analytics().logScreenView({
-              screen_name: currentRouteName,
-              screen_class: currentRouteName,
-            });
-          }
-          routeNameRef.current = currentRouteName;
-        }}>
+      <NavigationContainer>
         <AuthStack />
         <Toast />
       </NavigationContainer>

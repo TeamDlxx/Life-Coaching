@@ -263,6 +263,7 @@ const Login = props => {
                 placeholder={'Email address'}
                 onChangeText={text => setEmail(text)}
                 value={email}
+                type="email-address"
               />
             </View>
             <View style={{marginTop: 20}}>
