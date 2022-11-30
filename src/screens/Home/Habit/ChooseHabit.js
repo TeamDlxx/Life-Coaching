@@ -24,8 +24,6 @@ import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
-import {isFirstLetterAlphabet} from '../../../functions/regex';
-import rountToNextmins from '../../../functions/rountToNextmins';
 import CustomImage from '../../../Components/CustomImage';
 
 const ChooseHabit = props => {

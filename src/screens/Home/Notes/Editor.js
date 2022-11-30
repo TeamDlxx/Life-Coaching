@@ -12,6 +12,7 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  TouchableOpacity,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Header from '../../../Components/Header';
@@ -25,23 +26,44 @@ import moment from 'moment';
 import CustomImage from '../../../Components/CustomImage';
 import Modal from 'react-native-modal';
 import {actions, RichEditor, RichToolbar} from 'react-native-pell-rich-editor';
-import ColorPicker from 'react-native-wheel-color-picker';
+import Collapsible from 'react-native-collapsible';
+import ImagePicker from 'react-native-image-crop-picker';
+import AudioRecorderPlayer from 'react-native-audio-recorder-player';
+import * as Animatable from 'react-native-animatable';
 
+const audioRecorderPlayer = new AudioRecorderPlayer();
+let recorderListner;
 //icons
 const ic_pallete = require('../../../Assets/Icons/palette.png');
 const ic_cross = require('../../../Assets/Icons/cross.png');
 const ic_save = require('../../../Assets/Icons/tick.png');
+const ic_image = require('../../../Assets/Icons/h_placeholder1.png');
 
+const ic_mic = require('../../../Assets/Icons/microphone-black-shape.png');
+const ic_gallery = require('../../../Assets/Icons/gallery.png');
+const ic_camera = require('../../../Assets/Icons/camera.png');
+const ic_play = require('../../../Assets/TrackPlayer/playTrack.png');
+const ic_stop = require('../../../Assets/TrackPlayer/playTrack.png');
+const ic_pause = require('../../../Assets/TrackPlayer/pauseTrack.png');
+// import ic_cross from '../../../Assets/Icons/cross.png';
+import ic_trash from '../../../Assets/Icons/trash.png';
 const Editor = props => {
   const {navigation} = props;
   const RichText = React.useRef();
   const colorPicker = React.useRef();
+  const [isModalVisible, setModalVisibility] = useState(false);
+  const [isAudioModalVisible, setAudioModalVisibilty] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [recordingTime, setRecordingTime] = useState('00:00');
+  const [isPlaying, setPlaying] = useState(false);
   const [notes, updateNotes] = useState({
     title: '',
     note: '',
     images: [],
     audio: [],
   });
+
+  const setNotes = val => updateNotes({...notes, ...val});
 
   const [colorPickerModal, updateColorPickerModal] = useState({
     visibility: false,
@@ -51,11 +73,371 @@ const Editor = props => {
   const setColorPickerModal = val =>
     updateColorPickerModal({...colorPickerModal, ...val});
 
-  React.useEffect(() => {
-    console.log(RichText?.current, '..rich text');
-  }, []);
+  //? Audio modal
 
-  console.log(RichText?.current?._focus, '...focus');
+  const AudioRecoderModal = () => {
+    return (
+      <Modal
+        animationIn={'zoomIn'}
+        animationOut={'zoomOut'}
+        isVisible={isAudioModalVisible}
+        onBackButtonPress={() => setAudioModalVisibilty(false)}
+        onBackdropPress={() => setAudioModalVisibilty(false)}
+        useNativeDriverForBackdrop={true}
+        style={{margin: 0}}>
+        <View
+          style={{
+            backgroundColor: '#fff',
+            // marginTop: 'auto',
+            marginBottom: Platform.OS == 'ios' ? 30 : 10,
+            marginHorizontal: 10,
+            borderRadius: 10,
+            padding: 20,
+            alignItems: 'center',
+            paddingTop: 40,
+            paddingBottom: 40,
+          }}>
+          <View
+            style={{
+              marginTop: -20,
+              marginBottom: 10,
+              flexDirection: 'row',
+              alignItems: 'center',
+              // backgroundColor: 'pink',
+            }}>
+            <View style={{width: 25}} />
+            <View style={{flex: 1, alignItems: 'center'}}>
+              <Text style={{fontFamily: font.bold, fontSize: 16}}>
+                Voice Note
+              </Text>
+            </View>
+            <Pressable onPress={() => setAudioModalVisibilty(false)} style={{}}>
+              <Image source={ic_cross} style={{height: 25, width: 25}} />
+            </Pressable>
+          </View>
+          <View
+            style={{
+              height: 130,
+              width: 130,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            {isPlaying && (
+              <>
+                <Animatable.View
+                  iterationCount="infinite"
+                  animation={isPlaying ? myZoom1x : ''}
+                  direction="alternate"
+                  duration={1500}
+                  style={{
+                    backgroundColor: Colors.lightPrimary2,
+                    height: 130,
+                    width: 130,
+                    borderRadius: 130 / 2,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'absolute',
+                    zIndex: -2,
+                  }}></Animatable.View>
+                <Animatable.View
+                  iterationCount="infinite"
+                  animation={isPlaying ? myZoom2x : ''}
+                  direction="alternate"
+                  duration={1500}
+                  style={{
+                    backgroundColor: Colors.lightPrimary1,
+                    height: 100,
+                    width: 100,
+                    borderRadius: 100 / 2,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'absolute',
+                    zIndex: -1,
+                  }}></Animatable.View>
+              </>
+            )}
+            <Pressable
+              onPress={() => {
+                if (isPlaying) {
+                  setPlaying(false);
+                  onStopRecord();
+                } else {
+                  setPlaying(true);
+                  onStartRecord();
+                }
+              }}
+              style={{
+                backgroundColor: Colors.primary,
+                height: 70,
+                width: 70,
+                borderRadius: 70 / 2,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Image
+                source={isPlaying ? ic_pause : ic_play}
+                style={{height: 30, width: 30, tintColor: Colors.white}}
+              />
+            </Pressable>
+          </View>
+          <View style={{minHeight: 20, marginTop: 10}}>
+            {isPlaying && (
+              <Text style={{fontFamily: font.regular, fontSize: 16}}>
+                {'   '}Listening...
+              </Text>
+            )}
+          </View>
+          {/* <Pressable style={{padding: 10}} onPress={() => onStartRecord()}>
+            <Text>Play</Text>
+          </Pressable>
+
+          <Pressable style={{padding: 10}} onPress={() => onStopRecord()}>
+            <Text>Stop</Text>
+          </Pressable> */}
+
+          <View style={{marginTop: 30}}>
+            <Text style={{fontFamily: font.medium, fontSize: 18}}>
+              {recordingTime}
+            </Text>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
+  const onStartRecord = async () => {
+    console.log('Hello');
+    const result = await audioRecorderPlayer.startRecorder();
+    audioRecorderPlayer.addRecordBackListener(e => {
+      let time = audioRecorderPlayer.mmssss(Math.floor(e.currentPosition));
+      setRecordingTime(time.slice(0, -3));
+      return;
+    });
+    console.log(result);
+  };
+
+  const onStopRecord = async () => {
+    const result = await audioRecorderPlayer.stopRecorder();
+    await audioRecorderPlayer.removeRecordBackListener();
+    setRecordingTime('00:00');
+    let audioObj = {
+      uri: result,
+      name: result.split('/').pop(),
+      type: 'audio/' + result.split('.').pop(),
+    };
+    console.log(audioObj);
+    setNotes({audio: [audioObj]});
+  };
+  //? Image Picker
+  const openGallery = async () => {
+    setModalVisibility(false);
+    setTimeout(() => {
+      ImagePicker.openPicker({
+        width: 800,
+        height: 800,
+        cropping: true,
+        mediaType: 'photo',
+        cropperStatusBarColor: Colors.background,
+        cropperToolbarColor: Colors.background,
+      })
+        .then(image => {
+          console.log('Image', image);
+          // setUser({imageURI: image.sourceURL});
+
+          let objImge;
+          if (Platform.OS == 'android') {
+            let name = image.path.split('/');
+            objImge = {
+              uri: image.path,
+              name: name[name.length - 1],
+              type: image.mime,
+            };
+          } else if (Platform.OS == 'ios') {
+            objImge = {
+              uri: image.path,
+              name: image.filename,
+              type: image.mime,
+            };
+          }
+          setNotes({images: [objImge, ...notes.images]});
+        })
+        .catch(e => {
+          console.log('Error', e);
+          console.log('HI', JSON.stringify(e));
+          if (e.code == 'E_NO_LIBRARY_PERMISSION') {
+            showToast(
+              'Please allow permssion in settings first',
+              'Permission denied',
+            );
+          }
+        });
+    }, 500);
+  };
+
+  const openCamera = async () => {
+    setModalVisibility(false);
+    let granted;
+    if (Platform.OS == 'android') {
+      granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: 'App Camera Permission',
+          message: 'App needs access to your camera ',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+    } else {
+      granted = true;
+    }
+
+    if (granted) {
+      setTimeout(() => {
+        ImagePicker.openCamera({
+          width: 800,
+          height: 800,
+          cropping: true,
+          mediaType: 'photo',
+          cropperStatusBarColor: Colors.background,
+          cropperToolbarColor: Colors.background,
+        })
+          .then(image => {
+            console.log('Image', image);
+            let objImge;
+            if (Platform.OS == 'android') {
+              let name = image.path.split('/');
+              objImge = {
+                uri: image.path,
+                name: name[name.length - 1],
+                type: image.mime,
+              };
+            } else if (Platform.OS == 'ios') {
+              let name = image.path.split('/');
+              objImge = {
+                uri: image.path,
+                name: !!image.filename ? image.filename : name[name.length - 1],
+                type: image.mime,
+              };
+            }
+            setNotes({images: [objImge, ...notes.images]});
+          })
+          .catch(e => {
+            console.log('Error', e);
+            if (e?.code == 'E_NO_CAMERA_PERMISSION') {
+              showToast(e.message, 'Permission not granted');
+            }
+          });
+      }, 500);
+    }
+  };
+
+  const ImagePickerOptionsModal = () => {
+    return (
+      <Modal
+        isVisible={isModalVisible}
+        onBackButtonPress={() => setModalVisibility(false)}
+        onBackdropPress={() => setModalVisibility(false)}
+        useNativeDriverForBackdrop={true}
+        style={{marginTop: 'auto', margin: 0}}>
+        <View
+          style={{
+            backgroundColor: '#fff',
+            marginTop: 'auto',
+            marginBottom: Platform.OS == 'ios' ? 30 : 10,
+            marginHorizontal: 10,
+            borderRadius: 10,
+            padding: 20,
+          }}>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <View style={{flex: 1}}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontFamily: font.bold,
+                  letterSpacing: 0.5,
+                }}>
+                Select Image
+              </Text>
+            </View>
+
+            <Pressable
+              onPress={() => setModalVisibility(false)}
+              style={{alignItems: 'center'}}>
+              <View
+                style={{
+                  backgroundColor: '#BDC3C744',
+                  height: 30,
+                  width: 30,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 25,
+                }}>
+                <Image source={ic_cross} style={{height: 10, width: 10}} />
+              </View>
+            </Pressable>
+          </View>
+          <View
+            style={{marginTop: 25, flexDirection: 'row', alignItems: 'center'}}>
+            <Pressable onPress={openCamera} style={{alignItems: 'center'}}>
+              <View
+                style={{
+                  backgroundColor: '#BDC3C744',
+                  height: 50,
+                  width: 50,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 25,
+                }}>
+                <Image source={ic_camera} style={{height: 20, width: 20}} />
+              </View>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontFamily: font.medium,
+                  letterSpacing: 0.5,
+                  marginTop: 5,
+                }}>
+                Camera
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={openGallery}
+              style={{alignItems: 'center', marginLeft: 30}}>
+              <View
+                style={{
+                  backgroundColor: '#BDC3C744',
+                  height: 50,
+                  width: 50,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 25,
+                }}>
+                <Image source={ic_gallery} style={{height: 20, width: 20}} />
+              </View>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontFamily: font.medium,
+                  letterSpacing: 0.5,
+                  marginTop: 5,
+                }}>
+                Gallery
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
+  const removeImage = i => {
+    let temp = [...notes.images];
+    temp.splice(i, 1);
+    setNotes({images: [...temp]});
+  };
+
   const ColorPickerModal = () => {
     return (
       <Modal
@@ -169,118 +551,254 @@ const Editor = props => {
                     fontFamily: font.bold,
                     paddingBottom: 3,
                   }}
+                  autoCorrect={false}
+                  autoComplete={false}
+                  onChangeText={text => setNotes({title: text})}
                   placeholder="Title"
                   selectionColor={Colors.primary}
+                  onFocus={() => setIsFocused(false)}
                 />
               </View>
 
-              <View
+              <Pressable
+                onPress={() => {
+                  console.log(RichText?.current._focus);
+                  if (RichText?.current._focus == false) {
+                    console.log('==>true');
+                    RichText?.current?.focusContentEditor();
+                    setIsFocused(true);
+                  }
+                }}
                 style={{
                   borderRadius: 10,
-                  // backgroundColor: Colors.gray01,
-                  overflow: 'hidden',
                   marginTop: 20,
+                  minHeight: 150,
+                  marginHorizontal: -10,
+                  flex: 1,
                 }}>
-                <View
-                  style={{
-                    // backgroundColor: Colors.gray01,
-                    minHeight: 150,
-                  }}>
+                <View style={{minHeight: 150}}>
                   <RichEditor
                     ref={RichText}
                     style={{
                       borderRadius: 10,
-                      // backgroundColor: Colors.gray01,
                     }}
                     initialHeight={150}
                     editorStyle={{
                       // backgroundColor: Colors.gray01,
-                      // color: Colors.primary,
                       caretColor: Colors.primary,
-                      // fontFamily: font.light,
+                      contentCSSText:
+                        '@font-face {font-family: myFirstFont;src: url(Pangram-Bold.otf); }, div {font-family: myFirstFont;}',
                     }}
                     setDisplayZoomControls={true}
                     initialContentHTML={notes.note}
                     useContainer={true}
                     placeholder={"What's in your mind"}
-                    // onChange={text => this.setState({decription: text})}
+                    onChange={text => setNotes({note: text})}
                     androidLayerType="software"
                     androidHardwareAccelerationDisabled
+                    onBlur={() => {
+                      setIsFocused(false);
+                    }}
+                    onFocus={() => {
+                      console.log('focused');
+                      setIsFocused(true);
+                    }}
                   />
                 </View>
-              </View>
-            </View>
-            <RichToolbar
-              editor={RichText}
-              // onInsertLink={() => this.openDialogue()}
-              // editor={this[`TextEditor`]}
-
-              actions={[
-                // ...defaultActions,
-                actions.keyboard,
-                // actions.hiliteColor,
-                actions.undo,
-                actions.redo,
-                actions.foreColor,
-                actions.setBold,
-                actions.setItalic,
-                actions.setUnderline,
-                actions.removeFormat,
-                // actions.insertLink,
-                // actions.setSubscript,
-                // actions.setSuperscript,
-                // actions.setStrikethrough,
-                actions.insertBulletsList,
-                actions.insertOrderedList,
-                // actions.setParagraph,
-                // actions.heading1,
-                // actions.heading2,
-                // actions.heading3,
-                // actions.heading4,
-                // actions.heading5,
-                // actions.heading6,
-                // actions.line,
-                // actions.alignLeft,
-                // actions.alignCenter,
-                // actions.alignRight,
-                // actions.alignFull,
-                // actions.outdent,
-                // actions.indent,
-                // actions.blockquote,
-              ]}
-              style={{
-                backgroundColor: Colors.white,
-                borderRadius: 10,
-                // position: 'absolute',
-                // bottom: 0,
-              }}
-              iconTint={Colors.placeHolder}
-              iconMap={{
-                [actions.foreColor]: ({tintColor}) => (
-                  <Pressable
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                <View
+                  style={{
+                    marginHorizontal: -10,
+                    marginTop: 20,
+                  }}>
+                  <FlatList
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{
+                      paddingLeft: 10,
+                      paddingVertical: 10,
                     }}
-                    onPress={() => setColorPickerModal({visibility: true})}>
-                    <Image
-                      source={ic_pallete}
+                    data={notes?.images}
+                    renderItem={({item, index}) => {
+                      console.log('notes?.images', item);
+                      return (
+                        <View
+                          style={{
+                            height: 120,
+                            width: 120,
+                            borderRadius: 20,
+                            marginRight: 10,
+                            shadowColor: '#000',
+                            shadowOffset: {
+                              width: 0,
+                              height: 1,
+                            },
+                            shadowOpacity: 0.22,
+                            shadowRadius: 2.22,
+
+                            elevation: 3,
+                            // borderWidth: 1,
+                            // borderColor: Colors.placeHolder,
+                          }}>
+                          <Image
+                            source={{uri: item?.uri}}
+                            style={{
+                              height: '98%',
+                              width: '98%',
+                              borderRadius: 20,
+                            }}
+                          />
+                          <Pressable
+                            onPress={() => removeImage(index)}
+                            style={{
+                              position: 'absolute',
+                              top: 10,
+                              right: 10,
+                              height: 25,
+                              width: 25,
+                              borderRadius: 15,
+                              backgroundColor: Colors.white,
+                              borderColor: Colors.placeHolder,
+                              borderWidth: 1,
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              shadowColor: '#000',
+                              shadowOffset: {
+                                width: 0,
+                                height: 1,
+                              },
+                              shadowOpacity: 0.22,
+                              shadowRadius: 2.22,
+
+                              elevation: 3,
+                            }}>
+                            <Image
+                              source={ic_cross}
+                              style={{height: 10, width: 10}}
+                            />
+                          </Pressable>
+                        </View>
+                      );
+                    }}
+                  />
+                </View>
+              </Pressable>
+            </View>
+
+            <Collapsible collapsed={!isFocused}>
+              <RichToolbar
+                editor={RichText}
+                actions={[
+                  // ...defaultActions,
+                  actions.keyboard,
+                  // actions.hiliteColor,
+                  ['images'],
+                  ['audio'],
+                  actions.undo,
+                  actions.redo,
+                  actions.foreColor,
+                  actions.setBold,
+                  actions.setItalic,
+                  actions.setUnderline,
+                  actions.removeFormat,
+                  // actions.insertLink,
+                  // actions.setSubscript,
+                  // actions.setSuperscript,
+                  // actions.setStrikethrough,
+                  actions.insertBulletsList,
+                  actions.insertOrderedList,
+                  // actions.setParagraph,
+                  // actions.heading1,
+                  // actions.heading2,
+                  // actions.heading3,
+                  // actions.heading4,
+                  // actions.heading5,
+                  // actions.heading6,
+                  // actions.line,
+                  // actions.alignLeft,
+                  // actions.alignCenter,
+                  // actions.alignRight,
+                  // actions.alignFull,
+                  // actions.outdent,
+                  // actions.indent,
+                  // actions.blockquote,
+                ]}
+                style={{
+                  backgroundColor: Colors.white,
+                  borderRadius: 10,
+                  // position: 'absolute',
+                  // bottom: 0,
+                }}
+                iconTint={Colors.placeHolder}
+                iconMap={{
+                  images: ({tintColor}) => (
+                    <TouchableOpacity
+                      onPress={() => setModalVisibility(true)}
                       style={{
-                        height: 18,
-                        width: 18,
-                        tintColor: Colors.placeHolder,
+                        width: '100%',
+                        height: '100%',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                      <Image
+                        key={'image'}
+                        source={ic_image}
+                        style={{
+                          height: 18,
+                          width: 18,
+                          tintColor: Colors.placeHolder,
+                        }}
+                      />
+                    </TouchableOpacity>
+                  ),
+                  [actions.foreColor]: ({tintColor}) => (
+                    <TouchableOpacity
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
-                    />
-                  </Pressable>
-                ),
-              }}
-              selectedIconTint={Colors.primary}
-            />
+                      onPress={() => setColorPickerModal({visibility: true})}>
+                      <Image
+                        source={ic_pallete}
+                        style={{
+                          height: 18,
+                          width: 18,
+                          tintColor: Colors.placeHolder,
+                        }}
+                      />
+                    </TouchableOpacity>
+                  ),
+
+                  audio: ({tintColor}) => (
+                    <TouchableOpacity
+                      onPress={() => setAudioModalVisibilty(true)}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                      <Image
+                        key={'audio'}
+                        source={ic_mic}
+                        style={{
+                          height: 18,
+                          width: 18,
+                          tintColor: Colors.placeHolder,
+                        }}
+                      />
+                    </TouchableOpacity>
+                  ),
+                }}
+                selectedIconTint={Colors.primary}
+              />
+            </Collapsible>
           </>
         </KeyboardAvoidingView>
         {ColorPickerModal()}
+        {ImagePickerOptionsModal()}
+        {AudioRecoderModal()}
       </View>
     </SafeAreaView>
   );
@@ -305,3 +823,39 @@ const myColors = [
   '#800080',
   '#FFFF00',
 ];
+
+const myZoom1x = {
+  0: {
+    opacity: 0,
+    scale: 0,
+  },
+  0.5: {
+    opacity: 0,
+    scale: 0.5,
+  },
+
+  0.7: {
+    opacity: 0,
+    scale: 0.9,
+  },
+  1: {
+    opacity: 1,
+    scale: 1,
+  },
+};
+
+const myZoom2x = {
+  0: {
+    opacity: 0,
+    scale: 0,
+  },
+  0.5: {
+    opacity: 1,
+    scale: 0.3,
+  },
+
+  1: {
+    opacity: 1,
+    scale: 1,
+  },
+};

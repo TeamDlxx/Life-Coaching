@@ -100,12 +100,12 @@ const Home = props => {
           },
           shadowOpacity: 0.22,
           shadowRadius: 2.22,
+          elevation:3,
           // borderRadius: 25,
           borderRadius: 20,
           paddingTop: index % 2 != 0 ? 40 : 0,
           marginLeft: index % 2 == 0 ? 30 : 15,
           marginRight: index % 2 != 0 ? 30 : 15,
-          overflow: 'hidden',
         }}>
         <Pressable
           onPress={() => onNextScreen(item)}
