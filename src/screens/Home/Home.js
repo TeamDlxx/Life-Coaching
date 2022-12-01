@@ -190,7 +190,7 @@ const Home = props => {
             paddingHorizontal: 30,
           }}>
           <Text style={{fontSize: 20, fontFamily: font.bold, letterSpacing: 2}}>
-            LIFE COACHING
+            LIFE MATE
           </Text>
         </Pressable>
 
@@ -245,6 +245,7 @@ const options = [
     count: 3,
     screen: screens.notesList,
     color: '#C4BCB2',
+    // comingsoon: true,
   },
   {
     id: '4',

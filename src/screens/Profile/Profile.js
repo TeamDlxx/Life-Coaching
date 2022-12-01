@@ -287,7 +287,7 @@ const Profile = props => {
                     letterSpacing: 0.5,
                     textAlign: 'center',
                   }}>
-                  LIFE COACHING
+                  LIFE MATE
                 </Text>
               </View>
               <View style={{marginTop: 10}}>

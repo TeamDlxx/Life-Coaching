@@ -302,7 +302,7 @@ const ContextWrapper = props => {
     let dirs = ReactNativeBlobUtil.fs.dirs;
     console.log('dirs ==>', dirs);
     let path = !!dirs.LegacyDownloadDir
-      ? dirs.LegacyDownloadDir + '/Life Coaching' + imageName
+      ? dirs.LegacyDownloadDir + '/Life Mate' + imageName
       : dirs.PictureDir + imageName;
 
     let ext1 = ext;
@@ -334,7 +334,7 @@ const ContextWrapper = props => {
               await ReactNativeBlobUtil.MediaCollection.createMediafile(
                 {
                   name: imageName,
-                  parentFolder: 'Life Coaching',
+                  parentFolder: 'Life Mate',
                   mimeType: `image/${ext1}`,
                 },
                 'Download',
@@ -472,6 +472,7 @@ const ContextWrapper = props => {
       meditation: meditation_flag,
       skus: arr,
     });
+    return;
   };
 
   const resetPurchase = () => {

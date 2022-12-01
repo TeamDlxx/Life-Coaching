@@ -38,6 +38,7 @@ import ic_download from '../../../Assets/TrackPlayer/ic_download3.png';
 import ic_share from '../../../Assets/TrackPlayer/share.png';
 import ic_tick from '../../../Assets/Icons/tick.png';
 import {duration} from 'moment';
+import {font} from '../../../Utilities/font';
 
 const TrackPlayerScreen = props => {
   const {navigation} = props;
@@ -463,12 +464,22 @@ const TrackPlayerScreen = props => {
               </Pressable>
             )}
           </View>
-          <Text style={_styleTrackPlayer.trackName}>{trackItem.name}</Text>
           <Text style={_styleTrackPlayer.trackCategory}>
             {params?.from == 'fav' || params?.category == 'all'
               ? trackItem?.category_id[0]?._id?.name
               : params?.category}
           </Text>
+
+          <Text style={_styleTrackPlayer.trackName}>{trackItem.name}</Text>
+          {!!trackItem?.author && (
+            <Text style={_styleTrackPlayer.trackAuther}>
+              <Text >
+                By
+              </Text>
+              {' ' + trackItem?.author}
+            </Text>
+          )}
+
           <Text numberOfLines={4} style={_styleTrackPlayer.trackDescription}>
             {trackItem.description}
           </Text>

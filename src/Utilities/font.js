@@ -5,4 +5,5 @@ export const font = {
   medium: 'Pangram-Medium',
   regular: 'Pangram-Regular',
   xbold: 'Pangram-ExtraBold',
+  italic: 'Pangram-Italic',
 };

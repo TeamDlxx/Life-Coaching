@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "pod": "cd ios && pod install && cd ..",
     "clean": "watchman watch-del-all && rm -rf node_modules/ && yarn cache clean && yarn install",
+    "link-assets": "npx react-native-asset",
     "watchman": "watchman watch-del-all",
     "release": "react-native run-android --variant=release",
     "gradle": "cd android && ./gradlew clean && cd ..",

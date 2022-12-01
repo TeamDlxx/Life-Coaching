@@ -23,6 +23,7 @@
 		B35608E19332E632D5E87C0C /* libPods-LifeCoaching-LifeCoachingTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 20D1F52AE47C0EAFB9748B3A /* libPods-LifeCoaching-LifeCoachingTests.a */; };
 		BC0B06E1E1354C95ADD2C193 /* Pangram-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 023306A9322E4F76A718CB52 /* Pangram-Regular.otf */; };
 		DD146367282745AE99F2F096 /* Pangram-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = 9290B6BB2D1C49DE9A4EB9B8 /* Pangram-ExtraLight.otf */; };
+		7A99F5D4A43044E393DD0F3C /* Pangram-Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = D2AA9408FC4645F7BF4C5FD4 /* Pangram-Italic.otf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +64,7 @@
 		B3494150CA3C42CE89999DB9 /* Pangram-ExtraBold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pangram-ExtraBold.otf"; path = "../src/Assets/fonts/Pangram-ExtraBold.otf"; sourceTree = "<group>"; };
 		EBD490169FC748CFA3EA3F95 /* Pangram-Black.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pangram-Black.otf"; path = "../src/Assets/fonts/Pangram-Black.otf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		D2AA9408FC4645F7BF4C5FD4 /* Pangram-Italic.otf */ = {isa = PBXFileReference; name = "Pangram-Italic.otf"; path = "../src/Assets/fonts/Pangram-Italic.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -182,6 +184,7 @@
 				707B1D1064BA4DFC964FB511 /* Pangram-Light.otf */,
 				7D027CF0842649BD97FC6C8E /* Pangram-Medium.otf */,
 				023306A9322E4F76A718CB52 /* Pangram-Regular.otf */,
+				D2AA9408FC4645F7BF4C5FD4 /* Pangram-Italic.otf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -292,6 +295,7 @@
 				46404CDF28E6A70C00310679 /* GoogleService-Info.plist in Resources */,
 				506CEFB8CD6B4F1497353D58 /* Pangram-Medium.otf in Resources */,
 				BC0B06E1E1354C95ADD2C193 /* Pangram-Regular.otf in Resources */,
+				7A99F5D4A43044E393DD0F3C /* Pangram-Italic.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -563,7 +567,7 @@
 				CODE_SIGN_ENTITLEMENTS = LifeCoaching/LifeCoaching.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = ZMHT686M4P;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = LifeCoaching/Info.plist;
@@ -595,7 +599,7 @@
 				CODE_SIGN_ENTITLEMENTS = LifeCoaching/LifeCoaching.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = ZMHT686M4P;
 				INFOPLIST_FILE = LifeCoaching/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;

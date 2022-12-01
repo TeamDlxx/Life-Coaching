@@ -18,6 +18,10 @@
       "sha1": "1d2aa44d400c6a5b58aaf9b0c7340c293cee1144"
     },
     {
+      "path": "src/Assets/fonts/Pangram-Italic.otf",
+      "sha1": "fe9bcc436ca1e8b95407ad54365b3e3163164f16"
+    },
+    {
       "path": "src/Assets/fonts/Pangram-Light.otf",
       "sha1": "119f7489c5c9ee27fe0187516abe453fe5ebdd82"
     },

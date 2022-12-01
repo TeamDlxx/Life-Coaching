@@ -76,7 +76,7 @@ const FavQuoteList = props => {
       let file = `data:image/${ext};base64,${res}`;
       setIsSharing(null);
       await Share.open({
-        title: 'Life Coaching | Quotes',
+        title: 'Life Mate | Quotes',
         message: description,
         url: file,
       })

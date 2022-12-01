@@ -5,9 +5,6 @@ import {
   StatusBar,
   Pressable,
   Image,
-  Alert,
-  RefreshControl,
-  Dimensions,
   TextInput,
   FlatList,
   KeyboardAvoidingView,
@@ -17,13 +14,9 @@ import {
 import React, {useEffect, useState} from 'react';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
-import {mainStyles, allHabit_styles} from '../../../Utilities/styles';
+import {mainStyles} from '../../../Utilities/styles';
 import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
-import {SwipeListView} from 'react-native-swipe-list-view';
-import * as Progress from 'react-native-progress';
-import moment from 'moment';
-import CustomImage from '../../../Components/CustomImage';
 import Modal from 'react-native-modal';
 import {actions, RichEditor, RichToolbar} from 'react-native-pell-rich-editor';
 import Collapsible from 'react-native-collapsible';
@@ -31,8 +24,8 @@ import ImagePicker from 'react-native-image-crop-picker';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import * as Animatable from 'react-native-animatable';
 
-const audioRecorderPlayer = new AudioRecorderPlayer();
-let recorderListner;
+let audioRecorderPlayer = new AudioRecorderPlayer();
+
 //icons
 const ic_pallete = require('../../../Assets/Icons/palette.png');
 const ic_cross = require('../../../Assets/Icons/cross.png');
@@ -43,7 +36,7 @@ const ic_mic = require('../../../Assets/Icons/microphone-black-shape.png');
 const ic_gallery = require('../../../Assets/Icons/gallery.png');
 const ic_camera = require('../../../Assets/Icons/camera.png');
 const ic_play = require('../../../Assets/TrackPlayer/playTrack.png');
-const ic_stop = require('../../../Assets/TrackPlayer/playTrack.png');
+const ic_stop = require('../../../Assets/TrackPlayer/stop.png');
 const ic_pause = require('../../../Assets/TrackPlayer/pauseTrack.png');
 // import ic_cross from '../../../Assets/Icons/cross.png';
 import ic_trash from '../../../Assets/Icons/trash.png';
@@ -52,17 +45,20 @@ const Editor = props => {
   const RichText = React.useRef();
   const colorPicker = React.useRef();
   const [isModalVisible, setModalVisibility] = useState(false);
-  const [isAudioModalVisible, setAudioModalVisibilty] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const [recordingTime, setRecordingTime] = useState('00:00');
-  const [isPlaying, setPlaying] = useState(false);
+  const [recorder, updateRecorder] = useState({
+    isAudioModalVisible: false,
+    recordingTime: '00:00',
+    recorderStatus: 'stopped',
+    tempAudio: null,
+  });
   const [notes, updateNotes] = useState({
     title: '',
     note: '',
     images: [],
     audio: [],
   });
-
+  const setRecorder = val => updateRecorder({...recorder, ...val});
   const setNotes = val => updateNotes({...notes, ...val});
 
   const [colorPickerModal, updateColorPickerModal] = useState({
@@ -73,6 +69,9 @@ const Editor = props => {
   const setColorPickerModal = val =>
     updateColorPickerModal({...colorPickerModal, ...val});
 
+  useEffect(() => {
+    console.log(recorder, 'recorder');
+  }, [recorder]);
   //? Audio modal
 
   const AudioRecoderModal = () => {
@@ -80,20 +79,17 @@ const Editor = props => {
       <Modal
         animationIn={'zoomIn'}
         animationOut={'zoomOut'}
-        isVisible={isAudioModalVisible}
-        onBackButtonPress={() => setAudioModalVisibilty(false)}
-        onBackdropPress={() => setAudioModalVisibilty(false)}
+        isVisible={recorder.isAudioModalVisible}
         useNativeDriverForBackdrop={true}
         style={{margin: 0}}>
         <View
           style={{
             backgroundColor: '#fff',
-            // marginTop: 'auto',
             marginBottom: Platform.OS == 'ios' ? 30 : 10,
             marginHorizontal: 10,
             borderRadius: 10,
             padding: 20,
-            alignItems: 'center',
+            // alignItems: 'center',
             paddingTop: 40,
             paddingBottom: 40,
           }}>
@@ -103,7 +99,7 @@ const Editor = props => {
               marginBottom: 10,
               flexDirection: 'row',
               alignItems: 'center',
-              // backgroundColor: 'pink',
+              height: 25,
             }}>
             <View style={{width: 25}} />
             <View style={{flex: 1, alignItems: 'center'}}>
@@ -111,124 +107,195 @@ const Editor = props => {
                 Voice Note
               </Text>
             </View>
-            <Pressable onPress={() => setAudioModalVisibilty(false)} style={{}}>
+            <Pressable
+              style={{width: 25}}
+              // disabled={recorder.recorderStatus == 'playing'}
+              onPress={() => closeModal()}>
               <Image source={ic_cross} style={{height: 25, width: 25}} />
             </Pressable>
           </View>
           <View
             style={{
-              height: 130,
-              width: 130,
+              flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'center',
             }}>
-            {isPlaying && (
-              <>
-                <Animatable.View
-                  iterationCount="infinite"
-                  animation={isPlaying ? myZoom1x : ''}
-                  direction="alternate"
-                  duration={1500}
-                  style={{
-                    backgroundColor: Colors.lightPrimary2,
-                    height: 130,
-                    width: 130,
-                    borderRadius: 130 / 2,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'absolute',
-                    zIndex: -2,
-                  }}></Animatable.View>
-                <Animatable.View
-                  iterationCount="infinite"
-                  animation={isPlaying ? myZoom2x : ''}
-                  direction="alternate"
-                  duration={1500}
-                  style={{
-                    backgroundColor: Colors.lightPrimary1,
-                    height: 100,
-                    width: 100,
-                    borderRadius: 100 / 2,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'absolute',
-                    zIndex: -1,
-                  }}></Animatable.View>
-              </>
-            )}
-            <Pressable
-              onPress={() => {
-                if (isPlaying) {
-                  setPlaying(false);
-                  onStopRecord();
-                } else {
-                  setPlaying(true);
-                  onStartRecord();
-                }
-              }}
+            <View
               style={{
-                backgroundColor: Colors.primary,
-                height: 70,
-                width: 70,
-                borderRadius: 70 / 2,
+                height: 130,
+                width: 130,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-              <Image
-                source={isPlaying ? ic_pause : ic_play}
-                style={{height: 30, width: 30, tintColor: Colors.white}}
-              />
-            </Pressable>
-          </View>
-          <View style={{minHeight: 20, marginTop: 10}}>
-            {isPlaying && (
-              <Text style={{fontFamily: font.regular, fontSize: 16}}>
-                {'   '}Listening...
-              </Text>
-            )}
-          </View>
-          {/* <Pressable style={{padding: 10}} onPress={() => onStartRecord()}>
-            <Text>Play</Text>
-          </Pressable>
+              {recorder.recorderStatus == 'playing' && (
+                <>
+                  <Animatable.View
+                    iterationCount="infinite"
+                    animation={
+                      recorder.recorderStatus == 'playing' ? myZoom1x : ''
+                    }
+                    direction="alternate"
+                    duration={1500}
+                    style={{
+                      backgroundColor: Colors.lightPrimary2,
+                      height: 100,
+                      width: 100,
+                      borderRadius: 100 / 2,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'absolute',
+                      zIndex: -2,
+                    }}></Animatable.View>
+                  <Animatable.View
+                    iterationCount="infinite"
+                    animation={
+                      recorder.recorderStatus == 'playing' ? myZoom2x : ''
+                    }
+                    direction="alternate"
+                    duration={1500}
+                    style={{
+                      backgroundColor: Colors.lightPrimary1,
+                      height: 70,
+                      width: 70,
+                      borderRadius: 70 / 2,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'absolute',
+                      zIndex: -1,
+                    }}></Animatable.View>
+                </>
+              )}
+              <Pressable
+                onPress={recorderPlayPause}
+                style={{
+                  backgroundColor: Colors.primary,
+                  height: 50,
+                  width: 50,
+                  borderRadius: 50 / 2,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Image
+                  source={
+                    recorder.recorderStatus == 'playing' ? ic_pause : ic_play
+                  }
+                  style={{height: 20, width: 20, tintColor: Colors.white}}
+                />
+              </Pressable>
+            </View>
 
-          <Pressable style={{padding: 10}} onPress={() => onStopRecord()}>
-            <Text>Stop</Text>
-          </Pressable> */}
-
-          <View style={{marginTop: 30}}>
-            <Text style={{fontFamily: font.medium, fontSize: 18}}>
-              {recordingTime}
+            <View style={{marginLeft: 30}}>
+              <View style={{}}>
+                <Text style={{fontFamily: font.medium, fontSize: 18}}>
+                  {recorder.recordingTime}
+                </Text>
+              </View>
+              {recorder.recorderStatus == 'playing' && (
+                <View style={{minHeight: 20, marginTop: 10}}>
+                  <Text style={{fontFamily: font.regular, fontSize: 16}}>
+                    Listening...
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+          <Pressable
+            style={{
+              backgroundColor:
+                recorder.tempAudio != null
+                  ? Colors.lightPrimary
+                  : Colors.gray01,
+              alignSelf: 'flex-end',
+              height: 45,
+              width: 100,
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderRadius: 10,
+              marginBottom: -20,
+            }}>
+            <Text
+              style={{
+                fontFamily: font.bold,
+                color:
+                  recorder.tempAudio != null
+                    ? Colors.primary
+                    : Colors.placeHolder,
+                fontSize: 16,
+              }}>
+              Add
             </Text>
-          </View>
+          </Pressable>
         </View>
       </Modal>
     );
   };
 
+  const recorderPlayPause = () => {
+    console.log('recorder.recorderStatus', recorder.recorderStatus);
+    if (recorder.recorderStatus == 'playing') {
+      onPauseRecord();
+    } else if (recorder.recorderStatus == 'stopped') {
+      onStartRecord();
+    } else {
+      onResumeRecord();
+    }
+  };
+
+  const closeModal = async () => {
+    const result = await audioRecorderPlayer.stopRecorder();
+    audioRecorderPlayer.removeRecordBackListener();
+    setRecorder({
+      isAudioModalVisible: false,
+      recordingTime: '00:00',
+      recorderStatus: 'stopped',
+      tempAudio: null,
+    });
+    console.log('onModalHide', result);
+  };
+
   const onStartRecord = async () => {
     console.log('Hello');
     const result = await audioRecorderPlayer.startRecorder();
-    audioRecorderPlayer.addRecordBackListener(e => {
-      let time = audioRecorderPlayer.mmssss(Math.floor(e.currentPosition));
-      setRecordingTime(time.slice(0, -3));
-      return;
-    });
-    console.log(result);
-  };
-
-  const onStopRecord = async () => {
-    const result = await audioRecorderPlayer.stopRecorder();
-    await audioRecorderPlayer.removeRecordBackListener();
-    setRecordingTime('00:00');
     let audioObj = {
       uri: result,
       name: result.split('/').pop(),
       type: 'audio/' + result.split('.').pop(),
     };
-    console.log(audioObj);
-    setNotes({audio: [audioObj]});
+    console.log(result);
+    setRecorder({recorderStatus: 'playing', tempAudio: audioObj});
+    audioRecorderPlayer.addRecordBackListener(e => {
+      let time = audioRecorderPlayer.mmssss(Math.floor(e.currentPosition));
+      // setRecorder({recordingTime: time.slice(0, -3)});
+      return;
+    });
   };
+
+  const onPauseRecord = async () => {
+    setRecorder({recorderStatus: 'paused'});
+    const result = await audioRecorderPlayer.pauseRecorder();
+    console.log('result: ' + result);
+  };
+
+  const onResumeRecord = async () => {
+    const result = await audioRecorderPlayer.resumeRecorder();
+    setRecorder({recorderStatus: 'playing'});
+    console.log('result: ' + result);
+  };
+
+  const onStopRecord = async () => {
+    const result = await audioRecorderPlayer.stopRecorder();
+    await audioRecorderPlayer.removeRecordBackListener();
+    let audioObj = {
+      uri: result,
+      name: result.split('/').pop(),
+      type: 'audio/' + result.split('.').pop(),
+    };
+    setRecorder({recordingTime: '00:00'});
+    setNotes({audio: [audioObj]});
+    console.log(audioObj);
+  };
+
   //? Image Picker
+
   const openGallery = async () => {
     setModalVisibility(false);
     setTimeout(() => {
@@ -587,7 +654,7 @@ const Editor = props => {
                       // backgroundColor: Colors.gray01,
                       caretColor: Colors.primary,
                       contentCSSText:
-                        '@font-face {font-family: myFirstFont;src: url(Pangram-Bold.otf); }, div {font-family: myFirstFont;}',
+                        '@font-face {font-family: myFirstFont;src: url(Pangram-Bold.otf); }, * {font-family: myFirstFont;}',
                     }}
                     setDisplayZoomControls={true}
                     initialContentHTML={notes.note}
@@ -688,9 +755,7 @@ const Editor = props => {
               <RichToolbar
                 editor={RichText}
                 actions={[
-                  // ...defaultActions,
                   actions.keyboard,
-                  // actions.hiliteColor,
                   ['images'],
                   ['audio'],
                   actions.undo,
@@ -700,33 +765,12 @@ const Editor = props => {
                   actions.setItalic,
                   actions.setUnderline,
                   actions.removeFormat,
-                  // actions.insertLink,
-                  // actions.setSubscript,
-                  // actions.setSuperscript,
-                  // actions.setStrikethrough,
                   actions.insertBulletsList,
                   actions.insertOrderedList,
-                  // actions.setParagraph,
-                  // actions.heading1,
-                  // actions.heading2,
-                  // actions.heading3,
-                  // actions.heading4,
-                  // actions.heading5,
-                  // actions.heading6,
-                  // actions.line,
-                  // actions.alignLeft,
-                  // actions.alignCenter,
-                  // actions.alignRight,
-                  // actions.alignFull,
-                  // actions.outdent,
-                  // actions.indent,
-                  // actions.blockquote,
                 ]}
                 style={{
                   backgroundColor: Colors.white,
                   borderRadius: 10,
-                  // position: 'absolute',
-                  // bottom: 0,
                 }}
                 iconTint={Colors.placeHolder}
                 iconMap={{
@@ -772,7 +816,7 @@ const Editor = props => {
 
                   audio: ({tintColor}) => (
                     <TouchableOpacity
-                      onPress={() => setAudioModalVisibilty(true)}
+                      onPress={() => setRecorder({isAudioModalVisible: true})}
                       style={{
                         width: '100%',
                         height: '100%',

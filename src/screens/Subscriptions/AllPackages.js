@@ -73,6 +73,7 @@ const AllPackages = props => {
   const PurchaseSubscription = async () => {
     let item = selectedPkg;
     console.log(item, 'selectedPkg...');
+    setisLoading(true);
     try {
       if (item.isSubscription) {
         subscribeIAP(item?.sku[0], item?.playStoreData?.offerToken);
@@ -82,6 +83,7 @@ const AllPackages = props => {
     } catch (err) {
       console.log('IAP error', err);
       showToast(err, 'Error');
+      setisLoading(false);
       // setError(err.message);
     }
   };
@@ -107,6 +109,7 @@ const AllPackages = props => {
       });
     } catch (err) {
       console.log(err.code, err.message);
+      setisLoading(false);
     }
   };
 
@@ -123,7 +126,6 @@ const AllPackages = props => {
   };
 
   const getIAPProductsAndSubscriptions = async () => {
-
     setisLoading(true);
     // if (Platform.OS == 'android') {
     // const subscription = await RNIap.getSubscriptions({
@@ -141,26 +143,51 @@ const AllPackages = props => {
       console.log('Products...', Products);
       let IAP_list = [...subscription, ...Products];
       let newArray = [];
-      if (IAP_list.length != 0) {
-        packages.forEach(pakage => {
-          let playStoreData = IAP_list.find(x => pakage.sku[0] == x.productId);
-          let data;
+      if (Platform.OS == 'android') {
+        if (IAP_list.length != 0) {
+          packages.forEach(pakage => {
+            let playStoreData = IAP_list.find(
+              x => pakage.sku[0] == x.productId,
+            );
+            let data;
 
-          if (playStoreData.productType == 'subs') {
-            let temp = playStoreData.subscriptionOfferDetails[0];
-            data = {
-              offerToken: temp.offerToken,
-              formattedPrice:
-                temp.pricingPhases.pricingPhaseList[0].formattedPrice,
-            };
-          } else {
-            let temp = playStoreData.oneTimePurchaseOfferDetails;
-            data = {
-              formattedPrice: temp.formattedPrice,
-            };
-          }
-          newArray.push({...pakage, playStoreData: data});
-        });
+            if (playStoreData.productType == 'subs') {
+              let temp = playStoreData.subscriptionOfferDetails[0];
+              data = {
+                offerToken: temp.offerToken,
+                formattedPrice:
+                  temp.pricingPhases.pricingPhaseList[0].formattedPrice,
+              };
+            } else {
+              let temp = playStoreData.oneTimePurchaseOfferDetails;
+              data = {
+                formattedPrice: temp.formattedPrice,
+              };
+            }
+            newArray.push({...pakage, playStoreData: data});
+          });
+        }
+      } else {
+        if (IAP_list.length != 0) {
+          packages.forEach(pakage => {
+            let playStoreData = IAP_list.find(
+              x => pakage.sku[0] == x.productId,
+            );
+            let data;
+
+            if (playStoreData.productType == 'subs') {
+              data = {
+                offerToken: false,
+                formattedPrice: playStoreData.localizedPrice,
+              };
+            } else {
+              data = {
+                formattedPrice: playStoreData.localizedPrice,
+              };
+            }
+            newArray.push({...pakage, playStoreData: data});
+          });
+        }
       }
       if (newArray.length > 0) {
         if (params?.from == 'meditation') {
@@ -183,32 +210,40 @@ const AllPackages = props => {
     purchaseUpdateSubscription = RNIap.purchaseUpdatedListener(
       async purchase => {
         console.log('purchase', purchase);
-        const receipt = JSON.parse(purchase.transactionReceipt);
+        let receipt;
+        if (Platform.OS == 'android') {
+          receipt = JSON.parse(purchase.transactionReceipt);
+        } else {
+          receipt = purchase.transactionReceipt;
+        }
         console.log('receipt', receipt);
         if (receipt) {
           try {
             if (Platform.OS === 'ios') {
-              RNIap.finishTransactionIOS(purchase.transactionId);
+              await CheckPurchases();
             } else if (Platform.OS === 'android') {
               let acknowledgePurchaseAndroid =
                 await RNIap.acknowledgePurchaseAndroid({
                   token: purchase.purchaseToken,
                 });
-              await CheckPurchases();
 
-              if (params?.from != undefined) {
-                setTimeout(() => {
-                  props.navigation.goBack();
-                }, 300);
-              }
               console.log(
                 'acknowledgePurchaseAndroid',
                 acknowledgePurchaseAndroid,
               );
             }
 
-            await RNIap.finishTransaction(purchase, true);
+            let finish = await RNIap.finishTransaction(purchase, true);
+            console.log('finish', finish);
+            setisLoading(false);
+            await CheckPurchases();
+            if (params?.from != undefined) {
+              setTimeout(() => {
+                props.navigation.goBack();
+              }, 300);
+            }
           } catch (ackErr) {
+            setisLoading(false);
             //       console.log('ackErr INAPP>>>>', ackErr);
           }
         }
@@ -390,7 +425,7 @@ const AllPackages = props => {
 
       <View style={{flex: 1, paddingHorizontal: 20}}>
         <Loader enable={loading} />
-        {!loading && (
+        {(!loading || pkgList.length != 0) && (
           <>
             <View style={{flex: 1}}>
               <FlatList

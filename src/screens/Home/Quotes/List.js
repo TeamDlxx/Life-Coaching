@@ -89,7 +89,7 @@ const List = props => {
 
       setIsSharing(null);
       let objShare = {
-        title: 'Life Coaching | Quotes',
+        title: 'Life Mate | Quotes',
         message: description + '\n' + deepLinkQuote,
         url: file,
       };

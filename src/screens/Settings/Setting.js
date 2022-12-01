@@ -115,7 +115,7 @@ const Setting = props => {
       case 'share_app':
         try {
           const result = await Share.share({
-            title: 'Life Coaching',
+            title: 'Life Mate',
             message: `Please install this app and stay safe , AppLink :${deepLinkQuote}`,
             url: deepLinkQuote,
           });
@@ -207,7 +207,7 @@ const Setting = props => {
   const fn_report = async () => {
     console.log('getUserEmail', await getUserEmail());
     let email = await getUserEmail();
-    let subject = `Life Coaching Feedback, Platform: ${
+    let subject = `Life Mate Feedback, Platform: ${
       Platform.OS
     }, Brand: ${DeviceInfo.getBrand()}, OS Version: ${DeviceInfo.getSystemVersion()}, App Version: ${VersionCheck.getCurrentVersion()} (${VersionCheck.getCurrentBuildNumber()})`;
 

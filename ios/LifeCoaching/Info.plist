@@ -2,8 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>need to record audio</string>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
@@ -11,7 +9,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Life Coaching</string>
+	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -57,7 +55,9 @@
 	<key>NSCameraUsageDescription</key>
 	<string>need access to user photos</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>need to record audio</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>need access to user photos</string>
 	<key>UIAppFonts</key>
@@ -69,6 +69,7 @@
 		<string>Pangram-Light.otf</string>
 		<string>Pangram-Medium.otf</string>
 		<string>Pangram-Regular.otf</string>
+		<string>Pangram-Italic.otf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
