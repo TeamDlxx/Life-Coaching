@@ -19,7 +19,6 @@ const ContextWrapper = props => {
   const [adminURLsAndEmail, setAdminURLsAndEmail] = useState(null);
   const [habitList, setHabitList] = useState([]);
   const [progress, setProgress] = useState([]);
-
   const [purchases, setPurchases] = useState({
     habit: false,
     meditation: false,

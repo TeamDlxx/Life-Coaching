@@ -23,6 +23,7 @@ import Collapsible from 'react-native-collapsible';
 import ImagePicker from 'react-native-image-crop-picker';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import * as Animatable from 'react-native-animatable';
+import Slider from '@react-native-community/slider';
 
 let audioRecorderPlayer = new AudioRecorderPlayer();
 
@@ -40,18 +41,27 @@ const ic_stop = require('../../../Assets/TrackPlayer/stop.png');
 const ic_pause = require('../../../Assets/TrackPlayer/pauseTrack.png');
 // import ic_cross from '../../../Assets/Icons/cross.png';
 import ic_trash from '../../../Assets/Icons/trash.png';
+import {isIphoneX} from 'react-native-iphone-x-helper';
 const Editor = props => {
   const {navigation} = props;
   const RichText = React.useRef();
   const colorPicker = React.useRef();
+
   const [isModalVisible, setModalVisibility] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [recorder, updateRecorder] = useState({
     isAudioModalVisible: false,
-    recordingTime: '00:00',
     recorderStatus: 'stopped',
     tempAudio: null,
   });
+  const [recordingTime, setRecordingTime] = useState('00:00');
+  const [playerStatus, setPlayerStatus] = useState('stopped');
+  const [playerTime, setPlayerTime] = useState({
+    duration: 0,
+    curTimeInSeconds: 0,
+    curTime: '00:00',
+  });
+
   const [notes, updateNotes] = useState({
     title: '',
     note: '',
@@ -69,9 +79,6 @@ const Editor = props => {
   const setColorPickerModal = val =>
     updateColorPickerModal({...colorPickerModal, ...val});
 
-  useEffect(() => {
-    console.log(recorder, 'recorder');
-  }, [recorder]);
   //? Audio modal
 
   const AudioRecoderModal = () => {
@@ -186,7 +193,7 @@ const Editor = props => {
             <View style={{marginLeft: 30}}>
               <View style={{}}>
                 <Text style={{fontFamily: font.medium, fontSize: 18}}>
-                  {recorder.recordingTime}
+                  {recordingTime}
                 </Text>
               </View>
               {recorder.recorderStatus == 'playing' && (
@@ -199,6 +206,8 @@ const Editor = props => {
             </View>
           </View>
           <Pressable
+            onPress={btn_addAudioModal}
+            disable={recorder.tempAudio == null}
             style={{
               backgroundColor:
                 recorder.tempAudio != null
@@ -245,10 +254,28 @@ const Editor = props => {
     audioRecorderPlayer.removeRecordBackListener();
     setRecorder({
       isAudioModalVisible: false,
-      recordingTime: '00:00',
       recorderStatus: 'stopped',
       tempAudio: null,
     });
+    setRecordingTime('00:00');
+    console.log('onModalHide', result);
+  };
+
+  const btn_addAudioModal = async () => {
+    const result = await audioRecorderPlayer.stopRecorder();
+    audioRecorderPlayer.removeRecordBackListener();
+    setRecorder({
+      isAudioModalVisible: false,
+      recorderStatus: 'stopped',
+      tempAudio: null,
+    });
+    setRecordingTime('00:00');
+    let audioObj = {
+      uri: result,
+      name: result.split('/').pop(),
+      type: 'audio/' + result.split('.').pop(),
+    };
+    setNotes({audio: [audioObj]});
     console.log('onModalHide', result);
   };
 
@@ -261,10 +288,15 @@ const Editor = props => {
       type: 'audio/' + result.split('.').pop(),
     };
     console.log(result);
-    setRecorder({recorderStatus: 'playing', tempAudio: audioObj});
+    // setRecorder({});
+    setRecorder({
+      recorderStatus: 'playing',
+      tempAudio: audioObj,
+    });
     audioRecorderPlayer.addRecordBackListener(e => {
       let time = audioRecorderPlayer.mmssss(Math.floor(e.currentPosition));
-      // setRecorder({recordingTime: time.slice(0, -3)});
+      let recordingTime = time.slice(0, -3).toString();
+      setRecordingTime(recordingTime);
       return;
     });
   };
@@ -279,19 +311,6 @@ const Editor = props => {
     const result = await audioRecorderPlayer.resumeRecorder();
     setRecorder({recorderStatus: 'playing'});
     console.log('result: ' + result);
-  };
-
-  const onStopRecord = async () => {
-    const result = await audioRecorderPlayer.stopRecorder();
-    await audioRecorderPlayer.removeRecordBackListener();
-    let audioObj = {
-      uri: result,
-      name: result.split('/').pop(),
-      type: 'audio/' + result.split('.').pop(),
-    };
-    setRecorder({recordingTime: '00:00'});
-    setNotes({audio: [audioObj]});
-    console.log(audioObj);
   };
 
   //? Image Picker
@@ -571,6 +590,113 @@ const Editor = props => {
     );
   };
 
+  //? player
+  const playerPlayPause = async () => {
+    console.log('playerStatus', playerStatus);
+    console.log('playerTime.curTime', playerTime.curTimeInSeconds);
+    console.log('playerTime.duration', playerTime.duration);
+    if (playerStatus == 'stopped') {
+      onStartPlay();
+    } else if (
+      playerStatus == 'stopped' &&
+      playerTime.curTimeInSeconds != 0 &&
+      playerTime.duration != 0 &&
+      Math.floor(playerTime.curTimeInSeconds) == Math.floor(playerTime.duration)
+    ) {
+      onRestartPlay();
+    } else if (playerStatus == 'paused') {
+      onResumePlay();
+    } else {
+      onPausePlay();
+    }
+  };
+
+  const onRestartPlay = async () => {
+    console.log('onRestartPlay');
+    await audioRecorderPlayer.seekToPlayer(0);
+    await audioRecorderPlayer.resumePlayer();
+    setPlayerStatus('playing');
+  };
+
+  const onStartPlay = async () => {
+    console.log('onStartPlay');
+    setPlayerStatus('playing');
+    const msg = await audioRecorderPlayer.startPlayer(notes?.audio[0]?.uri);
+    console.log(msg);
+
+    audioRecorderPlayer.addPlayBackListener(e => {
+      console.log('player event', e);
+      // setState({
+      //   currentPositionSec: e.currentPosition,
+      //   currentDurationSec: e.duration,
+      //   playTime: audioRecorderPlayer.mmssss(Math.floor(e.currentPosition)),
+      //   duration: audioRecorderPlayer.mmssss(Math.floor(e.duration)),
+      // });
+
+      let time = audioRecorderPlayer.mmssss(Math.floor(e.currentPosition));
+      let duration = audioRecorderPlayer.mmssss(Math.floor(e.duration));
+      let recordingTime = time.slice(0, -3).toString();
+      setPlayerTime({
+        duration: e.duration,
+        curTimeInSeconds: e.currentPosition,
+        curTime: recordingTime,
+      });
+      if (e.currentPosition == e.duration) {
+        onStopPlay();
+      }
+      return;
+    });
+  };
+
+  const onPausePlay = async () => {
+    setPlayerStatus('paused');
+    await audioRecorderPlayer.pausePlayer();
+  };
+
+  const onResumePlay = async () => {
+    setPlayerStatus('playing');
+    await audioRecorderPlayer.resumePlayer();
+  };
+
+  const onStopPlay = async () => {
+    console.log('onStopPlay');
+    setPlayerStatus('stopped');
+    audioRecorderPlayer.stopPlayer();
+    audioRecorderPlayer.removePlayBackListener();
+  };
+
+  const onSeek = async time => {
+    console.log('onSeek', time);
+    // if (playerStatus == 'stopped') {
+    //   await onStartPlay();
+    //   await audioRecorderPlayer.seekToPlayer(time);
+    // } else {
+    let stime = audioRecorderPlayer.mmssss(Math.floor(time));
+    let curTime = stime.slice(0, -3).toString();
+    setPlayerTime({
+      duration: playerTime.duration,
+      curTimeInSeconds: time,
+      curTime: curTime,
+    });
+    await audioRecorderPlayer.seekToPlayer(time);
+    // }
+    // setPlayerStatus('stopped');
+    // audioRecorderPlayer.stopPlayer();
+    // audioRecorderPlayer.removePlayBackListener();
+  };
+
+  useEffect(() => {
+    console.log(notes.audio, 'notes.audio');
+    if (!!notes.audio?.uri) {
+    }
+  }, [notes.audio]);
+
+  useEffect(() => {
+    return () => {
+      onStopPlay();
+    };
+  }, []);
+
   return (
     <SafeAreaView
       style={[
@@ -601,7 +727,9 @@ const Editor = props => {
       <View style={{flex: 1, paddingHorizontal: 20}}>
         <KeyboardAvoidingView
           style={{flex: 1}}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 97 : 0}
+          keyboardVerticalOffset={
+            Platform.OS === 'ios' ? (isIphoneX() ? 97 : 50) : 0
+          }
           enabled={true}
           behavior={Platform.OS == 'ios' ? 'padding' : null}>
           <>
@@ -652,7 +780,7 @@ const Editor = props => {
                     initialHeight={150}
                     editorStyle={{
                       // backgroundColor: Colors.gray01,
-                      caretColor: Colors.primary,
+                      // caretColor: Colors.primary,
                       contentCSSText:
                         '@font-face {font-family: myFirstFont;src: url(Pangram-Bold.otf); }, * {font-family: myFirstFont;}',
                     }}
@@ -747,6 +875,130 @@ const Editor = props => {
                       );
                     }}
                   />
+                </View>
+
+                <View>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: Colors.background,
+                      borderRadius: 20,
+                    }}>
+                    <View
+                      style={{
+                        height: 105,
+                        width: 105,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                      {/* {playerStatus == 'playing' && (
+                      <>
+                        <Animatable.View
+                          iterationCount="infinite"
+                          // animation={
+                          //   playerStatus == 'playing' ? myZoom1x : ''
+                          // }
+                          animation={"pulse"}
+                          // direction="alternate"
+                          duration={500}
+                          style={{
+                            // backgroundColor: Colors.lightPrimary1,
+                            height: 90,
+                            width: 90,
+                            borderRadius: 90 / 2,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            position: 'absolute',
+                            zIndex: -2,
+                          }}></Animatable.View>
+                        <Animatable.View
+                          iterationCount="infinite"
+                          // animation={
+                          //   playerStatus == 'playing' ? myZoom2x : ''
+                          // }
+                          animation={"pulse"}
+                          // animation={myZoom2x}
+                          // direction="alternate"
+                          duration={500}
+                          style={{
+                            // backgroundColor: Colors.lightPrimary2,
+                            height: 70,
+                            width: 70,
+                            borderRadius: 70 / 2,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            position: 'absolute',
+                            zIndex: -1,
+                          }}></Animatable.View>
+                      </>
+                      )} */}
+                      <Pressable
+                        onPress={playerPlayPause}
+                        style={{
+                          backgroundColor: Colors.primary,
+                          height: 50,
+                          width: 50,
+                          borderRadius: 50 / 2,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                        <Image
+                          source={
+                            playerStatus == 'playing' ? ic_pause : ic_play
+                          }
+                          style={{
+                            height: 20,
+                            width: 20,
+                            tintColor: Colors.white,
+                          }}
+                        />
+                      </Pressable>
+                    </View>
+
+                    <View
+                      style={{marginHorizontal: 5, flex: 1, marginRight: 20}}>
+                      <View>
+                        <Slider
+                          style={{
+                            slider: {
+                              marginTop: 0,
+                              width: '100%',
+                            },
+                          }}
+                          value={playerTime.curTimeInSeconds}
+                          thumbTintColor={Colors.primary}
+                          minimumTrackTintColor={Colors.primary}
+                          maximumTrackTintColor={Colors.lightPrimary}
+                          minimumValue={0}
+                          thumbStyle={{
+                            width: 15,
+                            height: 15,
+                            shadowOpacity: 0.9,
+                            shadowColor: 'silver',
+                            elevation: 1,
+                            shadowOffset: {
+                              width: 0,
+                              height: 0,
+                            },
+                          }}
+                          tapToSeek={true}
+                          animationType="timing"
+                          maximumValue={playerTime.duration}
+                          onValueChange={val => {
+                            // setIsSeeking(true);
+                            // setSeek(val);
+                          }}
+                          onSlidingComplete={onSeek}
+                        />
+                      </View>
+                      <View style={{}}>
+                        <Text style={{fontFamily: font.medium, fontSize: 14}}>
+                          {playerTime.curTime}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
                 </View>
               </Pressable>
             </View>

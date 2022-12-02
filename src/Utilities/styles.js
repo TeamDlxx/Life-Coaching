@@ -84,7 +84,7 @@ export const _styleTrackPlayer = StyleSheet.create({
     marginTop: 5,
   },
   trackDescription: {
-    fontFamily: font.bold,
+    fontFamily: font.medium,
     fontSize: 14,
     includeFontPadding: false,
     color: Colors.gray05,

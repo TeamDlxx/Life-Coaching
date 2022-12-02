@@ -108,8 +108,8 @@ const AllPackages = props => {
         ],
       });
     } catch (err) {
-      console.log(err.code, err.message);
       setisLoading(false);
+      console.log('subscribeIAP Error', err.code, err.message);
     }
   };
 
@@ -121,7 +121,8 @@ const AllPackages = props => {
         andDangerouslyFinishTransactionAutomaticallyIOS: false,
       });
     } catch (err) {
-      console.log(err.code, err.message);
+      setisLoading(false);
+      console.log('puchaseIAP Error', err.code, err.message);
     }
   };
 
