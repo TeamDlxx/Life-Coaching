@@ -115,7 +115,7 @@ const ChooseHabit = props => {
             />
           </View>
           <View style={{marginTop: 0}}>
-            <Text style={{fontFamily: font.medium, fontSize: 16}}>
+            <Text style={{fontFamily: font.medium, fontSize: 16,textAlign:"center"}}>
               {item.name}
             </Text>
           </View>

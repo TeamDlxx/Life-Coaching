@@ -5,31 +5,22 @@ import {
   StatusBar,
   Pressable,
   Image,
-  Alert,
-  RefreshControl,
   Dimensions,
   FlatList,
   TextInput,
+  Alert,
 } from 'react-native';
 import React, {useState} from 'react';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
-import {
-  mainStyles,
-  allHabit_styles,
-  FAB_style,
-  stat_styles
-} from '../../../Utilities/styles';
+import {mainStyles, FAB_style} from '../../../Utilities/styles';
 import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
-import {SwipeListView} from 'react-native-swipe-list-view';
-import * as Progress from 'react-native-progress';
 import moment from 'moment';
-import CustomImage from '../../../Components/CustomImage';
 import {notesColors} from '../../../Utilities/Colors';
 import Collapsible from 'react-native-collapsible';
-import Modal from 'react-native-modal';
-import CustomButton from '../../../Components/CustomButton';
+import AutoHeightWebView from 'react-native-autoheight-webview';
+import SwipeableFlatList from 'react-native-swipeable-list';
 
 const screen_size = Dimensions.get('window');
 //icons
@@ -51,9 +42,9 @@ const List = props => {
   const {navigation} = props;
   const [list, setList] = useState(notes);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
-  const [isFilterVisible, setFilterVisible] = useState(false);
+
   const [searchText, setSearchText] = useState('');
-  const [filterOption, setFilterOption] = useState(1);
+
   const onNoteEditorScreen = () => {
     navigation.navigate(screens.noteEditor);
   };
@@ -64,48 +55,93 @@ const List = props => {
     }
   }, [props.route]);
 
-  const toggleSearch = () => {
-    setIsSearchVisible(prev => !prev);
-  };
-
   const flatListRenderItem = ({item, index}) => {
     return (
-      <View
+      <Pressable
+        onPress={() =>
+          navigation.navigate(screens.notesDetail, {
+            note: item,
+          })
+        }
         style={{
           flex: 1,
-          paddingLeft: 20,
-          paddingRight: 20,
-          paddingHorizontal: 20,
-          paddingTop: 20,
+          // paddingLeft: 20,
+          // paddingRight: 20,
+          // paddingHorizontal: 20,
+          // paddingTop: 20,
+          // marginHorizontal:20,
+          marginTop: 20,
+          width: '95%',
+          alignSelf: 'center',
         }}>
         <View
           style={{
             backgroundColor: item?.colors?.light,
             alignItems: 'center',
-            paddingVertical: 20,
+            paddingVertical: 15,
             borderRadius: 20,
-            borderWidth: 1 / 4,
+            borderWidth: 1,
             borderColor: item?.colors?.dark,
             flexDirection: 'row',
             paddingHorizontal: 30,
-            height: 100,
+            // height: 100,
           }}>
           <View>
             <Image
               source={ic_notes}
-              style={{height: 60, width: 60, tintColor: item?.colors.dark}}
+              style={{height: 40, width: 40, tintColor: item?.colors.dark}}
             />
           </View>
           <View
             style={{
               marginLeft: 20,
               justifyContent: 'center',
+              flex: 1,
             }}>
-            <Text
-              numberOfLines={1}
-              style={{fontFamily: font.bold, fontSize: 18}}>
+            <Text style={{fontFamily: font.bold, fontSize: 18}}>
               {item.title}
             </Text>
+
+            {/* {!!item?.description && (
+              <AutoHeightWebView
+                style={{height: 32}}
+                source={{html: item?.description}}
+                scrollEnabled={false}
+                javaScriptEnabled={true}
+                viewportContent={'width=device-width, user-scalable=no'}
+                // customScript={`document.getElementsByTagName("*").style.font-family ="'Verdana', sans-serif"`}
+                customScript={`let length = document.getElementsByTagName("*").length;
+                for(let i=0; i<length;i++){
+                document.getElementsByTagName("*")[i].style.color = "black";
+                // document.getElementsByTagName("*")[i].style.font-size = "14px";
+                }`}
+
+                  customStyle={`
+                  *{
+                    font-family: 'Verdana', sans-serif;
+                    font-size: 12px;
+                    // color:'black' !important;
+                  },
+                  p{
+                    font-family: 'Verdana', sans-serif;
+                    font-size: 12px;
+                    // color:'#000' !important;
+                  }
+
+                `}
+              />
+            )} */}
+            {item?.description && (
+              <Text
+                numberOfLines={2}
+                style={{
+                  fontFamily: font.regular,
+                  fontSize: 14,
+                  marginVertical: 2,
+                }}>
+                {item?.description.replace(/<\/?[^>]+(>|$)/g, '')}
+              </Text>
+            )}
             {(item?.images.length != 0 || item?.audio.length != 0) && (
               <View
                 style={{
@@ -140,10 +176,76 @@ const List = props => {
             )}
             <Text
               numberOfLines={1}
-              style={{fontFamily: font.regular, fontSize: 12, marginTop: 7}}>
+              style={{
+                fontFamily: font.regular,
+                fontSize: 10,
+                marginTop: 7,
+                color: Colors.gray10,
+              }}>
               {moment().subtract(index, 'days').format('DD-MM-YYYY')}
             </Text>
           </View>
+        </View>
+      </Pressable>
+    );
+  };
+
+  const flatListEmptyComponent = () => {
+    return (
+      <View
+        style={{
+          justifyContent: 'center',
+          alignItems: 'center',
+          flex: 1,
+
+          // marginTop: isIphoneX() ? -screen_size.height * 0.2 : 0,
+        }}>
+        <Image
+          source={il_emptyNotes}
+          style={{
+            width: screen_size.width * 0.65,
+            height: screen_size.width * 0.65,
+          }}
+        />
+        <Text
+          style={{
+            fontFamily: font.xbold,
+            fontSize: 42,
+            marginTop: 30,
+          }}>
+          No Notes
+        </Text>
+        <Text
+          style={{
+            fontFamily: font.bold,
+            fontSize: 16,
+            marginTop: 20,
+            color: Colors.placeHolder,
+            width: '80%',
+            textAlign: 'center',
+          }}>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+          eiusmod tempor incididunt ut
+        </Text>
+        <View style={{flex: 0.5, justifyContent: 'center'}}>
+          <Pressable
+            onPress={onNoteEditorScreen}
+            style={[
+              FAB_style.View,
+              {
+                position: 'relative',
+                marginTop: 30,
+                right: 0,
+                height: 71,
+                width: 71,
+                borderRadius: 71 / 2,
+              },
+            ]}>
+            <Image
+              source={require('../../../Assets/Icons/plus.png')}
+              style={FAB_style.image}
+            />
+          </Pressable>
         </View>
       </View>
     );
@@ -157,137 +259,6 @@ const List = props => {
     } else newArray = list.filter(x => x.title.toLowerCase().includes(text));
 
     return newArray;
-  };
-
-  const filterModal = () => {
-    return (
-      <Modal
-        animationIn={'zoomIn'}
-        animationOut={'zoomOut'}
-        isVisible={isFilterVisible}
-        useNativeDriverForBackdrop={true}
-        style={{margin: 0}}>
-        <View
-          style={{
-            backgroundColor: '#fff',
-            // marginBottom: Platform.OS == 'ios' ? 30 : 10,
-            marginHorizontal: 10,
-            borderRadius: 10,
-            padding: 20,
-            // alignItems: 'center',
-            // paddingTop: 40,
-            // paddingBottom: 40,
-          }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingHorizontal: 10,
-            }}>
-            <View
-              style={{
-                height: 50,
-                width: 50,
-              }}
-            />
-
-            <View style={{flex: 1}}>
-              <Text
-                style={{
-                  textAlign: 'center',
-                  fontFamily: font.bold,
-                  fontSize: 16,
-                }}>
-                Filter
-              </Text>
-            </View>
-            <View>
-              <Pressable
-                onPress={() => {
-                  setFilterVisible(false);
-                }}
-                style={{alignItems: 'center'}}>
-                <View
-                  style={{
-                    backgroundColor: '#BDC3C744',
-                    height: 30,
-                    width: 30,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: 25,
-                  }}>
-                  <Image source={ic_cross} style={{height: 20, width: 20}} />
-                </View>
-              </Pressable>
-            </View>
-          </View>
-          <View style={{marginTop: 20}}>
-            <Pressable
-              onPress={() => setFilterOption(1)}
-              style={[stat_styles.filterButtonView, {marginTop: 0}]}>
-              <Text style={stat_styles.filterButtonText}>This Week</Text>
-              <Image
-                source={filterOption == 1 ? checked : unChecked}
-                style={stat_styles.filterButtonIcon}
-              />
-            </Pressable>
-
-            <Pressable
-              onPress={() => setFilterOption(2)}
-              style={stat_styles.filterButtonView}>
-              <Text style={stat_styles.filterButtonText}>This Month</Text>
-              <Image
-                source={filterOption == 2 ? checked : unChecked}
-                style={stat_styles.filterButtonIcon}
-              />
-            </Pressable>
-
-            <Pressable
-              onPress={() => setFilterOption(3)}
-              style={stat_styles.filterButtonView}>
-              <Text style={stat_styles.filterButtonText}>Select Dates</Text>
-              <Image
-                source={filterOption == 3 ? checked : unChecked}
-                style={stat_styles.filterButtonIcon}
-              />
-            </Pressable>
-
-            {/* <Collapsible collapsed={filterOption == 3 ? false : true}>
-              <View style={{flexDirection: 'row', marginTop: 10}}>
-                <View style={{flex: 1}}>
-                  <CustomTouchableTextInput
-                    onPress={() =>
-                      setDateRange({...dateRange, startDateModal: true})
-                    }
-                    lable="From"
-                    height={45}
-                    lableBold
-                    lableColor={Colors.black}
-                    value={moment(dateRange.startDate).format('DD MMM YYYY')}
-                  />
-                </View>
-                <View style={{flex: 1, marginLeft: 10}}>
-                  <CustomTouchableTextInput
-                    onPress={() =>
-                      setDateRange({...dateRange, endDateModal: true})
-                    }
-                    height={45}
-                    lable="To"
-                    lableBold
-                    lableColor={Colors.black}
-                    value={moment(dateRange.endDate).format('DD MMM YYYY')}
-                  />
-                </View>
-              </View>
-            </Collapsible> */}
-
-            <View style={{marginTop: 10}}>
-              <CustomButton onPress={()=>{}} title="Apply" height={45} />
-            </View>
-          </View>
-        </View>
-      </Modal>
-    );
   };
 
   return (
@@ -307,7 +278,7 @@ const List = props => {
         rightIcon2={ic_filter}
         rightIcon={ic_search}
         rightIcononPress={() => setIsSearchVisible(!isSearchVisible)}
-        rightIcon2onPress={() => setFilterVisible(!isFilterVisible)}
+        rightIcon2onPress={() => props.navigation.navigate(screens.notesFilter)}
         // toggleSearch={toggleSearch}
 
         // rightIcon={list.length == 0 ? null : isGridView ? ic_list : ic_grid}
@@ -353,81 +324,64 @@ const List = props => {
             </Pressable>
           </View>
         </Collapsible>
-        <View style={{flex: 1}}>
-          <FlatList
-            contentContainerStyle={
-              (list.length == 0 && {
+        <View style={{flex: 1, paddingHorizontal: 5}}>
+          <SwipeableFlatList
+            contentContainerStyle={[
+              filterAndSearch(list).length == 0 && {
                 flex: 1,
               },
               {
-                paddingTop: 5,
-              })
-            }
+                // paddingTop: 5,
+              },
+            ]}
+            keyExtractor={item => {
+              return item._id;
+            }}
+            shouldBounceOnMount={true}
+            maxSwipeDistance={70}
             data={filterAndSearch(list)}
-            // key={isGridView ? 2 : 1}
-            // numColumns={isGridView ? 2 : 1}
             renderItem={flatListRenderItem}
-            ListEmptyComponent={() => {
+            ListEmptyComponent={flatListEmptyComponent}
+            renderQuickActions={({item, index}) => {
               return (
-                <View
+                <Pressable
+                  key={item._id}
+                  onPress={() =>
+                    Alert.alert(
+                      'Delete Note',
+                      'Are you sure you want to delete this Note',
+                      [{text: 'No'}, {text: 'Yes'}],
+                    )
+                  }
                   style={{
                     justifyContent: 'center',
-                    alignItems: 'center',
+                    alignItems: 'flex-end',
+                    // justifyContent: 'center',
+                    // marginHorizontal: 20,
+                    // backgroundColor: Colors.delete,
+                    backgroundColor: Colors.lightRed2,
+                    borderRadius: 20,
+                    // borderBottomEndRadius: 20,
+                    // paddingRight: 20,
+
                     flex: 1,
-                    // marginTop: isIphoneX ? -screen_size.height * 0.2 : 0,
+                    // height:"100%",
+                    width: '94%',
+                    alignSelf: 'center',
+                    marginTop: 20,
+                    // margin: 20,
+                    paddingRight: 20,
+                    // paddingHorizontal: 20,
                   }}>
                   <Image
-                    source={il_emptyNotes}
-                    style={{
-                      width: screen_size.width * 0.65,
-                      height: screen_size.width * 0.65,
-                    }}
+                    source={require('../../../Assets/Icons/trash.png')}
+                    style={{height: 25, width: 25, tintColor: Colors.white}}
                   />
-                  <Text
-                    style={{
-                      fontFamily: font.xbold,
-                      fontSize: 42,
-                      marginTop: 30,
-                    }}>
-                    No Notes
-                  </Text>
-                  <Text
-                    style={{
-                      fontFamily: font.bold,
-                      fontSize: 16,
-                      marginTop: 20,
-                      color: Colors.placeHolder,
-                      width: '80%',
-                      textAlign: 'center',
-                    }}>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                    do eiusmod tempor incididunt ut
-                  </Text>
-                  <View style={{flex: 0.5, justifyContent: 'center'}}>
-                    <Pressable
-                      onPress={onNoteEditorScreen}
-                      style={[
-                        FAB_style.View,
-                        {
-                          position: 'relative',
-                          marginTop: 30,
-                          right: 0,
-                          height: 71,
-                          width: 71,
-                          borderRadius: 71 / 2,
-                        },
-                      ]}>
-                      <Image
-                        source={require('../../../Assets/Icons/plus.png')}
-                        style={FAB_style.image}
-                      />
-                    </Pressable>
-                  </View>
-                </View>
+                </Pressable>
               );
             }}
           />
-          {list.length != 0 && (
+          {filterAndSearch(list).length != 0 && (
             <Pressable
               onPress={onNoteEditorScreen}
               style={[FAB_style.View, {borderRadius: 50 / 2}]}>
@@ -438,7 +392,7 @@ const List = props => {
             </Pressable>
           )}
         </View>
-        {filterModal()}
+        {/* {filterModal()} */}
       </View>
     </SafeAreaView>
   );
@@ -449,9 +403,10 @@ export default List;
 const notes = [
   {
     _id: '1',
-    title: 'Office',
+    title:
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
     description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      "<div><p style='color:orange'>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p></div>",
     audio: [
       'https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3',
     ],
@@ -463,13 +418,19 @@ const notes = [
     _id: '2',
     title: 'Work',
     description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      'Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
     audio: [
       'https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3',
     ],
     images: [
-      'https://picsum.photos/seed/picsum/400/400',
-      'https://picsum.photos/seed/picsum/400/400',
+      'https://picsum.photos/id/203/300/300',
+      'https://picsum.photos/id/212/300/300',
+      'https://picsum.photos/id/213/300/300',
+      'https://picsum.photos/id/222/300/300',
+      'https://picsum.photos/id/215/300/300',
+      'https://picsum.photos/id/233/300/300',
+      'https://picsum.photos/id/223/300/300',
+      'https://picsum.photos/id/220/300/300',
     ],
     colors: notesColors[1],
   },
@@ -479,7 +440,6 @@ const notes = [
     title: 'Home',
     description: '',
     audio: [
-      'https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3',
       'https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3',
     ],
     images: [
@@ -493,7 +453,7 @@ const notes = [
     _id: '4',
     title: 'Extra',
     description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+      '<div><ul><li><font color="#ff0000">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ultrices tincidunt arcu non sodales neque. Duis at tellus at urna condimentum. Morbi tincidunt ornare massa eget egestas purus. Tincidunt tortor aliquam nulla facilisi cras fermentum odio eu feugiat. Nec dui nunc mattis enim ut. Sed odio morbi quis commodo odio. Pellentesque habitant morbi tristique senectus et netus et. Amet consectetur adipiscing elit pellentesque habitant morbi tristique senectus. Donec enim diam vulputate ut pharetra sit amet aliquam. Risus feugiat in ante metus dictum at. Nibh praesent tristique magna sit amet purus gravida quis. In eu mi bibendum neque egestas congue quisque egestas diam. Nunc id cursus metus aliquam. Neque aliquam vestibulum morbi blandit. Suspendisse ultrices gravida dictum fusce ut placerat orci nulla. Leo integer malesuada nunc vel. Semper auctor neque vitae tempus.</font><ul><li></div>',
     audio: [],
     images: [],
     colors: notesColors[3],

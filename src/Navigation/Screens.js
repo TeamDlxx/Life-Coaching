@@ -38,4 +38,6 @@ export const screens = {
   //? Notes
   notesList: 'NOTES_LIST',
   noteEditor: 'NOTE_EDITOR',
+  notesFilter: 'NOTE_FILTER',
+  notesDetail: 'NOTE_DETAIL',
 };

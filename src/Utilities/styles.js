@@ -25,13 +25,15 @@ export const _styleTrackPlayer = StyleSheet.create({
   },
 
   backButtonView: {
-    height: 40,
-    width: 40,
+    minHeight: 40,
+    minWidth: 40,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: Colors.background,
     borderRadius: 40 / 2,
     marginLeft: 10,
+    flexDirection:"row",
+    alignItems: 'center',
   },
   backButtonIcon: {
     height: 25,
@@ -206,6 +208,7 @@ export const chooseHabit_style = StyleSheet.create({
     fontFamily: font.medium,
     fontSize: 16,
     marginLeft: 10,
+
   },
   addButtonIcon: {height: 20, width: 20},
 });
@@ -384,6 +387,8 @@ export const stat_styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 10,
+    borderWidth:0.5,
+    borderColor:Colors.gray01
   },
   filterButtonIcon: {
     height: 18,

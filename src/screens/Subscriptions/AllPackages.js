@@ -220,9 +220,7 @@ const AllPackages = props => {
         console.log('receipt', receipt);
         if (receipt) {
           try {
-            if (Platform.OS === 'ios') {
-              await CheckPurchases();
-            } else if (Platform.OS === 'android') {
+            if (Platform.OS === 'android') {
               let acknowledgePurchaseAndroid =
                 await RNIap.acknowledgePurchaseAndroid({
                   token: purchase.purchaseToken,
@@ -233,8 +231,11 @@ const AllPackages = props => {
                 acknowledgePurchaseAndroid,
               );
             }
+            console.log('before finish');
+            let finish = await RNIap.finishTransaction({
+              purchase,
+            });
 
-            let finish = await RNIap.finishTransaction(purchase, true);
             console.log('finish', finish);
             setisLoading(false);
             await CheckPurchases();
@@ -244,15 +245,18 @@ const AllPackages = props => {
               }, 300);
             }
           } catch (ackErr) {
+            console.log('ackErr', ackErr);
             setisLoading(false);
+            await CheckPurchases();
             //       console.log('ackErr INAPP>>>>', ackErr);
           }
         }
       },
     );
 
-    purchaseErrorSubscription = RNIap.purchaseErrorListener(error => {
+    purchaseErrorSubscription = RNIap.purchaseErrorListener(async error => {
       console.log('purchaseErrorListener INAPP>>>>', error);
+      await CheckPurchases();
     });
 
     analytics().logEvent(props?.route?.name);

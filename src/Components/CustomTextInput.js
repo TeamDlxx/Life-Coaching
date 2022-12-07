@@ -113,11 +113,14 @@ export function CustomTouchableTextInput(props) {
     <View>
       <View style={{marginBottom: 10}}>
         <Text
-          style={{
-            color: !!props.lableColor ? props.lableColor : '#454545',
-            fontFamily: !!props.lableBold ? font.bold : font.regular,
-            letterSpacing: 0.5,
-          }}>
+          style={[
+            {
+              color: !!props.lableColor ? props.lableColor : '#454545',
+              fontFamily: !!props.lableBold ? font.bold : font.regular,
+              letterSpacing: 0.5,
+            },
+            {...props?.lableStyle},
+          ]}>
           {props.lable}
         </Text>
       </View>

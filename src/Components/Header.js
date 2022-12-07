@@ -7,13 +7,19 @@ import {screens} from '../Navigation/Screens';
 const Header = props => {
   return (
     <View
-      style={{
-        width: '100%',
-        height: 50,
-        flexDirection: 'row',
-        alignItems: 'center',
-        // paddingHorizontal:10
-      }}>
+      style={[
+        {
+          width: '100%',
+          height: 50,
+          flexDirection: 'row',
+          alignItems: 'center',
+
+          // paddingHorizontal:10
+        },
+        !!props?.backgroundColor && {
+          backgroundColor: props.backgroundColor,
+        },
+      ]}>
       <View style={{height: 50, width: 50}}>
         {!!props.navigation && (
           <Pressable
@@ -48,7 +54,7 @@ const Header = props => {
           {props.title}
         </Text>
       </View>
-      {!!props.rightIcon2 && (
+      {!!props.rightIcon2 ? (
         <View style={{height: 50, width: 40}}>
           <Pressable
             style={{
@@ -62,11 +68,13 @@ const Header = props => {
             <Image source={props.rightIcon2} style={{height: 20, width: 20}} />
           </Pressable>
         </View>
-      )}
+      ) : !!props.rightIcon2View ? (
+        props.rightIcon2View
+      ) : null}
       <View
         style={{
           height: 50,
-          width: !!props.menu ? 50 : 50,
+          width: !!props.rightIconView ? undefined : !!props.menu ? 50 : 50,
           alignItems: 'center',
           justifyContent: 'center',
         }}>
@@ -88,6 +96,8 @@ const Header = props => {
           </Pressable>
         ) : !!props.menu ? (
           props.menu()
+        ) : !!props.rightIconView ? (
+          props.rightIconView
         ) : null}
       </View>
     </View>

@@ -408,9 +408,9 @@ const AllHabits = props => {
             renderItem={renderHabitsList}
             // rightOpenValue={-60}
             // disableRightSwipe={true}
-            shouldBounceOnMount={true}
             // closeOnRowBeginSwipe={true}
             // closeOnRowPress={true}
+            shouldBounceOnMount={true}
             maxSwipeDistance={70}
             keyExtractor={item => {
               return item._id;

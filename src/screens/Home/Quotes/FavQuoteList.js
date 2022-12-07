@@ -33,7 +33,7 @@ import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
-import AutoHeightImage from '../../../Components/AutoHeightImage';
+
 //ICONS
 
 import liked from '../../../Assets/Icons/liked.png';

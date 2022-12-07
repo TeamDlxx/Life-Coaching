@@ -60,10 +60,11 @@ import TaskDetail from '../screens/Home/TimeTable/TaskDetail';
 // //? Gratitude
 import Gratitude from '../screens/Home/Gratitude/Gratitude';
 
-
 // //? Notes
 import NotesList from '../screens/Home/Notes/NotesList';
 import Editor from '../screens/Home/Notes/Editor';
+import NoteFilter from '../screens/Home/Notes/Filter';
+import NoteDetail from '../screens/Home/Notes/Detail';
 
 // import Colors from '../Utilities/Colors';
 import Context from '../Context';
@@ -152,6 +153,8 @@ const AuthStack = () => {
 
         <Stack.Screen name={screens.notesList} component={NotesList} />
         <Stack.Screen name={screens.noteEditor} component={Editor} />
+        <Stack.Screen name={screens.notesFilter} component={NoteFilter} />
+        <Stack.Screen name={screens.notesDetail} component={NoteDetail} />
 
         {/* TimeTable */}
         <Stack.Screen name={screens.timeTable} component={TimeTable} />

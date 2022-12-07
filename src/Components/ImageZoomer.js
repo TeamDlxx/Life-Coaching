@@ -5,6 +5,7 @@ import {
   Image,
   Dimensions,
   ActivityIndicator,
+  StatusBar,
 } from 'react-native';
 import React from 'react';
 import ImageViewer from 'react-native-image-zoom-viewer';
@@ -33,7 +34,7 @@ const ImageZoomer = props => {
         style={{
           flex: 1,
           alignItems: 'center',
-          backgroundColor: Colors.background,
+          backgroundColor: !!props.color ? props.color : Colors.background,
           // backgroundColor:"#000000DD",
           justifyContent: 'center',
         }}>
@@ -88,7 +89,9 @@ const ImageZoomer = props => {
               <ActivityIndicator color={Colors.primary} size={'large'} />
             )}
             saveToLocalByLongPress={false}
-            imageUrls={[{url: fileURL + props?.url}]}
+            imageUrls={[
+              {url: props?.noUrl ? props?.url : fileURL + props?.url},
+            ]}
             index={0}
             useNativeDriver={true}
             renderIndicator={() => <></>}

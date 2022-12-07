@@ -19,11 +19,11 @@
 		466A6EEF29237E8900FE7231 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 466A6EEE29237E8900FE7231 /* StoreKit.framework */; };
 		506CEFB8CD6B4F1497353D58 /* Pangram-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 7D027CF0842649BD97FC6C8E /* Pangram-Medium.otf */; };
 		605C0848172948BA90F4DCCD /* Pangram-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 4C23C6C8D72F46C68AF8D8F6 /* Pangram-Bold.otf */; };
+		7A99F5D4A43044E393DD0F3C /* Pangram-Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = D2AA9408FC4645F7BF4C5FD4 /* Pangram-Italic.otf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		B35608E19332E632D5E87C0C /* libPods-LifeCoaching-LifeCoachingTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 20D1F52AE47C0EAFB9748B3A /* libPods-LifeCoaching-LifeCoachingTests.a */; };
 		BC0B06E1E1354C95ADD2C193 /* Pangram-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 023306A9322E4F76A718CB52 /* Pangram-Regular.otf */; };
 		DD146367282745AE99F2F096 /* Pangram-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = 9290B6BB2D1C49DE9A4EB9B8 /* Pangram-ExtraLight.otf */; };
-		7A99F5D4A43044E393DD0F3C /* Pangram-Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = D2AA9408FC4645F7BF4C5FD4 /* Pangram-Italic.otf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,9 +62,9 @@
 		89C6BE57DB24E9ADA2F236DE /* Pods-LifeCoaching-LifeCoachingTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LifeCoaching-LifeCoachingTests.release.xcconfig"; path = "Target Support Files/Pods-LifeCoaching-LifeCoachingTests/Pods-LifeCoaching-LifeCoachingTests.release.xcconfig"; sourceTree = "<group>"; };
 		9290B6BB2D1C49DE9A4EB9B8 /* Pangram-ExtraLight.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pangram-ExtraLight.otf"; path = "../src/Assets/fonts/Pangram-ExtraLight.otf"; sourceTree = "<group>"; };
 		B3494150CA3C42CE89999DB9 /* Pangram-ExtraBold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pangram-ExtraBold.otf"; path = "../src/Assets/fonts/Pangram-ExtraBold.otf"; sourceTree = "<group>"; };
+		D2AA9408FC4645F7BF4C5FD4 /* Pangram-Italic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Pangram-Italic.otf"; path = "../src/Assets/fonts/Pangram-Italic.otf"; sourceTree = "<group>"; };
 		EBD490169FC748CFA3EA3F95 /* Pangram-Black.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pangram-Black.otf"; path = "../src/Assets/fonts/Pangram-Black.otf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		D2AA9408FC4645F7BF4C5FD4 /* Pangram-Italic.otf */ = {isa = PBXFileReference; name = "Pangram-Italic.otf"; path = "../src/Assets/fonts/Pangram-Italic.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */

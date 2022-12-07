@@ -18,6 +18,7 @@ import {_styleTrackPlayer} from '../../../Utilities/styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoginAlert from '../../../Components/LoginAlert';
 import analytics from '@react-native-firebase/analytics';
+import {screens} from '../../../Navigation/Screens';
 
 // For API's calling
 import {useContext} from 'react';
@@ -34,7 +35,9 @@ import previousTrack from '../../../Assets/TrackPlayer/previousTrack.png';
 import pauseTrack from '../../../Assets/TrackPlayer/pauseTrack.png';
 import playTrack from '../../../Assets/TrackPlayer/playTrack.png';
 import ic_repeat from '../../../Assets/TrackPlayer/repeat.png';
-import ic_download from '../../../Assets/TrackPlayer/ic_download3.png';
+// import ic_download from '../../../Assets/TrackPlayer/ic_download3.png';
+import ic_download from '../../../Assets/Icons/download.png';
+
 import ic_share from '../../../Assets/TrackPlayer/share.png';
 import ic_tick from '../../../Assets/Icons/tick.png';
 import {duration} from 'moment';
@@ -43,7 +46,8 @@ import {font} from '../../../Utilities/font';
 const TrackPlayerScreen = props => {
   const {navigation} = props;
   const {params} = props?.route;
-  const {Token, downloadTrack, progress, deleteTrack} = useContext(Context);
+  const {Token, downloadTrack, progress, deleteTrack, isMeditationPurchased} =
+    useContext(Context);
   const [tracksList, setTrackList] = useState(params?.list);
   const [trackItem, setTrackItem] = useState(params?.item);
   const [playIcon, setPlayIcon] = useState(pauseTrack);
@@ -68,40 +72,50 @@ const TrackPlayerScreen = props => {
   };
 
   const downloadTheTrack = async () => {
-    if (!downloaded) {
-      let res = await downloadTrack(
-        trackItem,
-        params?.from == 'fav'
-          ? trackItem?.category_id[0]?._id?.name
-          : params?.category,
-      );
-      await analytics().logEvent(`DOWNLOAD_TRACK_EVENT`, {
-        item_brand: trackItem.name,
-      });
+    if (Token) {
+      if (!downloaded) {
+        if (isMeditationPurchased) {
+          let res = await downloadTrack(
+            trackItem,
+            params?.from == 'fav'
+              ? trackItem?.category_id[0]?._id?.name
+              : params?.category,
+          );
+          await analytics().logEvent(`DOWNLOAD_TRACK_EVENT`, {
+            item_brand: trackItem.name,
+          });
 
-      setDownloaded(res);
-    } else {
-      Alert.alert(
-        'Remove Track',
-        'Are you sure you want to remove this track from your downloads',
-        [
-          {text: 'No'},
-          {
-            text: 'Yes',
-            onPress: async () => {
-              let res = await deleteTrack(trackItem._id);
-              console.log('res', res);
-              setDownloaded(res);
-              if (!!params?.localTracksRefresh) {
-                params?.localTracksRefresh();
-              }
-              if (params?.from == 'down') {
-                removeTrackFromCurrrentPlayingList(trackItem._id);
-              }
+          setDownloaded(res);
+        } else {
+          props.navigation.navigate(screens.allPackages, {
+            from: 'meditation',
+          });
+        }
+      } else {
+        Alert.alert(
+          'Remove Track',
+          'Are you sure you want to remove this track from your downloads',
+          [
+            {text: 'No'},
+            {
+              text: 'Yes',
+              onPress: async () => {
+                let res = await deleteTrack(trackItem._id);
+                console.log('res', res);
+                setDownloaded(res);
+                if (!!params?.localTracksRefresh) {
+                  params?.localTracksRefresh();
+                }
+                if (params?.from == 'down') {
+                  removeTrackFromCurrrentPlayingList(trackItem._id);
+                }
+              },
             },
-          },
-        ],
-      );
+          ],
+        );
+      }
+    } else {
+      LoginAlert(props.navigation, props.route?.name);
     }
   };
 
@@ -405,21 +419,38 @@ const TrackPlayerScreen = props => {
                 />
               </Pressable>
               <View style={{flexDirection: 'row', marginRight: 10}}>
-                {Token && (
-                  <Pressable
-                    disabled={downloading()}
-                    onPress={downloadTheTrack}
-                    style={_styleTrackPlayer.backButtonView}>
-                    {downloading() ? (
-                      <ActivityIndicator color={Colors.black} size="small" />
-                    ) : (
-                      <Image
-                        style={_styleTrackPlayer.backButton2Icon}
-                        source={!!downloaded ? ic_tick : ic_download}
-                      />
-                    )}
-                  </Pressable>
-                )}
+                <Pressable
+                  disabled={downloading()}
+                  onPress={downloadTheTrack}
+                  style={[
+                    _styleTrackPlayer.backButtonView,
+                    !!downloaded &&
+                      !!Token && {
+                        paddingHorizontal: 5,
+                      },
+                  ]}>
+                  {downloading() ? (
+                    <ActivityIndicator color={Colors.black} size="small" />
+                  ) : (
+                    <Image
+                      style={[
+                        _styleTrackPlayer.backButton2Icon,
+                        !!downloaded &&
+                          !!Token && {
+                            height: 20,
+                            width: 20,
+                          },
+                      ]}
+                      source={!!downloaded && !!Token ? ic_tick : ic_download}
+                    />
+                  )}
+                  {!!downloaded && !!Token && (
+                    <Text
+                      style={{fontFamily: font.medium, marginHorizontal: 5}}>
+                      Downloaded
+                    </Text>
+                  )}
+                </Pressable>
               </View>
             </View>
             {DefaultImage && (
@@ -473,9 +504,7 @@ const TrackPlayerScreen = props => {
           <Text style={_styleTrackPlayer.trackName}>{trackItem.name}</Text>
           {!!trackItem?.author && (
             <Text style={_styleTrackPlayer.trackAuther}>
-              <Text >
-                By
-              </Text>
+              <Text>By</Text>
               {' ' + trackItem?.author}
             </Text>
           )}

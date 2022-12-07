@@ -10,27 +10,30 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
+  Alert,
+  PermissionsAndroid,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Header from '../../../Components/Header';
-import Colors from '../../../Utilities/Colors';
-import {mainStyles} from '../../../Utilities/styles';
+import Colors, {notesColors} from '../../../Utilities/Colors';
+import {mainStyles, stat_styles} from '../../../Utilities/styles';
 import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
 import Modal from 'react-native-modal';
 import {actions, RichEditor, RichToolbar} from 'react-native-pell-rich-editor';
 import Collapsible from 'react-native-collapsible';
 import ImagePicker from 'react-native-image-crop-picker';
-import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import * as Animatable from 'react-native-animatable';
 import Slider from '@react-native-community/slider';
+import AudioRecorderPlayer from 'react-native-audio-recorder-player';
+import ImageZoomer from '../../../Components/ImageZoomer';
 
 let audioRecorderPlayer = new AudioRecorderPlayer();
 
 //icons
 const ic_pallete = require('../../../Assets/Icons/palette.png');
 const ic_cross = require('../../../Assets/Icons/cross.png');
-const ic_save = require('../../../Assets/Icons/tick.png');
+const ic_save = require('../../../Assets/Icons/tick1.png');
 const ic_image = require('../../../Assets/Icons/h_placeholder1.png');
 
 const ic_mic = require('../../../Assets/Icons/microphone-black-shape.png');
@@ -39,15 +42,21 @@ const ic_camera = require('../../../Assets/Icons/camera.png');
 const ic_play = require('../../../Assets/TrackPlayer/playTrack.png');
 const ic_stop = require('../../../Assets/TrackPlayer/stop.png');
 const ic_pause = require('../../../Assets/TrackPlayer/pauseTrack.png');
+const checked = require('../../../Assets/Icons/checked.png');
+const unChecked = require('../../../Assets/Icons/unchecked.png');
+const ic_colorPicker = require('../../../Assets/Icons/pickColor.png');
+
 // import ic_cross from '../../../Assets/Icons/cross.png';
 import ic_trash from '../../../Assets/Icons/trash.png';
 import {isIphoneX} from 'react-native-iphone-x-helper';
+import showToast from '../../../functions/showToast';
 const Editor = props => {
   const {navigation} = props;
   const RichText = React.useRef();
-  const colorPicker = React.useRef();
-
+  const [modalImage, setModalImage] = useState(null);
   const [isModalVisible, setModalVisibility] = useState(false);
+  const [isbackgroundColorModalVisible, setBackgroundColorModalVisiblity] =
+    useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [recorder, updateRecorder] = useState({
     isAudioModalVisible: false,
@@ -67,6 +76,11 @@ const Editor = props => {
     note: '',
     images: [],
     audio: [],
+    colors: {
+      id: '2',
+      dark: '#FFC545',
+      light: '#FEF9ED',
+    },
   });
   const setRecorder = val => updateRecorder({...recorder, ...val});
   const setNotes = val => updateNotes({...notes, ...val});
@@ -76,10 +90,177 @@ const Editor = props => {
     currentColor: '#000000',
   });
 
+  //? ImageZommer
+
+  const showImageModal = image => {
+    setModalImage(image);
+  };
+
+  const hideImageModal = () => {
+    setModalImage(null);
+  };
+
   const setColorPickerModal = val =>
     updateColorPickerModal({...colorPickerModal, ...val});
 
+  //? backgroundColorModal
+
+  const backgroundColorModal = () => {
+    return (
+      <Modal
+        isVisible={isbackgroundColorModalVisible}
+        onBackButtonPress={() => setBackgroundColorModalVisiblity(false)}
+        onBackdropPress={() => setBackgroundColorModalVisiblity(false)}
+        useNativeDriverForBackdrop={true}
+        style={{marginTop: 'auto', margin: 0}}>
+        <View
+          style={{
+            backgroundColor: '#fff',
+            marginTop: 'auto',
+            marginBottom: Platform.OS == 'ios' ? 30 : 10,
+            marginHorizontal: 10,
+            borderRadius: 10,
+            padding: 20,
+          }}>
+          <View
+            style={{
+              marginTop: -20,
+              marginBottom: 10,
+              flexDirection: 'row',
+              alignItems: 'center',
+              height: 50,
+            }}>
+            <View style={{width: 25}} />
+            <View style={{flex: 1, alignItems: 'center'}}>
+              <Text style={{fontFamily: font.bold, fontSize: 16}}>
+                Select Note Color
+              </Text>
+            </View>
+            <Pressable
+              style={{width: 25}}
+              // disabled={recorder.recorderStatus == 'playing'}
+              onPress={() => setBackgroundColorModalVisiblity(false)}>
+              <Image source={ic_cross} style={{height: 25, width: 25}} />
+            </Pressable>
+          </View>
+          <FlatList
+            data={notesColors}
+            numColumns={2}
+            renderItem={({item, index}) => {
+              return (
+                <Pressable
+                  style={{flex: 1 / 2}}
+                  onPress={() => toggleSelect(item)}>
+                  <View
+                    style={{
+                      flex: 1,
+                      backgroundColor: Colors.white,
+                      // margin: 5,
+                      // marginLeft: index % 2 == 0 ? 5 : 5 / 2,
+                      // marginRight: index % 2 != 0 ? 5 : 5 / 2,
+                      margin: 5,
+                      padding: 10,
+                      borderRadius: 15,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      borderWidth: 1,
+                      borderColor: Colors.gray02,
+                    }}>
+                    {item.id == 'none' ? (
+                      <View style={{height: 30, justifyContent: 'center'}}>
+                        <Text style={{fontFamily: font.medium}}>None</Text>
+                      </View>
+                    ) : (
+                      <View
+                        style={{
+                          height: 30,
+                          width: 30,
+                          backgroundColor: item.dark,
+                          borderRadius: 999,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}>
+                        <View
+                          style={{
+                            height: '80%',
+                            width: '80%',
+                            backgroundColor: item.dark,
+                            borderRadius: 999,
+                          }}
+                        />
+                      </View>
+                    )}
+                    <View style={{flex: 1, alignItems: 'flex-end'}}>
+                      <Image
+                        source={
+                          item.id == notes.colors.id ? checked : unChecked
+                        }
+                        style={[
+                          stat_styles.filterButtonIcon,
+                          // {tintColor: Colors.placeHolder},
+                        ]}
+                      />
+                    </View>
+                  </View>
+                </Pressable>
+              );
+            }}
+          />
+        </View>
+      </Modal>
+    );
+  };
+
+  const toggleSelect = item => {
+    setNotes({colors: item});
+    setBackgroundColorModalVisiblity(false);
+  };
+
+  const checkPermissionsAndroid = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const grants = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+        ]);
+
+        console.log('write external stroage', grants);
+
+        if (
+          grants['android.permission.WRITE_EXTERNAL_STORAGE'] ===
+            PermissionsAndroid.RESULTS.GRANTED &&
+          grants['android.permission.READ_EXTERNAL_STORAGE'] ===
+            PermissionsAndroid.RESULTS.GRANTED &&
+          grants['android.permission.RECORD_AUDIO'] ===
+            PermissionsAndroid.RESULTS.GRANTED
+        ) {
+          console.log('Permissions granted');
+
+          return true;
+        } else {
+          console.log('All required permissions not granted');
+          return false;
+        }
+      } catch (err) {
+        console.warn(err);
+        return false;
+      }
+    }
+  };
   //? Audio modal
+
+  const onMicPress = async () => {
+    let granted = true;
+    if (Platform.OS == 'android') {
+      granted = await checkPermissionsAndroid();
+    }
+    if (granted) {
+      setRecorder({isAudioModalVisible: true});
+    } else {
+      showToast('Please grant permission', 'Permission denied');
+    }
+  };
 
   const AudioRecoderModal = () => {
     return (
@@ -238,8 +419,9 @@ const Editor = props => {
     );
   };
 
-  const recorderPlayPause = () => {
+  const recorderPlayPause = async () => {
     console.log('recorder.recorderStatus', recorder.recorderStatus);
+
     if (recorder.recorderStatus == 'playing') {
       onPauseRecord();
     } else if (recorder.recorderStatus == 'stopped') {
@@ -263,6 +445,7 @@ const Editor = props => {
 
   const btn_addAudioModal = async () => {
     const result = await audioRecorderPlayer.stopRecorder();
+    console.log('onModalHide', result);
     audioRecorderPlayer.removeRecordBackListener();
     setRecorder({
       isAudioModalVisible: false,
@@ -276,11 +459,39 @@ const Editor = props => {
       type: 'audio/' + result.split('.').pop(),
     };
     setNotes({audio: [audioObj]});
+
+    await onStopPlay();
+    const msg = await audioRecorderPlayer.startPlayer(result);
+    let firstTime = true;
+    audioRecorderPlayer.addPlayBackListener(async e => {
+      console.log('event', e);
+      if (firstTime) {
+        firstTime = false;
+        setPlayerStatus('paused');
+        await audioRecorderPlayer.pausePlayer();
+      }
+      let time = audioRecorderPlayer.mmssss(Math.floor(e.currentPosition));
+      let recordingTime1 = time.slice(0, -3).toString();
+      setPlayerTime({
+        duration: e.duration,
+        curTimeInSeconds: e.currentPosition,
+        curTime: recordingTime1,
+      });
+      if (e.currentPosition == e.duration) {
+        console.log('TIme up');
+        onStopPlay();
+        setPlayerTime({
+          duration: e.duration,
+          curTimeInSeconds: 0,
+          curTime: '00:00',
+        });
+      }
+      return;
+    });
     console.log('onModalHide', result);
   };
 
   const onStartRecord = async () => {
-    console.log('Hello');
     const result = await audioRecorderPlayer.startRecorder();
     let audioObj = {
       uri: result,
@@ -447,7 +658,7 @@ const Editor = props => {
               </Text>
             </View>
 
-            <Pressable
+            {/* <Pressable
               onPress={() => setModalVisibility(false)}
               style={{alignItems: 'center'}}>
               <View
@@ -461,6 +672,12 @@ const Editor = props => {
                 }}>
                 <Image source={ic_cross} style={{height: 10, width: 10}} />
               </View>
+            </Pressable> */}
+            <Pressable
+              style={{width: 25}}
+              // disabled={recorder.recorderStatus == 'playing'}
+              onPress={() => setModalVisibility(false)}>
+              <Image source={ic_cross} style={{height: 25, width: 25}} />
             </Pressable>
           </View>
           <View
@@ -519,9 +736,19 @@ const Editor = props => {
   };
 
   const removeImage = i => {
-    let temp = [...notes.images];
-    temp.splice(i, 1);
-    setNotes({images: [...temp]});
+    Alert.alert('Remove Image', 'Are you sure you want to remove this image', [
+      {
+        text: 'No',
+      },
+      {
+        text: 'Yes',
+        onPress: () => {
+          let temp = [...notes.images];
+          temp.splice(i, 1);
+          setNotes({images: [...temp]});
+        },
+      },
+    ]);
   };
 
   const ColorPickerModal = () => {
@@ -538,7 +765,7 @@ const Editor = props => {
             borderRadius: 15,
             marginHorizontal: -10,
           }}>
-          <Pressable
+          {/* <Pressable
             onPress={() => setColorPickerModal({visibility: false})}
             style={{
               alignSelf: 'flex-end',
@@ -548,7 +775,21 @@ const Editor = props => {
               margin: 10,
             }}>
             <Image source={ic_cross} style={{height: 25, width: 25}} />
+          </Pressable> */}
+          <Pressable
+            style={{
+              width: 50,
+              height: 50,
+              alignSelf: 'flex-end',
+              padding: 5,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            // disabled={recorder.recorderStatus == 'playing'}
+            onPress={() => setColorPickerModal({visibility: false})}>
+            <Image source={ic_cross} style={{height: 25, width: 25}} />
           </Pressable>
+
           <View
             style={{
               flexDirection: 'row',
@@ -567,6 +808,7 @@ const Editor = props => {
                 }}
                 onPress={() => {
                   RichText?.current.sendAction('foreColor', 'result', item);
+                  // RichText?.current.setTextColor(item)
                   setColorPickerModal({currentColor: item});
                 }}>
                 <View
@@ -595,19 +837,30 @@ const Editor = props => {
     console.log('playerStatus', playerStatus);
     console.log('playerTime.curTime', playerTime.curTimeInSeconds);
     console.log('playerTime.duration', playerTime.duration);
-    if (playerStatus == 'stopped') {
-      onStartPlay();
-    } else if (
-      playerStatus == 'stopped' &&
-      playerTime.curTimeInSeconds != 0 &&
-      playerTime.duration != 0 &&
-      Math.floor(playerTime.curTimeInSeconds) == Math.floor(playerTime.duration)
-    ) {
-      onRestartPlay();
-    } else if (playerStatus == 'paused') {
-      onResumePlay();
+
+    let granted = true;
+    if (Platform.OS == 'android') {
+      granted = await checkPermissionsAndroid();
+    }
+    if (granted) {
+      if (playerStatus == 'stopped') {
+        onStartPlay();
+      }
+      //  else if (
+      //   playerStatus == 'stopped' &&
+      //   playerTime.curTimeInSeconds != 0 &&
+      //   playerTime.duration != 0 &&
+      //   Math.floor(playerTime.curTimeInSeconds) == Math.floor(playerTime.duration)
+      // ) {
+      //   onRestartPlay();
+      // }
+      else if (playerStatus == 'paused') {
+        onResumePlay();
+      } else {
+        onPausePlay();
+      }
     } else {
-      onPausePlay();
+      showToast('Please grant permission', 'permission denied');
     }
   };
 
@@ -622,17 +875,7 @@ const Editor = props => {
     console.log('onStartPlay');
     setPlayerStatus('playing');
     const msg = await audioRecorderPlayer.startPlayer(notes?.audio[0]?.uri);
-    console.log(msg);
-
-    audioRecorderPlayer.addPlayBackListener(e => {
-      console.log('player event', e);
-      // setState({
-      //   currentPositionSec: e.currentPosition,
-      //   currentDurationSec: e.duration,
-      //   playTime: audioRecorderPlayer.mmssss(Math.floor(e.currentPosition)),
-      //   duration: audioRecorderPlayer.mmssss(Math.floor(e.duration)),
-      // });
-
+    audioRecorderPlayer.addPlayBackListener(async e => {
       let time = audioRecorderPlayer.mmssss(Math.floor(e.currentPosition));
       let duration = audioRecorderPlayer.mmssss(Math.floor(e.duration));
       let recordingTime = time.slice(0, -3).toString();
@@ -641,8 +884,15 @@ const Editor = props => {
         curTimeInSeconds: e.currentPosition,
         curTime: recordingTime,
       });
+
       if (e.currentPosition == e.duration) {
+        console.log('TIme up');
         onStopPlay();
+        setPlayerTime({
+          duration: e.duration,
+          curTimeInSeconds: 0,
+          curTime: '00:00',
+        });
       }
       return;
     });
@@ -654,6 +904,7 @@ const Editor = props => {
   };
 
   const onResumePlay = async () => {
+    console.log('onResumePlay');
     setPlayerStatus('playing');
     await audioRecorderPlayer.resumePlayer();
   };
@@ -661,35 +912,63 @@ const Editor = props => {
   const onStopPlay = async () => {
     console.log('onStopPlay');
     setPlayerStatus('stopped');
+    // audioRecorderPlayer.seekToPlayer(0);
+    setPlayerTime({
+      duration: playerTime.duration,
+      curTimeInSeconds: 0,
+      curTime: '00:00',
+    });
     audioRecorderPlayer.stopPlayer();
     audioRecorderPlayer.removePlayBackListener();
   };
 
   const onSeek = async time => {
-    console.log('onSeek', time);
-    // if (playerStatus == 'stopped') {
-    //   await onStartPlay();
-    //   await audioRecorderPlayer.seekToPlayer(time);
-    // } else {
-    let stime = audioRecorderPlayer.mmssss(Math.floor(time));
-    let curTime = stime.slice(0, -3).toString();
-    setPlayerTime({
-      duration: playerTime.duration,
-      curTimeInSeconds: time,
-      curTime: curTime,
-    });
-    await audioRecorderPlayer.seekToPlayer(time);
-    // }
-    // setPlayerStatus('stopped');
-    // audioRecorderPlayer.stopPlayer();
-    // audioRecorderPlayer.removePlayBackListener();
+    if (playerStatus == 'stopped') {
+      setPlayerStatus('paused');
+      const msg = await audioRecorderPlayer.startPlayer(notes?.audio[0]?.uri);
+      await audioRecorderPlayer.seekToPlayer(time);
+
+      await audioRecorderPlayer.pausePlayer();
+      audioRecorderPlayer.addPlayBackListener(async e => {
+        let time = audioRecorderPlayer.mmssss(Math.floor(e.currentPosition));
+        let duration = audioRecorderPlayer.mmssss(Math.floor(e.duration));
+        let recordingTime = time.slice(0, -3).toString();
+        setPlayerTime({
+          duration: e.duration,
+          curTimeInSeconds: e.currentPosition,
+          curTime: recordingTime,
+        });
+
+        if (e.currentPosition == e.duration) {
+          console.log('TIme up');
+          onStopPlay();
+          setPlayerTime({
+            duration: playerTime.duration,
+            curTimeInSeconds: 0,
+            curTime: '00:00',
+          });
+        }
+        return;
+      });
+    } else {
+      await audioRecorderPlayer.seekToPlayer(time);
+    }
   };
 
-  useEffect(() => {
-    console.log(notes.audio, 'notes.audio');
-    if (!!notes.audio?.uri) {
-    }
-  }, [notes.audio]);
+  const getRemainingTime = () => {
+    console.log(playerTime.duration);
+    console.log(playerTime.curTimeInSeconds);
+    let timeLeftInSeconds = playerTime.duration - playerTime.curTimeInSeconds;
+    console.log('timeLeftInSeconds', timeLeftInSeconds);
+    let timeLeftInFormat = audioRecorderPlayer.mmssss(
+      Math.floor(timeLeftInSeconds),
+    );
+    // let duration = audioRecorderPlayer.mmssss(Math.floor(e.duration));
+    // let recordingTime = time.slice(0, -3).toString();
+    console.log(timeLeftInFormat);
+    // let timeLeft = duration - curTime;
+    return '- ' + timeLeftInFormat.slice(0, -3);
+  };
 
   useEffect(() => {
     return () => {
@@ -702,27 +981,121 @@ const Editor = props => {
       style={[
         mainStyles.MainView,
         {
-          backgroundColor: Colors.white,
+          backgroundColor: notes.colors.light,
         },
       ]}>
       <StatusBar
         barStyle={'dark-content'}
-        backgroundColor={Colors.background}
+        backgroundColor={notes.colors.light}
       />
       <Header
+        // backgroundColor={notes.colors.dark}
         titleAlignLeft
         navigation={navigation}
         title={'Add Note'}
-        rightIcon={ic_save}
-        rightIcononPress={() =>
-          props.navigation.navigate({
-            name: screens.notesList,
-            params: {
-              updated: true,
-            },
-            merge: true,
-          })
+        // rightIcon={ic_save}
+        // rightIcononPress={() => {
+        //   console.log('note', notes);
+        //   props.navigation.navigate({
+        //     name: screens.notesList,
+        //     params: {
+        //       updated: true,
+        //     },
+        //     merge: true,
+        //   });
+        // }}
+        rightIcon2View={
+          <Pressable
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              height: 30,
+              width: 60,
+              justifyContent: 'center',
+              // paddingHorizontal: 10,
+              // paddingVertical: 5,
+              backgroundColor: Colors.white,
+              borderRadius: 20,
+              marginRight: 10,
+            }}
+            onPress={() => setBackgroundColorModalVisiblity(prev => !prev)}>
+            <View
+              style={{
+                height: 20,
+                width: 20,
+                backgroundColor: notes.colors.dark,
+                borderRadius: 999,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              {/* <View
+                style={{
+                  height: '50%',
+                  width: '50%',
+                  backgroundColor: notes.colors.light,
+                  borderRadius: 999,
+                }}
+              /> */}
+            </View>
+            <View
+              style={{
+                // transform: [{rotateZ: '90deg'}],
+                marginLeft: 5,
+                // marginRight:-15
+                // marginLeft:-5,
+                // position: 'absolute',
+                // bottom: -5,
+                // left: -5,
+                // bottom: 0,
+                // right: 0,
+                // left: 0,
+                // top: 0,
+                // zIndex: 2,
+              }}>
+              <Image
+                source={require('../../../Assets/Icons/down-arrow.png')}
+                style={{height: 12, width: 12, tintColor: Colors.black}}
+              />
+            </View>
+          </Pressable>
         }
+        rightIconView={
+          <Pressable
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              height: 30,
+              width: 70,
+              justifyContent: 'center',
+              // paddingHorizontal: 10,
+              // paddingVertical: 5,
+              backgroundColor: Colors.white,
+              borderRadius: 20,
+              marginRight: 10,
+            }}>
+            <Text style={{fontFamily: font.medium}}>Save</Text>
+            <View
+              style={{
+                marginLeft: 5,
+              }}>
+              <Image
+                source={ic_save}
+                style={{height: 12, width: 12, tintColor: Colors.black}}
+              />
+            </View>
+          </Pressable>
+        }
+        // rightIcon2View={
+        //   <Pressable
+        //     onPress={() => setBackgroundColorModalVisiblity(prev => !prev)}>
+        //     <Image
+        //       source={require('../../../Assets/Icons/color-wheel.png')}
+        //       style={{height: 25, width: 25}}
+        //     />
+        //   </Pressable>
+        // }
+        // rightIcon2={ic_colorPicker}
+        rightIcon2onPress={() => {}}
       />
       <View style={{flex: 1, paddingHorizontal: 20}}>
         <KeyboardAvoidingView
@@ -747,7 +1120,7 @@ const Editor = props => {
                     paddingBottom: 3,
                   }}
                   autoCorrect={false}
-                  autoComplete={false}
+                  autoComplete={'off'}
                   onChangeText={text => setNotes({title: text})}
                   placeholder="Title"
                   selectionColor={Colors.primary}
@@ -778,17 +1151,25 @@ const Editor = props => {
                       borderRadius: 10,
                     }}
                     initialHeight={150}
+                    // initialContentHTML={
+                    //   '<p style="color:pink" >What\'s in your mind</p>'
+                    // }
                     editorStyle={{
-                      // backgroundColor: Colors.gray01,
+                      backgroundColor: notes.colors.light,
                       // caretColor: Colors.primary,
+                      // color:'red',
                       contentCSSText:
-                        '@font-face {font-family: myFirstFont;src: url(Pangram-Bold.otf); }, * {font-family: myFirstFont;}',
+                        ' * {font-family: "Verdana", sans-serif;}',
                     }}
+                    // setContentHTML={'<div><p><p/><div>'}
                     setDisplayZoomControls={true}
-                    initialContentHTML={notes.note}
+                    // initialContentHTML={'<div><p>' + notes.note + '</p></div>'}
                     useContainer={true}
                     placeholder={"What's in your mind"}
-                    onChange={text => setNotes({note: text})}
+                    onChange={text => {
+                      // console.log(args)
+                      setNotes({note: text});
+                    }}
                     androidLayerType="software"
                     androidHardwareAccelerationDisabled
                     onBlur={() => {
@@ -800,47 +1181,116 @@ const Editor = props => {
                     }}
                   />
                 </View>
-                <View
-                  style={{
-                    marginHorizontal: -10,
-                    marginTop: 20,
-                  }}>
+                {notes.audio.length != 0 && (
+                  <View>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        backgroundColor: Colors.white,
+                        borderRadius: 10,
+                        shadowColor: '#000',
+                        shadowOffset: {
+                          width: 0,
+                          height: 1,
+                        },
+                        shadowOpacity: 0.18,
+                        shadowRadius: 1.0,
+                        elevation: 1,
+                        padding: 15,
+                      }}>
+                      <Pressable
+                        onPress={playerPlayPause}
+                        style={{
+                          backgroundColor: Colors.lightPrimary2,
+                          height: 40,
+                          width: 40,
+                          borderRadius: 50 / 2,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                        <Image
+                          source={
+                            playerStatus == 'playing' ? ic_pause : ic_play
+                          }
+                          style={{
+                            height: 20,
+                            width: 20,
+                            tintColor: Colors.primary,
+                          }}
+                        />
+                      </Pressable>
+
+                      <View
+                        style={{
+                          // marginHorizontal: 5,
+                          flex: 1,
+                          // marginRight: 20,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                        }}>
+                        <View style={{flex: 1, marginHorizontal: 15}}>
+                          <Slider
+                            style={{}}
+                            value={playerTime.curTimeInSeconds}
+                            thumbTintColor={'transparent'}
+                            // thumbImage={undefined}
+                            minimumTrackTintColor={Colors.primary}
+                            maximumTrackTintColor={Colors.gray01}
+                            minimumValue={0}
+                            // tapToSeek={true}
+
+                            animationType="timing"
+                            maximumValue={playerTime.duration}
+                            onValueChange={val => {
+                              // setIsSeeking(true);
+                              // setSeek(val);
+                            }}
+                            onSlidingComplete={onSeek}
+                          />
+                        </View>
+                        <View style={{}}>
+                          <Text
+                            style={{
+                              fontFamily: font.medium,
+                              fontSize: 14,
+                              color: Colors.gray08,
+                            }}>
+                            {/* {playerTime.curTime} */}
+                            {getRemainingTime()}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                )}
+                <View style={{marginHorizontal: -10, paddingVertical: 10}}>
                   <FlatList
-                    horizontal={true}
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{
-                      paddingLeft: 10,
-                      paddingVertical: 10,
-                    }}
+                    // horizontal={true}
+                    // showsHorizontalScrollIndicator={false}
+                    showsVerticalScrollIndicator={false}
+                    numColumns={3}
+                    scrollEnabled={false}
                     data={notes?.images}
                     renderItem={({item, index}) => {
-                      console.log('notes?.images', item);
                       return (
-                        <View
+                        <Pressable
+                          onPress={() => showImageModal(item?.uri)}
                           style={{
-                            height: 120,
-                            width: 120,
-                            borderRadius: 20,
-                            marginRight: 10,
-                            shadowColor: '#000',
-                            shadowOffset: {
-                              width: 0,
-                              height: 1,
-                            },
-                            shadowOpacity: 0.22,
-                            shadowRadius: 2.22,
-
-                            elevation: 3,
-                            // borderWidth: 1,
-                            // borderColor: Colors.placeHolder,
+                            flex: 1 / 3,
+                            aspectRatio: 1,
+                            backgroundColor: notes?.colors.light,
+                            margin: 1,
+                            // borderRadius: 10,
+                            // overflow: 'hidden',
                           }}>
-                          <Image
+                          <CustomImage
                             source={{uri: item?.uri}}
                             style={{
-                              height: '98%',
-                              width: '98%',
-                              borderRadius: 20,
+                              height: '100%',
+                              width: '100%',
                             }}
+                            indicatorProps={{color: Colors.primary}}
                           />
                           <Pressable
                             onPress={() => removeImage(index)}
@@ -848,8 +1298,8 @@ const Editor = props => {
                               position: 'absolute',
                               top: 10,
                               right: 10,
-                              height: 25,
-                              width: 25,
+                              height: 30,
+                              width: 30,
                               borderRadius: 15,
                               backgroundColor: Colors.white,
                               borderColor: Colors.placeHolder,
@@ -868,150 +1318,87 @@ const Editor = props => {
                             }}>
                             <Image
                               source={ic_cross}
-                              style={{height: 10, width: 10}}
+                              style={{height: 15, width: 15}}
                             />
                           </Pressable>
-                        </View>
+                        </Pressable>
+                        // <View
+                        //   style={{
+                        //     height: 120,
+                        //     width: 120,
+                        //     borderRadius: 20,
+                        //     marginRight: 10,
+                        //     shadowColor: '#000',
+                        //     shadowOffset: {
+                        //       width: 0,
+                        //       height: 1,
+                        //     },
+                        //     shadowOpacity: 0.22,
+                        //     shadowRadius: 2.22,
+
+                        //     elevation: 3,
+                        //     // borderWidth: 1,
+                        //     // borderColor: Colors.placeHolder,
+                        //   }}>
+                        //   <Image
+                        //     source={{uri: item?.uri}}
+                        //     style={{
+                        //       height: '98%',
+                        //       width: '98%',
+                        //       borderRadius: 20,
+                        //     }}
+                        //   />
+                        //   <Pressable
+                        //     onPress={() => removeImage(index)}
+                        //     style={{
+                        //       position: 'absolute',
+                        //       top: 10,
+                        //       right: 10,
+                        //       height: 25,
+                        //       width: 25,
+                        //       borderRadius: 15,
+                        //       backgroundColor: Colors.white,
+                        //       borderColor: Colors.placeHolder,
+                        //       borderWidth: 1,
+                        //       alignItems: 'center',
+                        //       justifyContent: 'center',
+                        //       shadowColor: '#000',
+                        //       shadowOffset: {
+                        //         width: 0,
+                        //         height: 1,
+                        //       },
+                        //       shadowOpacity: 0.22,
+                        //       shadowRadius: 2.22,
+
+                        //       elevation: 3,
+                        //     }}>
+                        //     <Image
+                        //       source={ic_cross}
+                        //       style={{height: 10, width: 10}}
+                        //     />
+                        //   </Pressable>
+                        // </View>
                       );
                     }}
                   />
                 </View>
-
-                <View>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      backgroundColor: Colors.background,
-                      borderRadius: 20,
-                    }}>
-                    <View
-                      style={{
-                        height: 105,
-                        width: 105,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                      {/* {playerStatus == 'playing' && (
-                      <>
-                        <Animatable.View
-                          iterationCount="infinite"
-                          // animation={
-                          //   playerStatus == 'playing' ? myZoom1x : ''
-                          // }
-                          animation={"pulse"}
-                          // direction="alternate"
-                          duration={500}
-                          style={{
-                            // backgroundColor: Colors.lightPrimary1,
-                            height: 90,
-                            width: 90,
-                            borderRadius: 90 / 2,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            position: 'absolute',
-                            zIndex: -2,
-                          }}></Animatable.View>
-                        <Animatable.View
-                          iterationCount="infinite"
-                          // animation={
-                          //   playerStatus == 'playing' ? myZoom2x : ''
-                          // }
-                          animation={"pulse"}
-                          // animation={myZoom2x}
-                          // direction="alternate"
-                          duration={500}
-                          style={{
-                            // backgroundColor: Colors.lightPrimary2,
-                            height: 70,
-                            width: 70,
-                            borderRadius: 70 / 2,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            position: 'absolute',
-                            zIndex: -1,
-                          }}></Animatable.View>
-                      </>
-                      )} */}
-                      <Pressable
-                        onPress={playerPlayPause}
-                        style={{
-                          backgroundColor: Colors.primary,
-                          height: 50,
-                          width: 50,
-                          borderRadius: 50 / 2,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}>
-                        <Image
-                          source={
-                            playerStatus == 'playing' ? ic_pause : ic_play
-                          }
-                          style={{
-                            height: 20,
-                            width: 20,
-                            tintColor: Colors.white,
-                          }}
-                        />
-                      </Pressable>
-                    </View>
-
-                    <View
-                      style={{marginHorizontal: 5, flex: 1, marginRight: 20}}>
-                      <View>
-                        <Slider
-                          style={{
-                            slider: {
-                              marginTop: 0,
-                              width: '100%',
-                            },
-                          }}
-                          value={playerTime.curTimeInSeconds}
-                          thumbTintColor={Colors.primary}
-                          minimumTrackTintColor={Colors.primary}
-                          maximumTrackTintColor={Colors.lightPrimary}
-                          minimumValue={0}
-                          thumbStyle={{
-                            width: 15,
-                            height: 15,
-                            shadowOpacity: 0.9,
-                            shadowColor: 'silver',
-                            elevation: 1,
-                            shadowOffset: {
-                              width: 0,
-                              height: 0,
-                            },
-                          }}
-                          tapToSeek={true}
-                          animationType="timing"
-                          maximumValue={playerTime.duration}
-                          onValueChange={val => {
-                            // setIsSeeking(true);
-                            // setSeek(val);
-                          }}
-                          onSlidingComplete={onSeek}
-                        />
-                      </View>
-                      <View style={{}}>
-                        <Text style={{fontFamily: font.medium, fontSize: 14}}>
-                          {playerTime.curTime}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                </View>
               </Pressable>
             </View>
 
-            <Collapsible collapsed={!isFocused}>
+            <Collapsible style={{paddingBottom: 10}} collapsed={!isFocused}>
               <RichToolbar
                 editor={RichText}
                 actions={[
                   actions.keyboard,
                   ['images'],
                   ['audio'],
+
                   actions.undo,
                   actions.redo,
+                  // actions.heading1,
+                  // actions.heading2,
+                  // actions.heading3,
+                  // actions.setParagraph,
                   actions.foreColor,
                   actions.setBold,
                   actions.setItalic,
@@ -1019,6 +1406,7 @@ const Editor = props => {
                   actions.removeFormat,
                   actions.insertBulletsList,
                   actions.insertOrderedList,
+                  // actions.setTextColor
                 ]}
                 style={{
                   backgroundColor: Colors.white,
@@ -1068,7 +1456,7 @@ const Editor = props => {
 
                   audio: ({tintColor}) => (
                     <TouchableOpacity
-                      onPress={() => setRecorder({isAudioModalVisible: true})}
+                      onPress={onMicPress}
                       style={{
                         width: '100%',
                         height: '100%',
@@ -1086,6 +1474,39 @@ const Editor = props => {
                       />
                     </TouchableOpacity>
                   ),
+                  [actions.heading1]: ({tintColor}) => (
+                    <Text style={{color: tintColor, fontWeight: '700'}}>
+                      H1
+                    </Text>
+                  ),
+                  [actions.heading2]: ({tintColor}) => (
+                    <Text style={{color: tintColor, fontWeight: '700'}}>
+                      H2
+                    </Text>
+                  ),
+                  [actions.heading3]: ({tintColor}) => (
+                    <Text style={{color: tintColor, fontWeight: '700'}}>
+                      H3
+                    </Text>
+                  ),
+                  [actions.heading4]: ({tintColor}) => (
+                    <Text style={{color: tintColor, fontWeight: '700'}}>
+                      H4
+                    </Text>
+                  ),
+                  [actions.heading5]: ({tintColor}) => (
+                    <Text style={{color: tintColor, fontWeight: '700'}}>
+                      H5
+                    </Text>
+                  ),
+                  [actions.heading6]: ({tintColor}) => (
+                    <Text style={{color: tintColor, fontWeight: '700'}}>
+                      H6
+                    </Text>
+                  ),
+                  [actions.setParagraph]: ({tintColor}) => (
+                    <Text style={{color: tintColor, fontWeight: '700'}}>P</Text>
+                  ),
                 }}
                 selectedIconTint={Colors.primary}
               />
@@ -1095,6 +1516,14 @@ const Editor = props => {
         {ColorPickerModal()}
         {ImagePickerOptionsModal()}
         {AudioRecoderModal()}
+        {backgroundColorModal()}
+        <ImageZoomer
+          closeModal={hideImageModal}
+          visible={!!modalImage}
+          url={modalImage}
+          color={notes?.colors.light}
+          noUrl
+        />
       </View>
     </SafeAreaView>
   );

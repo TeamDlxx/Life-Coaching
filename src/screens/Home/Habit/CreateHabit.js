@@ -27,8 +27,6 @@ import {screens} from '../../../Navigation/Screens';
 import {CustomSimpleTextInput} from '../../../Components/CustomTextInput';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import moment from 'moment';
-import Modal from 'react-native-modal';
-import ImagePicker from 'react-native-image-crop-picker';
 import UploadImage from '../../../Components/UploadImage';
 import analytics from '@react-native-firebase/analytics';
 
@@ -39,7 +37,6 @@ import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
-import {isFirstLetterAlphabet} from '../../../functions/regex';
 import rountToNextmins from '../../../functions/rountToNextmins';
 import PushNotification from 'react-native-push-notification';
 import FastImage from 'react-native-fast-image';
