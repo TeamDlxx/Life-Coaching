@@ -97,6 +97,9 @@ const NoteDetail = props => {
         <MenuItem
           onPress={() => {
             EditMenu?.current.hide();
+            if (playerStatus == 'playing') {
+              onStopPlay();
+            }
             navigation.navigate(screens.noteEditor, {
               note,
               updateNote: props.route.params?.updateNote,
@@ -115,7 +118,15 @@ const NoteDetail = props => {
               'Are you sure you want to delete this Note',
               [
                 {text: 'No'},
-                {text: 'Yes', onPress: () => api_deleteNote(note._id)},
+                {
+                  text: 'Yes',
+                  onPress: () => {
+                    if (playerStatus == 'playing') {
+                      onStopPlay();
+                    }
+                    api_deleteNote(note._id);
+                  },
+                },
               ],
             );
           }}>
@@ -320,13 +331,19 @@ const NoteDetail = props => {
     if (!!note?.audio) {
       download();
     }
+    return () => {
+      // console.log("return",playerStatus)
+      // if (playerStatus == 'playing') {
+        onStopPlay();
+      // }
+    };
   }, [note?.audio]);
 
-  // useEffect(() => {
-  //   if (!!props.route?.params?.note.description) {
-  //     setisLoading(true);
-  //   }
-  // }, []);
+  useEffect(() => {
+    // if (!!props.route?.params?.note.description) {
+    //   setisLoading(true);
+    // }
+  }, []);
 
   const flatListHeader = () => {
     return (
