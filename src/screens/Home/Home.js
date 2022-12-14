@@ -191,7 +191,7 @@ const Home = props => {
             paddingHorizontal: 30,
           }}>
           <Text style={{fontSize: 20, fontFamily: font.bold, letterSpacing: 2}}>
-            LIFE MATE
+            Better.Me
           </Text>
         </Pressable>
 

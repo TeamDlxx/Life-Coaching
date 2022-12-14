@@ -287,7 +287,7 @@ const Profile = props => {
                     letterSpacing: 0.5,
                     textAlign: 'center',
                   }}>
-                  LIFE MATE
+                  Better.Me
                 </Text>
               </View>
               <View style={{marginTop: 10}}>

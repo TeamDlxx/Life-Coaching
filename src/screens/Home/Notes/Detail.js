@@ -5,35 +5,32 @@ import {
   StatusBar,
   Pressable,
   Image,
-  TextInput,
   FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableOpacity,
-  ScrollView,
   Dimensions,
   TouchableHighlight,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useState, useRef, useContext} from 'react';
 import Header from '../../../Components/Header';
-import Colors, {notesColors} from '../../../Utilities/Colors';
-import {mainStyles, stat_styles} from '../../../Utilities/styles';
+import Colors from '../../../Utilities/Colors';
+import {mainStyles} from '../../../Utilities/styles';
 import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
-import Modal from 'react-native-modal';
-import {actions, RichEditor, RichToolbar} from 'react-native-pell-rich-editor';
-import Collapsible from 'react-native-collapsible';
-import ImagePicker from 'react-native-image-crop-picker';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
-import * as Animatable from 'react-native-animatable';
+
 import Slider from '@react-native-community/slider';
 import {useWindowDimensions} from 'react-native';
-import {WebView} from 'react-native-webview';
-import {WebViewProps} from 'react-native-webview';
 import AutoHeightWebView from 'react-native-autoheight-webview';
 import {Menu, MenuItem, MenuDivider} from 'react-native-material-menu';
 import ImageZoomer from '../../../Components/ImageZoomer';
+import Context from '../../../Context';
+// fro API calling
+
+import showToast from '../../../functions/showToast';
+import Loader from '../../../Components/Loader';
+import invokeApi from '../../../functions/invokeAPI';
+
 let audioRecorderPlayer = new AudioRecorderPlayer();
 
 const ic_pallete = require('../../../Assets/Icons/palette.png');
@@ -49,14 +46,19 @@ const ic_stop = require('../../../Assets/TrackPlayer/stop.png');
 const ic_pause = require('../../../Assets/TrackPlayer/pauseTrack.png');
 const checked = require('../../../Assets/Icons/checked.png');
 const unChecked = require('../../../Assets/Icons/unchecked.png');
+import ic_download from '../../../Assets/Icons/download.png';
 // import ic_cross from '../../../Assets/Icons/cross.png';
 import ic_trash from '../../../Assets/Icons/trash.png';
 import {isIphoneX} from 'react-native-iphone-x-helper';
 import CustomImage from '../../../Components/CustomImage';
+import {fileURL} from '../../../Utilities/domains';
 const NoteDetail = props => {
   const {navigation} = props;
-  const {note} = props.route?.params;
+  const {downloadAudioNote, Token} = useContext(Context);
+  const [note, setNote] = useState(props.route?.params?.note);
   const EditMenu = useRef();
+  const [Audio, setAudio] = useState(null);
+  const [isLoading, setisLoading] = useState(false);
   const [modalImage, setModalImage] = useState(null);
   const [playerStatus, setPlayerStatus] = useState('stopped');
   const [playerTime, setPlayerTime] = useState({
@@ -65,7 +67,6 @@ const NoteDetail = props => {
     curTime: '00:00',
   });
 
-  console.log('note', note);
   const {width} = useWindowDimensions();
 
   const dropDownMenu = () => {
@@ -96,7 +97,10 @@ const NoteDetail = props => {
         <MenuItem
           onPress={() => {
             EditMenu?.current.hide();
-            navigation.navigate(screens.noteEditor);
+            navigation.navigate(screens.noteEditor, {
+              note,
+              updateNote: props.route.params?.updateNote,
+            });
           }}>
           <Text style={{fontFamily: font.bold}}>Edit</Text>
         </MenuItem>
@@ -109,7 +113,10 @@ const NoteDetail = props => {
             Alert.alert(
               'Delete Note',
               'Are you sure you want to delete this Note',
-              [{text: 'No'}, {text: 'Yes'}],
+              [
+                {text: 'No'},
+                {text: 'Yes', onPress: () => api_deleteNote(note._id)},
+              ],
             );
           }}>
           <Text style={{fontFamily: font.bold}}>Delete</Text>
@@ -130,12 +137,12 @@ const NoteDetail = props => {
 
   //? player
   const playerPlayPause = async () => {
-    if (playerStatus == 'playing') {
-      setPlayerStatus('paused');
-    } else {
-      setPlayerStatus('playing');
-    }
-    return;
+    // if (playerStatus == 'playing') {
+    //   setPlayerStatus('paused');
+    // } else {
+    //   setPlayerStatus('playing');
+    // }
+    // return;
     console.log('playerStatus', playerStatus);
     console.log('playerTime.curTime', playerTime.curTimeInSeconds);
     console.log('playerTime.duration', playerTime.duration);
@@ -167,8 +174,10 @@ const NoteDetail = props => {
   const onStartPlay = async () => {
     console.log('onStartPlay');
     setPlayerStatus('playing');
-    const msg = await audioRecorderPlayer.startPlayer(note?.audio[0]);
+    console.log('Audio', Audio);
+    const msg = await audioRecorderPlayer.startPlayer(Audio);
     audioRecorderPlayer.addPlayBackListener(async e => {
+      console.log(e, 'event...');
       let time = audioRecorderPlayer.mmssss(Math.floor(e.currentPosition));
       let duration = audioRecorderPlayer.mmssss(Math.floor(e.duration));
       let recordingTime = time.slice(0, -3).toString();
@@ -218,9 +227,8 @@ const NoteDetail = props => {
   const onSeek = async time => {
     if (playerStatus == 'stopped') {
       setPlayerStatus('paused');
-      const msg = await audioRecorderPlayer.startPlayer(note?.audio[0]);
+      const msg = await audioRecorderPlayer.startPlayer(fileURL + note?.audio);
       await audioRecorderPlayer.seekToPlayer(time);
-
       await audioRecorderPlayer.pausePlayer();
       audioRecorderPlayer.addPlayBackListener(async e => {
         let time = audioRecorderPlayer.mmssss(Math.floor(e.currentPosition));
@@ -263,6 +271,57 @@ const NoteDetail = props => {
     return '- ' + timeLeftInFormat.slice(0, -3);
   };
 
+  const download = async () => {
+    try {
+      setAudio('downloading');
+      let AudioPath = await downloadAudioNote(note?.audio);
+      setAudio('file://' + AudioPath);
+    } catch (e) {
+      setAudio('error');
+    }
+  };
+
+  const api_deleteNote = async NoteID => {
+    setisLoading(true);
+    let res = await invokeApi({
+      path: `api/note/delete_note/${NoteID}`,
+      method: 'DELETE',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+
+    if (res) {
+      if (res.code == 200) {
+        setisLoading(false);
+        navigation.navigate(screens.notesList, {
+          deleteId: NoteID,
+        });
+      } else {
+        setisLoading(false);
+        showToast(res.message);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (!!props.route.params?.editedNote) {
+      setNote(props.route.params?.editedNote);
+      console.log('Props...', props.route.params);
+      // props.route.params?.updateNote(props.route.params?.editedNote);
+      if (!!props.route.params?.editedNote?.audio) {
+        download();
+      }
+    }
+  }, [props.route]);
+
+  useEffect(() => {
+    if (!!note?.audio) {
+      download();
+    }
+  }, [note?.audio]);
+
   const flatListHeader = () => {
     return (
       <View style={{marginBottom: 30}}>
@@ -294,6 +353,9 @@ const NoteDetail = props => {
                 // backgroundColor: 'red',
               }}
               source={{html: note?.description}}
+              onSizeUpdated={res => {
+                console.log('res', res);
+              }}
               // scalesPageToFit={true}
               viewportContent={'width=device-width, user-scalable=no'}
               customStyle={`
@@ -306,7 +368,7 @@ const NoteDetail = props => {
             />
           </View>
         )}
-        {/* {note.audio.length != 0 && (
+        {!!note.audio && (
           <View>
             <View
               style={{
@@ -327,7 +389,14 @@ const NoteDetail = props => {
                 marginTop: 20,
               }}>
               <Pressable
-                onPress={playerPlayPause}
+                onPress={() => {
+                  if (Audio == null || Audio == 'error') {
+                    downloadAudioNote();
+                  } else if (Audio == 'downloading') {
+                  } else {
+                    playerPlayPause();
+                  }
+                }}
                 style={{
                   backgroundColor: Colors.lightPrimary2,
                   height: 40,
@@ -336,14 +405,27 @@ const NoteDetail = props => {
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}>
-                <Image
-                  source={playerStatus == 'playing' ? ic_pause : ic_play}
-                  style={{
-                    height: 20,
-                    width: 20,
-                    tintColor: Colors.primary,
-                  }}
-                />
+                {Audio == null || Audio == 'error' ? (
+                  <Image
+                    source={ic_download}
+                    style={{
+                      height: 20,
+                      width: 20,
+                      tintColor: Colors.primary,
+                    }}
+                  />
+                ) : Audio == 'downloading' ? (
+                  <ActivityIndicator />
+                ) : (
+                  <Image
+                    source={playerStatus == 'playing' ? ic_pause : ic_play}
+                    style={{
+                      height: 20,
+                      width: 20,
+                      tintColor: Colors.primary,
+                    }}
+                  />
+                )}
               </Pressable>
 
               <View
@@ -380,28 +462,28 @@ const NoteDetail = props => {
                       fontSize: 14,
                       color: Colors.gray08,
                     }}>
-
                     {getRemainingTime()}
                   </Text>
                 </View>
               </View>
             </View>
           </View>
-        )} */}
+        )}
       </View>
     );
   };
+
   return (
     <SafeAreaView
       style={[
         mainStyles.MainView,
         {
-          backgroundColor: note?.colors.light,
+          backgroundColor: note?.color.light,
         },
       ]}>
       <StatusBar
         barStyle={'dark-content'}
-        backgroundColor={note?.colors.light}
+        backgroundColor={note?.color.light}
       />
       <Header
         titleAlignLeft
@@ -409,54 +491,57 @@ const NoteDetail = props => {
         title={'Note'}
         menu={dropDownMenu}
       />
-      <View
-        style={{
-          // marginTop: 20,
-          flex: 1,
-        }}>
-        <FlatList
-          ListHeaderComponent={flatListHeader}
-          numColumns={3}
-          data={note?.images}
-          showsVerticalScrollIndicator={false}
-          renderItem={({item, index}) => {
-            console.log('note?.images', item);
-            return (
-              <Pressable
-                onPress={() => showImageModal(item)}
-                style={{
-                  flex: 1 / 3,
-                  aspectRatio: 1,
-                  backgroundColor: note?.colors.light,
-                  margin: 1,
-                  // borderRadius: 10,
-                  overflow: 'hidden',
-                }}>
-                <CustomImage
-                  source={{uri: item}}
+      {!!note && (
+        <View
+          style={{
+            // marginTop: 20,
+            flex: 1,
+          }}>
+          <FlatList
+            ListHeaderComponent={flatListHeader()}
+            numColumns={3}
+            data={note?.images}
+            showsVerticalScrollIndicator={false}
+            renderItem={({item, index}) => {
+              console.log('note?.images', item);
+              return (
+                <Pressable
+                  onPress={() => showImageModal(item?.large)}
                   style={{
-                    height: '100%',
-                    width: '100%',
-                  }}
-                  imageStyle={
-                    {
-                      // borderRadius: 20,
+                    flex: 1 / 3,
+                    aspectRatio: 1,
+                    backgroundColor: note?.color.light,
+                    margin: 1,
+                    // borderRadius: 10,
+                    overflow: 'hidden',
+                  }}>
+                  <CustomImage
+                    source={{uri: fileURL + item?.medium}}
+                    style={{
+                      height: '100%',
+                      width: '100%',
+                    }}
+                    imageStyle={
+                      {
+                        // borderRadius: 20,
+                      }
                     }
-                  }
-                  indicatorProps={{color: Colors.primary}}
-                />
-              </Pressable>
-            );
-          }}
-        />
-      </View>
+                    indicatorProps={{color: Colors.primary}}
+                  />
+                </Pressable>
+              );
+            }}
+          />
+        </View>
+      )}
       <ImageZoomer
         closeModal={hideImageModal}
         visible={!!modalImage}
         url={modalImage}
-        color={note?.colors.light}
-        noUrl
+        color={note?.color.light}
+        // noUrl
       />
+      <Loader enable={isLoading} />
     </SafeAreaView>
   );
 };

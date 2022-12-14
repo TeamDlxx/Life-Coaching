@@ -9,8 +9,9 @@ import {
   FlatList,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
 import {mainStyles, FAB_style} from '../../../Utilities/styles';
@@ -21,6 +22,16 @@ import {notesColors} from '../../../Utilities/Colors';
 import Collapsible from 'react-native-collapsible';
 import AutoHeightWebView from 'react-native-autoheight-webview';
 import SwipeableFlatList from 'react-native-swipeable-list';
+// fro API calling
+import {useContext} from 'react';
+import Context from '../../../Context';
+import showToast from '../../../functions/showToast';
+import Loader from '../../../Components/Loader';
+import invokeApi from '../../../functions/invokeAPI';
+import {fileURL} from '../../../Utilities/domains';
+import EmptyView from '../../../Components/EmptyView';
+import PushNotification from 'react-native-push-notification';
+import analytics from '@react-native-firebase/analytics';
 
 const screen_size = Dimensions.get('window');
 //icons
@@ -38,11 +49,20 @@ const il_emptyNotes = require('../../../Assets/illustractions/notesEmpty.png');
 const checked = require('../../../Assets/Icons/checked.png');
 const unChecked = require('../../../Assets/Icons/unchecked.png');
 
+const limit = 10;
+let pageNumber = 0;
+let canLoadMore = false;
+let startDate = '';
+let endDate = '';
+let selectedColors = [];
+
 const List = props => {
   const {navigation} = props;
-  const [list, setList] = useState(notes);
+  const {Token} = useContext(Context);
+  const [list, setList] = useState([]);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
-
+  const [isLoading, setisLoading] = useState(false);
+  const [isLoadingMore, setisLoadingMore] = useState(false);
   const [searchText, setSearchText] = useState('');
 
   const onNoteEditorScreen = () => {
@@ -50,10 +70,163 @@ const List = props => {
   };
 
   React.useEffect(() => {
-    if (!!props.route?.params?.updated) {
-      setList(notes);
+    if (!!props.route?.params?.filter) {
+      let {filter} = props.route.params;
+      startDate = filter?.date.start;
+      endDate = filter?.date.end;
+      selectedColors = filter?.selectedColors;
+      pageNumber = 0;
+      setisLoading(true);
+      api_listNotes({
+        search: searchText.trim(),
+        date_from: startDate,
+        date_to: endDate,
+        color: JSON.stringify(selectedColors.map(x => x.dark)),
+      });
+    }
+
+    if (!!props.route?.params?.deleteId) {
+      deleteLocallyfromList(props.route?.params?.deleteId);
+    }
+    if (!!props.route?.params?.addNew) {
+      setList(prev => [props.route?.params?.addNew, ...prev]);
     }
   }, [props.route]);
+
+  const searchFromAPI = text => {
+    setSearchText(text);
+    api_listNotes({
+      search: searchText.trim(),
+      date_from: startDate,
+      date_to: endDate,
+      color: JSON.stringify(selectedColors.map(x => x.dark)),
+    });
+  };
+
+  //todo ///////// API;s
+
+  const call_api_listNotes = () => {
+    setisLoading(true);
+    api_listNotes({
+      search: searchText.trim(),
+      date_from: startDate,
+      date_to: endDate,
+      color: JSON.stringify(selectedColors.map(x => x.dark)),
+    });
+  };
+
+  const api_listNotes = async body => {
+    let res = await invokeApi({
+      path: `api/note/get_notes?page=0&limit=${limit}`,
+      method: 'POST',
+      postData: body,
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    setisLoadingMore(false);
+    if (res) {
+      if (res.code == 200) {
+        setList(res.notes);
+        pageNumber = 1;
+        if (res.notes.length < res.count) {
+          canLoadMore = true;
+        } else {
+          canLoadMore = false;
+        }
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  const api_listNotesMore = async body => {
+    canLoadMore = false;
+    let res = await invokeApi({
+      path: `api/note/get_notes?page=${pageNumber}&limit=${limit}`,
+      method: 'POST',
+      postData: body,
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    setisLoadingMore(false);
+    if (res) {
+      if (res.code == 200) {
+        let total = list.length + res.notes.length;
+        setList([...list, ...res.notes]);
+        pageNumber++;
+        if (total < res.count) {
+          canLoadMore = true;
+        } else {
+          canLoadMore = false;
+        }
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  const api_deleteNote = async NoteID => {
+    setisLoading(true);
+    let res = await invokeApi({
+      path: `api/note/delete_note/${NoteID}`,
+      method: 'DELETE',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+
+    if (res) {
+      if (res.code == 200) {
+        deleteLocallyfromList(NoteID);
+        setisLoading(false);
+      } else {
+        setisLoading(false);
+        showToast(res.message);
+      }
+    }
+  };
+
+  const deleteLocallyfromList = noteID => {
+    let arr = [...list];
+    let index = arr.findIndex(x => x._id === noteID);
+    if (index !== -1) {
+      arr.splice(index, 1);
+      setList(arr);
+    }
+  };
+
+  useEffect(() => {
+    pageNumber = 0;
+    canLoadMore = false;
+    startDate = '';
+    endDate = '';
+    selectedColors = [];
+    call_api_listNotes();
+  }, []);
+
+  // useEffect(() => {
+  //   api_listNotes({
+  //     search: '',
+  //     date_from: '',
+  //     date_to: '',
+  //   });
+  // }, [searchText]);
+
+  const updateNote = item => {
+    let arr = [...list];
+    let index = arr.findIndex(x => x._id == item._id);
+    if (index > -1) {
+      arr.splice(index, 1, item);
+      setList(arr);
+    }
+  };
 
   const flatListRenderItem = ({item, index}) => {
     return (
@@ -61,27 +234,23 @@ const List = props => {
         onPress={() =>
           navigation.navigate(screens.notesDetail, {
             note: item,
+            updateNote,
           })
         }
         style={{
           flex: 1,
-          // paddingLeft: 20,
-          // paddingRight: 20,
-          // paddingHorizontal: 20,
-          // paddingTop: 20,
-          // marginHorizontal:20,
           marginTop: 20,
           width: '95%',
           alignSelf: 'center',
         }}>
         <View
           style={{
-            backgroundColor: item?.colors?.light,
+            backgroundColor: item?.color?.light,
             alignItems: 'center',
             paddingVertical: 15,
             borderRadius: 20,
             borderWidth: 1,
-            borderColor: item?.colors?.dark,
+            borderColor: item?.color?.dark,
             flexDirection: 'row',
             paddingHorizontal: 30,
             // height: 100,
@@ -89,7 +258,7 @@ const List = props => {
           <View>
             <Image
               source={ic_notes}
-              style={{height: 40, width: 40, tintColor: item?.colors.dark}}
+              style={{height: 40, width: 40, tintColor: item?.color.dark}}
             />
           </View>
           <View
@@ -142,7 +311,7 @@ const List = props => {
                 {item?.description.replace(/<\/?[^>]+(>|$)/g, '')}
               </Text>
             )}
-            {(item?.images.length != 0 || item?.audio.length != 0) && (
+            {(item?.images.length != 0 || item?.audio != '') && (
               <View
                 style={{
                   flexDirection: 'row',
@@ -162,7 +331,7 @@ const List = props => {
                     }}
                   />
                 )}
-                {item?.audio.length != 0 && (
+                {item?.audio != '' && (
                   <Image
                     source={ic_mic}
                     style={{
@@ -182,7 +351,7 @@ const List = props => {
                 marginTop: 7,
                 color: Colors.gray10,
               }}>
-              {moment().subtract(index, 'days').format('DD-MM-YYYY')}
+              {moment(item?.createdAt).format('DD-MM-YYYY')}
             </Text>
           </View>
         </View>
@@ -191,64 +360,65 @@ const List = props => {
   };
 
   const flatListEmptyComponent = () => {
-    return (
-      <View
-        style={{
-          justifyContent: 'center',
-          alignItems: 'center',
-          flex: 1,
+    if (isLoading == false)
+      return (
+        <View
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 1,
 
-          // marginTop: isIphoneX() ? -screen_size.height * 0.2 : 0,
-        }}>
-        <Image
-          source={il_emptyNotes}
-          style={{
-            width: screen_size.width * 0.65,
-            height: screen_size.width * 0.65,
-          }}
-        />
-        <Text
-          style={{
-            fontFamily: font.xbold,
-            fontSize: 42,
-            marginTop: 30,
+            // marginTop: isIphoneX() ? -screen_size.height * 0.2 : 0,
           }}>
-          No Notes
-        </Text>
-        <Text
-          style={{
-            fontFamily: font.bold,
-            fontSize: 16,
-            marginTop: 20,
-            color: Colors.placeHolder,
-            width: '80%',
-            textAlign: 'center',
-          }}>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut
-        </Text>
-        <View style={{flex: 0.5, justifyContent: 'center'}}>
-          <Pressable
-            onPress={onNoteEditorScreen}
-            style={[
-              FAB_style.View,
-              {
-                position: 'relative',
-                marginTop: 30,
-                right: 0,
-                height: 71,
-                width: 71,
-                borderRadius: 71 / 2,
-              },
-            ]}>
-            <Image
-              source={require('../../../Assets/Icons/plus.png')}
-              style={FAB_style.image}
-            />
-          </Pressable>
+          <Image
+            source={il_emptyNotes}
+            style={{
+              width: screen_size.width * 0.65,
+              height: screen_size.width * 0.65,
+            }}
+          />
+          <Text
+            style={{
+              fontFamily: font.xbold,
+              fontSize: 42,
+              marginTop: 30,
+            }}>
+            No Notes
+          </Text>
+          <Text
+            style={{
+              fontFamily: font.bold,
+              fontSize: 16,
+              marginTop: 20,
+              color: Colors.placeHolder,
+              width: '80%',
+              textAlign: 'center',
+            }}>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            eiusmod tempor incididunt ut
+          </Text>
+          <View style={{flex: 0.5, justifyContent: 'center'}}>
+            <Pressable
+              onPress={onNoteEditorScreen}
+              style={[
+                FAB_style.View,
+                {
+                  position: 'relative',
+                  marginTop: 30,
+                  right: 0,
+                  height: 71,
+                  width: 71,
+                  borderRadius: 71 / 2,
+                },
+              ]}>
+              <Image
+                source={require('../../../Assets/Icons/plus.png')}
+                style={FAB_style.image}
+              />
+            </Pressable>
+          </View>
         </View>
-      </View>
-    );
+      );
   };
 
   const filterAndSearch = list => {
@@ -266,7 +436,6 @@ const List = props => {
       style={[
         mainStyles.MainView,
         {
-          // backgroundColor: isSearchVisible ? Colors.background : Colors.white,
           backgroundColor: Colors.white,
         },
       ]}>
@@ -277,23 +446,22 @@ const List = props => {
         title={'Notes'}
         rightIcon2={ic_filter}
         rightIcon={ic_search}
-        rightIcononPress={() => setIsSearchVisible(!isSearchVisible)}
-        rightIcon2onPress={() => props.navigation.navigate(screens.notesFilter)}
-        // toggleSearch={toggleSearch}
-
-        // rightIcon={list.length == 0 ? null : isGridView ? ic_list : ic_grid}
-        // rightIcononPress={() => setGridView(prev => !prev)}
+        rightIcononPress={() => {
+          setIsSearchVisible(!isSearchVisible);
+        }}
+        rightIcon2onPress={() =>
+          props.navigation.navigate(screens.notesFilter, {
+            filter: {startDate, endDate, selectedColors},
+          })
+        }
       />
 
       <View style={{flex: 1, backgroundColor: Colors.white}}>
         <Collapsible collapsed={!isSearchVisible}>
           <View
             style={{
-              // flex: 1,
               height: 50,
-              // paddingRight: 20,
               backgroundColor: Colors.background,
-              // paddingHorizontal: 20,
               paddingLeft: 20,
               flexDirection: 'row',
               alignItems: 'center',
@@ -301,13 +469,14 @@ const List = props => {
             <TextInput
               placeholder="Search..."
               style={{flex: 1, height: '100%', fontSize: 16}}
-              onChangeText={text => setSearchText(text)}
+              onChangeText={searchFromAPI}
               value={searchText}
             />
             <Pressable
               onPress={() => {
                 setIsSearchVisible(false);
                 setSearchText('');
+                searchFromAPI('');
               }}
               style={{alignItems: 'center'}}>
               <View
@@ -331,15 +500,16 @@ const List = props => {
                 flex: 1,
               },
               {
-                // paddingTop: 5,
+                paddingBottom: 70,
               },
             ]}
             keyExtractor={item => {
               return item._id;
             }}
+            showsVerticalScrollIndicator={false}
             shouldBounceOnMount={true}
             maxSwipeDistance={70}
-            data={filterAndSearch(list)}
+            data={list}
             renderItem={flatListRenderItem}
             ListEmptyComponent={flatListEmptyComponent}
             renderQuickActions={({item, index}) => {
@@ -350,7 +520,10 @@ const List = props => {
                     Alert.alert(
                       'Delete Note',
                       'Are you sure you want to delete this Note',
-                      [{text: 'No'}, {text: 'Yes'}],
+                      [
+                        {text: 'No'},
+                        {text: 'Yes', onPress: () => api_deleteNote(item._id)},
+                      ],
                     )
                   }
                   style={{
@@ -380,6 +553,24 @@ const List = props => {
                 </Pressable>
               );
             }}
+            onEndReached={() => {
+              if (canLoadMore) {
+                setisLoadingMore(true);
+                api_listNotesMore({
+                  search: searchText.trim(),
+                  date_from: startDate,
+                  date_to: endDate,
+                  color: JSON.stringify(selectedColors.map(x => x.dark)),
+                });
+              }
+            }}
+            ListFooterComponent={
+              isLoadingMore && (
+                <View style={{height: 100, justifyContent: 'center'}}>
+                  <ActivityIndicator color={Colors.primary} size="small" />
+                </View>
+              )
+            }
           />
           {filterAndSearch(list).length != 0 && (
             <Pressable
@@ -392,6 +583,8 @@ const List = props => {
             </Pressable>
           )}
         </View>
+        <Loader enable={isLoading} />
+
         {/* {filterModal()} */}
       </View>
     </SafeAreaView>
@@ -399,63 +592,3 @@ const List = props => {
 };
 
 export default List;
-
-const notes = [
-  {
-    _id: '1',
-    title:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    description:
-      "<div><p style='color:orange'>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p></div>",
-    audio: [
-      'https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3',
-    ],
-    images: ['https://picsum.photos/seed/picsum/400/400'],
-    colors: notesColors[0],
-  },
-
-  {
-    _id: '2',
-    title: 'Work',
-    description:
-      'Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-    audio: [
-      'https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3',
-    ],
-    images: [
-      'https://picsum.photos/id/203/300/300',
-      'https://picsum.photos/id/212/300/300',
-      'https://picsum.photos/id/213/300/300',
-      'https://picsum.photos/id/222/300/300',
-      'https://picsum.photos/id/215/300/300',
-      'https://picsum.photos/id/233/300/300',
-      'https://picsum.photos/id/223/300/300',
-      'https://picsum.photos/id/220/300/300',
-    ],
-    colors: notesColors[1],
-  },
-
-  {
-    _id: '3',
-    title: 'Home',
-    description: '',
-    audio: [
-      'https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3',
-    ],
-    images: [
-      'https://picsum.photos/seed/picsum/400/400',
-      'https://picsum.photos/seed/picsum/400/400',
-    ],
-    colors: notesColors[2],
-  },
-
-  {
-    _id: '4',
-    title: 'Extra',
-    description:
-      '<div><ul><li><font color="#ff0000">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ultrices tincidunt arcu non sodales neque. Duis at tellus at urna condimentum. Morbi tincidunt ornare massa eget egestas purus. Tincidunt tortor aliquam nulla facilisi cras fermentum odio eu feugiat. Nec dui nunc mattis enim ut. Sed odio morbi quis commodo odio. Pellentesque habitant morbi tristique senectus et netus et. Amet consectetur adipiscing elit pellentesque habitant morbi tristique senectus. Donec enim diam vulputate ut pharetra sit amet aliquam. Risus feugiat in ante metus dictum at. Nibh praesent tristique magna sit amet purus gravida quis. In eu mi bibendum neque egestas congue quisque egestas diam. Nunc id cursus metus aliquam. Neque aliquam vestibulum morbi blandit. Suspendisse ultrices gravida dictum fusce ut placerat orci nulla. Leo integer malesuada nunc vel. Semper auctor neque vitae tempus.</font><ul><li></div>',
-    audio: [],
-    images: [],
-    colors: notesColors[3],
-  },
-];

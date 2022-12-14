@@ -56,49 +56,49 @@ export const Bcolors = [
 
 export const notesColors = [
   {
-    id: '2',
+    _id: '2',
     dark: '#FFC545',
     light: '#FEF9ED',
   },
   {
-    id: '8',
+    _id: '8',
     dark: '#F65009',
     light: '#fddcce',
   },
   {
-    id: '1',
+    _id: '1',
     dark: '#438BFA',
     // light: '#F6FAFF',
     light: '#e6f0fe',
   },
 
   {
-    id: '3',
+    _id: '3',
     dark: '#54D35D',
     light: '#EDFFEF',
   },
   {
-    id: '4',
+    _id: '4',
     dark: '#E86AFF',
     light: '#F0DEF4',
   },
   {
-    id: '5',
+    _id: '5',
     dark: '#e91c2c',
     light: '#fad1d4',
   },
   {
-    id: '6',
+    _id: '6',
     dark: '#6A3599',
     light: '#f3ecf8',
   },
   {
-    id: '7',
+    _id: '7',
     dark: '#6d330c',
     light: '#fae1d1',
   },
   {
-    id: 'none',
+    _id: 'none',
     dark: '#000',
     light: '#fff',
   },

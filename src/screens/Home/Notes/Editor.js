@@ -12,8 +12,11 @@ import {
   TouchableOpacity,
   Alert,
   PermissionsAndroid,
+  ScrollView,
+  LogBox,
+  Dimensions,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useLayoutEffect} from 'react';
 import Header from '../../../Components/Header';
 import Colors, {notesColors} from '../../../Utilities/Colors';
 import {mainStyles, stat_styles} from '../../../Utilities/styles';
@@ -27,6 +30,14 @@ import * as Animatable from 'react-native-animatable';
 import Slider from '@react-native-community/slider';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import ImageZoomer from '../../../Components/ImageZoomer';
+import * as RNFetchBlobUtil from 'react-native-blob-util';
+// fro API calling
+import {useContext} from 'react';
+import Context from '../../../Context';
+import showToast from '../../../functions/showToast';
+import Loader from '../../../Components/Loader';
+import invokeApi from '../../../functions/invokeAPI';
+import analytics from '@react-native-firebase/analytics';
 
 let audioRecorderPlayer = new AudioRecorderPlayer();
 
@@ -45,14 +56,21 @@ const ic_pause = require('../../../Assets/TrackPlayer/pauseTrack.png');
 const checked = require('../../../Assets/Icons/checked.png');
 const unChecked = require('../../../Assets/Icons/unchecked.png');
 const ic_colorPicker = require('../../../Assets/Icons/pickColor.png');
+import ic_download from '../../../Assets/Icons/download.png';
 
 // import ic_cross from '../../../Assets/Icons/cross.png';
 import ic_trash from '../../../Assets/Icons/trash.png';
 import {isIphoneX} from 'react-native-iphone-x-helper';
-import showToast from '../../../functions/showToast';
+import {fileURL} from '../../../Utilities/domains';
+const screen = Dimensions.get('screen');
+let edit = false;
 const Editor = props => {
+  const oldnote = props?.route?.params?.note;
   const {navigation} = props;
   const RichText = React.useRef();
+  const {Token} = useContext(Context);
+
+  const [isLoading, setisLoading] = useState(false);
   const [modalImage, setModalImage] = useState(null);
   const [isModalVisible, setModalVisibility] = useState(false);
   const [isbackgroundColorModalVisible, setBackgroundColorModalVisiblity] =
@@ -63,6 +81,7 @@ const Editor = props => {
     recorderStatus: 'stopped',
     tempAudio: null,
   });
+
   const [recordingTime, setRecordingTime] = useState('00:00');
   const [playerStatus, setPlayerStatus] = useState('stopped');
   const [playerTime, setPlayerTime] = useState({
@@ -75,12 +94,10 @@ const Editor = props => {
     title: '',
     note: '',
     images: [],
-    audio: [],
-    colors: {
-      id: '2',
-      dark: '#FFC545',
-      light: '#FEF9ED',
-    },
+    audio: '',
+    colors: oldnote ? oldnote.color : notesColors[0],
+    oldImages: [],
+    removeImage: [],
   });
   const setRecorder = val => updateRecorder({...recorder, ...val});
   const setNotes = val => updateNotes({...notes, ...val});
@@ -90,6 +107,15 @@ const Editor = props => {
     currentColor: '#000000',
   });
 
+  const download = async () => {
+    try {
+      setAudio('downloading');
+      let AudioPath = await downloadAudioNote(note?.audio);
+      setNotes({audio: 'file://' + AudioPath});
+    } catch (e) {
+      setAudio('error');
+    }
+  };
   //? ImageZommer
 
   const showImageModal = image => {
@@ -166,7 +192,7 @@ const Editor = props => {
                       borderWidth: 1,
                       borderColor: Colors.gray02,
                     }}>
-                    {item.id == 'none' ? (
+                    {item._id == 'none' ? (
                       <View style={{height: 30, justifyContent: 'center'}}>
                         <Text style={{fontFamily: font.medium}}>None</Text>
                       </View>
@@ -193,7 +219,7 @@ const Editor = props => {
                     <View style={{flex: 1, alignItems: 'flex-end'}}>
                       <Image
                         source={
-                          item.id == notes.colors.id ? checked : unChecked
+                          item._id == notes.colors._id ? checked : unChecked
                         }
                         style={[
                           stat_styles.filterButtonIcon,
@@ -458,7 +484,7 @@ const Editor = props => {
       name: result.split('/').pop(),
       type: 'audio/' + result.split('.').pop(),
     };
-    setNotes({audio: [audioObj]});
+    setNotes({audio: audioObj});
 
     await onStopPlay();
     const msg = await audioRecorderPlayer.startPlayer(result);
@@ -797,8 +823,9 @@ const Editor = props => {
               justifyContent: 'center',
               marginBottom: 20,
             }}>
-            {myColors.map(item => (
+            {myColors.map((item, index) => (
               <Pressable
+                key={index.toString()}
                 style={{
                   height: 35,
                   width: 35,
@@ -874,7 +901,7 @@ const Editor = props => {
   const onStartPlay = async () => {
     console.log('onStartPlay');
     setPlayerStatus('playing');
-    const msg = await audioRecorderPlayer.startPlayer(notes?.audio[0]?.uri);
+    const msg = await audioRecorderPlayer.startPlayer(notes?.audio?.uri);
     audioRecorderPlayer.addPlayBackListener(async e => {
       let time = audioRecorderPlayer.mmssss(Math.floor(e.currentPosition));
       let duration = audioRecorderPlayer.mmssss(Math.floor(e.duration));
@@ -925,7 +952,7 @@ const Editor = props => {
   const onSeek = async time => {
     if (playerStatus == 'stopped') {
       setPlayerStatus('paused');
-      const msg = await audioRecorderPlayer.startPlayer(notes?.audio[0]?.uri);
+      const msg = await audioRecorderPlayer.startPlayer(notes?.audio?.uri);
       await audioRecorderPlayer.seekToPlayer(time);
 
       await audioRecorderPlayer.pausePlayer();
@@ -970,9 +997,158 @@ const Editor = props => {
     return '- ' + timeLeftInFormat.slice(0, -3);
   };
 
+  const removeAudio = () => {
+    setNotes({
+      audio: '',
+    });
+    onStopPlay();
+  };
+
+  // Add in Remove Array
+  const addInRemoveArray = obj => {
+    let newArray = [...notes.oldImages];
+    let index = newArray.findIndex(x => x.small == obj.small);
+    let arr = [obj.small, obj.medium, obj.large];
+    console.log(arr, 'arr...');
+    let uniqArr = [...new Set(arr)];
+    console.log(uniqArr, 'uniqArr...');
+    if (index != -1) {
+      newArray.splice(index, 1);
+      setNotes({
+        oldImages: [...newArray],
+        removeImage: [...notes.removeImage, ...uniqArr],
+      });
+    }
+  };
+
   useEffect(() => {
+    console.log(notes, 'notes...');
+  }, [notes]);
+
+  //? Save Button
+  const btn_save = () => {
+    if (notes.title.trim() == '') {
+      showToast('Please enter a Title', 'Alert');
+    } else {
+      let fd_note = new FormData();
+      fd_note.append('title', notes.title.trim());
+      fd_note.append('description', notes.note);
+      notes.images.forEach(image => fd_note.append('image', image));
+      fd_note.append('color', JSON.stringify(notes.colors));
+      if (notes.audio != '') {
+        fd_note.append('audio', notes.audio);
+      }
+      api_addNote(fd_note);
+      console.log(fd_note, 'fd_note...');
+    }
+  };
+
+  const btn_edit = () => {
+    if (notes.title.trim() == '') {
+      showToast('Please enter a Title', 'Alert');
+    } else {
+      let fd_note = new FormData();
+      fd_note.append('title', notes.title.trim());
+      fd_note.append('description', notes.note);
+      notes.images.forEach(image => fd_note.append('image', image));
+      fd_note.append('remove_images', JSON.stringify(notes.removeImage));
+      fd_note.append('old_images', JSON.stringify(notes.oldImages));
+      fd_note.append('color', JSON.stringify(notes.colors));
+      if (notes.audio != '') {
+        fd_note.append('audio', notes.audio);
+      }
+      if (!!oldnote.audio == true && !!notes.audio == false) {
+        fd_note.append('delete_audio', true);
+      } else {
+        fd_note.append('delete_audio', false);
+      }
+      api_editNote(fd_note);
+      console.log(fd_note, 'fd_note...');
+    }
+  };
+
+  //todo /////////////// API's
+
+  const api_addNote = async fdata => {
+    setisLoading(true);
+    let res = await invokeApi({
+      path: 'api/note/add_note',
+      method: 'POST',
+      postData: fdata,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    if (res) {
+      if (res.code == 200) {
+        navigation.navigate(screens.notesList, {
+          addNew: res.Note,
+        });
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  const api_editNote = async fdata => {
+    setisLoading(true);
+    let res = await invokeApi({
+      path: 'api/note/edit_note/' + oldnote._id,
+      method: 'PUT',
+      postData: fdata,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    if (res) {
+      if (res.code == 200) {
+        if (!!props.route.params?.updateNote) {
+          props.route.params?.updateNote(res.note);
+        }
+        navigation.navigate(screens.notesDetail, {
+          editedNote: res.note,
+        });
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  useEffect(() => {
+    LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
+
     return () => {
       onStopPlay();
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!!props?.route?.params?.note) {
+      let oldNote = props?.route?.params?.note;
+      console.log(oldNote, 'oldNote..');
+      edit = true;
+      setNotes({
+        title: oldNote.title,
+        note: oldNote.description,
+        oldImages: oldNote?.images,
+        audio: oldNote?.audio,
+        // colors: oldNote.color,
+      });
+      if (!!oldNote?.audio) {
+        download();
+      }
+    } else {
+      edit = false;
+    }
+    return () => {
+      edit = false;
     };
   }, []);
 
@@ -992,18 +1168,7 @@ const Editor = props => {
         // backgroundColor={notes.colors.dark}
         titleAlignLeft
         navigation={navigation}
-        title={'Add Note'}
-        // rightIcon={ic_save}
-        // rightIcononPress={() => {
-        //   console.log('note', notes);
-        //   props.navigation.navigate({
-        //     name: screens.notesList,
-        //     params: {
-        //       updated: true,
-        //     },
-        //     merge: true,
-        //   });
-        // }}
+        title={edit ? 'Edit Note' : 'Add Note'}
         rightIcon2View={
           <Pressable
             style={{
@@ -1017,6 +1182,8 @@ const Editor = props => {
               backgroundColor: Colors.white,
               borderRadius: 20,
               marginRight: 10,
+              borderColor: Colors.gray02,
+              borderWidth: 1 / 2,
             }}
             onPress={() => setBackgroundColorModalVisiblity(prev => !prev)}>
             <View
@@ -1061,6 +1228,7 @@ const Editor = props => {
         }
         rightIconView={
           <Pressable
+            onPress={!!oldnote ? btn_edit : btn_save}
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -1072,6 +1240,8 @@ const Editor = props => {
               backgroundColor: Colors.white,
               borderRadius: 20,
               marginRight: 10,
+              borderColor: Colors.gray02,
+              borderWidth: 1 / 2,
             }}>
             <Text style={{fontFamily: font.medium}}>Save</Text>
             <View
@@ -1097,11 +1267,11 @@ const Editor = props => {
         // rightIcon2={ic_colorPicker}
         rightIcon2onPress={() => {}}
       />
-      <View style={{flex: 1, paddingHorizontal: 20}}>
+      <View style={{flex: 1}}>
         <KeyboardAvoidingView
           style={{flex: 1}}
           keyboardVerticalOffset={
-            Platform.OS === 'ios' ? (isIphoneX() ? 97 : 50) : 0
+            Platform.OS === 'ios' ? (isIphoneX() ? 97 : 70) : 0
           }
           enabled={true}
           behavior={Platform.OS == 'ios' ? 'padding' : null}>
@@ -1112,6 +1282,7 @@ const Editor = props => {
                   paddingTop: 20,
                   borderBottomWidth: 1,
                   borderBottomColor: Colors.gray01,
+                  paddingHorizontal: 20,
                 }}>
                 <TextInput
                   style={{
@@ -1123,12 +1294,13 @@ const Editor = props => {
                   autoComplete={'off'}
                   onChangeText={text => setNotes({title: text})}
                   placeholder="Title"
+                  value={notes.title}
                   selectionColor={Colors.primary}
                   onFocus={() => setIsFocused(false)}
                 />
               </View>
-
               <Pressable
+                style={{flex: 1}}
                 onPress={() => {
                   console.log(RichText?.current._focus);
                   if (RichText?.current._focus == false) {
@@ -1136,256 +1308,427 @@ const Editor = props => {
                     RichText?.current?.focusContentEditor();
                     setIsFocused(true);
                   }
-                }}
-                style={{
-                  borderRadius: 10,
-                  marginTop: 20,
-                  minHeight: 150,
-                  marginHorizontal: -10,
-                  flex: 1,
                 }}>
-                <View style={{minHeight: 150}}>
-                  <RichEditor
-                    ref={RichText}
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  <View
                     style={{
                       borderRadius: 10,
-                    }}
-                    initialHeight={150}
-                    // initialContentHTML={
-                    //   '<p style="color:pink" >What\'s in your mind</p>'
-                    // }
-                    editorStyle={{
-                      backgroundColor: notes.colors.light,
-                      // caretColor: Colors.primary,
-                      // color:'red',
-                      contentCSSText:
-                        ' * {font-family: "Verdana", sans-serif;}',
-                    }}
-                    // setContentHTML={'<div><p><p/><div>'}
-                    setDisplayZoomControls={true}
-                    // initialContentHTML={'<div><p>' + notes.note + '</p></div>'}
-                    useContainer={true}
-                    placeholder={"What's in your mind"}
-                    onChange={text => {
-                      // console.log(args)
-                      setNotes({note: text});
-                    }}
-                    androidLayerType="software"
-                    androidHardwareAccelerationDisabled
-                    onBlur={() => {
-                      setIsFocused(false);
-                    }}
-                    onFocus={() => {
-                      console.log('focused');
-                      setIsFocused(true);
-                    }}
-                  />
-                </View>
-                {notes.audio.length != 0 && (
-                  <View>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        backgroundColor: Colors.white,
-                        borderRadius: 10,
-                        shadowColor: '#000',
-                        shadowOffset: {
-                          width: 0,
-                          height: 1,
-                        },
-                        shadowOpacity: 0.18,
-                        shadowRadius: 1.0,
-                        elevation: 1,
-                        padding: 15,
-                      }}>
-                      <Pressable
-                        onPress={playerPlayPause}
+                      marginTop: 20,
+                      minHeight: 150,
+                    }}>
+                    <View style={{minHeight: 150, paddingHorizontal: 20}}>
+                      <RichEditor
+                        ref={RichText}
                         style={{
-                          backgroundColor: Colors.lightPrimary2,
-                          height: 40,
-                          width: 40,
-                          borderRadius: 50 / 2,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}>
-                        <Image
-                          source={
-                            playerStatus == 'playing' ? ic_pause : ic_play
-                          }
-                          style={{
-                            height: 20,
-                            width: 20,
-                            tintColor: Colors.primary,
-                          }}
-                        />
-                      </Pressable>
-
+                          borderRadius: 10,
+                        }}
+                        initialHeight={150}
+                        initialContentHTML={notes.note}
+                        editorStyle={{
+                          backgroundColor: notes.colors.light,
+                          contentCSSText:
+                            ' * {font-family: "Verdana", sans-serif;}',
+                        }}
+                        scrollEnabled={true}
+                        // setContentHTML={'<div><p><p/><div>'}
+                        setDisplayZoomControls={true}
+                        // initialContentHTML={'<div><p>' + notes.note + '</p></div>'}
+                        useContainer={true}
+                        placeholder={"What's in your mind"}
+                        onChange={text => {
+                          // console.log(args)
+                          setNotes({note: text});
+                        }}
+                        androidLayerType="software"
+                        androidHardwareAccelerationDisabled
+                        onBlur={() => {
+                          setIsFocused(false);
+                        }}
+                        onFocus={() => {
+                          console.log('focused');
+                          setIsFocused(true);
+                        }}
+                      />
+                    </View>
+                    {notes.audio != '' && (
                       <View
                         style={{
-                          // marginHorizontal: 5,
-                          flex: 1,
-                          // marginRight: 20,
-                          flexDirection: 'row',
-                          alignItems: 'center',
+                          backgroundColor: Colors.white,
+                          borderRadius: 10,
+                          shadowColor: '#000',
+                          shadowOffset: {
+                            width: 0,
+                            height: 1,
+                          },
+                          shadowOpacity: 0.18,
+                          shadowRadius: 1.0,
+                          elevation: 1,
+                          paddingBottom: 15,
+                          paddingHorizontal: 15,
+                          marginHorizontal: 20,
                         }}>
-                        <View style={{flex: 1, marginHorizontal: 15}}>
-                          <Slider
-                            style={{}}
-                            value={playerTime.curTimeInSeconds}
-                            thumbTintColor={'transparent'}
-                            // thumbImage={undefined}
-                            minimumTrackTintColor={Colors.primary}
-                            maximumTrackTintColor={Colors.gray01}
-                            minimumValue={0}
-                            // tapToSeek={true}
-
-                            animationType="timing"
-                            maximumValue={playerTime.duration}
-                            onValueChange={val => {
-                              // setIsSeeking(true);
-                              // setSeek(val);
-                            }}
-                            onSlidingComplete={onSeek}
-                          />
-                        </View>
-                        <View style={{}}>
-                          <Text
-                            style={{
-                              fontFamily: font.medium,
-                              fontSize: 14,
-                              color: Colors.gray08,
-                            }}>
-                            {/* {playerTime.curTime} */}
-                            {getRemainingTime()}
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-                )}
-                <View style={{marginHorizontal: -10, paddingVertical: 10}}>
-                  <FlatList
-                    // horizontal={true}
-                    // showsHorizontalScrollIndicator={false}
-                    showsVerticalScrollIndicator={false}
-                    numColumns={3}
-                    scrollEnabled={false}
-                    data={notes?.images}
-                    renderItem={({item, index}) => {
-                      return (
                         <Pressable
-                          onPress={() => showImageModal(item?.uri)}
+                          onPress={removeAudio}
                           style={{
-                            flex: 1 / 3,
-                            aspectRatio: 1,
-                            backgroundColor: notes?.colors.light,
-                            margin: 1,
-                            // borderRadius: 10,
-                            // overflow: 'hidden',
+                            alignSelf: 'flex-end',
+                            height: 25,
+                            width: 25,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            marginRight: -10,
+                            marginTop: 10,
                           }}>
-                          <CustomImage
-                            source={{uri: item?.uri}}
+                          <Image
+                            source={ic_cross}
                             style={{
-                              height: '100%',
-                              width: '100%',
+                              height: 20,
+                              width: 20,
+                              tintColor: Colors.gray08,
                             }}
-                            indicatorProps={{color: Colors.primary}}
                           />
+                        </Pressable>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                          }}>
                           <Pressable
-                            onPress={() => removeImage(index)}
+                            onPress={() => {
+                              if (notes.audio == null || notes.audio == 'error') {
+                                downloadAudioNote();
+                              } else if (notes.audio == 'downloading') {
+                              } else {
+                                playerPlayPause();
+                              }
+                            }}
                             style={{
-                              position: 'absolute',
-                              top: 10,
-                              right: 10,
-                              height: 30,
-                              width: 30,
-                              borderRadius: 15,
-                              backgroundColor: Colors.white,
-                              borderColor: Colors.placeHolder,
-                              borderWidth: 1,
+                              backgroundColor: Colors.lightPrimary2,
+                              height: 40,
+                              width: 40,
+                              borderRadius: 50 / 2,
                               alignItems: 'center',
                               justifyContent: 'center',
-                              shadowColor: '#000',
-                              shadowOffset: {
-                                width: 0,
-                                height: 1,
-                              },
-                              shadowOpacity: 0.22,
-                              shadowRadius: 2.22,
-
-                              elevation: 3,
                             }}>
-                            <Image
-                              source={ic_cross}
-                              style={{height: 15, width: 15}}
-                            />
+                            {/* <Image
+                              source={
+                                playerStatus == 'playing' ? ic_pause : ic_play
+                              }
+                              style={{
+                                height: 20,
+                                width: 20,
+                                tintColor: Colors.primary,
+                              }}
+                            /> */}
+                            {notes.audio == null || notes.audio == 'error' ? (
+                              <Image
+                                source={ic_download}
+                                style={{
+                                  height: 20,
+                                  width: 20,
+                                  tintColor: Colors.primary,
+                                }}
+                              />
+                            ) : notes.audio == 'downloading' ? (
+                              <ActivityIndicator />
+                            ) : (
+                              <Image
+                                source={
+                                  playerStatus == 'playing' ? ic_pause : ic_play
+                                }
+                                style={{
+                                  height: 20,
+                                  width: 20,
+                                  tintColor: Colors.primary,
+                                }}
+                              />
+                            )}
                           </Pressable>
-                        </Pressable>
-                        // <View
-                        //   style={{
-                        //     height: 120,
-                        //     width: 120,
-                        //     borderRadius: 20,
-                        //     marginRight: 10,
-                        //     shadowColor: '#000',
-                        //     shadowOffset: {
-                        //       width: 0,
-                        //       height: 1,
-                        //     },
-                        //     shadowOpacity: 0.22,
-                        //     shadowRadius: 2.22,
 
-                        //     elevation: 3,
-                        //     // borderWidth: 1,
-                        //     // borderColor: Colors.placeHolder,
-                        //   }}>
-                        //   <Image
-                        //     source={{uri: item?.uri}}
-                        //     style={{
-                        //       height: '98%',
-                        //       width: '98%',
-                        //       borderRadius: 20,
-                        //     }}
-                        //   />
-                        //   <Pressable
-                        //     onPress={() => removeImage(index)}
-                        //     style={{
-                        //       position: 'absolute',
-                        //       top: 10,
-                        //       right: 10,
-                        //       height: 25,
-                        //       width: 25,
-                        //       borderRadius: 15,
-                        //       backgroundColor: Colors.white,
-                        //       borderColor: Colors.placeHolder,
-                        //       borderWidth: 1,
-                        //       alignItems: 'center',
-                        //       justifyContent: 'center',
-                        //       shadowColor: '#000',
-                        //       shadowOffset: {
-                        //         width: 0,
-                        //         height: 1,
-                        //       },
-                        //       shadowOpacity: 0.22,
-                        //       shadowRadius: 2.22,
+                          <View
+                            style={{
+                              // marginHorizontal: 5,
+                              flex: 1,
+                              // marginRight: 20,
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                            }}>
+                            <View style={{flex: 1, marginHorizontal: 15}}>
+                              <Slider
+                                style={{}}
+                                value={playerTime.curTimeInSeconds}
+                                thumbTintColor={'transparent'}
+                                // thumbImage={undefined}
+                                minimumTrackTintColor={Colors.primary}
+                                maximumTrackTintColor={Colors.gray01}
+                                minimumValue={0}
+                                // tapToSeek={true}
 
-                        //       elevation: 3,
-                        //     }}>
-                        //     <Image
-                        //       source={ic_cross}
-                        //       style={{height: 10, width: 10}}
-                        //     />
-                        //   </Pressable>
-                        // </View>
-                      );
-                    }}
-                  />
-                </View>
+                                animationType="timing"
+                                maximumValue={playerTime.duration}
+                                onValueChange={val => {
+                                  // setIsSeeking(true);
+                                  // setSeek(val);
+                                }}
+                                onSlidingComplete={onSeek}
+                              />
+                            </View>
+                            <View style={{}}>
+                              <Text
+                                style={{
+                                  fontFamily: font.medium,
+                                  fontSize: 14,
+                                  color: Colors.gray08,
+                                }}>
+                                {/* {playerTime.curTime} */}
+                                {getRemainingTime()}
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                      </View>
+                    )}
+                    <View
+                      style={{
+                        // marginHorizontal: -10,
+                        flex: 1,
+                        // width: '100%',
+                        // width: screen.width,
+                        paddingVertical: 10,
+                        flexDirection: 'row',
+                        flexWrap: 'wrap',
+                      }}>
+                      <FlatList
+                        // horizontal={true}
+                        // showsHorizontalScrollIndicator={false}
+                        showsVerticalScrollIndicator={false}
+                        numColumns={3}
+                        scrollEnabled={false}
+                        data={[...notes?.images, ...notes?.oldImages]}
+                        renderItem={({item, index}) => {
+                          if (!!item?.uri) {
+                            return (
+                              <Pressable
+                                onPress={() => showImageModal(item?.uri)}
+                                style={{
+                                  flex: 1 / 3,
+                                  aspectRatio: 1,
+                                  backgroundColor: notes?.colors.light,
+                                  margin: 1,
+                                }}>
+                                <CustomImage
+                                  source={{uri: item.uri}}
+                                  style={{
+                                    height: '100%',
+                                    width: '100%',
+                                  }}
+                                  indicatorProps={{color: Colors.primary}}
+                                />
+                                <Pressable
+                                  onPress={() => removeImage(index)}
+                                  style={{
+                                    position: 'absolute',
+                                    top: 10,
+                                    right: 10,
+                                    height: 30,
+                                    width: 30,
+                                    borderRadius: 15,
+                                    backgroundColor: Colors.white,
+                                    borderColor: Colors.placeHolder,
+                                    borderWidth: 1,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    shadowColor: '#000',
+                                    shadowOffset: {
+                                      width: 0,
+                                      height: 1,
+                                    },
+                                    shadowOpacity: 0.22,
+                                    shadowRadius: 2.22,
+
+                                    elevation: 3,
+                                  }}>
+                                  <Image
+                                    source={ic_cross}
+                                    style={{height: 15, width: 15}}
+                                  />
+                                </Pressable>
+                              </Pressable>
+                              // <View
+                              //   style={{
+                              //     height: 120,
+                              //     width: 120,
+                              //     borderRadius: 20,
+                              //     marginRight: 10,
+                              //     shadowColor: '#000',
+                              //     shadowOffset: {
+                              //       width: 0,
+                              //       height: 1,
+                              //     },
+                              //     shadowOpacity: 0.22,
+                              //     shadowRadius: 2.22,
+
+                              //     elevation: 3,
+                              //     // borderWidth: 1,
+                              //     // borderColor: Colors.placeHolder,
+                              //   }}>
+                              //   <Image
+                              //     source={{uri: item?.uri}}
+                              //     style={{
+                              //       height: '98%',
+                              //       width: '98%',
+                              //       borderRadius: 20,
+                              //     }}
+                              //   />
+                              //   <Pressable
+                              //     onPress={() => removeImage(index)}
+                              //     style={{
+                              //       position: 'absolute',
+                              //       top: 10,
+                              //       right: 10,
+                              //       height: 25,
+                              //       width: 25,
+                              //       borderRadius: 15,
+                              //       backgroundColor: Colors.white,
+                              //       borderColor: Colors.placeHolder,
+                              //       borderWidth: 1,
+                              //       alignItems: 'center',
+                              //       justifyContent: 'center',
+                              //       shadowColor: '#000',
+                              //       shadowOffset: {
+                              //         width: 0,
+                              //         height: 1,
+                              //       },
+                              //       shadowOpacity: 0.22,
+                              //       shadowRadius: 2.22,
+
+                              //       elevation: 3,
+                              //     }}>
+                              //     <Image
+                              //       source={ic_cross}
+                              //       style={{height: 10, width: 10}}
+                              //     />
+                              //   </Pressable>
+                              // </View>
+                            );
+                          } else {
+                            return (
+                              <Pressable
+                                onPress={() =>
+                                  showImageModal(fileURL + item?.large)
+                                }
+                                style={{
+                                  flex: 1 / 3,
+                                  aspectRatio: 1,
+                                  backgroundColor: notes?.colors.light,
+                                  margin: 1,
+                                }}>
+                                <CustomImage
+                                  source={{uri: fileURL + item.medium}}
+                                  style={{
+                                    height: '100%',
+                                    width: '100%',
+                                  }}
+                                  indicatorProps={{color: Colors.primary}}
+                                />
+                                <Pressable
+                                  onPress={() => addInRemoveArray(item)}
+                                  style={{
+                                    position: 'absolute',
+                                    top: 10,
+                                    right: 10,
+                                    height: 30,
+                                    width: 30,
+                                    borderRadius: 15,
+                                    backgroundColor: Colors.white,
+                                    borderColor: Colors.placeHolder,
+                                    borderWidth: 1,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    shadowColor: '#000',
+                                    shadowOffset: {
+                                      width: 0,
+                                      height: 1,
+                                    },
+                                    shadowOpacity: 0.22,
+                                    shadowRadius: 2.22,
+
+                                    elevation: 3,
+                                  }}>
+                                  <Image
+                                    source={ic_cross}
+                                    style={{height: 15, width: 15}}
+                                  />
+                                </Pressable>
+                              </Pressable>
+                              // <View
+                              //   style={{
+                              //     height: 120,
+                              //     width: 120,
+                              //     borderRadius: 20,
+                              //     marginRight: 10,
+                              //     shadowColor: '#000',
+                              //     shadowOffset: {
+                              //       width: 0,
+                              //       height: 1,
+                              //     },
+                              //     shadowOpacity: 0.22,
+                              //     shadowRadius: 2.22,
+
+                              //     elevation: 3,
+                              //     // borderWidth: 1,
+                              //     // borderColor: Colors.placeHolder,
+                              //   }}>
+                              //   <Image
+                              //     source={{uri: item?.uri}}
+                              //     style={{
+                              //       height: '98%',
+                              //       width: '98%',
+                              //       borderRadius: 20,
+                              //     }}
+                              //   />
+                              //   <Pressable
+                              //     onPress={() => removeImage(index)}
+                              //     style={{
+                              //       position: 'absolute',
+                              //       top: 10,
+                              //       right: 10,
+                              //       height: 25,
+                              //       width: 25,
+                              //       borderRadius: 15,
+                              //       backgroundColor: Colors.white,
+                              //       borderColor: Colors.placeHolder,
+                              //       borderWidth: 1,
+                              //       alignItems: 'center',
+                              //       justifyContent: 'center',
+                              //       shadowColor: '#000',
+                              //       shadowOffset: {
+                              //         width: 0,
+                              //         height: 1,
+                              //       },
+                              //       shadowOpacity: 0.22,
+                              //       shadowRadius: 2.22,
+
+                              //       elevation: 3,
+                              //     }}>
+                              //     <Image
+                              //       source={ic_cross}
+                              //       style={{height: 10, width: 10}}
+                              //     />
+                              //   </Pressable>
+                              // </View>
+                            );
+                          }
+                        }}
+                      />
+                    </View>
+                  </View>
+                </ScrollView>
               </Pressable>
             </View>
 
-            <Collapsible style={{paddingBottom: 10}} collapsed={!isFocused}>
+            <Collapsible
+              style={{paddingBottom: 10, marginHorizontal: 20}}
+              collapsed={!isFocused}>
               <RichToolbar
                 editor={RichText}
                 actions={[
@@ -1524,6 +1867,7 @@ const Editor = props => {
           color={notes?.colors.light}
           noUrl
         />
+        <Loader enable={isLoading} />
       </View>
     </SafeAreaView>
   );

@@ -19,6 +19,7 @@ const ContextWrapper = props => {
   const [adminURLsAndEmail, setAdminURLsAndEmail] = useState(null);
   const [habitList, setHabitList] = useState([]);
   const [progress, setProgress] = useState([]);
+  const [progressAudioNote, setProgressAudioNote] = useState([]);
   const [purchases, setPurchases] = useState({
     habit: false,
     meditation: false,
@@ -156,118 +157,73 @@ const ContextWrapper = props => {
     }
   };
 
-  const downloadQuote1 = async image => {
-    if (Platform.OS === 'android') {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        {
-          title: 'Storage Permission Required',
-          message: 'App needs access to your storage to download Photos',
-        },
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        // Once user grant the permission start downloading
-        console.log('Storage Permission Granted.');
-      } else {
-        // If permission denied then show alert
-        showToast('Storage Permission Not Granted', 'Permission Denied');
-        return;
-      }
-    }
-    let dir;
-    if (Platform.OS == 'android') {
-      dir = RNFS.PicturesDirectoryPath;
+  const checkAudioNoteStatus = async audio => {
+    let splitfile = audio.split('/');
+    if (
+      await RNFS.exists(
+        RNFS.DocumentDirectoryPath +
+          '/Audio Note/' +
+          splitfile[splitfile.length - 1],
+      )
+    ) {
+      return 0;
+    } else if (progressAudioNote.includes(splitfile[splitfile.length - 1])) {
+      return 1;
     } else {
-      dir = RNFS.DocumentDirectoryPath;
-    }
-
-    // if (!(await RNFS.exists(dir + '/Lifecoaching/'))) {
-    //   await RNFS.mkdir(dir + '/Lifecoaching/');
-    // }
-
-    let ext = await image.split('.').pop();
-    let imagePath =
-      // 'file://' +
-      dir + '/quote_' + moment().valueOf() + '.' + ext;
-    console.log('imagePath', imagePath);
-    try {
-      return RNFS.downloadFile({
-        fromUrl: fileURL + image,
-        toFile: imagePath,
-      })
-        .promise.then(async res1 => {
-          console.log('imageDownloaded:', res1);
-          showToast(
-            'Quote has been saved to your storage',
-            'Quote Downloaded',
-            'success',
-          );
-        })
-        .catch(e => {
-          console.log('RNFS error', e);
-          showToast('', 'Already Downloaded', 'success');
-        });
-    } catch (e) {
-      showToast('No internet connection', 'Error');
+      return 2;
     }
   };
 
-  const downloadQuote2 = async image_URL => {
-    if (Platform.OS === 'android') {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        {
-          title: 'Storage Permission Required',
-          message: 'App needs access to your storage to download Photos',
-        },
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        // Once user grant the permission start downloading
-        console.log('Storage Permission Granted.');
-      } else {
-        // If permission denied then show alert
-        alert('Storage   Not Granted');
-        return;
-      }
-    }
-    const {config, fs} = ReactNativeBlobUtil;
-    console.log('fs', fs);
-    let ext = await image_URL.split('.')[image_URL.split('.').length - 1];
-    let PictureDir = fs.dirs.DownloadDir;
-    console.log(await fs.isDir(PictureDir), 'Before isDir');
-
-    if (!(await fs.isDir(PictureDir))) {
-      await fs.mkdir(PictureDir);
-    }
-    console.log(await fs.isDir(PictureDir), 'After isDir');
-    console.log('ext', ext);
-    let options = {
-      fileCache: true,
-      addAndroidDownloads: {
-        //Related to the Android only
-        useDownloadManager: true,
-        notification: true,
-        path: PictureDir + '/image_' + moment().valueOf() + '.' + ext,
-        description: 'Image',
-      },
-    };
-    let ext1;
-    if (ext == 'jpg') {
-      ext1 = 'jpeg';
-    } else {
-      ext1 = ext;
-    }
-    config(options)
-      .fetch('GET', fileURL + image_URL)
-      .then(res => {
-        //Showing alert after successful downloading
-        console.log('res -> ', JSON.stringify(res));
-        showToast(
-          'Quote has been saved to your storage',
-          'Quote Downloaded',
-          'success',
+  const downloadAudioNote = async audio => {
+    try {
+      let splitfile = await audio.split('/');
+      if (
+        await RNFS.exists(
+          RNFS.DocumentDirectoryPath +
+            '/Note/' +
+            splitfile[splitfile.length - 1],
+        )
+      ) {
+        return (
+          RNFS.DocumentDirectoryPath +
+          '/Note/' +
+          splitfile[splitfile.length - 1]
         );
-      });
+      }
+      setProgressAudioNote(splitfile[splitfile.length - 1]);
+      if (
+        !(await RNFS.exists(
+          RNFS.DocumentDirectoryPath +
+            '/Note/' +
+            splitfile[splitfile.length - 1],
+        ))
+      ) {
+        await RNFS.mkdir(RNFS.DocumentDirectoryPath + '/Note/');
+      }
+
+      let path =
+        RNFS.DocumentDirectoryPath + '/Note/' + splitfile[splitfile.length - 1];
+      console.log('path: ' + path);
+      return RNFS.downloadFile({
+        fromUrl: fileURL + audio,
+        toFile: path,
+      })
+        .promise.then(async res => {
+          removeFromProgressAudioNote(splitfile[splitfile.length - 1]);
+          console.log('audioDownloaded:', res);
+          return (
+            RNFS.DocumentDirectoryPath +
+            '/Note/' +
+            splitfile[splitfile.length - 1]
+          );
+        })
+        .catch(e => {
+          removeFromProgressAudioNote(splitfile[splitfile.length - 1]);
+          console.log('Axios error', e);
+        });
+    } catch (e) {
+      removeFromProgressAudioNote(splitfile[splitfile.length - 1]);
+    }
   };
 
   const downloadQuote = async (image, id) => {
@@ -301,7 +257,7 @@ const ContextWrapper = props => {
     let dirs = ReactNativeBlobUtil.fs.dirs;
     console.log('dirs ==>', dirs);
     let path = !!dirs.LegacyDownloadDir
-      ? dirs.LegacyDownloadDir + '/Life Mate' + imageName
+      ? dirs.LegacyDownloadDir + '/Better.Me' + imageName
       : dirs.PictureDir + imageName;
 
     let ext1 = ext;
@@ -333,7 +289,7 @@ const ContextWrapper = props => {
               await ReactNativeBlobUtil.MediaCollection.createMediafile(
                 {
                   name: imageName,
-                  parentFolder: 'Life Mate',
+                  parentFolder: 'Better.Me',
                   mimeType: `image/${ext1}`,
                 },
                 'Download',
@@ -431,6 +387,19 @@ const ContextWrapper = props => {
     setProgress(newProgress);
   };
 
+  const removeFromProgressAudioNote = name => {
+    let newProgress = [...progress];
+    let index = newProgress.findIndex(x => x == name);
+    newProgress.splice(index, 1);
+    setProgress(newProgress);
+  };
+
+  const addInProgressAudioNote = name => {
+    let newProgress = [...progress];
+    newProgress.push(name);
+    setProgress(newProgress);
+  };
+
   const api_getAdminURLAndEmail = async () => {
     let res = await invokeApi({
       path: 'api/website_setting/get_user_website_setting',
@@ -516,6 +485,8 @@ const ContextWrapper = props => {
     CheckPurchases,
     adminURLsAndEmail,
     resetPurchase,
+    downloadAudioNote,
+    checkAudioNoteStatus,
   };
 
   return (

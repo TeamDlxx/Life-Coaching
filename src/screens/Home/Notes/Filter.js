@@ -32,23 +32,67 @@ import Modal from 'react-native-modal';
 import CustomButton from '../../../Components/CustomButton';
 import {CustomTouchableTextInput} from '../../../Components/CustomTextInput';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import showToast from '../../../functions/showToast';
 
 const checked = require('../../../Assets/Icons/checked.png');
 const unChecked = require('../../../Assets/Icons/unchecked.png');
 
 const Filter = props => {
   const {navigation} = props;
+  const {params} = props.route;
   const [selectedColors, setSelectedColors] = useState([]);
   const [dateRange, setDateRange] = useState({
-    startDate: moment().subtract(7, 'days'),
-    endDate: moment(),
+    startDate: moment().subtract(7, 'days').toISOString(),
+    endDate: moment().toISOString(),
     startDateModal: false,
     endDateModal: false,
   });
 
+  React.useEffect(() => {
+    console.log(params?.filter, 'filter');
+    if (params?.filter) {
+      if (params?.filter.startDate != '' && params?.filter.endDate != '') {
+        setDateRange({
+          ...dateRange,
+          startDate: params.filter.startDate,
+          endDate: params.filter.endDate,
+        });
+      }
+
+      if (params.filter.selectedColors.length != 0) {
+        setSelectedColors(params.filter.selectedColors);
+      }
+    }
+  }, []);
+
+  const btn_applyFilter = () => {
+    if (
+      moment(dateRange.endDate).isSameOrBefore(dateRange.startDate, 'dates')
+    ) {
+      showToast(
+        'Please select valid date range with difference of at least 1 day',
+        'Alert',
+      );
+    } else {
+      navigation.navigate({
+        name: screens.notesList,
+        params: {
+          filter: {
+            date: {
+              start: dateRange.startDate.toString(),
+              end: dateRange.endDate.toString(),
+            },
+            selectedColors: selectedColors,
+          },
+        },
+        merge: true,
+      });
+    }
+  };
+
   const toggleSelect = item => {
     let temp = [...selectedColors];
-    let index = temp.findIndex(x => x.id == item.id);
+    let index = temp.findIndex(x => x._id == item._id);
     if (index != -1) {
       temp.splice(index, 1);
     } else {
@@ -81,52 +125,53 @@ const Filter = props => {
                 numColumns={2}
                 renderItem={({item, index}) => {
                   return (
-                    <Pressable
-                      onPress={() => toggleSelect(item)}
-                      style={{
-                        flex: 1 / 2,
-                        backgroundColor: Colors.white,
-                        margin: 5,
-
-                        padding: 10,
-                        borderRadius: 15,
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        borderWidth: 1,
-                        borderColor: Colors.gray02,
-                      }}>
-                      <View
+                    <View style={{flex: 1 / 2}}>
+                      <Pressable
+                        onPress={() => toggleSelect(item)}
                         style={{
-                          height: 30,
-                          width: 30,
-                          backgroundColor: item.dark,
-                          borderRadius: 999,
-                          justifyContent: 'center',
+                          flex: 1,
+                          backgroundColor: Colors.white,
+                          margin: 5,
+                          padding: 10,
+                          borderRadius: 15,
+                          flexDirection: 'row',
                           alignItems: 'center',
+                          borderWidth: 1,
+                          borderColor: Colors.gray02,
                         }}>
                         <View
                           style={{
-                            height: '80%',
-                            width: '80%',
+                            height: 30,
+                            width: 30,
                             backgroundColor: item.dark,
                             borderRadius: 999,
-                          }}
-                        />
-                      </View>
-                      <View style={{flex: 1, alignItems: 'flex-end'}}>
-                        <Image
-                          source={
-                            selectedColors.find(x => x.id == item.id)
-                              ? checked
-                              : unChecked
-                          }
-                          style={[
-                            stat_styles.filterButtonIcon,
-                            // {tintColor: Colors.placeHolder},
-                          ]}
-                        />
-                      </View>
-                    </Pressable>
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}>
+                          <View
+                            style={{
+                              height: '80%',
+                              width: '80%',
+                              backgroundColor: item.dark,
+                              borderRadius: 999,
+                            }}
+                          />
+                        </View>
+                        <View style={{flex: 1, alignItems: 'flex-end'}}>
+                          <Image
+                            source={
+                              selectedColors.find(x => x._id == item._id)
+                                ? checked
+                                : unChecked
+                            }
+                            style={[
+                              stat_styles.filterButtonIcon,
+                              // {tintColor: Colors.placeHolder},
+                            ]}
+                          />
+                        </View>
+                      </Pressable>
+                    </View>
                   );
                 }}
               />
@@ -171,7 +216,7 @@ const Filter = props => {
 
           <View style={{marginTop: 20}}>
             <CustomButton
-              onPress={() => navigation.goBack()}
+              onPress={() => btn_applyFilter()}
               title="Apply"
               height={45}
             />
@@ -203,11 +248,12 @@ const Filter = props => {
         onConfirm={val => {
           setDateRange({
             ...dateRange,
-            startDate: val,
+            startDate: moment(val).toISOString(),
             startDateModal: false,
           });
         }}
-        maximumDate={moment(dateRange.endDate).subtract(1, 'day').toDate()}
+        // maximumDate={moment(dateRange.endDate).subtract(1, 'day').toDate()}
+        maximumDate={moment().toDate()}
         onCancel={() =>
           setDateRange({
             ...dateRange,
@@ -225,12 +271,13 @@ const Filter = props => {
         isVisible={dateRange.endDateModal}
         mode="date"
         date={moment(dateRange.endDate).toDate()}
-        minimumDate={moment(dateRange.startDate).add(1, 'day').toDate()}
+        // minimumDate={moment(dateRange.startDate).add(1, 'day').toDate()}
+        maximumDate={moment().toDate()}
         display={Platform.OS == 'android' ? 'default' : 'inline'}
         onConfirm={val => {
           setDateRange({
             ...dateRange,
-            endDate: val,
+            endDate: moment(val).toISOString(),
             endDateModal: false,
           });
         }}
