@@ -15,6 +15,7 @@ import {
   ScrollView,
   LogBox,
   Dimensions,
+  ActivityIndicator
 } from 'react-native';
 import React, {useEffect, useState, useLayoutEffect} from 'react';
 import Header from '../../../Components/Header';
@@ -68,7 +69,7 @@ const Editor = props => {
   const oldnote = props?.route?.params?.note;
   const {navigation} = props;
   const RichText = React.useRef();
-  const {Token} = useContext(Context);
+  const {Token,downloadAudioNote} = useContext(Context);
 
   const [isLoading, setisLoading] = useState(false);
   const [modalImage, setModalImage] = useState(null);
@@ -109,11 +110,11 @@ const Editor = props => {
 
   const download = async () => {
     try {
-      setAudio('downloading');
-      let AudioPath = await downloadAudioNote(note?.audio);
+      setNotes({audio: 'downloading'});
+      let AudioPath = await downloadAudioNote(notes?.audio);
       setNotes({audio: 'file://' + AudioPath});
     } catch (e) {
-      setAudio('error');
+      setNotes({audio: 'error'});
     }
   };
   //? ImageZommer
@@ -1394,7 +1395,10 @@ const Editor = props => {
                           }}>
                           <Pressable
                             onPress={() => {
-                              if (notes.audio == null || notes.audio == 'error') {
+                              if (
+                                notes.audio == null ||
+                                notes.audio == 'error'
+                              ) {
                                 downloadAudioNote();
                               } else if (notes.audio == 'downloading') {
                               } else {

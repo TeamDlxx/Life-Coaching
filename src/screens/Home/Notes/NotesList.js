@@ -22,6 +22,7 @@ import {notesColors} from '../../../Utilities/Colors';
 import Collapsible from 'react-native-collapsible';
 import AutoHeightWebView from 'react-native-autoheight-webview';
 import SwipeableFlatList from 'react-native-swipeable-list';
+import debounnce from '../../../functions/debounce';
 // fro API calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -32,6 +33,8 @@ import {fileURL} from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
 import PushNotification from 'react-native-push-notification';
 import analytics from '@react-native-firebase/analytics';
+import LoginAlert from '../../../Components/LoginAlert';
+import {ExternalStorageDirectoryPath} from 'react-native-fs';
 
 const screen_size = Dimensions.get('window');
 //icons
@@ -66,7 +69,11 @@ const List = props => {
   const [searchText, setSearchText] = useState('');
 
   const onNoteEditorScreen = () => {
-    navigation.navigate(screens.noteEditor);
+    if (Token) {
+      navigation.navigate(screens.noteEditor);
+    } else {
+      onLoginScreen();
+    }
   };
 
   React.useEffect(() => {
@@ -95,14 +102,21 @@ const List = props => {
 
   const searchFromAPI = text => {
     setSearchText(text);
+    performDebounce(text);
+  };
+
+  const onLoginScreen = () => {
+    LoginAlert(props.navigation, props.route?.name);
+  };
+
+  const performDebounce = debounnce(text => {
     api_listNotes({
-      search: searchText.trim(),
+      search: text.trim(),
       date_from: startDate,
       date_to: endDate,
       color: JSON.stringify(selectedColors.map(x => x.dark)),
     });
-  };
-
+  }, 800);
   //todo ///////// API;s
 
   const call_api_listNotes = () => {
@@ -203,13 +217,15 @@ const List = props => {
   };
 
   useEffect(() => {
-    pageNumber = 0;
-    canLoadMore = false;
-    startDate = '';
-    endDate = '';
-    selectedColors = [];
-    call_api_listNotes();
-  }, []);
+    if (Token) {
+      pageNumber = 0;
+      canLoadMore = false;
+      startDate = '';
+      endDate = '';
+      selectedColors = [];
+      call_api_listNotes();
+    }
+  }, [Token]);
 
   // useEffect(() => {
   //   api_listNotes({
@@ -421,15 +437,7 @@ const List = props => {
       );
   };
 
-  const filterAndSearch = list => {
-    let newArray = [];
-    let text = searchText.trim().toLowerCase();
-    if (text == '') {
-      newArray = list;
-    } else newArray = list.filter(x => x.title.toLowerCase().includes(text));
 
-    return newArray;
-  };
 
   return (
     <SafeAreaView
@@ -447,13 +455,21 @@ const List = props => {
         rightIcon2={ic_filter}
         rightIcon={ic_search}
         rightIcononPress={() => {
-          setIsSearchVisible(!isSearchVisible);
+          if (Token) {
+            setIsSearchVisible(!isSearchVisible);
+          } else {
+            onLoginScreen();
+          }
         }}
-        rightIcon2onPress={() =>
-          props.navigation.navigate(screens.notesFilter, {
-            filter: {startDate, endDate, selectedColors},
-          })
-        }
+        rightIcon2onPress={() => {
+          if (Token) {
+            props.navigation.navigate(screens.notesFilter, {
+              filter: {startDate, endDate, selectedColors},
+            });
+          } else {
+            onLoginScreen();
+          }
+        }}
       />
 
       <View style={{flex: 1, backgroundColor: Colors.white}}>
@@ -496,7 +512,7 @@ const List = props => {
         <View style={{flex: 1, paddingHorizontal: 5}}>
           <SwipeableFlatList
             contentContainerStyle={[
-              filterAndSearch(list).length == 0 && {
+              list.length == 0 && {
                 flex: 1,
               },
               {
@@ -572,7 +588,7 @@ const List = props => {
               )
             }
           />
-          {filterAndSearch(list).length != 0 && (
+          {list.length != 0 && (
             <Pressable
               onPress={onNoteEditorScreen}
               style={[FAB_style.View, {borderRadius: 50 / 2}]}>

@@ -322,6 +322,12 @@ const NoteDetail = props => {
     }
   }, [note?.audio]);
 
+  // useEffect(() => {
+  //   if (!!props.route?.params?.note.description) {
+  //     setisLoading(true);
+  //   }
+  // }, []);
+
   const flatListHeader = () => {
     return (
       <View style={{marginBottom: 30}}>
@@ -344,6 +350,9 @@ const NoteDetail = props => {
         {!!note?.description && (
           <View style={{marginTop: 10, paddingHorizontal: 20}}>
             <AutoHeightWebView
+              onLoad={() => setisLoading(false)}
+              // onLoadStart={() => setisLoading(true)}
+              onError={() => setisLoading(false)}
               overScrollMode="never"
               style={{
                 width: Dimensions.get('window').width - 15,
@@ -541,7 +550,10 @@ const NoteDetail = props => {
         color={note?.color.light}
         // noUrl
       />
-      <Loader enable={isLoading} />
+      <Loader
+        enable={isLoading}
+        // style={{flex: 1, backgroundColor: note.color.light}}
+      />
     </SafeAreaView>
   );
 };

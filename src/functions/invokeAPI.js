@@ -81,7 +81,9 @@ export default async function invokeApi({
 
     return {
       code: error.response.status,
-      message: error.response.data.message ? error.response.data.message : '',
+      message: error.response.data.message
+        ? error.response.data.message
+        : error.message,
     };
   }
 }
