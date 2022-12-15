@@ -334,7 +334,7 @@ const NoteDetail = props => {
     return () => {
       // console.log("return",playerStatus)
       // if (playerStatus == 'playing') {
-        onStopPlay();
+      onStopPlay();
       // }
     };
   }, [note?.audio]);
@@ -463,7 +463,7 @@ const NoteDetail = props => {
                 }}>
                 <View style={{flex: 1, marginHorizontal: 15}}>
                   <Slider
-                    style={{}}
+                    style={{transform: [{scaleY: 2}]}}
                     value={playerTime.curTimeInSeconds}
                     thumbTintColor={'transparent'}
                     // thumbImage={undefined}

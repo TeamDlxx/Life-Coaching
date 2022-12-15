@@ -787,6 +787,7 @@ const Editor = props => {
         isVisible={colorPickerModal.visibility}
         onBackdropPress={() => setColorPickerModal({visibility: false})}
         onBackButtonPress={() => setColorPickerModal({visibility: false})}
+        useNativeDriverForBackdrop={true}
         style={{}}>
         <View
           style={{
@@ -1002,10 +1003,18 @@ const Editor = props => {
   };
 
   const removeAudio = () => {
-    setNotes({
-      audio: '',
-    });
-    onStopPlay();
+    Alert.alert('Delete Audio', 'Are you sure you want to delete this audio?', [
+      {text: 'No'},
+      {
+        text: 'Yes',
+        onPress: () => {
+          setNotes({
+            audio: '',
+          });
+          onStopPlay();
+        },
+      },
+    ]);
   };
 
   // Add in Remove Array
@@ -1058,10 +1067,10 @@ const Editor = props => {
       fd_note.append('remove_images', JSON.stringify(notes.removeImage));
       fd_note.append('old_images', JSON.stringify(notes.oldImages));
       fd_note.append('color', JSON.stringify(notes.colors));
-      if (notes.audio?.uri.includes('cache')) {
+      if (notes?.audio?.uri?.includes('cache')) {
         fd_note.append('audio', notes.audio);
       }
-      if (!!oldnote1.audio == true && !!notes.audio == false) {
+      if (!!oldnote1?.audio == true && !!notes?.audio == false) {
         fd_note.append('delete_audio', true);
       } else {
         fd_note.append('delete_audio', false);
@@ -1135,7 +1144,7 @@ const Editor = props => {
   }, []);
 
   useEffect(() => {
-    if (!!props?.route?.params?.note.audio) {
+    if (!!props?.route?.params?.note?.audio) {
       console.log('hi');
       download();
     }
@@ -1178,7 +1187,7 @@ const Editor = props => {
         title={edit ? 'Edit Note' : 'Add Note'}
         rightIcon2View={
           <Pressable
-          disabled={isLoading}
+            disabled={isLoading}
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -1402,13 +1411,24 @@ const Editor = props => {
                           alignItems: 'center',
                           marginRight: -10,
                           marginTop: 10,
+                          borderRadius: 25 / 2,
+                          backgroundColor: Colors.logout,
+                          shadowColor: '#000',
+                          shadowOffset: {
+                            width: 0,
+                            height: 1,
+                          },
+                          shadowOpacity: 0.2,
+                          shadowRadius: 1.41,
+
+                          elevation: 2,
                         }}>
                         <Image
                           source={ic_cross}
                           style={{
                             height: 20,
                             width: 20,
-                            tintColor: Colors.gray08,
+                            tintColor: Colors.white,
                           }}
                         />
                       </Pressable>
@@ -1479,7 +1499,7 @@ const Editor = props => {
                           }}>
                           <View style={{flex: 1, marginHorizontal: 15}}>
                             <Slider
-                              style={{}}
+                              style={{transform: [{scaleY: 2}]}}
                               value={playerTime.curTimeInSeconds}
                               thumbTintColor={'transparent'}
                               // thumbImage={undefined}
