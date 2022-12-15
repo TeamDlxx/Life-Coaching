@@ -11,7 +11,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
 import {mainStyles, FAB_style} from '../../../Utilities/styles';
@@ -57,6 +57,7 @@ let selectedColors = [];
 const List = props => {
   const {navigation} = props;
   const {Token} = useContext(Context);
+  const searchTextRef = useRef();
   const [list, setList] = useState([]);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [isLoading, setisLoading] = useState(false);
@@ -409,28 +410,31 @@ const List = props => {
             Create fully customisable notes. Add colors of your own choice. Add
             voice notes, images and many more.
           </Text>
-          {!isSearchVisible && (
-            <View style={{flex: 0.5, justifyContent: 'center'}}>
-              <Pressable
-                onPress={onNoteEditorScreen}
-                style={[
-                  FAB_style.View,
-                  {
-                    position: 'relative',
-                    marginTop: 30,
-                    right: 0,
-                    height: 71,
-                    width: 71,
-                    borderRadius: 71 / 2,
-                  },
-                ]}>
-                <Image
-                  source={require('../../../Assets/Icons/plus.png')}
-                  style={FAB_style.image}
-                />
-              </Pressable>
-            </View>
-          )}
+          {!isSearchVisible &&
+            startDate == '' &&
+            endDate == '' &&
+            selectedColors.length == 0 && (
+              <View style={{flex: 0.5, justifyContent: 'center'}}>
+                <Pressable
+                  onPress={onNoteEditorScreen}
+                  style={[
+                    FAB_style.View,
+                    {
+                      position: 'relative',
+                      marginTop: 30,
+                      right: 0,
+                      height: 71,
+                      width: 71,
+                      borderRadius: 71 / 2,
+                    },
+                  ]}>
+                  <Image
+                    source={require('../../../Assets/Icons/plus.png')}
+                    style={FAB_style.image}
+                  />
+                </Pressable>
+              </View>
+            )}
         </View>
       );
   };
@@ -452,7 +456,14 @@ const List = props => {
         rightIcon={ic_search}
         rightIcononPress={() => {
           if (Token) {
-            setIsSearchVisible(!isSearchVisible);
+            if (isSearchVisible) {
+              setIsSearchVisible(false);
+              searchTextRef?.current?.blur();
+              console.log(searchTextRef.current);
+            } else {
+              setIsSearchVisible(true);
+              searchTextRef?.current?.focus();
+            }
           } else {
             onLoginScreen();
           }
@@ -479,11 +490,11 @@ const List = props => {
               alignItems: 'center',
             }}>
             <TextInput
+              ref={searchTextRef}
               placeholder="Search..."
               style={{flex: 1, height: '100%', fontSize: 16}}
               onChangeText={searchFromAPI}
               value={searchText}
-              autoFocus={() => isSearchVisible}
             />
             <Pressable
               onPress={() => {

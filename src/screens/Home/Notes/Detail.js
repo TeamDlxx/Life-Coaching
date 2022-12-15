@@ -377,7 +377,7 @@ const NoteDetail = props => {
           </Text>
         </View>
         {!!note?.description && (
-          <View style={{marginTop: 10, paddingHorizontal: 20}}>
+          <View style={{marginTop: 10, alignItems: 'center'}}>
             <AutoHeightWebView
               onLoad={() => setisLoading(false)}
               ref={ref_webView}
@@ -399,7 +399,7 @@ const NoteDetail = props => {
               onMessage={args => console.log(args, 'On message')}
               overScrollMode="never"
               style={{
-                width: Dimensions.get('window').width - 15,
+                width: Dimensions.get('window').width - 40,
                 minHeight: 1,
                 opacity: 0.99,
                 // marginTop: 35,
