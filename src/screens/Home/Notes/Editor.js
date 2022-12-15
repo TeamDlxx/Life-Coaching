@@ -32,7 +32,7 @@ import * as Animatable from 'react-native-animatable';
 import Slider from '@react-native-community/slider';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import ImageZoomer from '../../../Components/ImageZoomer';
-import * as RNFetchBlobUtil from 'react-native-blob-util';
+
 // fro API calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -40,6 +40,7 @@ import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import analytics from '@react-native-firebase/analytics';
+import Dialog from 'react-native-dialog';
 
 let audioRecorderPlayer = new AudioRecorderPlayer();
 
@@ -72,6 +73,10 @@ const Editor = props => {
   const {Token, downloadAudioNote} = useContext(Context);
 
   const [isLoading, setisLoading] = useState(false);
+  const [LinkModal, setLinkModal] = useState({
+    showDialog: false,
+    link: '',
+  });
   const [modalImage, setModalImage] = useState(null);
   const [edit, setEdit] = useState(oldnote1 ? true : false);
   const [isModalVisible, setModalVisibility] = useState(false);
@@ -120,6 +125,46 @@ const Editor = props => {
       setNotes({audio: 'error'});
     }
   };
+
+  //? Link MOdal
+
+  const openDialogue = () => {
+    setLinkModal({showDialog: true, link: ''});
+  };
+  const closeDialogue = () => {
+    setLinkModal({showDialog: false, link: ''});
+  };
+
+  const LinkDialog = () => {
+    return (
+      <View>
+        <Dialog.Container
+          visible={LinkModal.showDialog}
+          onBackdropPress={() => closeDialogue()}>
+          <Dialog.Title style={{color: Colors.black, fontFamily: font.semi}}>
+            Insert Link
+          </Dialog.Title>
+          <Dialog.Description
+            style={{color: Colors.black, fontFamily: font.medium}}>
+            Please enter the link
+          </Dialog.Description>
+          <Dialog.Input
+            style={{color: Colors.black, fontFamily: font.medium}}
+            onChangeText={link => setLinkModal({...LinkModal, link: link})}
+          />
+          <Dialog.Button label="Cancel" onPress={() => closeDialogue()} />
+          <Dialog.Button
+            label="Add"
+            onPress={() => {
+              RichText.current?.insertLink(null, LinkModal.link);
+              closeDialogue();
+            }}
+          />
+        </Dialog.Container>
+      </View>
+    );
+  };
+
   //? ImageZommer
 
   const showImageModal = image => {
@@ -281,6 +326,7 @@ const Editor = props => {
   //? Audio modal
 
   const onMicPress = async () => {
+    
     let granted = true;
     if (Platform.OS == 'android') {
       granted = await checkPermissionsAndroid();
@@ -474,6 +520,7 @@ const Editor = props => {
   };
 
   const btn_addAudioModal = async () => {
+    await analytics().logEvent('AUDIO_RECORDED_BY_USER_EVENT');
     const result = await audioRecorderPlayer.stopRecorder();
     console.log('onModalHide', result);
     audioRecorderPlayer.removeRecordBackListener();
@@ -1098,6 +1145,7 @@ const Editor = props => {
     setisLoading(false);
     if (res) {
       if (res.code == 200) {
+        await analytics().logEvent('NOTE_CREATED_BY_USER_EVENT');
         navigation.navigate(screens.notesList, {
           addNew: res.Note,
         });
@@ -1136,7 +1184,7 @@ const Editor = props => {
 
   useEffect(() => {
     LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
-
+    analytics().logEvent(props?.route?.name);
     return () => {
       onStopPlay();
       closeModal();
@@ -1315,6 +1363,7 @@ const Editor = props => {
                   value={notes.title}
                   selectionColor={Colors.primary}
                   onFocus={() => setIsFocused(false)}
+                  autoFocus={true}
                 />
               </View>
               {/* <Pressable
@@ -1777,6 +1826,7 @@ const Editor = props => {
             >
               <RichToolbar
                 editor={RichText}
+                onInsertLink={() => openDialogue()}
                 // getEditor={() => RichText}
                 actions={[
                   actions.keyboard,
@@ -1793,6 +1843,7 @@ const Editor = props => {
                   actions.setBold,
                   actions.setItalic,
                   actions.setUnderline,
+                  actions.insertLink,
                   actions.removeFormat,
                   actions.insertBulletsList,
                   actions.insertOrderedList,
@@ -1907,6 +1958,7 @@ const Editor = props => {
         {ImagePickerOptionsModal()}
         {AudioRecoderModal()}
         {backgroundColorModal()}
+        {LinkDialog()}
         <ImageZoomer
           closeModal={hideImageModal}
           visible={!!modalImage}

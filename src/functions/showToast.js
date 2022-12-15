@@ -13,6 +13,7 @@ const showToast = (text2, text1 = 'Error', type = 'error') => {
       text2: text2,
       autoHide: true,
       visibilityTime: 3000,
+      
     });
   }, 150);
 };

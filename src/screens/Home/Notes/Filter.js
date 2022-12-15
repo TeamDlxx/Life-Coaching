@@ -14,21 +14,13 @@ import {
 import React, {useState} from 'react';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
-import {
-  mainStyles,
-  allHabit_styles,
-  FAB_style,
-  stat_styles,
-} from '../../../Utilities/styles';
+import {mainStyles, stat_styles} from '../../../Utilities/styles';
 import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
-import {SwipeListView} from 'react-native-swipe-list-view';
-import * as Progress from 'react-native-progress';
+
 import moment from 'moment';
-import CustomImage from '../../../Components/CustomImage';
 import {notesColors} from '../../../Utilities/Colors';
-import Collapsible from 'react-native-collapsible';
-import Modal from 'react-native-modal';
+import analytics from '@react-native-firebase/analytics';
 import CustomButton from '../../../Components/CustomButton';
 import {CustomTouchableTextInput} from '../../../Components/CustomTextInput';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -63,14 +55,37 @@ const Filter = props => {
         setSelectedColors(params.filter.selectedColors);
       }
     }
+    analytics().logEvent(props?.route?.name);
   }, []);
+  const btn_ClearFilter = () => {
+    setSelectedColors([]);
+    setDateRange({
+      startDate: moment().subtract(7, 'days').toISOString(),
+      endDate: moment().toISOString(),
+      startDateModal: false,
+      endDateModal: false,
+    });
 
+    navigation.navigate({
+      name: screens.notesList,
+      params: {
+        filter: {
+          date: {
+            start: '',
+            end: '',
+          },
+          selectedColors: [],
+        },
+      },
+      merge: true,
+    });
+  };
   const btn_applyFilter = () => {
     if (
       moment(dateRange.endDate).isSameOrBefore(dateRange.startDate, 'dates')
     ) {
       showToast(
-        'Please select valid date range with difference of at least 1 day',
+        'Please select valid date range with difference of at least one day',
         'Alert',
       );
     } else {
@@ -214,12 +229,23 @@ const Filter = props => {
             </View>
           </View>
 
-          <View style={{marginTop: 20}}>
-            <CustomButton
-              onPress={() => btn_applyFilter()}
-              title="Apply"
-              height={45}
-            />
+          <View style={{marginTop: 20, flexDirection: 'row'}}>
+            <View style={{flex: 1, marginRight: 10}}>
+              <CustomButton
+                onPress={() => btn_ClearFilter()}
+                title="Reset"
+                height={45}
+                backgroundColor={Colors.lightPrimary2}
+                textColor={Colors.primary}
+              />
+            </View>
+            <View style={{flex: 1}}>
+              <CustomButton
+                onPress={() => btn_applyFilter()}
+                title="Apply"
+                height={45}
+              />
+            </View>
           </View>
         </View>
       </View>

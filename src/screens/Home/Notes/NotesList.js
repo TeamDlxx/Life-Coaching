@@ -18,9 +18,7 @@ import {mainStyles, FAB_style} from '../../../Utilities/styles';
 import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
 import moment from 'moment';
-import {notesColors} from '../../../Utilities/Colors';
 import Collapsible from 'react-native-collapsible';
-import AutoHeightWebView from 'react-native-autoheight-webview';
 import SwipeableFlatList from 'react-native-swipeable-list';
 import debounnce from '../../../functions/debounce';
 // fro API calling
@@ -29,12 +27,9 @@ import Context from '../../../Context';
 import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
-import {fileURL} from '../../../Utilities/domains';
-import EmptyView from '../../../Components/EmptyView';
-import PushNotification from 'react-native-push-notification';
 import analytics from '@react-native-firebase/analytics';
 import LoginAlert from '../../../Components/LoginAlert';
-import {ExternalStorageDirectoryPath} from 'react-native-fs';
+import useBackHandler from '../../../hooks/useBackhandler';
 
 const screen_size = Dimensions.get('window');
 //icons
@@ -227,13 +222,9 @@ const List = props => {
     }
   }, [Token]);
 
-  // useEffect(() => {
-  //   api_listNotes({
-  //     search: '',
-  //     date_from: '',
-  //     date_to: '',
-  //   });
-  // }, [searchText]);
+  useEffect(() => {
+    analytics().logEvent(props?.route?.name);
+  }, []);
 
   const updateNote = item => {
     let arr = [...list];
@@ -367,7 +358,12 @@ const List = props => {
                 marginTop: 7,
                 color: Colors.gray10,
               }}>
-              {moment(item?.createdAt).format('DD-MM-YYYY')}
+              <Text>
+                {item?.updatedAt == item?.createdAt
+                  ? 'Created on : '
+                  : 'Updated on : '}
+              </Text>
+              {moment(item?.updatedAt).format('DD-MM-YYYY')}
             </Text>
           </View>
         </View>
@@ -410,34 +406,34 @@ const List = props => {
               width: '80%',
               textAlign: 'center',
             }}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut
+            Create fully customisable notes. Add colors of your own choice. Add
+            voice notes, images and many more.
           </Text>
-          <View style={{flex: 0.5, justifyContent: 'center'}}>
-            <Pressable
-              onPress={onNoteEditorScreen}
-              style={[
-                FAB_style.View,
-                {
-                  position: 'relative',
-                  marginTop: 30,
-                  right: 0,
-                  height: 71,
-                  width: 71,
-                  borderRadius: 71 / 2,
-                },
-              ]}>
-              <Image
-                source={require('../../../Assets/Icons/plus.png')}
-                style={FAB_style.image}
-              />
-            </Pressable>
-          </View>
+          {!isSearchVisible && (
+            <View style={{flex: 0.5, justifyContent: 'center'}}>
+              <Pressable
+                onPress={onNoteEditorScreen}
+                style={[
+                  FAB_style.View,
+                  {
+                    position: 'relative',
+                    marginTop: 30,
+                    right: 0,
+                    height: 71,
+                    width: 71,
+                    borderRadius: 71 / 2,
+                  },
+                ]}>
+                <Image
+                  source={require('../../../Assets/Icons/plus.png')}
+                  style={FAB_style.image}
+                />
+              </Pressable>
+            </View>
+          )}
         </View>
       );
   };
-
-
 
   return (
     <SafeAreaView
@@ -487,6 +483,7 @@ const List = props => {
               style={{flex: 1, height: '100%', fontSize: 16}}
               onChangeText={searchFromAPI}
               value={searchText}
+              autoFocus={() => isSearchVisible}
             />
             <Pressable
               onPress={() => {

@@ -10,6 +10,12 @@ import {Text} from 'react-native';
 import {initConnection, endConnection} from 'react-native-iap';
 import analytics from '@react-native-firebase/analytics';
 import dynamicLinks from '@react-native-firebase/dynamic-links';
+import {BaseToast, ErrorToast} from 'react-native-toast-message';
+
+const toastConfig = {
+  success: props => <BaseToast {...props} text2NumberOfLines={2} />,
+  error: props => <ErrorToast {...props} text2NumberOfLines={2} />,
+};
 
 moment.updateLocale('en', {
   week: {
@@ -72,7 +78,7 @@ const App = props => {
     <ContextWrapper>
       <NavigationContainer>
         <AuthStack />
-        <Toast />
+        <Toast config={toastConfig} />
       </NavigationContainer>
     </ContextWrapper>
   );

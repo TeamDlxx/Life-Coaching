@@ -492,6 +492,7 @@ const EditProfile = props => {
             value={user.fullName}
             placeholder="Your Name"
             onChangeText={val => setUser({fullName: val})}
+            autoCapitalize={true}
           />
         </View>
         <View style={{marginTop: 10, paddingHorizontal: 20}}>

@@ -14,7 +14,7 @@ import {mainStyles} from '../../../Utilities/styles';
 import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
 import {PieChart} from 'react-native-svg-charts';
-import {Circle, G, Line} from 'react-native-svg';
+
 
 const size = 300;
 const _10percentOfsize = (10 / 100) * size;

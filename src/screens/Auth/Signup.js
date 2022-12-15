@@ -193,6 +193,7 @@ const Signup = props => {
                 placeholder={'Your Name'}
                 onChangeText={text => setName(text)}
                 value={name}
+                autoCapitalize={true}
               />
             </View>
             <View style={{marginTop: 20}}>

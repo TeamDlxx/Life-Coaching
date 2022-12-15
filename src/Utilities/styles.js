@@ -504,7 +504,7 @@ export const allHabit_styles = StyleSheet.create({
     paddingVertical: 10,
     marginHorizontal: 20,
     flex: 1,
-    // overflow: 'hidden',
+    overflow: 'hidden',
   },
   imageView: {
     // height: 110,

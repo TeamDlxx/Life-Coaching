@@ -86,6 +86,26 @@ const Setting = props => {
       if (res.code == 200) {
         logout();
       } else {
+        showToast('Something went wrong!', 'Error');
+      }
+    }
+  };
+
+  const api_deleteAccount = async () => {
+    setisLoading(true);
+    let res = await invokeApi({
+      path: 'api/customer/delete_customer',
+      method: 'DELETE',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    if (res) {
+      setisLoading(false);
+      if (res.code == 200) {
+        logout();
+      } else {
         setisLoading(false);
         logout();
       }
@@ -147,6 +167,15 @@ const Setting = props => {
         fn_report();
         break;
 
+      case 'delete_user':
+        Alert.alert(
+          'Delete Account',
+          'Are you sure you want to delete your account?',
+          [{text: 'No'}, {text: 'Yes', onPress: () => api_deleteAccount()}],
+        );
+
+        break;
+
       case 'logout':
         Alert.alert('Logout', 'Are you sure you want to logout?', [
           {text: 'No'},
@@ -154,53 +183,6 @@ const Setting = props => {
         ]);
 
         break;
-    }
-  };
-
-  const FN_InAppReview = async () => {
-    // let isAvail = InAppReview.isAvailable();
-    // console.log('isAvail', isAvail);
-    if (true) {
-      // trigger UI InAppreview
-
-      // trigger UI InAppreview
-      InAppReview.RequestInAppReview()
-        .then(hasFlowFinishedSuccessfully => {
-          // when return true in android it means user finished or close review flow
-          console.log('InAppReview in android', hasFlowFinishedSuccessfully);
-
-          // when return true in ios it means review flow lanuched to user.
-          console.log(
-            'InAppReview in ios has launched successfully',
-            hasFlowFinishedSuccessfully,
-          );
-
-          // 1- you have option to do something ex: (navigate Home page) (in android).
-          // 2- you have option to do something,
-          // ex: (save date today to lanuch InAppReview after 15 days) (in android and ios).
-
-          // 3- another option:
-          if (hasFlowFinishedSuccessfully) {
-            // do something for ios
-            // do something for android
-          }
-
-          // for android:
-          // The flow has finished. The API does not indicate whether the user
-          // reviewed or not, or even whether the review dialog was shown. Thus, no
-          // matter the result, we continue our app flow.
-
-          // for ios
-          // the flow lanuched successfully, The API does not indicate whether the user
-          // reviewed or not, or he/she closed flow yet as android, Thus, no
-          // matter the result, we continue our app flow.
-        })
-        .catch(error => {
-          //we continue our app flow.
-          // we have some error could happen while lanuching InAppReview,
-          // Check table for errors and code number that can return in catch.
-          console.log(error);
-        });
     }
   };
 
@@ -237,7 +219,7 @@ const Setting = props => {
   };
 
   const ItemView = ({item, index}) => {
-    if (item.id == 'logout' && !Token) {
+    if ((item.id == 'logout' || item.id == 'delete_user') && !Token) {
       return;
     }
 
@@ -254,7 +236,10 @@ const Setting = props => {
           style={{
             height: 40,
             width: 40,
-            backgroundColor: item.id == 'logout' ? '#D24D5733' : '#BDC3C744',
+            backgroundColor:
+              item.id == 'logout' || item.id == 'delete_user'
+                ? '#D24D5733'
+                : '#BDC3C744',
 
             justifyContent: 'center',
             alignItems: 'center',
@@ -265,7 +250,10 @@ const Setting = props => {
             style={{
               height: 20,
               width: 20,
-              tintColor: item.id == 'logout' ? Colors.logout : Colors.black,
+              tintColor:
+                item.id == 'logout' || item.id == 'delete_user'
+                  ? Colors.logout
+                  : Colors.black,
             }}
           />
         </View>
@@ -275,7 +263,10 @@ const Setting = props => {
               fontFamily: font.medium,
               fontSize: 16,
               letterSpacing: 0.6,
-              color: item.id == 'logout' ? Colors.logout : Colors.black,
+              color:
+                item.id == 'logout' || item.id == 'delete_user'
+                  ? Colors.logout
+                  : Colors.black,
             }}>
             {item.name}
           </Text>
@@ -286,7 +277,10 @@ const Setting = props => {
             style={{
               height: 15,
               width: 15,
-              tintColor: item.id == 'logout' ? Colors.logout : Colors.black,
+              tintColor:
+                item.id == 'logout' || item.id == 'delete_user'
+                  ? Colors.logout
+                  : Colors.black,
             }}
           />
         </View>
@@ -373,6 +367,12 @@ const settings = [
     name: 'Rate Us',
     icon: require('../../Assets/Icons/star.png'),
     action: 'rate_us',
+  },
+  {
+    id: 'delete_user',
+    name: 'Delete Account',
+    icon: require('../../Assets/Icons/removeUser.png'),
+    action: 'delete_user',
   },
 
   {

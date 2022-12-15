@@ -8,13 +8,20 @@ export default function CustomButton(props) {
     <Pressable
       onPress={props.onPress}
       style={{
-        backgroundColor: colors.primary,
+        backgroundColor: !!props.backgroundColor
+          ? props.backgroundColor
+          : colors.primary,
         height: !!props.height ? props.height : 55,
         borderRadius: 15,
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-      <Text style={{color: colors.white, fontSize: 18, fontFamily: font.bold}}>
+      <Text
+        style={{
+          color: !!props.textColor ? props.textColor : colors.white,
+          fontSize: 18,
+          fontFamily: font.bold,
+        }}>
         {props.title}
       </Text>
     </Pressable>

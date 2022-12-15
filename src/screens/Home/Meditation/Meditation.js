@@ -20,6 +20,7 @@ import {screens} from '../../../Navigation/Screens';
 import formatTime from '../../../functions/formatTime';
 import LoginAlert from '../../../Components/LoginAlert';
 import analytics from '@react-native-firebase/analytics';
+import debounce from '../../../functions/debounce';
 
 // For API's calling
 import {useContext} from 'react';
@@ -155,8 +156,11 @@ const Meditation = props => {
     }
   };
 
+  const _debounce = debounce(() => api_loadMoreTracks(), 200);
+
   const api_loadMoreTracks = async () => {
     let scategory = selectedCategory;
+    console.log(scategory, 'scategory');
     console.log(
       'chcek',
       scategory?.total_tracks > scategory?.category_track.length,
@@ -196,7 +200,7 @@ const Meditation = props => {
                 ...res?.tracks?.track,
               ],
               load_more_url: res?.tracks?.load_more_url,
-              total_tracks: res?.total_tracks,
+              total_tracks: res?.tracks?.total_tracks,
             });
           }
 
@@ -490,6 +494,7 @@ const Meditation = props => {
       />
       <View style={mainStyles.innerView}>
         <Loader enable={isLoading} />
+       
 
         <View style={{flex: 1, marginHorizontal: -20}}>
           <FlatList
@@ -499,7 +504,7 @@ const Meditation = props => {
             ListHeaderComponent={flatListHeader()}
             contentContainerStyle={{paddingVertical: 10, paddingBottom: 50}}
             showsVerticalScrollIndicator={false}
-            onEndReached={api_loadMoreTracks}
+            onEndReached={_debounce}
             data={
               !!selectedCategory?.category_track
                 ? selectedCategory?.category_track

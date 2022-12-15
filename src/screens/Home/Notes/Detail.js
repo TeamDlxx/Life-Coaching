@@ -10,6 +10,7 @@ import {
   TouchableHighlight,
   Alert,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import React, {useEffect, useState, useRef, useContext} from 'react';
 import Header from '../../../Components/Header';
@@ -25,6 +26,7 @@ import AutoHeightWebView from 'react-native-autoheight-webview';
 import {Menu, MenuItem, MenuDivider} from 'react-native-material-menu';
 import ImageZoomer from '../../../Components/ImageZoomer';
 import Context from '../../../Context';
+import analytics from '@react-native-firebase/analytics';
 // fro API calling
 
 import showToast from '../../../functions/showToast';
@@ -33,30 +35,20 @@ import invokeApi from '../../../functions/invokeAPI';
 
 let audioRecorderPlayer = new AudioRecorderPlayer();
 
-const ic_pallete = require('../../../Assets/Icons/palette.png');
-const ic_cross = require('../../../Assets/Icons/cross.png');
-const ic_save = require('../../../Assets/Icons/tick.png');
-const ic_image = require('../../../Assets/Icons/h_placeholder1.png');
-
-const ic_mic = require('../../../Assets/Icons/microphone-black-shape.png');
-const ic_gallery = require('../../../Assets/Icons/gallery.png');
-const ic_camera = require('../../../Assets/Icons/camera.png');
 const ic_play = require('../../../Assets/TrackPlayer/playTrack.png');
-const ic_stop = require('../../../Assets/TrackPlayer/stop.png');
 const ic_pause = require('../../../Assets/TrackPlayer/pauseTrack.png');
-const checked = require('../../../Assets/Icons/checked.png');
-const unChecked = require('../../../Assets/Icons/unchecked.png');
 import ic_download from '../../../Assets/Icons/download.png';
-// import ic_cross from '../../../Assets/Icons/cross.png';
-import ic_trash from '../../../Assets/Icons/trash.png';
-import {isIphoneX} from 'react-native-iphone-x-helper';
 import CustomImage from '../../../Components/CustomImage';
-import {fileURL} from '../../../Utilities/domains';
+import {baseURL, fileURL} from '../../../Utilities/domains';
+import moment from 'moment';
+
+const jsCode = `!function(){var e=function(e,n,t){if(n=n.replace(/^on/g,""),"addEventListener"in window)e.addEventListener(n,t,!1);else if("attachEvent"in window)e.attachEvent("on"+n,t);else{var o=e["on"+n];e["on"+n]=o?function(e){o(e),t(e)}:t}return e},n=document.querySelectorAll("a[href]");if(n)for(var t in n)n.hasOwnProperty(t)&&e(n[t],"onclick",function(e){new RegExp("^https?://"+location.host,"gi").test(this.href)||(e.preventDefault(),window.postMessage(JSON.stringify({external_url_open:this.href})))})}();`;
 const NoteDetail = props => {
   const {navigation} = props;
   const {downloadAudioNote, Token} = useContext(Context);
   const [note, setNote] = useState(props.route?.params?.note);
   const EditMenu = useRef();
+  const ref_webView = useRef();
   const [Audio, setAudio] = useState(null);
   const [isLoading, setisLoading] = useState(false);
   const [modalImage, setModalImage] = useState(null);
@@ -340,10 +332,30 @@ const NoteDetail = props => {
   }, [note?.audio]);
 
   useEffect(() => {
-    // if (!!props.route?.params?.note.description) {
-    //   setisLoading(true);
-    // }
+    analytics().logEvent(props?.route?.name);
   }, []);
+
+  const onMessage = event => {
+    console.log('onMessage', event);
+    const {data} = event.nativeEvent;
+    let messageData;
+    // maybe parse stringified JSON
+    try {
+      messageData = JSON.parse(data);
+    } catch (e) {
+      console.log(e.message);
+    }
+    if (typeof messageData === 'object') {
+      const {url} = messageData;
+      // check if this message concerns us
+      if (url && url.startsWith('http')) {
+        ref_webView.current.stopLoading();
+        Linking.openURL(url).catch(error =>
+          console.error('An error occurred', error),
+        );
+      }
+    }
+  };
 
   const flatListHeader = () => {
     return (
@@ -368,8 +380,23 @@ const NoteDetail = props => {
           <View style={{marginTop: 10, paddingHorizontal: 20}}>
             <AutoHeightWebView
               onLoad={() => setisLoading(false)}
-              // onLoadStart={() => setisLoading(true)}
+              ref={ref_webView}
               onError={() => setisLoading(false)}
+              onNavigationStateChange={event => {
+                if (Linking.canOpenURL(event.url)) {
+                  if (event.url.includes('http')) {
+                    console.log('if...');
+                    ref_webView.current.stopLoading();
+                    try {
+                      Linking.openURL(event.url);
+                    } catch (e) {
+                      console.log(e);
+                      showToast("Can't open this link");
+                    }
+                  }
+                }
+              }}
+              onMessage={args => console.log(args, 'On message')}
               overScrollMode="never"
               style={{
                 width: Dimensions.get('window').width - 15,
@@ -560,6 +587,13 @@ const NoteDetail = props => {
           />
         </View>
       )}
+      <Text
+        style={{
+          textAlign: 'center',
+          color: Colors.placeHolder,
+        }}>{`Last updated at ${moment(note?.updatedAt).format(
+        'DD-MM-YYYY hh:mm A',
+      )}`}</Text>
       <ImageZoomer
         closeModal={hideImageModal}
         visible={!!modalImage}
