@@ -51,10 +51,19 @@ const Meditation = props => {
 
   const gotoTrackPlayer = (item, index) => {
     if (!chooseScreenOnPurchasesAndLockedTrack(item.is_locked)) {
+      let list = [];
+      if (!!Token == false || !!isMeditationPurchased == false) {
+        list = selectedCategory?.category_track.filter(
+          x => x.is_locked == false,
+        );
+      } else {
+        list = selectedCategory?.category_track;
+      }
+
       props.navigation.navigate(screens.trackPlayer, {
         item: item,
         category: selectedCategory?.name,
-        list: selectedCategory?.category_track,
+        list: list,
         likeUnLikeFunc: likeUnLikeLocally,
       });
     } else if (Token) {
@@ -258,7 +267,6 @@ const Meditation = props => {
 
   useEffect(() => {
     call_categoryAPI();
-
     analytics().logEvent(props?.route?.name);
   }, []);
 
@@ -494,7 +502,6 @@ const Meditation = props => {
       />
       <View style={mainStyles.innerView}>
         <Loader enable={isLoading} />
-       
 
         <View style={{flex: 1, marginHorizontal: -20}}>
           <FlatList

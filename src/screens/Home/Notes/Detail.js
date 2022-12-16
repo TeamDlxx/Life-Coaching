@@ -11,6 +11,7 @@ import {
   Alert,
   ActivityIndicator,
   Linking,
+  Platform,
 } from 'react-native';
 import React, {useEffect, useState, useRef, useContext} from 'react';
 import Header from '../../../Components/Header';
@@ -41,6 +42,7 @@ import ic_download from '../../../Assets/Icons/download.png';
 import CustomImage from '../../../Components/CustomImage';
 import {baseURL, fileURL} from '../../../Utilities/domains';
 import moment from 'moment';
+import {isIphoneX} from 'react-native-iphone-x-helper';
 
 const jsCode = `!function(){var e=function(e,n,t){if(n=n.replace(/^on/g,""),"addEventListener"in window)e.addEventListener(n,t,!1);else if("attachEvent"in window)e.attachEvent("on"+n,t);else{var o=e["on"+n];e["on"+n]=o?function(e){o(e),t(e)}:t}return e},n=document.querySelectorAll("a[href]");if(n)for(var t in n)n.hasOwnProperty(t)&&e(n[t],"onclick",function(e){new RegExp("^https?://"+location.host,"gi").test(this.href)||(e.preventDefault(),window.postMessage(JSON.stringify({external_url_open:this.href})))})}();`;
 const NoteDetail = props => {
@@ -335,28 +337,6 @@ const NoteDetail = props => {
     analytics().logEvent(props?.route?.name);
   }, []);
 
-  const onMessage = event => {
-    console.log('onMessage', event);
-    const {data} = event.nativeEvent;
-    let messageData;
-    // maybe parse stringified JSON
-    try {
-      messageData = JSON.parse(data);
-    } catch (e) {
-      console.log(e.message);
-    }
-    if (typeof messageData === 'object') {
-      const {url} = messageData;
-      // check if this message concerns us
-      if (url && url.startsWith('http')) {
-        ref_webView.current.stopLoading();
-        Linking.openURL(url).catch(error =>
-          console.error('An error occurred', error),
-        );
-      }
-    }
-  };
-
   const flatListHeader = () => {
     return (
       <View style={{marginBottom: 30}}>
@@ -379,23 +359,45 @@ const NoteDetail = props => {
         {!!note?.description && (
           <View style={{marginTop: 10, alignItems: 'center'}}>
             <AutoHeightWebView
-              onLoad={() => setisLoading(false)}
-              ref={ref_webView}
-              onError={() => setisLoading(false)}
-              onNavigationStateChange={event => {
-                if (Linking.canOpenURL(event.url)) {
-                  if (event.url.includes('http')) {
-                    console.log('if...');
-                    ref_webView.current.stopLoading();
-                    try {
-                      Linking.openURL(event.url);
-                    } catch (e) {
-                      console.log(e);
-                      showToast("Can't open this link");
-                    }
+              ref={ref => (webview = ref)}
+              onShouldStartLoadWithRequest={req => {
+                console.log(req);
+                let {url} = req;
+
+                if (
+                  url.includes('www') &&
+                  (url.includes('com') ||
+                    url.includes('org') ||
+                    url.includes('co')) &&
+                  !url.includes('@')
+                ) {
+                  console.log('if...');
+                  webview.stopLoading();
+                  if (!url.includes('http')) {
+                    console.log("includes('http')");
+                    Linking.openURL('http://' + url);
+                  } else {
+                    console.log('wit hhtp');
+                    Linking.openURL(url);
                   }
+                } else if (url.includes('.com' && url.includes('@'))) {
+                  console.log('if...', webview);
+                  webview.stopLoading();
+                  Linking.openURL('mailto:' + url);
                 }
+                return false;
               }}
+              originWhitelist={['*']}
+              // javaScriptEnabled={true}
+              // injectedJavaScript={`
+              //   (function () {
+              //     window.onclick = function(e) {
+              //       e.preventDefault();
+              //       window.postMessage(e.target.href);
+              //       e.stopPropagation()
+              //     }
+              //   }());
+              // `}
               onMessage={args => console.log(args, 'On message')}
               overScrollMode="never"
               style={{
@@ -412,12 +414,12 @@ const NoteDetail = props => {
               // scalesPageToFit={true}
               viewportContent={'width=device-width, user-scalable=no'}
               customStyle={`
-          * {
-            font-family: 'Verdana', sans-serif;
-            font-size: 14px;
-          }
+                    * {
+                      font-family: 'Verdana', sans-serif;
+                      font-size: 14px;
+                    }
          
-        `}
+                   `}
             />
           </View>
         )}
@@ -538,73 +540,80 @@ const NoteDetail = props => {
         barStyle={'dark-content'}
         backgroundColor={note?.color.light}
       />
-      <Header
-        titleAlignLeft
-        navigation={navigation}
-        title={'Note'}
-        menu={dropDownMenu}
-      />
-      {!!note && (
+      <View style={{flex: 1}}>
+        <Header
+          titleAlignLeft
+          navigation={navigation}
+          title={'Note'}
+          menu={dropDownMenu}
+        />
+        {!!note && (
+          <View
+            style={{
+              // marginTop: 20,
+              flex: 1,
+            }}>
+            <FlatList
+              ListHeaderComponent={flatListHeader()}
+              numColumns={3}
+              data={note?.images}
+              showsVerticalScrollIndicator={false}
+              renderItem={({item, index}) => {
+                console.log('note?.images', item);
+                return (
+                  <Pressable
+                    onPress={() => showImageModal(item?.large)}
+                    style={{
+                      flex: 1 / 3,
+                      aspectRatio: 1,
+                      backgroundColor: note?.color.light,
+                      margin: 1,
+                      // borderRadius: 10,
+                      overflow: 'hidden',
+                    }}>
+                    <CustomImage
+                      source={{uri: fileURL + item?.medium}}
+                      style={{
+                        height: '100%',
+                        width: '100%',
+                      }}
+                      imageStyle={
+                        {
+                          // borderRadius: 20,
+                        }
+                      }
+                      indicatorProps={{color: Colors.primary}}
+                    />
+                  </Pressable>
+                );
+              }}
+            />
+          </View>
+        )}
         <View
           style={{
-            // marginTop: 20,
-            flex: 1,
+            paddingVertical: Platform.OS == 'android' || !isIphoneX() ? 10 : 0,
           }}>
-          <FlatList
-            ListHeaderComponent={flatListHeader()}
-            numColumns={3}
-            data={note?.images}
-            showsVerticalScrollIndicator={false}
-            renderItem={({item, index}) => {
-              console.log('note?.images', item);
-              return (
-                <Pressable
-                  onPress={() => showImageModal(item?.large)}
-                  style={{
-                    flex: 1 / 3,
-                    aspectRatio: 1,
-                    backgroundColor: note?.color.light,
-                    margin: 1,
-                    // borderRadius: 10,
-                    overflow: 'hidden',
-                  }}>
-                  <CustomImage
-                    source={{uri: fileURL + item?.medium}}
-                    style={{
-                      height: '100%',
-                      width: '100%',
-                    }}
-                    imageStyle={
-                      {
-                        // borderRadius: 20,
-                      }
-                    }
-                    indicatorProps={{color: Colors.primary}}
-                  />
-                </Pressable>
-              );
-            }}
-          />
+          <Text
+            style={{
+              textAlign: 'center',
+              color: Colors.placeHolder,
+            }}>{`Last updated at ${moment(note?.updatedAt).format(
+            'DD-MM-YYYY hh:mm A',
+          )}`}</Text>
         </View>
-      )}
-      <Text
-        style={{
-          textAlign: 'center',
-          color: Colors.placeHolder,
-        }}>{`Last updated at ${moment(note?.updatedAt).format(
-        'DD-MM-YYYY hh:mm A',
-      )}`}</Text>
-      <ImageZoomer
-        closeModal={hideImageModal}
-        visible={!!modalImage}
-        url={modalImage}
-        color={note?.color.light}
-        // noUrl
-      />
-      <Loader
-        enable={isLoading}
-        // style={{flex: 1, backgroundColor: note.color.light}}
-      />
+        <ImageZoomer
+          closeModal={hideImageModal}
+          visible={!!modalImage}
+          url={modalImage}
+          color={note?.color.light}
+          // noUrl
+        />
+        <Loader
+          enable={isLoading}
+          // style={{flex: 1, backgroundColor: note.color.light}}
+        />
+      </View>
     </SafeAreaView>
   );
 };

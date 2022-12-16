@@ -77,7 +77,7 @@ const Filter = props => {
           selectedColors: [],
         },
       },
-      merge: true,
+      merge: false,
     });
   };
   const btn_applyFilter = () => {
@@ -100,7 +100,7 @@ const Filter = props => {
             selectedColors: selectedColors,
           },
         },
-        merge: true,
+        merge: false,
       });
     }
   };

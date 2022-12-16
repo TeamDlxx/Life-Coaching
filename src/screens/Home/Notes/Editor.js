@@ -70,6 +70,7 @@ const Editor = props => {
   const oldnote1 = props?.route?.params?.note;
   const {navigation} = props;
   const RichText = React.useRef();
+  const scrollRef = React.useRef();
   const {Token, downloadAudioNote} = useContext(Context);
 
   const [isLoading, setisLoading] = useState(false);
@@ -154,9 +155,13 @@ const Editor = props => {
           />
           <Dialog.Button label="Cancel" onPress={() => closeDialogue()} />
           <Dialog.Button
-            label="Add"
+            label="Add "
             onPress={() => {
-              RichText.current?.insertLink(null, LinkModal.link);
+              let link = LinkModal.link;
+              if (!link.includes('http')) {
+                link = 'http://' + link;
+              }
+              RichText.current?.insertLink(null, link);
               closeDialogue();
             }}
           />
@@ -326,7 +331,6 @@ const Editor = props => {
   //? Audio modal
 
   const onMicPress = async () => {
-    
     let granted = true;
     if (Platform.OS == 'android') {
       granted = await checkPermissionsAndroid();
@@ -888,7 +892,7 @@ const Editor = props => {
                 onPress={() => {
                   RichText?.current.sendAction('foreColor', 'result', item);
                   // RichText?.current.setTextColor(item)
-                  setColorPickerModal({currentColor: item});
+                  setColorPickerModal({currentColor: item, visibility: false});
                 }}>
                 <View
                   style={{
@@ -1081,9 +1085,9 @@ const Editor = props => {
     }
   };
 
-  useEffect(() => {
-    console.log(notes, 'notes...');
-  }, [notes]);
+  // useEffect(() => {
+  //   console.log(notes, 'notes...');
+  // }, [notes]);
 
   //? Save Button
   const btn_save = () => {
@@ -1146,8 +1150,12 @@ const Editor = props => {
     if (res) {
       if (res.code == 200) {
         await analytics().logEvent('NOTE_CREATED_BY_USER_EVENT');
-        navigation.navigate(screens.notesList, {
-          addNew: res.Note,
+        navigation.navigate({
+          name: screens.notesList,
+          params: {
+            addNew: res.Note,
+          },
+          merge: false,
         });
       } else {
         showToast(res.message);
@@ -1387,7 +1395,10 @@ const Editor = props => {
                   }
                 }}
               /> */}
-              <ScrollView showsVerticalScrollIndicator={false}>
+              <ScrollView
+                scrollEventThrottle={20}
+                ref={scrollRef}
+                showsVerticalScrollIndicator={false}>
                 <View
                   style={{
                     borderRadius: 10,
@@ -1403,6 +1414,16 @@ const Editor = props => {
                         // borderBottomColor: Colors.gray02,
                         // borderBottomWidth: 1,
                       }}
+                      onCursorPosition={scrollY => {
+                        scrollRef?.current.scrollTo({
+                          y: scrollY - 30,
+                          duration: 100,
+                          animated: true,
+                        });
+                      }}
+                      onContentSizeChange={res => {
+                        console.log('res', res);
+                      }}
                       initialHeight={150}
                       initialContentHTML={notes.note}
                       editorStyle={{
@@ -1411,19 +1432,34 @@ const Editor = props => {
                         contentCSSText:
                           ' * {font-family: "Verdana", sans-serif;}',
                       }}
-                      scrollEnabled={false}
+                      onInput={res => {
+                        console.log(res, 'onInput');
+                      }}
                       // setContentHTML={'<div><p><p/><div>'}
                       // setDisplayZoomControls={true}
                       // initialContentHTML={'<div><p>' + notes.note + '</p></div>'}
-                      useContainer={true}
+                      // useContainer={false}
+                      pasteAsPlainText={true}
                       placeholder={"What's in your mind"}
                       onChange={text => {
-                        // console.log(args)
                         setNotes({note: text});
+
+                        // scrollRef?.current.scrollToEnd({
+                        //   animated: true,
+                        // });
+                      }}
+                      onPaste={() => {
+                        console.log('onPaste');
+                        // setTimeout(() => {
+                        // setNotes({note: notes.note + '<div><br/></div>'});
+                        scrollRef?.current.scrollToEnd({
+                          animated: true,
+                        });
+                        //   // }, 200);
                       }}
                       // setBuiltInZoomControls={true}
-                      androidLayerType="software"
-                      androidHardwareAccelerationDisabled
+                      androidLayerType="hardware"
+                      // androidHardwareAccelerationDisabled
                       onBlur={() => {
                         setIsFocused(false);
                       }}

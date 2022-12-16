@@ -11,7 +11,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useCallback, useMemo} from 'react';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
 import {mainStyles, FAB_style} from '../../../Utilities/styles';
@@ -29,7 +29,6 @@ import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import analytics from '@react-native-firebase/analytics';
 import LoginAlert from '../../../Components/LoginAlert';
-import useBackHandler from '../../../hooks/useBackhandler';
 
 const screen_size = Dimensions.get('window');
 //icons
@@ -73,6 +72,7 @@ const List = props => {
   };
 
   React.useEffect(() => {
+    console.log(props.route, 'props.route');
     if (!!props.route?.params?.filter) {
       let {filter} = props.route.params;
       startDate = filter?.date.start;
@@ -139,6 +139,15 @@ const List = props => {
     setisLoadingMore(false);
     if (res) {
       if (res.code == 200) {
+        // let arr = [];
+        // res.notes.forEach(async element => {
+        //   let plainDescription = '';
+        //   if (element.description) {
+        //     plainDescription = await element?.description.slice(50);
+        //   }
+        //   arr.push({...element, plainDescription});
+        // });
+        // console.log('arr', arr);
         setList(res.notes);
         pageNumber = 1;
         if (res.notes.length < res.count) {
@@ -168,6 +177,14 @@ const List = props => {
     if (res) {
       if (res.code == 200) {
         let total = list.length + res.notes.length;
+        // let arr = [];
+        // res.notes.forEach(async element => {
+        //   let plainDescription = '';
+        //   if (element.description) {
+        //     plainDescription = await element?.description.slice(50);
+        //   }
+        //   arr.push({...element, plainDescription});
+        // });
         setList([...list, ...res.notes]);
         pageNumber++;
         if (total < res.count) {
@@ -236,141 +253,157 @@ const List = props => {
     }
   };
 
-  const flatListRenderItem = ({item, index}) => {
-    return (
-      <Pressable
-        onPress={() =>
-          navigation.navigate(screens.notesDetail, {
-            note: item,
-            updateNote,
-          })
-        }
-        style={{
-          flex: 1,
-          marginTop: 20,
-          width: '95%',
-          alignSelf: 'center',
-        }}>
-        <View
+  const extractText = useMemo(i => {
+    if (!!list[i]?.description) {
+      return list[i]?.description.replace(/<\/?[^>]+(>|$)/g, '');
+    }
+  }, []);
+
+  const flatListRenderItem = useCallback(
+    ({item, index}) => {
+      let regex = /<p(?:\sclass="[^"]+")?>([^(?:<\/p)]+)<\/p>/;
+
+      return (
+        <Pressable
+          onPress={() =>
+            navigation.navigate(screens.notesDetail, {
+              note: item,
+              updateNote,
+            })
+          }
           style={{
-            backgroundColor: item?.color?.light,
-            alignItems: 'center',
-            paddingVertical: 15,
-            borderRadius: 20,
-            borderWidth: 1,
-            borderColor: item?.color?.dark,
-            flexDirection: 'row',
-            paddingHorizontal: 30,
-            // height: 100,
+            // flex: 1,
+            marginTop: 20,
+            width: '95%',
+            alignSelf: 'center',
+            // height:200,
           }}>
-          <View>
-            <Image
-              source={ic_notes}
-              style={{height: 40, width: 40, tintColor: item?.color.dark}}
-            />
-          </View>
           <View
             style={{
-              marginLeft: 20,
-              justifyContent: 'center',
-              flex: 1,
+              backgroundColor: item?.color?.light,
+              alignItems: 'center',
+              paddingVertical: 15,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor: item?.color?.dark,
+              flexDirection: 'row',
+              paddingHorizontal: 30,
+              // height: 100,
             }}>
-            <Text style={{fontFamily: font.bold, fontSize: 18}}>
-              {item.title}
-            </Text>
-
-            {/* {!!item?.description && (
-              <AutoHeightWebView
-                style={{height: 32}}
-                source={{html: item?.description}}
-                scrollEnabled={false}
-                javaScriptEnabled={true}
-                viewportContent={'width=device-width, user-scalable=no'}
-                // customScript={`document.getElementsByTagName("*").style.font-family ="'Verdana', sans-serif"`}
-                customScript={`let length = document.getElementsByTagName("*").length;
-                for(let i=0; i<length;i++){
-                document.getElementsByTagName("*")[i].style.color = "black";
-                // document.getElementsByTagName("*")[i].style.font-size = "14px";
-                }`}
-
-                  customStyle={`
-                  *{
-                    font-family: 'Verdana', sans-serif;
-                    font-size: 12px;
-                    // color:'black' !important;
-                  },
-                  p{
-                    font-family: 'Verdana', sans-serif;
-                    font-size: 12px;
-                    // color:'#000' !important;
-                  }
-
-                `}
+            <View>
+              <Image
+                source={ic_notes}
+                style={{height: 40, width: 40, tintColor: item?.color.dark}}
               />
-            )} */}
-            {item?.description && (
+            </View>
+            <View
+              style={{
+                marginLeft: 20,
+                justifyContent: 'center',
+                flex: 1,
+              }}>
+              <Text style={{fontFamily: font.bold, fontSize: 18}}>
+                {item.title}
+              </Text>
+
+              {/* {!!item?.description && (
+                <AutoHeightWebView
+                  style={{height: 32}}
+                  source={{html: item?.description}}
+                  scrollEnabled={false}
+                  javaScriptEnabled={true}
+                  viewportContent={'width=device-width, user-scalable=no'}
+                  // customScript={`document.getElementsByTagName("*").style.font-family ="'Verdana', sans-serif"`}
+                  customScript={`let length = document.getElementsByTagName("*").length;
+                  for(let i=0; i<length;i++){
+                  document.getElementsByTagName("*")[i].style.color = "black";
+                  // document.getElementsByTagName("*")[i].style.font-size = "14px";
+                  }`}
+  
+                    customStyle={`
+                    *{
+                      font-family: 'Verdana', sans-serif;
+                      font-size: 12px;
+                      // color:'black' !important;
+                    },
+                    p{
+                      font-family: 'Verdana', sans-serif;
+                      font-size: 12px;
+                      // color:'#000' !important;
+                    }
+  
+                  `}
+                />
+              )} */}
+              {item?.description && (
+                <Text
+                  numberOfLines={2}
+                  style={{
+                    fontFamily: font.regular,
+                    fontSize: 14,
+                    marginVertical: 2,
+                  }}>
+                  {/* {item?.description.slice(0, 50)} */}
+                  {item?.description.replace(/<[^>]+>/g, '').slice(0, 100)}
+
+                  {/* {item?.description.match(regex)[1]} */}
+                  {item?.plainDescription}
+                </Text>
+              )}
+              {(item?.images.length != 0 || item?.audio != '') && (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    // justifyContent: isGridView ? 'center' : 'flex-start',
+                    alignItems: 'center',
+                    marginTop: 7,
+                    minHeight: 15,
+                  }}>
+                  {item?.images.length != 0 && (
+                    <Image
+                      source={ic_image}
+                      style={{
+                        height: 15,
+                        width: 15,
+                        marginRight: 5,
+                        tintColor: Colors.placeHolder,
+                      }}
+                    />
+                  )}
+                  {item?.audio != '' && (
+                    <Image
+                      source={ic_mic}
+                      style={{
+                        height: 15,
+                        width: 15,
+                        tintColor: Colors.placeHolder,
+                      }}
+                    />
+                  )}
+                </View>
+              )}
               <Text
-                numberOfLines={2}
+                numberOfLines={1}
                 style={{
                   fontFamily: font.regular,
-                  fontSize: 14,
-                  marginVertical: 2,
-                }}>
-                {item?.description.replace(/<\/?[^>]+(>|$)/g, '')}
-              </Text>
-            )}
-            {(item?.images.length != 0 || item?.audio != '') && (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  // justifyContent: isGridView ? 'center' : 'flex-start',
-                  alignItems: 'center',
+                  fontSize: 10,
                   marginTop: 7,
-                  minHeight: 15,
+                  color: Colors.gray10,
                 }}>
-                {item?.images.length != 0 && (
-                  <Image
-                    source={ic_image}
-                    style={{
-                      height: 15,
-                      width: 15,
-                      marginRight: 5,
-                      tintColor: Colors.placeHolder,
-                    }}
-                  />
-                )}
-                {item?.audio != '' && (
-                  <Image
-                    source={ic_mic}
-                    style={{
-                      height: 15,
-                      width: 15,
-                      tintColor: Colors.placeHolder,
-                    }}
-                  />
-                )}
-              </View>
-            )}
-            <Text
-              numberOfLines={1}
-              style={{
-                fontFamily: font.regular,
-                fontSize: 10,
-                marginTop: 7,
-                color: Colors.gray10,
-              }}>
-              <Text>
-                {item?.updatedAt == item?.createdAt
-                  ? 'Created on : '
-                  : 'Updated on : '}
+                <Text>
+                  {item?.updatedAt == item?.createdAt
+                    ? 'Created on : '
+                    : 'Updated on : '}
+                </Text>
+                {moment(item?.updatedAt).format('DD-MM-YYYY')}
               </Text>
-              {moment(item?.updatedAt).format('DD-MM-YYYY')}
-            </Text>
+            </View>
           </View>
-        </View>
-      </Pressable>
-    );
-  };
+        </Pressable>
+      );
+    },
+    [list],
+  );
 
   const flatListEmptyComponent = () => {
     if (isLoading == false)
@@ -530,8 +563,9 @@ const List = props => {
             keyExtractor={item => {
               return item._id;
             }}
+            // maxToRenderPerBatch={20}
             showsVerticalScrollIndicator={false}
-            shouldBounceOnMount={true}
+            // shouldBounceOnMount={true}
             maxSwipeDistance={70}
             data={list}
             renderItem={flatListRenderItem}
