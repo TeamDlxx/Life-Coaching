@@ -28,6 +28,9 @@ import PushNotification from 'react-native-push-notification';
 import LoginAlert from '../../../Components/LoginAlert';
 import analytics from '@react-native-firebase/analytics';
 
+import {BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
+import Admob_Ids from '../../../Utilities/AdmobIds';
+
 // import {useLoginAlert} from '../../../hooks/useLoginAlert';
 // For API's calling
 import {useContext} from 'react';
@@ -58,7 +61,7 @@ const HabitTracker = props => {
     modalVisible: false,
     item: null,
   });
-
+  const [adError, setAdError] = useState(false);
   // console.log('isHabitPurchased', isHabitPurchased);
 
   const filterSelectedDayHabits = list => {
@@ -545,40 +548,68 @@ const HabitTracker = props => {
 
   const flatListHeader = () => {
     return (
-      <View style={{paddingHorizontal: 20, backgroundColor: Colors.background}}>
-        <Pressable
-          onPress={() =>
-            PushNotification.getScheduledLocalNotifications(list => {
-              console.log('list', list);
-            })
-          }
-          style={{marginTop: 5}}>
-          <Text style={other_style.labelText}>
-            {moment().format('DD MMM YYYY')}
-          </Text>
-        </Pressable>
-        <View style={{marginHorizontal: -20, marginTop: 5}}>
-          <FlatList
-            listKey="days"
-            initialNumToRender={7}
-            ref={daysFlatList}
-            keyExtractor={(item, index) => {
-              return index.toString();
-            }}
-            contentContainerStyle={{paddingHorizontal: 20}}
-            showsHorizontalScrollIndicator={false}
-            data={daysList}
-            horizontal={true}
-            renderItem={renderDays}
-            onScrollToIndexFailed={() => {
-              console.log('scroll error');
-            }}
-          />
+      <>
+        <View
+          style={{paddingHorizontal: 20, backgroundColor: Colors.background}}>
+          <Pressable
+            onPress={() =>
+              PushNotification.getScheduledLocalNotifications(list => {
+                console.log('list', list);
+              })
+            }
+            style={{marginTop: 5}}>
+            <Text style={other_style.labelText}>
+              {moment().format('DD MMM YYYY')}
+            </Text>
+          </Pressable>
+          <View style={{marginHorizontal: -20, marginTop: 5}}>
+            <FlatList
+              listKey="days"
+              initialNumToRender={7}
+              ref={daysFlatList}
+              keyExtractor={(item, index) => {
+                return index.toString();
+              }}
+              contentContainerStyle={{paddingHorizontal: 20}}
+              showsHorizontalScrollIndicator={false}
+              data={daysList}
+              horizontal={true}
+              renderItem={renderDays}
+              onScrollToIndexFailed={() => {
+                console.log('scroll error');
+              }}
+            />
+          </View>
+
+          <Pressable style={{marginTop: 5, marginBottom: 15}}>
+            <Text style={other_style.labelText}>All Habits</Text>
+          </Pressable>
         </View>
-        <Pressable style={{marginTop: 5, marginBottom: 15}}>
-          <Text style={other_style.labelText}>All Habits</Text>
-        </Pressable>
-      </View>
+        {isHabitPurchased == false && adError == false && (
+          <View
+            style={{
+              width: '100%',
+              height: 100,
+              alignItems: 'center',
+              paddingVertical: 15,
+              // backgroundColor:'pink',
+              justifyContent: 'center',
+              marginTop: -15,
+            }}>
+            <BannerAd
+              size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+              unitId={Admob_Ids.banner}
+              requestOptions={{
+                requestNonPersonalizedAdsOnly: true,
+              }}
+              onAdFailedToLoad={err => {
+                console.log(err, 'Banner Ad Error...');
+                setAdError(true);
+              }}
+            />
+          </View>
+        )}
+      </>
     );
   };
 
@@ -769,7 +800,11 @@ const HabitTracker = props => {
               stickyHeaderIndices={[0]}
               stickyHeaderHiddenOnScroll={true}
               ListHeaderComponent={flatListHeader()}
-              contentContainerStyle={{paddingVertical: 10, paddingBottom: 50}}
+              contentContainerStyle={
+                filterSelectedDayHabits(habitList).length == 0
+                  ? {flex: 1}
+                  : {paddingVertical: 10, paddingBottom: 50}
+              }
               showsVerticalScrollIndicator={false}
               data={filterSelectedDayHabits(habitList)}
               renderItem={renderHabitsList}
@@ -778,7 +813,11 @@ const HabitTracker = props => {
               }}
               ListEmptyComponent={() =>
                 isLoading == false && (
-                  <EmptyView title={`No Habits for this date`} noSubtitle />
+                  <EmptyView
+                    style={{marginTop: 0, flex: 1}}
+                    title={`No Habits for this date`}
+                    noSubtitle
+                  />
                 )
               }
             />

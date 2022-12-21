@@ -20,6 +20,9 @@ import LoginAlert from '../../../Components/LoginAlert';
 import analytics from '@react-native-firebase/analytics';
 import {screens} from '../../../Navigation/Screens';
 
+import {BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
+import Admob_Ids from '../../../Utilities/AdmobIds';
+
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -42,7 +45,7 @@ import ic_share from '../../../Assets/TrackPlayer/share.png';
 import ic_tick from '../../../Assets/Icons/tick.png';
 import {duration} from 'moment';
 import {font} from '../../../Utilities/font';
-
+import ic_lock from '../../../Assets/Icons/locked.png';
 const TrackPlayerScreen = props => {
   const {navigation} = props;
   const {params} = props?.route;
@@ -56,6 +59,7 @@ const TrackPlayerScreen = props => {
   const [loading, setloading] = useState(true);
   const [isfav, setIsfav] = useState(params?.item?.is_favourite);
   const [downloaded, setDownloaded] = useState(null);
+  const [adError, setAdError] = useState(false);
 
   console.log('tracks', TrackPlayer);
   const moveTo = async val => {
@@ -87,6 +91,8 @@ const TrackPlayerScreen = props => {
 
           setDownloaded(res);
         } else {
+          TrackPlayer.pause();
+          setPlayIcon(playTrack);
           props.navigation.navigate(screens.allPackages, {
             from: 'meditation',
           });
@@ -166,7 +172,9 @@ const TrackPlayerScreen = props => {
       if (tracksList[newIndex]) {
         setTrackItem(tracksList[newIndex]);
         setIsfav(tracksList[newIndex]?.is_favourite);
+        // if (trackItem.is_locked == true && isMeditationPurchased == false)) {
         setloading(true);
+        // }
       }
     }
   };
@@ -203,11 +211,16 @@ const TrackPlayerScreen = props => {
           : fileURL + trackItem?.images?.small,
       duration: Math.ceil(trackItem?.duration),
     });
-
-    await TrackPlayer.play();
-    await analytics().logEvent(`REPEAT_TRACK_EVENT`, {
-      item_name: trackItem.name,
-    });
+    if (trackItem?.is_locked == true && isMeditationPurchased == false) {
+      await TrackPlayer.pause();
+      setPlayIcon(playTrack);
+      setloading(false);
+    } else {
+      await TrackPlayer.play();
+      await analytics().logEvent(`REPEAT_TRACK_EVENT`, {
+        item_name: trackItem.name,
+      });
+    }
   };
 
   const checkNextAndPreviosAvailable = (id, type) => {
@@ -239,14 +252,18 @@ const TrackPlayerScreen = props => {
   useEffect(() => {
     TrackPlayer.addEventListener('playback-state', async ({state}) => {
       console.log('state: ' + state);
+
       if (state == 'playing' || state == 2) {
         setloading(false);
         setPlayIcon(pauseTrack);
       }
+
       if (state == 'paused' || state == 3) {
+        // setloading(false);
         setPlayIcon(playTrack);
       }
       if (state == 'stopped' || state == 4) {
+        // setloading(false);
         setPlayIcon(playTrack);
       }
     });
@@ -263,27 +280,39 @@ const TrackPlayerScreen = props => {
   }, []);
 
   const changeStatus = async () => {
+    console.log('changeStatus');
     let duration = parseInt(await TrackPlayer.getDuration());
     let position = parseInt(await TrackPlayer.getPosition());
     let position1 = parseInt(await TrackPlayer.getPosition()) + 1;
     let isPlaying = await TrackPlayer.getState();
-    if (
-      (isPlaying != 2 || isPlaying != 'playing') &&
-      (duration == position1 || duration == position)
-    ) {
-      TrackPlayer.seekTo(0);
-      TrackPlayer.play();
-      setPlayIcon(pauseTrack);
+    console.log('isPlaying', isPlaying);
+    if (isMeditationPurchased == false && trackItem?.is_locked == true) {
+      if (!Token) {
+        LoginAlert(props.navigation, props.route?.name);
+      } else {
+        props.navigation.navigate(screens.allPackages, {
+          from: 'meditation',
+        });
+      }
     } else {
-      if (playIcon == playTrack) {
+      if (
+        (isPlaying != 2 || isPlaying != 'playing') &&
+        (duration == position1 || duration == position)
+      ) {
+        TrackPlayer.seekTo(0);
         TrackPlayer.play();
         setPlayIcon(pauseTrack);
-        await analytics().logEvent(`PLAY_TRACK_EVENT`, {
-          item_name: trackItem.name,
-        });
       } else {
-        TrackPlayer.pause();
-        setPlayIcon(playTrack);
+        if (playIcon == playTrack) {
+          TrackPlayer.play();
+          setPlayIcon(pauseTrack);
+          await analytics().logEvent(`PLAY_TRACK_EVENT`, {
+            item_name: trackItem.name,
+          });
+        } else {
+          TrackPlayer.pause();
+          setPlayIcon(playTrack);
+        }
       }
     }
   };
@@ -319,11 +348,6 @@ const TrackPlayerScreen = props => {
   };
 
   const BTN_LIKE = async (val, id) => {
-    if (val) {
-      await analytics().logEvent(`LIKE_TRACK_BUTTON`, {
-        item_name: trackItem.name,
-      });
-    }
     if (Token) {
       api_likeUnLike(val, id);
     } else {
@@ -364,6 +388,11 @@ const TrackPlayerScreen = props => {
     if (res) {
       if (res.code == 200) {
         console.log('response', res);
+        if (val) {
+          analytics().logEvent(`FAVOURITE_TRACK_BUTTON`, {
+            item_name: trackItem.name,
+          });
+        }
       } else {
         console.log('blah blah');
         if (!!params?.likeUnLikeFunc) {
@@ -551,10 +580,22 @@ const TrackPlayerScreen = props => {
 
             <View style={_styleTrackPlayer.playPauseButtonView}>
               <Pressable
-                disabled={loading}
+                disabled={
+                  trackItem?.is_locked == true && isMeditationPurchased == false
+                    ? false
+                    : loading
+                    ? true
+                    : false
+                }
                 onPress={changeStatus}
                 style={_styleTrackPlayer.playPauseButtonInnerView}>
-                {loading ? (
+                {trackItem?.is_locked == true &&
+                isMeditationPurchased == false ? (
+                  <Image
+                    style={_styleTrackPlayer.playPauseLockedButtonIcon}
+                    source={ic_lock}
+                  />
+                ) : loading ? (
                   <ActivityIndicator color={'#fff'} size={'small'} />
                 ) : (
                   <Image
@@ -582,6 +623,33 @@ const TrackPlayerScreen = props => {
             <View style={_styleTrackPlayer.sideButtons} />
           </View>
         </View>
+        {isMeditationPurchased == false && adError == false && (
+          <View
+            style={{
+              // width: '100%',
+              height: 60,
+              alignItems: 'center',
+              // backgroundColor:'blue',
+              // paddingVertical: 15,
+              // marginBottom: -15,
+              // flex: 1,
+              justifyContent: 'center',
+              // backgroundColor: 'pink',
+              // marginTop:30
+            }}>
+            <BannerAd
+              size={BannerAdSize.BANNER}
+              unitId={Admob_Ids.banner}
+              requestOptions={{
+                requestNonPersonalizedAdsOnly: true,
+              }}
+              onAdFailedToLoad={err => {
+                console.log(err, 'Banner Ad Error...');
+                setAdError(true);
+              }}
+            />
+          </View>
+        )}
       </View>
     </View>
   );

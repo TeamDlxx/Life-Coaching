@@ -36,6 +36,9 @@
         android:requestLegacyExternalStorage="true"
         android:usesCleartextTraffic="true"
       android:theme="@style/AppTheme">
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-1612661276193414~6182069892"/>
         <meta-data  android:name="com.dieam.reactnativepushnotification.notification_foreground"
             android:value="true"/>
         <!-- Change the resource name to your App's accent color - or any other color you want -->

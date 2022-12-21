@@ -23,9 +23,14 @@ import SplashScreen from 'react-native-splash-screen';
 import Context from '../../Context';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import analytics from '@react-native-firebase/analytics';
+import {
+  useRewardedAd,
+  BannerAd,
+  BannerAdSize,
+} from 'react-native-google-mobile-ads';
+import Admob_Ids from '../../Utilities/AdmobIds';
 
 const height = Dimensions.get('screen').width;
-// background
 
 const home1 = require('../../Assets/Images/home3.jpg');
 const home2 = require('../../Assets/Images/home2.jpg');
@@ -38,7 +43,24 @@ const Home = props => {
   const habit = React.useContext(Context);
   const [opt, setOpt] = useState([]);
 
+  // console.log('TestIds.REWARDED', Admob_Ids.rewarded);
+  const rewarded = useRewardedAd(Admob_Ids.rewarded, {
+    requestNonPersonalizedAdsOnly: true,
+    contentUrl: 'https://reactnative.dev/',
+  });
+
+  if (rewarded.error) {
+    console.log('rewarded.error', rewarded.error);
+  }
+
+  // if (rewarded.isLoaded) {
+  console.log('rewarded.isLoaded', rewarded.isLoaded);
+  // }
+
+  // console.log('rewarded', rewarded);
+
   useEffect(() => {
+    rewarded.load();
     NotificationConfig(props);
     analytics().logEvent(props?.route?.name);
     setTimeout(() => {
@@ -46,7 +68,10 @@ const Home = props => {
       setOpt(options);
     }, 500);
 
-    return () => {};
+    return () => {
+      // unsubscribeLoaded();
+      // unsubscribeEarned();
+    };
   }, []);
 
   const onDisplayNotification = async () => {
@@ -81,6 +106,19 @@ const Home = props => {
     }
   };
 
+  const showAd = async () => {
+    console.log('rewarded', rewarded);
+    if (rewarded.isLoaded == false) {
+      rewarded.load();
+    } else if (rewarded.isLoaded == true) {
+      try {
+        rewarded.show();
+      } catch (e) {
+        console.log('rewarded Error', e);
+      }
+    }
+  };
+
   const ItemView = ({item, index}) => {
     let count = index < 2 ? 3 : index < 4 ? 2 : 1;
     return (
@@ -106,7 +144,7 @@ const Home = props => {
           paddingTop: index % 2 != 0 ? 40 : 0,
           marginLeft: index % 2 == 0 ? 30 : 15,
           marginRight: index % 2 != 0 ? 30 : 15,
-// overflow:"hidden",
+          // overflow:"hidden",
         }}>
         <Pressable
           onPress={() => onNextScreen(item)}
@@ -183,29 +221,28 @@ const Home = props => {
         backgroundColor={Colors.background}
       />
 
-      <>
-        <Pressable
-          style={{
-            height: 50,
-            justifyContent: 'center',
-            paddingHorizontal: 30,
-          }}>
-          <Text style={{fontSize: 20, fontFamily: font.bold, letterSpacing: 2}}>
-            Better.Me
-          </Text>
-        </Pressable>
+      <Pressable
+        disabled={!__DEV__}
+        onPress={showAd}
+        style={{
+          height: 50,
+          justifyContent: 'center',
+          paddingHorizontal: 30,
+        }}>
+        <Text style={{fontSize: 20, fontFamily: font.bold, letterSpacing: 2}}>
+          Better.Me
+        </Text>
+      </Pressable>
 
-        <View style={{flex: 1}}>
-          <FlatList
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{paddingBottom: 20, marginTop: 10}}
-            // bounces={false}
-            numColumns={2}
-            data={opt}
-            renderItem={ItemView}
-          />
-        </View>
-      </>
+      <View style={{flex: 1}}>
+        <FlatList
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{paddingBottom: 20, marginTop: 10}}
+          numColumns={2}
+          data={opt}
+          renderItem={ItemView}
+        />
+      </View>
     </SafeAreaView>
   );
 };

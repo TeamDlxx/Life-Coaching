@@ -14,7 +14,7 @@ const Header = props => {
           flexDirection: 'row',
           alignItems: 'center',
 
-          // paddingHorizontal:10
+          // backgroundColor: 'pink',
         },
         !!props?.backgroundColor && {
           backgroundColor: props.backgroundColor,

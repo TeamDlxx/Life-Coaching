@@ -1,4 +1,8 @@
 {
   "name": "LifeCoaching",
-  "displayName": "LifeCoaching"
+  "displayName": "LifeCoaching",
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-1612661276193414~6182069892",
+    "ios_app_id": "ca-app-pub-1612661276193414~3360465438"
+  }
 }

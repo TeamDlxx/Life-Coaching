@@ -15,7 +15,6 @@ import Colors from '../../../Utilities/Colors';
 import {mainStyles, allHabit_styles} from '../../../Utilities/styles';
 import {font} from '../../../Utilities/font';
 import {screens} from '../../../Navigation/Screens';
-import {SwipeListView} from 'react-native-swipe-list-view';
 import * as Progress from 'react-native-progress';
 import moment from 'moment';
 import CustomImage from '../../../Components/CustomImage';

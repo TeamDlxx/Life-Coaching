@@ -12,7 +12,7 @@ export const _styleTrackPlayer = StyleSheet.create({
     overflow: 'hidden',
   },
   posterView: {
-    flex: 0.5,
+    flex: 1,
     transform: [{scaleX: 2}],
     borderBottomStartRadius: 200,
     borderBottomEndRadius: 200,
@@ -32,7 +32,7 @@ export const _styleTrackPlayer = StyleSheet.create({
     backgroundColor: Colors.background,
     borderRadius: 40 / 2,
     marginLeft: 10,
-    flexDirection:"row",
+    flexDirection: 'row',
     alignItems: 'center',
   },
   backButtonIcon: {
@@ -45,15 +45,20 @@ export const _styleTrackPlayer = StyleSheet.create({
     tintColor: Colors.black,
   },
   controlsAndTextView: {
-    flex: 0.5,
+    flex: 1,
     justifyContent: 'space-between',
-    marginBottom: '15%',
+    marginBottom: isIphoneX() ? 40 : 10,
     marginTop: '10%',
+    // backgroundColor: 'pink',
   },
-  TextView: {marginHorizontal: 35, marginTop: -20},
+  TextView: {
+    marginHorizontal: 35,
+    marginTop: -25,
+    flex: 1,
+  },
   favButtonView: {
     alignItems: 'center',
-    height: 40,
+    height: 25,
     width: 40,
     borderRadius: 40 / 2,
     justifyContent: 'center',
@@ -87,15 +92,16 @@ export const _styleTrackPlayer = StyleSheet.create({
   },
   trackDescription: {
     fontFamily: font.medium,
-    fontSize: 14,
+    fontSize: 12,
     includeFontPadding: false,
-    color: Colors.gray05,
+    color: Colors.gray06,
+    // color: Colors.gray05,
     marginTop: 5,
   },
-  controlView: {marginHorizontal: 35, marginTop: 10},
+  controlView: {marginHorizontal: 35, },
   playerButtonsView: {
     flexDirection: 'row',
-    marginTop: 10,
+    marginTop: 5,
     justifyContent: 'center',
   },
   downloadButtonView: {
@@ -134,6 +140,7 @@ export const _styleTrackPlayer = StyleSheet.create({
     borderWidth: 7,
   },
   playPauseButtonIcon: {width: 22, height: 22, tintColor: Colors.white},
+  playPauseLockedButtonIcon: {width: 18, height: 18, tintColor: Colors.white},
 });
 
 export const mainStyles = StyleSheet.create({
@@ -208,7 +215,6 @@ export const chooseHabit_style = StyleSheet.create({
     fontFamily: font.medium,
     fontSize: 16,
     marginLeft: 10,
-
   },
   addButtonIcon: {height: 20, width: 20},
 });
@@ -387,8 +393,8 @@ export const stat_styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 10,
-    borderWidth:0.5,
-    borderColor:Colors.gray01
+    borderWidth: 0.5,
+    borderColor: Colors.gray01,
   },
   filterButtonIcon: {
     height: 18,

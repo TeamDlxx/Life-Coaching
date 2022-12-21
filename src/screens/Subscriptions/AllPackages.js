@@ -19,8 +19,8 @@ import {font} from '../../Utilities/font';
 import Collapsible from 'react-native-collapsible';
 import * as RNIap from 'react-native-iap';
 import showToast from '../../functions/showToast';
-import Loader from '../../Components/Loader';
 import analytics from '@react-native-firebase/analytics';
+import Loader from '../../Components/Loader';
 
 const ic_filledTick = require('../../Assets/Icons/circleFilledCheck.png');
 const ic_star = require('../../Assets/pkgIcons/star.png');
@@ -49,7 +49,7 @@ const itemsPurchase = Platform.select({
 
 const AllPackages = props => {
   const {Token, CheckPurchases, purchasedSKUs} = useContext(Context);
-  console.log('purchasedSKUs', purchasedSKUs);
+  console.log('props', props);
   const [loading, setisLoading] = useState(false);
   const {navigation} = props;
   const list = useRef();
@@ -425,7 +425,9 @@ const AllPackages = props => {
       <StatusBar
         backgroundColor={Colors.background}
         barStyle={'dark-content'}
+        translucent={false}
       />
+
       <Header title="Subscriptions" navigation={props.navigation} />
 
       <View style={{flex: 1, paddingHorizontal: 20}}>
@@ -487,7 +489,11 @@ const AllPackages = props => {
                       }}>
                       <Image
                         source={ic_tick}
-                        style={{height: 20, width: 20, tintColor: Colors.white}}
+                        style={{
+                          height: 20,
+                          width: 20,
+                          tintColor: Colors.white,
+                        }}
                       />
                     </View>
                   </TouchableOpacity>
@@ -507,7 +513,12 @@ const packages = [
     _id: '1',
     name: 'Habits',
     service: ['habit'],
-    description: ['Unlimited Habits', 'Unlimited time for Habits', 'Reminder'],
+    description: [
+      'Unlimited Habits',
+      'Unlimited time for Habits',
+      'Reminder',
+      'Remove Ads',
+    ],
     price: 2.99,
     type: 'star',
     duration: 'monthly',
@@ -518,7 +529,11 @@ const packages = [
     _id: '2',
     name: 'Meditations',
     service: ['meditation'],
-    description: ['Access to all tracks', 'Download & listen without internet'],
+    description: [
+      'Access to all tracks',
+      'Download & listen without internet',
+      'Remove Ads',
+    ],
     price: 2.99,
     type: 'star',
     duration: 'monthly',
@@ -535,6 +550,7 @@ const packages = [
       'Unlimited Habits',
       'Unlimited time for Habits',
       'Reminder',
+      'Remove Ads',
     ],
     price: 4.99,
     type: 'diamond',
@@ -552,6 +568,7 @@ const packages = [
       'Unlimited Habits',
       'Unlimited time for Habits',
       'Reminder',
+      'Remove Ads',
     ],
     price: 44.99,
     type: 'crown',

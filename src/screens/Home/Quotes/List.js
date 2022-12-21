@@ -289,7 +289,14 @@ const List = props => {
         </Pressable>
         {!!item?.description && (
           <View style={{paddingHorizontal: 5, paddingVertical: 10}}>
-            <Text style={{fontSize: 14, fontFamily: font.regular}}>
+            <Text
+              selectable={true}
+              selectionColor={Colors.primary}
+              suppressHighlighting={true}
+              style={{
+                fontSize: 14,
+                fontFamily: font.regular,
+              }}>
               {item?.description}
             </Text>
           </View>
