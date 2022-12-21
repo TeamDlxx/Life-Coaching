@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   PermissionsAndroid,
   Platform,
+  ToastAndroid
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Header from '../../../Components/Header';
@@ -33,6 +34,8 @@ import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import {fileURL} from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
+
+import Clipboard from '@react-native-clipboard/clipboard';
 
 //ICONS
 
@@ -109,6 +112,15 @@ const FavQuoteList = props => {
     removeLiked(item?._id);
     if (!!params?.toggleBackScreenLike) {
       params?.toggleBackScreenLike(val, item._id);
+    }
+  };
+
+  const copyText = async text => {
+    try {
+      await Clipboard.setString(text);
+      ToastAndroid.show('Text Copied', ToastAndroid.SHORT);
+    } catch (e) {
+      console.log(e, 'copyText...');
     }
   };
 
@@ -253,11 +265,30 @@ const FavQuoteList = props => {
           {/* <AutoHeightImage url={item?.images?.large} /> */}
         </Pressable>
 
-        <View style={{paddingHorizontal: 5, paddingVertical: 10}}>
+        {/* <View style={{paddingHorizontal: 5, paddingVertical: 10}}>
           <Text style={{fontSize: 14, fontFamily: font.regular}}>
             {item?.description}
           </Text>
-        </View>
+        </View> */}
+        {!!item?.description && (
+          <TouchableHighlight
+            disabled={Platform.OS == 'ios'}
+            onLongPress={() => copyText(item?.description)}
+            delayLongPress={500}
+            underlayColor={Colors.gray01}
+            style={{}}>
+            <Text
+              selectable={Platform.OS == 'ios' ? true : false}
+              style={{
+                fontSize: 14,
+                fontFamily: font.regular,
+                paddingHorizontal: 5,
+                paddingVertical: 10,
+              }}>
+              {item?.description}
+            </Text>
+          </TouchableHighlight>
+        )}
 
         <View
           style={{

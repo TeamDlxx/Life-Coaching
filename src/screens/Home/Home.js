@@ -221,18 +221,22 @@ const Home = props => {
         backgroundColor={Colors.background}
       />
 
-      <Pressable
-        disabled={!__DEV__}
-        onPress={showAd}
+      <View
         style={{
           height: 50,
           justifyContent: 'center',
-          paddingHorizontal: 30,
+          // paddingHorizontal: 30,
+          marginLeft: 30,
+          width:"100%"
         }}>
-        <Text style={{fontSize: 20, fontFamily: font.bold, letterSpacing: 2}}>
+        {/* <Text style={{fontSize: 20, fontFamily: font.bold, letterSpacing: 2}}>
           Better.Me
-        </Text>
-      </Pressable>
+        </Text> */}
+        <Image
+          source={require('../../Assets/app-icon/t.png')}
+          style={{height: 23, aspectRatio:6}}
+        />
+      </View>
 
       <View style={{flex: 1}}>
         <FlatList

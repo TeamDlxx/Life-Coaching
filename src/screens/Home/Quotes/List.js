@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   PermissionsAndroid,
   Platform,
+  ToastAndroid,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Header from '../../../Components/Header';
@@ -28,6 +29,8 @@ import RNFS from 'react-native-fs';
 import kFormatter from '../../../functions/kFormatter';
 import ImageZoomer from '../../../Components/ImageZoomer';
 import analytics from '@react-native-firebase/analytics';
+
+import Clipboard from '@react-native-clipboard/clipboard';
 
 // For API's calling
 import {useContext} from 'react';
@@ -147,6 +150,14 @@ const List = props => {
     }
   };
 
+  const copyText = async text => {
+    try {
+      await Clipboard.setString(text);
+      ToastAndroid.show('Text Copied', ToastAndroid.SHORT);
+    } catch (e) {
+      console.log(e, 'copyText...');
+    }
+  };
   //todo API's
 
   const call_quoteListAPI = () => {
@@ -288,18 +299,23 @@ const List = props => {
           />
         </Pressable>
         {!!item?.description && (
-          <View style={{paddingHorizontal: 5, paddingVertical: 10}}>
+          <TouchableHighlight
+            disabled={Platform.OS == 'ios'}
+            onLongPress={() => copyText(item?.description)}
+            delayLongPress={500}
+            underlayColor={Colors.gray01}
+            style={{}}>
             <Text
-              selectable={true}
-              selectionColor={Colors.primary}
-              suppressHighlighting={true}
+              selectable={Platform.OS == 'ios' ? true : false}
               style={{
                 fontSize: 14,
                 fontFamily: font.regular,
+                paddingHorizontal: 5,
+                paddingVertical: 10,
               }}>
               {item?.description}
             </Text>
-          </View>
+          </TouchableHighlight>
         )}
         <View
           style={{
