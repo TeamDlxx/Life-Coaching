@@ -16,7 +16,7 @@ import {screens} from '../../Navigation/Screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SplashScreen from 'react-native-splash-screen';
 import analytics from '@react-native-firebase/analytics';
-
+import messaging from '@react-native-firebase/messaging';
 const screen = Dimensions.get('screen');
 
 const Onboarding = props => {
@@ -35,10 +35,17 @@ const Onboarding = props => {
     AsyncStorage.setItem('@onboarding', 'true');
   };
 
+  const subscribeToFirebaseTopic = async () => {
+    await messaging()
+      .subscribeToTopic('qouteCreated')
+      .then(() => console.log('Subscribed to topic!'));
+  };
+
   useEffect(() => {
     SplashScreen.hide();
     OnboardingChecked();
     analytics().logEvent(props?.route?.name);
+    subscribeToFirebaseTopic();
   }, []);
 
   const renderItem = ({item, index}) => {

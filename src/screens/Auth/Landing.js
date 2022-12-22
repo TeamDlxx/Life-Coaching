@@ -15,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import SplashScreen from 'react-native-splash-screen';
 import Context from '../../Context';
 import analytics from '@react-native-firebase/analytics';
+import showToast from '../../functions/showToast';
 
 export default function Landing({navigation}, props) {
   const {setToken} = useContext(Context);
@@ -28,11 +29,16 @@ export default function Landing({navigation}, props) {
     navigation.navigate(screens.Login);
   };
 
-  const onGuestMode = () => {
-    navigation.reset({
-      index: 0,
-      routes: [{name: screens.bottomTabs}],
-    });
+  const onGuestMode = async () => {
+    try {
+      let res = await AsyncStorage.setItem('@guestMode', 'true');
+      navigation.reset({
+        index: 0,
+        routes: [{name: screens.bottomTabs}],
+      });
+    } catch (e) {
+      showToast('Please try again', 'Something went wrong');
+    }
   };
 
   return (

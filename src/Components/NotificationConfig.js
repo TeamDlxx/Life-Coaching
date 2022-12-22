@@ -49,6 +49,22 @@ export default function NotificationConfig(props) {
 
         break;
 
+      case 'quotes':
+        props.navigation.reset({
+          index: 0,
+          routes: [
+            {name: screens.bottomTabs},
+            {
+              name: screens.qouteList,
+              params: {
+                _id: data._id,
+              },
+            },
+          ],
+        });
+
+        break;
+
       case 'habit':
         props.navigation.reset({
           index: 0,

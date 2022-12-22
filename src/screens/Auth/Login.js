@@ -24,7 +24,7 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {font} from '../../Utilities/font';
 import {screens} from '../../Navigation/Screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import messaging, {firebase} from '@react-native-firebase/messaging';
+import messaging from '@react-native-firebase/messaging';
 import {isIphoneX, getStatusBarHeight} from 'react-native-iphone-x-helper';
 import analytics from '@react-native-firebase/analytics';
 import showToast from '../../functions/showToast';
@@ -56,11 +56,16 @@ const Login = props => {
     props.navigation.navigate(screens.forgotPassword);
   };
 
-  const GuestLogin = () => {
-    props.navigation.reset({
-      index: 0,
-      routes: [{name: screens.bottomTabs}],
-    });
+  const GuestLogin = async () => {
+    try {
+      let res = await AsyncStorage.setItem('@guestMode', 'true');
+      props.navigation.reset({
+        index: 0,
+        routes: [{name: screens.bottomTabs}],
+      });
+    } catch (e) {
+      showToast('Please try again', 'Something went wrong');
+    }
   };
 
   const onBottomTabScreen = async data => {
@@ -74,6 +79,15 @@ const Login = props => {
           user_id: data?.user?.user_id,
         }),
       ],
+      [
+        '@user',
+        JSON.stringify({
+          name: data?.user?.name,
+          profile_image: data?.user?.profile_image,
+          user_id: data?.user?.user_id,
+        }),
+      ],
+      ['guestMode', 'false'],
     ];
     console.log('Async Data', asyncData);
     AsyncStorage.multiSet(asyncData)

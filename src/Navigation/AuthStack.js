@@ -77,12 +77,21 @@ const AuthStack = () => {
   const {Token, setToken} = useContext(Context);
 
   const checkOBoarding = async () => {
-    let seen = await AsyncStorage.multiGet(['@onboarding', '@token']);
+    let seen = await AsyncStorage.multiGet([
+      '@onboarding',
+      '@token',
+      '@guestMode',
+    ]);
+    console.log(seen, 'seen...');
     if (seen[0][1] != null) {
       if (seen[1][1] != null) {
         setToken(seen[1][1]);
+        setWhichScreen(screens.bottomTabs);
+      } else if (seen[2][1] != null && seen[2][1] == 'true') {
+        setWhichScreen(screens.bottomTabs);
+      } else {
+        setWhichScreen(screens.landing);
       }
-      setWhichScreen(screens.bottomTabs);
     } else {
       setWhichScreen(screens.onboarding);
     }

@@ -44,23 +44,23 @@ const Home = props => {
   const [opt, setOpt] = useState([]);
 
   // console.log('TestIds.REWARDED', Admob_Ids.rewarded);
-  const rewarded = useRewardedAd(Admob_Ids.rewarded, {
-    requestNonPersonalizedAdsOnly: true,
-    contentUrl: 'https://reactnative.dev/',
-  });
+  // const rewarded = useRewardedAd(Admob_Ids.rewarded, {
+  //   requestNonPersonalizedAdsOnly: true,
+  //   contentUrl: 'https://reactnative.dev/',
+  // });
 
-  if (rewarded.error) {
-    console.log('rewarded.error', rewarded.error);
-  }
+  // if (rewarded.error) {
+  //   console.log('rewarded.error', rewarded.error);
+  // }
 
   // if (rewarded.isLoaded) {
-  console.log('rewarded.isLoaded', rewarded.isLoaded);
+  // console.log('rewarded.isLoaded', rewarded.isLoaded);
   // }
 
   // console.log('rewarded', rewarded);
 
   useEffect(() => {
-    rewarded.load();
+    // rewarded.load();
     NotificationConfig(props);
     analytics().logEvent(props?.route?.name);
     setTimeout(() => {
@@ -227,21 +227,19 @@ const Home = props => {
           justifyContent: 'center',
           // paddingHorizontal: 30,
           marginLeft: 30,
-          width:"100%"
+          width: '100%',
         }}>
-        {/* <Text style={{fontSize: 20, fontFamily: font.bold, letterSpacing: 2}}>
-          Better.Me
-        </Text> */}
         <Image
-          source={require('../../Assets/app-icon/t.png')}
-          style={{height: 23, aspectRatio:6}}
+          resizeMode="contain"
+          source={require('../../Assets/app-icon/text.png')}
+          style={{height: 25.5, aspectRatio: 6}}
         />
       </View>
 
       <View style={{flex: 1}}>
         <FlatList
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{paddingBottom: 20, marginTop: 10}}
+          contentContainerStyle={{paddingBottom: 20, marginTop: 15}}
           numColumns={2}
           data={opt}
           renderItem={ItemView}

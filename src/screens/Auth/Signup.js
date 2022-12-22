@@ -48,11 +48,16 @@ const Signup = props => {
     props.navigation.navigate(screens.Login);
   };
 
-  const GuestLogin = () => {
-    props.navigation.reset({
-      index: 0,
-      routes: [{name: screens.bottomTabs}],
-    });
+  const GuestLogin = async () => {
+    try {
+      let res = await AsyncStorage.setItem('@guestMode', 'true');
+      props.navigation.reset({
+        index: 0,
+        routes: [{name: screens.bottomTabs}],
+      });
+    } catch (e) {
+      showToast('Please try again', 'Something went wrong');
+    }
   };
 
   const onBottomTabScreen = data => {
@@ -66,6 +71,7 @@ const Signup = props => {
           user_id: data?.user_id,
         }),
       ],
+      ['guestMode', 'false'],
     ];
     console.log('Async Data', asyncData);
     AsyncStorage.multiSet(asyncData)

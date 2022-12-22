@@ -1,37 +1,37 @@
 {
   "project_info": {
-    "project_number": "873545477450",
-    "project_id": "life-coaching-cd058",
-    "storage_bucket": "life-coaching-cd058.appspot.com"
+    "project_number": "943544818199",
+    "project_id": "better-me-app-555bf",
+    "storage_bucket": "better-me-app-555bf.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:873545477450:android:268738aef957ef51b565b3",
+        "mobilesdk_app_id": "1:943544818199:android:637bf924d2749779d2da52",
         "android_client_info": {
           "package_name": "com.coachingoflife.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "873545477450-js1rpl3n0lrpjdi29e2cfq81iclckpgp.apps.googleusercontent.com",
+          "client_id": "943544818199-haj3l34q55qafqv6l7i09c2a7gok6h2q.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAzTIqPz-QAwGaE9c5DRH1EuxHNOUnaLqY"
+          "current_key": "AIzaSyDaCN9-TvJhQX5AR89UEyEGotq8on08T7I"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "873545477450-js1rpl3n0lrpjdi29e2cfq81iclckpgp.apps.googleusercontent.com",
+              "client_id": "943544818199-haj3l34q55qafqv6l7i09c2a7gok6h2q.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "873545477450-17ks6h2ctbnkqp75fri2uu04fhmfqu3f.apps.googleusercontent.com",
+              "client_id": "943544818199-0p489k8o61c9n13f2f4rf8iqitj3p6v5.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
                 "bundle_id": "com.coachingoflife.app"

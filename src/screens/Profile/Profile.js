@@ -35,7 +35,7 @@ import EmptyView from '../../Components/EmptyView';
 
 // icon
 
-const ic_logo = require('../../Assets/logo/logo.png');
+const ic_logo = require('../../Assets/app-icon/final.png');
 const screen = Dimensions.get('screen');
 const Profile = props => {
   const {Token, habitList, setHabitList, completed, purchasedSKUs} =
@@ -269,14 +269,16 @@ const Profile = props => {
       ) : (
         <View style={{flex: 1}}>
           <View style={{alignItems: 'center', flex: 1, marginTop: '10%'}}>
-            <Image
-              source={ic_logo}
-              style={{width: screen.width / 2, height: screen.width / 2}}
-            />
+            <View style={{borderRadius: 15, overflow: 'hidden'}}>
+              <Image
+                source={ic_logo}
+                style={{width: screen.width / 2.2, height: screen.width / 2.2}}
+              />
+            </View>
             <View
               style={{
                 alignItems: 'center',
-                marginTop: 10,
+                marginTop: '15%',
                 marginHorizontal: 20,
               }}>
               <View>
@@ -299,8 +301,9 @@ const Profile = props => {
                     textAlign: 'center',
                     color: Colors.gray13,
                   }}>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  Better.me is an app for you to track your every little
+                  progress and put your disturbed routine back on track. Improve
+                  and organize your life again with interesting features.
                 </Text>
               </View>
             </View>
