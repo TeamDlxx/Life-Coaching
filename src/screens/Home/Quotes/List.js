@@ -15,7 +15,7 @@ import {
   Platform,
   ToastAndroid,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
 import {mainStyles} from '../../../Utilities/styles';
@@ -52,14 +52,17 @@ import {screens} from '../../../Navigation/Screens';
 
 const limit = 10;
 const win = Dimensions.get('window');
+
+let firstTime = true;
 const List = props => {
+  const flatListRef = useRef();
   const {Token, downloadQuote, downloading} = useContext(Context);
   const [QuoteList, setQuoteList] = useState([]);
   const [modalImage, setModalImage] = useState(null);
   const [isSharing, setIsSharing] = useState(null);
   const [loading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  console.log('downloading', downloading);
+
   const [PGN, updatePGN] = useState({
     pageNumber: 0,
     isLoadingMore: false,
@@ -265,10 +268,31 @@ const List = props => {
   const isDownloading = id => {
     return !!downloading.find(x => x == id);
   };
+  const scrollToQuote = () => {
+    let Id = props.route?.params?._id;
+    console.log(Id, '_id');
+    let index = QuoteList.findIndex(x => x._id == Id);
+    console.log(index, 'index');
+    if (index != -1) {
+      setTimeout(() => {
+        flatListRef?.current?.scrollToIndex({animated: true, index: index});
+      }, 1000);
+    }
+  };
 
   useEffect(() => {
-    call_quoteListAPI();
+    if (QuoteList.length != 0) {
+      if (firstTime == true && !!props.route?.params?._id == true) {
+        firstTime = false;
+        scrollToQuote();
+      }
+    }
+  }, [QuoteList]);
 
+  useEffect(() => {
+    firstTime = true;
+    call_quoteListAPI();
+    console.log(props, 'routes');
     analytics().logEvent(props?.route?.name);
     return () => {
       setQuoteList([]);
@@ -415,10 +439,19 @@ const List = props => {
         <Loader enable={loading} />
         <View style={{flex: 1}}>
           <FlatList
+            ref={flatListRef}
             contentContainerStyle={{marginTop: 10, paddingBottom: 10}}
             showsVerticalScrollIndicator={false}
             keyExtractor={(item, index) => {
               return index.toString();
+            }}
+            onScrollToIndexFailed={() => {
+              console.log('scroll error');
+              try {
+                scrollToQuote();
+              } catch (e) {
+                console.log(e, 'scroll error');
+              }
             }}
             data={QuoteList}
             renderItem={flatItemView}

@@ -136,7 +136,7 @@ const Setting = props => {
         try {
           const result = await Share.share({
             title: 'Better.Me',
-            message: `Please install this app and stay safe , AppLink :${deepLinkQuote}`,
+            message: `Please install this app, AppLink :${deepLinkQuote}`,
             url: deepLinkQuote,
           });
           if (result.action === Share.sharedAction) {

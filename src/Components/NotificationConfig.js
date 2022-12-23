@@ -11,8 +11,9 @@ export default function NotificationConfig(props) {
     // (required) Called when a remote is received or opened, or local notification is opened
     onNotification: function (notification) {
       console.log('onNotification', notification);
-      NotificationAction(notification);
-
+      if (notification.userInteraction) {
+        NotificationAction(notification);
+      }
       notification.finish(PushNotificationIOS.FetchResult.NoData);
     },
 
@@ -41,14 +42,6 @@ export default function NotificationConfig(props) {
     let {data} = notification;
     console.log(data, 'notificationId');
     switch (data.type) {
-      case 'Quote':
-        props.navigation.reset({
-          index: 0,
-          routes: [{name: screens.bottomTabs}, {name: screens.qouteList}],
-        });
-
-        break;
-
       case 'quotes':
         props.navigation.reset({
           index: 0,

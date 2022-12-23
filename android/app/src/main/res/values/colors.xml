@@ -3,4 +3,5 @@
     <color name="white">#ffffff</color>
     <color name="background">#F2F3F3</color>
     <color name="colorPrimary">#655FB1</color>
+    <color name="notification">#5638C3</color>
 </resources>

@@ -23,12 +23,8 @@ import SplashScreen from 'react-native-splash-screen';
 import Context from '../../Context';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import analytics from '@react-native-firebase/analytics';
-import {
-  useRewardedAd,
-  BannerAd,
-  BannerAdSize,
-} from 'react-native-google-mobile-ads';
-import Admob_Ids from '../../Utilities/AdmobIds';
+import showToast from '../../functions/showToast';
+import messaging from '@react-native-firebase/messaging';
 
 const height = Dimensions.get('screen').width;
 
@@ -58,9 +54,22 @@ const Home = props => {
   // }
 
   // console.log('rewarded', rewarded);
+  async function checkNotificationPermission() {
+    const authorizationStatus = await messaging().requestPermission();
+
+    if (authorizationStatus === messaging.AuthorizationStatus.AUTHORIZED) {
+      // await messaging().registerDeviceForRemoteMessages();
+    } else if (
+      authorizationStatus === messaging.AuthorizationStatus.PROVISIONAL
+    ) {
+      // await messaging().registerDeviceForRemoteMessages();
+    } else {
+    }
+  }
 
   useEffect(() => {
     // rewarded.load();
+    checkNotificationPermission();
     NotificationConfig(props);
     analytics().logEvent(props?.route?.name);
     setTimeout(() => {
@@ -222,10 +231,10 @@ const Home = props => {
       />
 
       <View
+      
         style={{
           height: 50,
           justifyContent: 'center',
-          // paddingHorizontal: 30,
           marginLeft: 30,
           width: '100%',
         }}>

@@ -352,6 +352,7 @@ const CreateHabit = props => {
             },
             channelId: '6007',
             channelName: 'lifeCoaching',
+            smallIcon: 'ic_stat_name',
           });
         }
       }

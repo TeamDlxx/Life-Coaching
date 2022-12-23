@@ -127,7 +127,9 @@ const ContextWrapper = props => {
                           id: obj._id,
                           type: 'track_download',
                         },
+                        smallIcon: 'ic_stat_name',
                       });
+
                       return true;
                     })
                     .catch(e => {

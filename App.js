@@ -10,11 +10,11 @@ import {Text} from 'react-native';
 import {initConnection, endConnection} from 'react-native-iap';
 import analytics from '@react-native-firebase/analytics';
 import dynamicLinks from '@react-native-firebase/dynamic-links';
-import {BaseToast, ErrorToast} from 'react-native-toast-message';
+import {BaseToast, ErrorToast, SuccessToast} from 'react-native-toast-message';
 import mobileAds from 'react-native-google-mobile-ads';
 
 const toastConfig = {
-  success: props => <BaseToast {...props} text2NumberOfLines={2} />,
+  success: props => <SuccessToast {...props} text2NumberOfLines={2} />,
   error: props => <ErrorToast {...props} text2NumberOfLines={2} />,
 };
 
@@ -46,11 +46,11 @@ const App = props => {
         console.log('getInitialLink', link);
       });
 
-      mobileAds()
-  .initialize()
-  .then(adapterStatuses => {
-console.log("mobileAds Initialize",adapterStatuses)
-  });
+    mobileAds()
+      .initialize()
+      .then(adapterStatuses => {
+        console.log('mobileAds Initialize', adapterStatuses);
+      });
     return () => {
       endConnection();
       unsubscribe();

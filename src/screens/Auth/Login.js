@@ -156,6 +156,7 @@ const Login = props => {
                 },
                 channelId: '6007',
                 channelName: 'lifeCoaching',
+                smallIcon: 'ic_stat_name',
               });
           }
         }
@@ -312,7 +313,7 @@ const Login = props => {
                 Continue as{' '}
                 <Text
                   onPress={() => GuestLogin()}
-                  style={{color: colors.primary}}>
+                  style={{color: Colors.primary}}>
                   Guest
                 </Text>
               </Text>
@@ -328,7 +329,7 @@ const Login = props => {
                 Don't have account?{' '}
                 <Text
                   onPress={() => onSignUpScreen()}
-                  style={{color: colors.primary}}>
+                  style={{color: Colors.primary}}>
                   Sign Up
                 </Text>
               </Text>
