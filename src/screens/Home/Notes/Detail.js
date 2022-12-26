@@ -279,9 +279,16 @@ const NoteDetail = props => {
   const download = async () => {
     try {
       setAudio('downloading');
+
       let AudioPath = await downloadAudioNote(note?.audio);
-      setAudio('file://' + AudioPath);
+      console.log(AudioPath, 'AudioPath');
+      if (AudioPath == 'error') {
+        setAudio('error');
+      } else {
+        setAudio('file://' + AudioPath);
+      }
     } catch (e) {
+      console.log(e, 'error');
       setAudio('error');
     }
   };
@@ -363,7 +370,6 @@ const NoteDetail = props => {
               onShouldStartLoadWithRequest={req => {
                 console.log(req);
                 let {url} = req;
-
                 if (
                   url.includes('www') &&
                   (url.includes('com') ||

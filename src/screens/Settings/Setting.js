@@ -154,7 +154,7 @@ const Setting = props => {
         break;
 
       case 'rate_us':
-        let url = 'https://www.google.com/';
+        let url = 'market://details?id=com.coachingoflife.app';
         try {
           await Linking.openURL(url);
         } catch (e) {

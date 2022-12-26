@@ -191,7 +191,7 @@ const Login = props => {
     } else if (t_password.length < 6) {
       showToast('Password length must be minimim 6 letters', 'Alert');
     } else {
-      console.log('Firebase Token', messaging().getToken());
+
       let obj_Login = {
         email: t_email,
         password: t_password,

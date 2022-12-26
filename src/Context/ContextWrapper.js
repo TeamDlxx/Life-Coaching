@@ -19,12 +19,55 @@ const ContextWrapper = props => {
   const [adminURLsAndEmail, setAdminURLsAndEmail] = useState(null);
   const [habitList, setHabitList] = useState([]);
   const [progress, setProgress] = useState([]);
+  const [quotesDownloading, setQuotesDownloading] = useState([]);
   const [progressAudioNote, setProgressAudioNote] = useState([]);
   const [purchases, setPurchases] = useState({
     habit: false,
     meditation: false,
     skus: [],
   });
+
+  const checkPermissions = async () => {
+    let granted;
+
+    if (Platform.OS == 'android') {
+      granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        // {
+        //   title: 'Storage Permissions',
+        //   message: 'App needs access to access your storage ',
+        //   buttonNeutral: 'Ask Me Later',
+        //   buttonNegative: 'Cancel',
+        //   buttonPositive: 'OK',
+        // },
+      );
+      if (granted == 'granted') {
+        return true;
+      } else {
+        showToast(
+          'Please allow storage permission from settings',
+          'Permission denied',
+        );
+        return false;
+      }
+    } else {
+      return true;
+    }
+    // const granted = await PermissionsAndroid.request(
+    //   PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+    //   {
+    //     title: 'Storage Permission Required',
+    //     message: 'App needs access to your storage to download Photos',
+    //   },
+    // );
+    // if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+    //   // Once user grant the permission start downloading
+    //   return true;
+    // } else {
+    //   showToast('Storage Permission Not Granted', 'Alert');
+    //   return false;
+    // }
+  };
 
   const findProgress = item => {
     let freq = [];
@@ -53,6 +96,10 @@ const ContextWrapper = props => {
 
   // Tracks download functions
   const downloadTrack = async (track, cat) => {
+    let granted = await checkPermissions();
+    if (!granted) {
+      return;
+    }
     let obj = {...track};
     addInProgress(obj._id);
     try {
@@ -177,6 +224,11 @@ const ContextWrapper = props => {
   };
 
   const downloadAudioNote = async audio => {
+    let granted = await checkPermissions();
+    console.log(granted, 'granted');
+    if (!granted) {
+      return 'error';
+    }
     try {
       let splitfile = await audio.split('/');
       if (
@@ -229,81 +281,60 @@ const ContextWrapper = props => {
   };
 
   const downloadQuote = async (image, id) => {
-    if (Platform.OS === 'android') {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        {
-          title: 'Storage Permission Required',
-          message: 'App needs access to your storage to download Photos',
-        },
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        // Once user grant the permission start downloading
-        console.log('Storage Permission Granted.');
-      } else {
-        // If permission denied then show alert
-        alert('Storage   Not Granted');
-        return;
-      }
+    let granted = await checkPermissions();
+    if (!granted) {
+      return;
     }
-
     let imgUrl = fileURL + image;
-    console.log('ReactNativeBlobUtil', ReactNativeBlobUtil);
-    let newImgUri = imgUrl.lastIndexOf('/');
     let ext = imgUrl.split('.').pop();
-    let imageName = '/image_' + imgUrl.split('/').pop();
-    // imageName = imageName.split('.').shift();
-    console.log('ext', ext);
-    console.log('newImgUri', newImgUri);
-    console.log('imageName', imageName);
+    let imageName = '/image-' + moment().valueOf();
     let dirs = ReactNativeBlobUtil.fs.dirs;
-    console.log('dirs ==>', dirs);
-    let path = !!dirs.LegacyDownloadDir
-      ? dirs.LegacyDownloadDir + '/Better.Me' + imageName
-      : dirs.PictureDir + imageName;
-
     let ext1 = ext;
     if (ext1 == 'jpg') {
       ext1 = 'jpeg';
     }
+    console.log(dirs, 'directories...');
+    // return;
+    let path = dirs.CacheDir + imageName + '.' + ext1;
 
     if (Platform.OS == 'android') {
       ReactNativeBlobUtil.config({
         fileCache: true,
-        appendExt: ext,
+        appendExt: ext1,
         indicator: true,
         IOSBackgroundTask: true,
         path: path,
-
-        addAndroidDownloads: {
-          useDownloadManager: true,
-          notification: true,
-          path: path,
-          description: 'Image',
-          mediaScannable: true,
-        },
       })
         .fetch('GET', imgUrl)
         .then(async res => {
           console.log(res.path(), 'end downloaded');
-          if (!!dirs.LegacyDownloadDir == false) {
-            let pathnew =
-              await ReactNativeBlobUtil.MediaCollection.createMediafile(
-                {
-                  name: imageName,
-                  parentFolder: 'Better.Me',
-                  mimeType: `image/${ext1}`,
-                },
-                'Download',
-              );
-            console.log('pathnew', pathnew);
-            let res1 =
-              await ReactNativeBlobUtil.MediaCollection.writeToMediafile(
-                pathnew,
-                res.path(),
-              );
-            let ok = await ReactNativeBlobUtil.fs.unlink(path);
-            console.log('ok', ok);
+
+          // if (!!dirs.LegacyDownloadDir == false) {
+          //   let pathnew =
+          //     await ReactNativeBlobUtil.MediaCollection.createMediafile(
+          //       {
+          //         name: imageName,
+          //         parentFolder: 'Better.Me',
+          //         mimeType: `image/${ext1}`,
+          //       },
+          //       'Download',
+          //     );
+          //   console.log('pathnew', pathnew);
+          //   let res1 =
+          //     await ReactNativeBlobUtil.MediaCollection.writeToMediafile(
+          //       pathnew,
+          //       res.path(),
+          //     );
+          //   let ok = await ReactNativeBlobUtil.fs.unlink(path);
+          //   // console.log('ok', ok);
+          // }
+          try {
+            await CameraRoll.save('file://' + res.path(), {
+              type: 'photo',
+              album: 'Better.Me',
+            });
+          } catch (e) {
+            console.log(e, 'camera roll failed');
           }
           showToast(
             'Quote has been saved to your storage',
@@ -312,6 +343,8 @@ const ContextWrapper = props => {
           );
         })
         .catch(e => {
+          console.log('download failed', e);
+
           showToast('Quote downloading failed', 'Something went wrong');
         });
     } else {

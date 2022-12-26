@@ -29,6 +29,7 @@ import RNFS from 'react-native-fs';
 import kFormatter from '../../../functions/kFormatter';
 import ImageZoomer from '../../../Components/ImageZoomer';
 import analytics from '@react-native-firebase/analytics';
+import debounnce from '../../../functions/debounce';
 
 import Clipboard from '@react-native-clipboard/clipboard';
 
@@ -85,7 +86,7 @@ const List = props => {
     setIsSharing(item._id);
     try {
       let image = item?.images?.large;
-      let description = !!item?.description ? item?.description : '';
+      let description = !!item?.description ? item?.description.trim() : '';
       let res = await GetBase64(fileURL + image);
       let ext = await image.split('.')[image.split('.').length - 1];
       if (ext == 'jpg') {
@@ -152,6 +153,16 @@ const List = props => {
       setQuoteList([...newArray]);
     }
   };
+
+  const download = item => {
+    debounceDownload(item);
+  };
+
+  const debounceDownload = debounnce(async item => {
+    console.log('download');
+    await downloadQuote(item?.images?.large, item?._id);
+    await analytics().logEvent('QUOTE_DOWLOAD_EVENT');
+  }, 500);
 
   const copyText = async text => {
     try {
@@ -325,7 +336,7 @@ const List = props => {
         {!!item?.description && (
           <TouchableHighlight
             disabled={Platform.OS == 'ios'}
-            onLongPress={() => copyText(item?.description)}
+            onLongPress={() => copyText(item?.description.trim())}
             delayLongPress={500}
             underlayColor={Colors.gray01}
             style={{}}>
@@ -337,7 +348,7 @@ const List = props => {
                 paddingHorizontal: 5,
                 paddingVertical: 10,
               }}>
-              {item?.description}
+              {item?.description.trim()}
             </Text>
           </TouchableHighlight>
         )}
@@ -378,20 +389,21 @@ const List = props => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={async () => {
-              await downloadQuote(item?.images?.large, item?._id);
-              await analytics().logEvent('QUOTE_DOWLOAD_EVENT');
-            }}
+            onPress={() => download(item)}
             style={{
               flex: 1,
               alignItems: 'center',
               height: 50,
               justifyContent: 'center',
             }}>
+            {/* {!checkQuoteDownloading(item._id) ? ( */}
             <Image
               source={ic_download}
               style={{height: 20, width: 20, tintColor: Colors.placeHolder}}
             />
+            {/* ) : (
+              <ActivityIndicator color={Colors.placeHolder} size="small" />
+            )} */}
           </TouchableOpacity>
 
           <TouchableOpacity

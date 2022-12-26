@@ -13,7 +13,7 @@ import {
   TouchableOpacity,
   PermissionsAndroid,
   Platform,
-  ToastAndroid
+  ToastAndroid,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Header from '../../../Components/Header';
@@ -26,6 +26,7 @@ import _ from 'buffer';
 import kFormatter from '../../../functions/kFormatter';
 import ImageZoomer from '../../../Components/ImageZoomer';
 import analytics from '@react-native-firebase/analytics';
+import debounnce from '../../../functions/debounce';
 // For API's calling
 import {useContext} from 'react';
 import Context from '../../../Context';
@@ -70,7 +71,7 @@ const FavQuoteList = props => {
     setIsSharing(item._id);
     try {
       let image = item?.images?.large;
-      let description = item?.description;
+      let description = item?.description.trim();
       let res = await GetBase64(fileURL + image);
       let ext = await image.split('.')[image.split('.').length - 1];
       if (ext == 'jpg') {
@@ -221,6 +222,15 @@ const FavQuoteList = props => {
     }
   };
 
+  const download = item => {
+    debounceDownload(item);
+  };
+
+  const debounceDownload = debounnce(async item => {
+    await downloadQuote(item?.images?.large, item?._id);
+    await analytics().logEvent('QUOTE_DOWLOAD_EVENT');
+  }, 500);
+
   useEffect(() => {
     call_quoteListAPI();
 
@@ -273,7 +283,7 @@ const FavQuoteList = props => {
         {!!item?.description && (
           <TouchableHighlight
             disabled={Platform.OS == 'ios'}
-            onLongPress={() => copyText(item?.description)}
+            onLongPress={() => copyText(item?.description.trim())}
             delayLongPress={500}
             underlayColor={Colors.gray01}
             style={{}}>
@@ -285,7 +295,7 @@ const FavQuoteList = props => {
                 paddingHorizontal: 5,
                 paddingVertical: 10,
               }}>
-              {item?.description}
+              {item?.description.trim()}
             </Text>
           </TouchableHighlight>
         )}
@@ -327,10 +337,7 @@ const FavQuoteList = props => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={async () => {
-              await downloadQuote(item?.images?.large, item?._id);
-              await analytics().logEvent('QUOTE_DOWLOAD_EVENT');
-            }}
+            onPress={() => download(item)}
             style={{
               flex: 1,
               alignItems: 'center',
