@@ -71,7 +71,8 @@ const Signup = props => {
           user_id: data?.user_id,
         }),
       ],
-      ['guestMode', 'false'],
+      ['@guestMode', 'false'],
+      ['@isSubscribedToTopic', 'false'],
     ];
     console.log('Async Data', asyncData);
     AsyncStorage.multiSet(asyncData)

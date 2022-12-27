@@ -16,8 +16,6 @@ const TrackSlider = props => {
     let position = progress.position;
     setDuration(duration);
     setPosition(position);
-    console.log('duration', duration);
-    console.log('position', position);
   }, [progress]);
 
   const formatTime = timeInSec => {

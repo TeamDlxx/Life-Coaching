@@ -29,7 +29,7 @@ import PushNotification from 'react-native-push-notification';
 import DeviceInfo from 'react-native-device-info';
 import {deepLinkQuote} from '../../Utilities/domains';
 import analytics from '@react-native-firebase/analytics';
-import InAppReview from 'react-native-in-app-review';
+import messaging from '@react-native-firebase/messaging';
 
 const Setting = props => {
   const [isLoading, setisLoading] = useState(false);
@@ -38,10 +38,15 @@ const Setting = props => {
   console.log('adminURLsAndEmail', useContext(Context));
   const logout = async () => {
     try {
-      let res = await AsyncStorage.multiRemove(['@token', '@user']);
+      let res = await AsyncStorage.multiRemove([
+        '@token',
+        '@user',
+        '@isSubscribedToTopic',
+      ]);
       console.log('res', res);
       setToken(null);
       setHabitList([]);
+      messaging().unsubscribeFromTopic('qouteCreated');
       props.navigation.reset({
         index: 0,
         routes: [

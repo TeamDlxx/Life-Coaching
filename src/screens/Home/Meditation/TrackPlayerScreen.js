@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Colors from '../../../Utilities/Colors';
-import TrackPlayer, {RepeatMode} from 'react-native-track-player';
+import TrackPlayer, {State} from 'react-native-track-player';
 import ProgressBar from '../../../Components/ProgreeBar';
 import {_styleTrackPlayer} from '../../../Utilities/styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -47,6 +47,7 @@ import {duration} from 'moment';
 import {font} from '../../../Utilities/font';
 import ic_lock from '../../../Assets/Icons/locked.png';
 const TrackPlayerScreen = props => {
+  console.log(State, 'State...');
   const {navigation} = props;
   const {params} = props?.route;
   const {Token, downloadTrack, progress, deleteTrack, isMeditationPurchased} =
@@ -121,7 +122,9 @@ const TrackPlayerScreen = props => {
         );
       }
     } else {
-      LoginAlert(props.navigation, props.route?.name);
+      let res = await LoginAlert(props.navigation, props.route?.name);
+      TrackPlayer.pause();
+      setPlayIcon(playTrack);
     }
   };
 
@@ -258,12 +261,12 @@ const TrackPlayerScreen = props => {
         setPlayIcon(pauseTrack);
       }
 
-      if (state == 'paused' || state == 3) {
-        // setloading(false);
-        setPlayIcon(playTrack);
-      }
+      // if (state == 'paused' || state == 3) {
+      //   // setloading(false);
+      //   setPlayIcon(playTrack);
+      // }
       if (state == 'stopped' || state == 4) {
-        // setloading(false);
+        setloading(false);
         setPlayIcon(playTrack);
       }
     });

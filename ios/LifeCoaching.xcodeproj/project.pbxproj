@@ -581,7 +581,7 @@
 				CODE_SIGN_ENTITLEMENTS = LifeCoaching/LifeCoaching.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = ZMHT686M4P;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = LifeCoaching/Info.plist;
@@ -613,7 +613,7 @@
 				CODE_SIGN_ENTITLEMENTS = LifeCoaching/LifeCoaching.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 12;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = ZMHT686M4P;
 				INFOPLIST_FILE = LifeCoaching/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;

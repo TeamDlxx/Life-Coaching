@@ -87,7 +87,8 @@ const Login = props => {
           user_id: data?.user?.user_id,
         }),
       ],
-      ['guestMode', 'false'],
+      ['@guestMode', 'false'],
+      ['@isSubscribedToTopic', 'false'],
     ];
     console.log('Async Data', asyncData);
     AsyncStorage.multiSet(asyncData)
@@ -191,7 +192,6 @@ const Login = props => {
     } else if (t_password.length < 6) {
       showToast('Password length must be minimim 6 letters', 'Alert');
     } else {
-
       let obj_Login = {
         email: t_email,
         password: t_password,

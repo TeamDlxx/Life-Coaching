@@ -45,7 +45,7 @@ const Onboarding = props => {
     SplashScreen.hide();
     OnboardingChecked();
     analytics().logEvent(props?.route?.name);
-    subscribeToFirebaseTopic();
+    // subscribeToFirebaseTopic();
   }, []);
 
   const renderItem = ({item, index}) => {

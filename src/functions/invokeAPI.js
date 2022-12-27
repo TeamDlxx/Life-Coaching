@@ -2,6 +2,7 @@ import axios from 'axios';
 import {baseURL} from '../Utilities/domains';
 import showToast from '../functions/showToast';
 import {screens} from '../Navigation/Screens';
+import messaging from '@react-native-firebase/messaging';
 
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 
@@ -51,7 +52,12 @@ export default async function invokeApi({
       if (navigation != undefined) {
         showToast('Please login again!', 'Authentication Failed');
         try {
-          let res = await AsyncStorage.multiRemove(['@token', '@user']);
+          let res = await AsyncStorage.multiRemove([
+            '@token',
+            '@user',
+            '@isSubscribedToTopic',
+          ]);
+          await messaging().unsubscribeFromTopic('qouteCreated');
           navigation.reset({
             index: 0,
             routes: [
