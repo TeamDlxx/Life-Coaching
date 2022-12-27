@@ -38,15 +38,10 @@ const Setting = props => {
   console.log('adminURLsAndEmail', useContext(Context));
   const logout = async () => {
     try {
-      let res = await AsyncStorage.multiRemove([
-        '@token',
-        '@user',
-        '@isSubscribedToTopic',
-      ]);
+      let res = await AsyncStorage.multiRemove(['@token', '@user']);
       console.log('res', res);
       setToken(null);
       setHabitList([]);
-      messaging().unsubscribeFromTopic('qouteCreated');
       props.navigation.reset({
         index: 0,
         routes: [

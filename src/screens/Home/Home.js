@@ -67,14 +67,7 @@ const Home = props => {
     }
   }
 
-  const getToken = async () => {
-    console.log(await messaging().getToken(), 'device token...');
-  };
-
   useEffect(() => {
-    // rewarded.load();
-    getToken();
-    subscribeToFirebaseTopic();
     checkNotificationPermission();
     NotificationConfig(props);
     analytics().logEvent(props?.route?.name);
@@ -223,31 +216,6 @@ const Home = props => {
         </Pressable>
       </Animatable.View>
     );
-  };
-
-  const subscribeToFirebaseTopic = async () => {
-    AsyncStorage.getItem('@isSubscribedToTopic')
-      .then(async res => {
-        if (res == null || res == 'false') {
-          console.log('getItem', res);
-          await messaging()
-            .subscribeToTopic('qouteCreated1')
-            .then(() => {
-              console.log('SubscribedToTopic');
-              AsyncStorage.setItem('@isSubscribedToTopic', 'true').then(res => {
-                console.log('setItem', res);
-              });
-            })
-            .catch(err => {
-              console.log('setIsSubscribedToTopicError', err);
-            });
-        } else {
-          console.log('Already Subscribed');
-        }
-      })
-      .catch(error => {
-        console.log('getIsSubscribedToTopicError', error);
-      });
   };
 
   return (

@@ -52,12 +52,7 @@ export default async function invokeApi({
       if (navigation != undefined) {
         showToast('Please login again!', 'Authentication Failed');
         try {
-          let res = await AsyncStorage.multiRemove([
-            '@token',
-            '@user',
-            '@isSubscribedToTopic',
-          ]);
-          await messaging().unsubscribeFromTopic('qouteCreated');
+          let res = await AsyncStorage.multiRemove(['@token', '@user']);
           navigation.reset({
             index: 0,
             routes: [
