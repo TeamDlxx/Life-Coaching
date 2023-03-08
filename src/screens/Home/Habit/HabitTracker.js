@@ -30,7 +30,6 @@ import LoginAlert from '../../../Components/LoginAlert';
 import analytics from '@react-native-firebase/analytics';
 
 import { BannerAd, BannerAdSize, useRewardedAd } from 'react-native-google-mobile-ads';
-import Admob_Ids, { Admob_test_Ids } from '../../../Utilities/AdmobIds';
 
 // import {useLoginAlert} from '../../../hooks/useLoginAlert';
 // For API's calling
@@ -41,6 +40,7 @@ import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import { fileURL } from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
+import { Admob_Ids } from '../../../Utilities/AdmobIds';
 
 const ic_nodata = require('../../../Assets/Icons/empty-box.png');
 const ic_Hplaceholder = require('../../../Assets/Icons/h_placeholder1.png');
@@ -607,7 +607,7 @@ const HabitTracker = props => {
             }}>
             <BannerAd
               size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-              unitId={Admob_test_Ids.banner}
+              unitId={Admob_Ids.banner}
               requestOptions={{
                 requestNonPersonalizedAdsOnly: true,
               }}

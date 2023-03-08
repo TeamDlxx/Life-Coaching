@@ -60,7 +60,6 @@ const MoodNote = props => {
                                 multiline
                                 verticalAlign="top"
                                 ref={(input) => { textInput = input; }}
-
                             // style={{ height: 250, width: "100%", backgroundColor: "white", borderRadius: 8, borderWidth: 1, borderColor: Colors.lightPrimary, marginTop: 10, paddingTop: 13, paddingLeft: 13 }}
                             />
                         </TouchableOpacity>

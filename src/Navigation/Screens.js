@@ -21,6 +21,7 @@ export const screens = {
   NotesDetail: 'NOTE_DETAIL_SCREEN',
   AllNotes: 'ALL_NOTES_SCREEN',
 
+
   meditation: 'MEDITATION_SCREEN',
   trackPlayer: 'TRACK_PLAYER_SCREEN',
   favTracks: 'FAVOURITE_TRACKS_SCREEN',
@@ -52,5 +53,8 @@ export const screens = {
   allGratitudes: 'ALL_GRATITUDES',
 
   //Reminder
-  reminder: "REMINDER_SCREEN"
+  reminder: "REMINDER_SCREEN",
+  moodChart: 'MOOD_CHART',
+
+
 };

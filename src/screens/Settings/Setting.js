@@ -27,14 +27,14 @@ import { useContext } from 'react';
 import Context from '../../Context';
 import PushNotification from 'react-native-push-notification';
 import DeviceInfo from 'react-native-device-info';
-import { deepLinkQuote } from '../../Utilities/domains';
+import { androidAppLink, deepLinkQuote, iosAppLink } from '../../Utilities/domains';
 import analytics from '@react-native-firebase/analytics';
 import messaging from '@react-native-firebase/messaging';
 import * as RNIap from 'react-native-iap';
 
 const Setting = props => {
   const [isLoading, setisLoading] = useState(false);
-  const { Token, setToken, setHabitList, adminURLsAndEmail, CheckPurchases, purchasedSKUs } =
+  const { Token, setToken, setHabitList, adminURLsAndEmail,  CheckPurchases, purchasedSKUs } =
     useContext(Context);
 
 
@@ -142,7 +142,7 @@ const Setting = props => {
           const result = await Share.share({
             title: 'Better.Me',
             message: `Get yourself an app that will guide you through your routine and walk you to a better and more disciplined life., AppLink :${deepLinkQuote}`,
-            url: deepLinkQuote,
+            url: Platform.OS == "android" ? androidAppLink : iosAppLink,
           });
           if (result.action === Share.sharedAction) {
             if (result.activityType) {

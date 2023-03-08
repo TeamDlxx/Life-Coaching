@@ -100,5 +100,25 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+  
+  
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>fbAPP-ID</string>
+    </array>
+    </dict>
+  </array>
+  <key>FacebookAppID</key>
+  <string>2472333716251140</string>
+  <key>FacebookClientToken</key>
+  <string>529580dd676522738d6d31f1f09bbea9</string>
+  <key>FacebookDisplayName</key>
+  <string>Better.me</string>
+  
+  
+  
 </dict>
 </plist>

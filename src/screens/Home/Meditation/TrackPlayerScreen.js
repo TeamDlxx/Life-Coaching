@@ -21,7 +21,7 @@ import analytics from '@react-native-firebase/analytics';
 import {screens} from '../../../Navigation/Screens';
 
 import {BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
-import Admob_Ids, { Admob_test_Ids } from '../../../Utilities/AdmobIds';
+import {Admob_Ids} from '../../../Utilities/AdmobIds';
 
 // For API's calling
 import {useContext} from 'react';

@@ -37,7 +37,6 @@ export default function CustomAlert(props) {
           <Text style={{ color: colors.primary, fontFamily: 'Pangram-Bold' }}>Watch An Ad</Text>
         </TouchableOpacity>
 
-        <Loader enable={props.isLoading} />
 
       </View>
     </Modal>

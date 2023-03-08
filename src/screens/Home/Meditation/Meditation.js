@@ -21,8 +21,8 @@ import formatTime from '../../../functions/formatTime';
 import LoginAlert from '../../../Components/LoginAlert';
 import analytics from '@react-native-firebase/analytics';
 import debounce from '../../../functions/debounce';
-import { BannerAd, BannerAdSize, useRewardedAd, RewardedAd, RewardedAdEventType, TestIds } from 'react-native-google-mobile-ads';
-import { Admob_Ids, Admob_test_Ids } from '../../../Utilities/AdmobIds';
+import { BannerAd, BannerAdSize, useRewardedAd, RewardedAd, RewardedAdEventType, TestIds, AdEventType } from 'react-native-google-mobile-ads';
+import { Admob_Ids } from '../../../Utilities/AdmobIds';
 // For API's calling
 import { useContext } from 'react';
 import Context from '../../../Context';
@@ -39,10 +39,10 @@ import ic_default from '../../../Assets/Icons/all.png';
 import ic_lock from '../../../Assets/Icons/locked.png';
 import CustomAlert from '../../../Components/CusromAlert';
 import { useFocusEffect } from '@react-navigation/native';
+var category = "";
+var trackIndex = "";
 
-
-
-const rewarded = RewardedAd.createForAdRequest(Admob_test_Ids.rewarded, {
+const rewarded = RewardedAd.createForAdRequest(Admob_Ids.rewarded, {
   requestNonPersonalizedAdsOnly: true,
 });
 
@@ -76,7 +76,7 @@ const Meditation = props => {
 
 
 
-  const rewardedAd = useRewardedAd(Admob_test_Ids.rewarded, {
+  const rewardedAd = useRewardedAd(Admob_Ids.rewarded, {
     requestNonPersonalizedAdsOnly: true,
     contentUrl: 'https://reactnative.dev/',
   });
@@ -87,38 +87,46 @@ const Meditation = props => {
   useEffect(() => {
 
 
+    setisLoading(true)
+    call_categoryAPI();
+
+    rewardedAdRef.current.load();
+
+
     const unsubscribeLoaded = rewardedAdRef.current.addAdEventListener(
       RewardedAdEventType.LOADED,
       () => {
-        console.log('Loaded add complete');
         setisLoading(false)
 
-        setAlertVisibility(false)
-
-        setTimeout(() => {
-          rewardedAdRef.current.show();
-
-        }, 500);
-
-        // selectedCategory.category_track[selectedTrackIndex].is_locked = true;
-        // setSelectedCategory(selectedCategory);
-
+        console.log('Loaded add complete');
         setAdLoaded(true);
       },
     );
 
 
-    console.log('Add is being loading');
     const unsubscribeEarned = rewardedAdRef.current.addAdEventListener(
       RewardedAdEventType.EARNED_REWARD,
-      reward => {
+      (reward) => {
+
         console.log('User earned reward of ', reward);
+        console.log(category, trackIndex ,"item for category...")
+        
+        category.category_track[trackIndex].is_locked = false;
+        setSelectedCategory({...category});
+
       },
     );
 
 
-    console.log(rewardedAd.error, "loadededeed");
 
+    const unsubscribenotEarned = rewardedAdRef.current.addAdEventListener(
+      AdEventType.CLOSED,
+      reward => {
+        console.log(reward, "Ad closed listner called....") 
+        rewardedAdRef.current.load();
+
+      },
+    );
 
 
     if (rewardedAd.isLoaded) {
@@ -131,15 +139,20 @@ const Meditation = props => {
 
 
 
-    call_categoryAPI();
     analytics().logEvent(props?.route?.name);
   }, []);
 
+
+  const updateTrackStatus = () => {
+    console.log(selectedCategory, "item for category updateTrackStatus...")
+
+  }
 
 
   const gotoTrackPlayer = (item, index) => {
 
 
+    trackIndex = index;
     setSelectedTrackIndex(index);
 
     if (!chooseScreenOnPurchasesAndLockedTrack(item.is_locked)) {
@@ -221,16 +234,18 @@ const Meditation = props => {
 
 
 
-  const showAd = () => {
+  const showAd = async () => {
 
-    setisLoading(true)
-    rewardedAdRef.current.load();
 
-    selectedCategory.category_track[selectedTrackIndex].is_locked = false;
+    setAlertVisibility(false)
+    category = selectedCategory;
 
-    setSelectedCategory(selectedCategory);
 
-    console.log(selectedCategory?.category_track[selectedTrackIndex], "selected category......")
+
+
+    if (rewardedAdRef.current.loaded) {
+      rewardedAdRef.current.show()
+    }
 
 
     // if (adLoaded) {
@@ -426,7 +441,10 @@ const Meditation = props => {
     return (
       <View>
         <Pressable
-          onPress={() => setSelectedCategory(item)}
+          onPress={async () => {
+            await setSelectedCategory(item)
+            console.log(selectedCategory, "item for category...")
+          }}
           style={{
             margin: 6,
             alignItems: 'center',
@@ -703,17 +721,7 @@ const Meditation = props => {
           />
         </View>
 
-        <View>
 
-          <CustomAlert
-            visible={alertVisibility}
-            backdropPressed={backdropPressed}
-            buyOfferScreen={buyOfferScreen}
-            showAd={showAd}
-            isLoading={isLoading}
-          />
-
-        </View>
 
 
 
@@ -731,7 +739,7 @@ const Meditation = props => {
             }}>
             <BannerAd
               size={BannerAdSize.BANNER}
-              unitId={Admob_test_Ids.banner}
+              unitId={Admob_Ids.banner}
               requestOptions={{
                 requestNonPersonalizedAdsOnly: true,
               }}
@@ -742,11 +750,22 @@ const Meditation = props => {
             />
           </View>
         )}
-        <Loader enable={isLoading} />
 
 
+        <View>
+
+          <CustomAlert
+            visible={alertVisibility}
+            backdropPressed={backdropPressed}
+            buyOfferScreen={buyOfferScreen}
+            showAd={showAd}
+          />
+
+        </View>
       </View>
 
+
+      <Loader enable={isLoading} />
 
     </SafeAreaView>
   );

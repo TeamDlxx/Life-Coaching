@@ -173,6 +173,23 @@ didReceiveNotificationResponse:(UNNotificationResponse *)response
   return RCTAppSetupDefaultModuleFromClass(moduleClass);
 }
 
+
+- (BOOL)application:(UIApplication *)app
+            openURL:(NSURL *)url
+            options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
+{
+  if ([[FBSDKApplicationDelegate sharedInstance] application:app openURL:url options:options]) {
+    return YES;
+  }
+ 
+  if ([RCTLinkingManager application:app openURL:url options:options]) {
+    return YES;
+  }
+ 
+  return NO;
+}
+
+
 #endif
 
 @end

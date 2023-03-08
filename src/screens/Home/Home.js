@@ -299,7 +299,7 @@ const options = [
     title: 'Mood Tracker',
     image: home2,
     count: 7,
-    screen: screens.moodTracker,
+    screen: screens.moodChart,
     color: '#A5A5DB',
     comingsoon: false,
   },

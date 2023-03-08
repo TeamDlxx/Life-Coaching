@@ -9,7 +9,8 @@ import {
   FlatList,
   Image,
   Dimensions,
-  TouchableOpacity
+  TouchableOpacity,
+  TextInput
 } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import Header from '../../../Components/Header';
@@ -23,7 +24,7 @@ import Happy from "../../../Assets/emojy/smile.gif"
 import Neutral from "../../../Assets/emojy/neutral.gif"
 import Sad from "../../../Assets/emojy/sad.gif"
 import Cry from "../../../Assets/emojy/cry.gif"
-import Angry from "../../../Assets/emojy/angry.gif"
+import Angry from "../../../Assets/emojy/angrygif.gif"
 
 
 
@@ -49,35 +50,35 @@ const MoodTracker = props => {
 
 
   const [emotions, setEmotions] = useState([
-    { "emotion": "Excited", "isSelected": false },
-    { "emotion": "Relaxed", "isSelected": false },
-    { "emotion": "Proud", "isSelected": false },
-    { "emotion": "Hopeful", "isSelected": false },
-    { "emotion": "Happy", "isSelected": false },
-    { "emotion": "Enthusiactic", "isSelected": false },
-    { "emotion": "Refreshed", "isSelected": false },
-    { "emotion": "Gloomy", "isSelected": false },
-    { "emotion": "Lonely", "isSelected": false },
-    { "emotion": "Anxious", "isSelected": false },
-    { "emotion": "Sad", "isSelected": false },
-    { "emotion": "Angry", "isSelected": false },
-    { "emotion": "Tired", "isSelected": false },
-    { "emotion": "Burdensome", "isSelected": false },
-    { "emotion": "Bored", "isSelected": false },
-    { "emotion": "Stressed", "isSelected": false },
+    { "emotion": "Excited ", "isSelected": false },
+    { "emotion": "Relaxed  ", "isSelected": false },
+    { "emotion": "Proud ", "isSelected": false },
+    { "emotion": "Hopeful ", "isSelected": false },
+    { "emotion": "Happy  ", "isSelected": false },
+    { "emotion": "Enthusiactic ", "isSelected": false },
+    { "emotion": "Refreshed  ", "isSelected": false },
+    { "emotion": "Gloomy  ", "isSelected": false },
+    { "emotion": "Lonely ", "isSelected": false },
+    { "emotion": "Anxious  ", "isSelected": false },
+    { "emotion": "Sad ", "isSelected": false },
+    { "emotion": "Angry  ", "isSelected": false },
+    { "emotion": "Tired ", "isSelected": false },
+    { "emotion": "Burdensome  ", "isSelected": false },
+    { "emotion": "Bored ", "isSelected": false },
+    { "emotion": "Stressed ", "isSelected": false },
   ])
 
 
   const [sphereOfLife, setSphereOfLife] = useState([
 
-    { 'id': 1, 'source': Portfolio, 'isSelected': false, "sphere": "Work", },
-    { 'id': 2, 'source': FriendShip, 'isSelected': false, "sphere": "Friends" },
-    { 'id': 3, 'source': Heart, 'isSelected': false, "sphere": "Love" },
-    { 'id': 4, 'source': Family, 'isSelected': false, "sphere": "Family" },
-    { 'id': 5, 'source': Lock, 'isSelected': false, "sphere": "Personal" },
-    { 'id': 6, 'source': Stethoscope, 'isSelected': false, "sphere": "Health" },
-    { 'id': 7, 'source': Money, 'isSelected': false, "sphere": "Finance" },
-    { 'id': 8, 'source': BeachChair, 'isSelected': false, "sphere": "Leisure" },
+    { 'id': 1, 'source': Portfolio, 'isSelected': false, "sphere": "Work  ", },
+    { 'id': 2, 'source': FriendShip, 'isSelected': false, "sphere": "Friends " },
+    { 'id': 3, 'source': Heart, 'isSelected': false, "sphere": "Love " },
+    { 'id': 4, 'source': Family, 'isSelected': false, "sphere": "Family " },
+    { 'id': 5, 'source': Lock, 'isSelected': false, "sphere": "Personal " },
+    { 'id': 6, 'source': Stethoscope, 'isSelected': false, "sphere": "Health " },
+    { 'id': 7, 'source': Money, 'isSelected': false, "sphere": "Finance " },
+    { 'id': 8, 'source': BeachChair, 'isSelected': false, "sphere": "Leisure " },
 
   ])
 
@@ -169,6 +170,14 @@ const MoodTracker = props => {
           </View>
 
 
+          <Text style={{ fontFamily: font.bold, textAlign: "center", fontSize: 17, marginTop: 20 }}>Mood Intensity</Text>
+
+          <TextInput
+            placeholder='1 - 10'
+            keyboardType="number-pad"
+            style={{ height: 53, width: "100%", backgroundColor: "white", borderRadius: 8, paddingHorizontal: 15, borderWidth: 0, borderColor: Colors.lightPrimary, marginTop: 20, }}
+          />
+
           <Text style={{ fontFamily: font.bold, textAlign: "center", fontSize: 17, marginTop: 15 }}>Emotions</Text>
 
           <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 25, justifyContent: "space-evenly" }}>
@@ -181,7 +190,8 @@ const MoodTracker = props => {
             })}
           </View>
 
-          <Text style={{ fontFamily: font.bold, textAlign: "center", fontSize: 17, marginTop: 30 }}>Sphere of life</Text>
+
+          <Text style={{ fontFamily: font.bold, textAlign: "center", fontSize: 17, marginTop: 20 }}>Sphere of life</Text>
 
 
           <View style={{ marginTop: 10 }}>
@@ -197,7 +207,7 @@ const MoodTracker = props => {
 
 
 
-          <TouchableOpacity onPress={AddMoodNotes} style={{ backgroundColor: Colors.primary, borderRadius: 10, height: 50, alignItems: "center", justifyContent: "center", marginTop: "18%" }}>
+          <TouchableOpacity onPress={AddMoodNotes} style={{ backgroundColor: Colors.primary, borderRadius: 10, height: 50, alignItems: "center", justifyContent: "center", marginTop: "12%" }}>
             <Text style={{ color: "white", fontWeight: "bold", fontSize: 16 }}>Next </Text>
           </TouchableOpacity>
 
