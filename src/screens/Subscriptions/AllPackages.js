@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -10,12 +10,13 @@ import {
   Dimensions,
   TouchableOpacity,
   Platform,
+  Alert
 } from 'react-native';
 import Header from '../../Components/Header';
-import {mainStyles} from '../../Utilities/styles';
+import { mainStyles } from '../../Utilities/styles';
 import Context from '../../Context';
 import Colors from '../../Utilities/Colors';
-import {font} from '../../Utilities/font';
+import { font } from '../../Utilities/font';
 import Collapsible from 'react-native-collapsible';
 import * as RNIap from 'react-native-iap';
 import showToast from '../../functions/showToast';
@@ -48,12 +49,13 @@ const itemsPurchase = Platform.select({
 });
 
 const AllPackages = props => {
-  const {Token, CheckPurchases, purchasedSKUs} = useContext(Context);
+
+  const { Token, CheckPurchases, purchasedSKUs } = useContext(Context);
   console.log('props', props);
   const [loading, setisLoading] = useState(false);
-  const {navigation} = props;
+  const { navigation } = props;
   const list = useRef();
-  const {params} = props.route;
+  const { params } = props.route;
   const [pkgList, setPkgList] = useState([]);
   const [selectedPkg, setSelectedPkg] = useState(null);
 
@@ -70,6 +72,8 @@ const AllPackages = props => {
       });
   };
 
+
+
   const PurchaseSubscription = async () => {
     let item = selectedPkg;
     console.log(item, 'selectedPkg...');
@@ -77,10 +81,13 @@ const AllPackages = props => {
     try {
       if (item.isSubscription) {
         subscribeIAP(item?.sku[0], item?.playStoreData?.offerToken);
-      } else {
+      }
+      else {
         puchaseIAP(item?.sku[0]);
       }
-    } catch (err) {
+    }
+
+    catch (err) {
       console.log('IAP error', err);
       showToast(err, 'Error');
       setisLoading(false);
@@ -140,7 +147,7 @@ const AllPackages = props => {
       });
       console.log('subscription....', subscription);
 
-      const Products = await RNIap.getProducts({skus: itemsPurchase});
+      const Products = await RNIap.getProducts({ skus: itemsPurchase });
       console.log('Products...', Products);
       let IAP_list = [...subscription, ...Products];
       let newArray = [];
@@ -165,7 +172,7 @@ const AllPackages = props => {
                 formattedPrice: temp.formattedPrice,
               };
             }
-            newArray.push({...pakage, playStoreData: data});
+            newArray.push({ ...pakage, playStoreData: data });
           });
         }
       } else {
@@ -186,7 +193,7 @@ const AllPackages = props => {
                 formattedPrice: playStoreData.localizedPrice,
               };
             }
-            newArray.push({...pakage, playStoreData: data});
+            newArray.push({ ...pakage, playStoreData: data });
           });
         }
       }
@@ -206,8 +213,65 @@ const AllPackages = props => {
     // }
   };
 
+
+  const restorePurchase = async () => {
+
+    try {
+
+      setisLoading(true)
+      const purchases = await RNIap.getAvailablePurchases();
+
+      setisLoading(false)
+
+
+      console.log(purchases, "purchases from store...")
+
+
+
+
+      purchases.forEach(async (purchase) => {
+        switch (purchase.productId) {
+
+          case 'lifetime.purchase':
+            Alert.alert("All in one lifetime purchase successfully restored.")
+            await CheckPurchases()
+            break
+
+          case 'all_in_one.monthly.subscription':
+            Alert.alert("All in one monthly subscription successfully restored.")
+            await CheckPurchases()
+            break
+
+          case 'habits.monthly.subscription':
+            Alert.alert("Habit tracker monthly subscription successfully restored.")
+            await CheckPurchases()
+            break
+
+          case 'meditation.monthly.subscription':
+            Alert.alert("Meditations  monthly subscription successfully restored.")
+            await CheckPurchases()
+            break
+
+          default:
+            Alert.alert("Nothing to restore!");
+            break
+
+        }
+
+      })
+
+      console.log('Restore Successful', 'You successfully restored the following purchases: ');
+    } catch (err) {
+      setisLoading(false)
+      console.warn(err); // standardized err.code and err.message available
+      console.log(err.message);
+    }
+
+  }
+
   React.useEffect(() => {
     getIAPProductsAndSubscriptions();
+
     purchaseUpdateSubscription = RNIap.purchaseUpdatedListener(
       async purchase => {
         console.log('purchase', purchase);
@@ -275,15 +339,15 @@ const AllPackages = props => {
 
   const FlatListHeader = () => {
     return (
-      <View style={{marginBottom: 0}}>
-        <View style={{marginTop: 20}}>
+      <View style={{ marginBottom: 0 }}>
+        <View style={{ marginTop: 20 }}>
           <Text
-            style={{fontFamily: font.bold, fontSize: 30, color: Colors.black}}>
+            style={{ fontFamily: font.bold, fontSize: 30, color: Colors.black }}>
             Get Access to more Features
           </Text>
         </View>
 
-        <View style={{marginTop: 25}}>
+        <View style={{ marginTop: 25 }}>
           <Text
             style={{
               color: Colors.darkPrimary,
@@ -297,7 +361,7 @@ const AllPackages = props => {
     );
   };
 
-  const pkgView = ({item, index}) => {
+  const pkgView = ({ item, index }) => {
     if (
       params?.from == undefined ||
       !!item.service.find(x => x.toLowerCase() == params?.from.toLowerCase())
@@ -332,15 +396,15 @@ const AllPackages = props => {
                   item?.type == 'star'
                     ? ic_star
                     : item?.type == 'diamond'
-                    ? ic_diamond
-                    : item?.type == 'crown'
-                    ? ic_crown
-                    : null
+                      ? ic_diamond
+                      : item?.type == 'crown'
+                        ? ic_crown
+                        : null
                 }
-                style={{height: 50, width: 50}}
+                style={{ height: 50, width: 50 }}
               />
-              <View style={{flex: 1, marginLeft: 10}}>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <Text
                     style={{
                       fontFamily: font.bold,
@@ -350,7 +414,7 @@ const AllPackages = props => {
                     {item.duration}
                   </Text>
                   {!!purchasedSKUs.find(x => x == item?.sku[0]) && (
-                    <View style={{marginLeft: 5}}>
+                    <View style={{ marginLeft: 5 }}>
                       <Image
                         source={ic_filledTick}
                         style={{
@@ -372,7 +436,7 @@ const AllPackages = props => {
                 </Text>
               </View>
 
-              <View style={{marginLeft: 10}}>
+              <View style={{ marginLeft: 10 }}>
                 <Text
                   style={{
                     fontFamily: font.bold,
@@ -385,7 +449,7 @@ const AllPackages = props => {
               </View>
             </View>
             <Collapsible collapsed={item._id != selectedPkg._id}>
-              <View style={{padding: 10}}>
+              <View style={{ padding: 10 }}>
                 {item.description.map((x, i) => (
                   <View
                     key={i.toString()}
@@ -428,23 +492,30 @@ const AllPackages = props => {
         translucent={false}
       />
 
-      <Header title="Subscriptions" navigation={props.navigation} />
+      <Header title="Subscription Plans" navigation={props.navigation} />
 
-      <View style={{flex: 1, paddingHorizontal: 20}}>
+      <View style={{ flex: 1, paddingHorizontal: 20 }}>
         <Loader enable={loading} />
         {(!loading || pkgList.length != 0) && (
           <>
-            <View style={{flex: 1}}>
-              <FlatList
-                keyExtractor={(item, index) => {
-                  return item._id;
-                }}
-                data={pkgList}
-                ListHeaderComponent={FlatListHeader()}
-                renderItem={pkgView}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{paddingBottom: 20}}
-              />
+            <View style={{ flex: 1 }}>
+              <View>
+                <FlatList
+                  keyExtractor={(item, index) => {
+                    return item._id;
+                  }}
+                  data={pkgList}
+                  ListHeaderComponent={FlatListHeader()}
+                  renderItem={pkgView}
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{ paddingBottom: 20 }}
+                />
+              </View>
+
+              <TouchableOpacity onPress={restorePurchase} style={{ alignSelf: "center" }}>
+                <Text style={{ textDecorationLine: "underline", fontFamily: "Pangram-Medium" }}>Restore Purchase</Text>
+              </TouchableOpacity>
+
             </View>
 
             {!!purchasedSKUs.find(x => x == selectedPkg?.sku[0]) == false &&
@@ -462,7 +533,7 @@ const AllPackages = props => {
                       paddingHorizontal: 7,
                       marginBottom: 5,
                     }}>
-                    <View style={{height: 50, width: 50}} />
+                    <View style={{ height: 50, width: 50 }} />
                     <View
                       style={{
                         flex: 1,

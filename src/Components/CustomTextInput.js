@@ -89,14 +89,14 @@ export function CustomMultilineTextInput(props) {
           editable={props?.editable}
           style={{
             flex: 1,
-            paddingHorizontal: 10,
+            paddingHorizontal: 20,
             fontFamily: font.regular,
           }}
           textAlignVertical="top"
           placeholderTextColor={colors.placeHolder}
           placeholder={props.placeholder}
           autoCorrect={false}
-          autoCapitalize={'none'}
+          autoCapitalize={!!props.autoCapitalize ? 'sentences' : 'none'}
           selectTextOnFocus={false}
           value={props.value}
           onChangeText={props.onChangeText}

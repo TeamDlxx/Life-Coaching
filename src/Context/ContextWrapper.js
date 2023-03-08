@@ -12,6 +12,7 @@ import {Platform, PermissionsAndroid, DevSettings} from 'react-native';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import invokeApi from '../functions/invokeAPI';
 
+
 // Icon
 
 const ContextWrapper = props => {
@@ -26,6 +27,12 @@ const ContextWrapper = props => {
     meditation: false,
     skus: [],
   });
+  
+  const [gratitudesList, setGratitudesList] = useState([]);
+ const updateGratitudeList =  updation => setGratitudesList([ updation , ...gratitudesList ]);
+ const [gratitudeExist, setGratitudeExist] = useState();
+
+
 
   const checkPermissions = async () => {
     let granted;
@@ -522,6 +529,11 @@ const ContextWrapper = props => {
     resetPurchase,
     downloadAudioNote,
     checkAudioNoteStatus,
+    gratitudesList,
+    setGratitudesList,
+    updateGratitudeList,
+    gratitudeExist,
+    setGratitudeExist
   };
 
   return (

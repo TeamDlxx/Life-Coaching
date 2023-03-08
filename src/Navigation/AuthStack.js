@@ -21,13 +21,13 @@ import BottomTabs from './BottomTabs';
 import ComingSoon from '../screens/Extra/ComingSoon';
 
 // //? Subscription
-
 import AllPackages from '../screens/Subscriptions/AllPackages';
 
 // //? Profile
 import EditProfile from '../screens/Profile/EditProfile';
 import ChangePassword from '../screens/Profile/ChangePassword';
 import OfflineTracks from '../screens/Profile/OfflineTracks';
+
 // //? Habits
 import HabitTracker from '../screens/Home/Habit/HabitTracker';
 import ChooseHabit from '../screens/Home/Habit/ChooseHabit';
@@ -41,6 +41,8 @@ import AllNotes from '../screens/Home/Habit/AllNotes';
 // //? MoodTracker
 import MoodTracker from '../screens/Home/MoodTracker/MoodTracker';
 import AddMood from '../screens/Home/MoodTracker/AddMood';
+import MoodNote from '../screens/Home/MoodTracker/MoodNote';
+import MoodsJournal from '../screens/Home/MoodTracker/MoodsJournal';
 
 // //? Quotes
 import List from '../screens/Home/Quotes/List';
@@ -48,7 +50,6 @@ import FavQuoteList from '../screens/Home/Quotes/FavQuoteList';
 
 // //? Meditation
 import Meditation from '../screens/Home/Meditation/Meditation';
-// //
 import TrackPlayerScreen from '../screens/Home/Meditation/TrackPlayerScreen';
 import FavouriteTracks from '../screens/Home/Meditation/FavouriteTracks';
 
@@ -56,9 +57,6 @@ import FavouriteTracks from '../screens/Home/Meditation/FavouriteTracks';
 import TimeTable from '../screens/Home/TimeTable/TimeTable';
 import AddTask from '../screens/Home/TimeTable/AddTask';
 import TaskDetail from '../screens/Home/TimeTable/TaskDetail';
-
-// //? Gratitude
-import Gratitude from '../screens/Home/Gratitude/Gratitude';
 
 // //? Notes
 import NotesList from '../screens/Home/Notes/NotesList';
@@ -69,6 +67,16 @@ import NoteDetail from '../screens/Home/Notes/Detail';
 // import Colors from '../Utilities/Colors';
 import Context from '../Context';
 import {useContext} from 'react';
+
+// //? Gratitude
+import Gratitude from '../screens/Home/Gratitude/Gratitude';
+import CreateGratitude from '../screens/Home/Gratitude/CreateGratitude';
+import GratitudeDetail from '../screens/Home/Gratitude/GratitudeDetail';
+import AllGratitudes from '../screens/Home/Gratitude/AllGratitudes';
+
+// //? Reminder
+import Reminders from '../screens/Settings/Reminders';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -118,23 +126,15 @@ const AuthStack = () => {
         <Stack.Screen name={screens.landing} component={Landing} />
         <Stack.Screen name={screens.otp} component={OTP} />
         <Stack.Screen name={screens.newPassword} component={NewPassword} />
-        <Stack.Screen
-          name={screens.forgotPassword}
-          component={ForgotPassword}
-        />
+        <Stack.Screen name={screens.forgotPassword} component={ForgotPassword} />
         <Stack.Screen name={screens.bottomTabs} component={BottomTabs} />
         <Stack.Screen name={screens.comingSoon} component={ComingSoon} />
-        {/* Profile */}
-        <Stack.Screen
-          name={screens.dowloadedTracks}
-          component={OfflineTracks}
-        />
-        <Stack.Screen name={screens.editProfile} component={EditProfile} />
 
-        <Stack.Screen
-          name={screens.changePassword}
-          component={ChangePassword}
-        />
+        {/* Profile */}
+        <Stack.Screen name={screens.dowloadedTracks} component={OfflineTracks} />
+        <Stack.Screen name={screens.editProfile} component={EditProfile} />
+        <Stack.Screen name={screens.changePassword} component={ChangePassword}/>
+
         {/* Habits */}
         <Stack.Screen name={screens.habitTracker} component={HabitTracker} />
         <Stack.Screen name={screens.chooseHabit} component={ChooseHabit} />
@@ -148,18 +148,19 @@ const AuthStack = () => {
         {/* MoodTracker */}
         <Stack.Screen name={screens.moodTracker} component={MoodTracker} />
         <Stack.Screen name={screens.addMood} component={AddMood} />
-        <Stack.Screen name={screens.favTracks} component={FavouriteTracks} />
+        <Stack.Screen name={screens.moodNote} component={MoodNote} />
+        <Stack.Screen name={screens.moodsJournal} component={MoodsJournal} />
+       <Stack.Screen name={screens.favTracks} component={FavouriteTracks} />
+
         {/* Quotes */}
         <Stack.Screen name={screens.qouteList} component={List} />
         <Stack.Screen name={screens.favQuoteList} component={FavQuoteList} />
+
         {/* Meditation*/}
         <Stack.Screen name={screens.meditation} component={Meditation} />
-        <Stack.Screen
-          name={screens.trackPlayer}
-          component={TrackPlayerScreen}
-        />
-        {/* Notes */}
+        <Stack.Screen name={screens.trackPlayer} component={TrackPlayerScreen} />
 
+        {/* Notes */}
         <Stack.Screen name={screens.notesList} component={NotesList} />
         <Stack.Screen name={screens.noteEditor} component={Editor} />
         <Stack.Screen name={screens.notesFilter} component={NoteFilter} />
@@ -169,12 +170,18 @@ const AuthStack = () => {
         <Stack.Screen name={screens.timeTable} component={TimeTable} />
         <Stack.Screen name={screens.addTask} component={AddTask} />
         <Stack.Screen name={screens.taskDetail} component={TaskDetail} />
+
         {/* Gratitude */}
         <Stack.Screen name={screens.gratitude} component={Gratitude} />
+        <Stack.Screen name={screens.addGratitude} component={CreateGratitude} />
+        <Stack.Screen name={screens.gratitudeDetail} component={GratitudeDetail} />
+        <Stack.Screen name={screens.allGratitudes} component={AllGratitudes} />
 
         {/* Subscriptions */}
-
         <Stack.Screen name={screens.allPackages} component={AllPackages} />
+
+        {/* Reminders */}
+        <Stack.Screen name={screens.reminder} component={Reminders} />
       </Stack.Navigator>
     );
   } else {

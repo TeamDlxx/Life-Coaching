@@ -2,12 +2,41 @@
  * @format
  */
 
-import {AppRegistry} from 'react-native';
+import { AppRegistry } from 'react-native';
 import App from './App';
-import {name as appName} from './app.json';
+import { name as appName } from './app.json';
 import TrackPlayer from 'react-native-track-player';
+import { Capability } from 'react-native-track-player';
+
 import messaging from '@react-native-firebase/messaging';
-import PushNotification, {Importance} from 'react-native-push-notification';
+import PushNotification, { Importance } from 'react-native-push-notification';
+
+
+TrackPlayer.setupPlayer({
+  waitForBuffer: true,
+}).then(() => {
+  TrackPlayer.updateOptions({
+    stoppingAppPausesPlayback: true,
+    notificationCapabilities: [
+      Capability.Play,
+      Capability.Pause,
+      Capability.JumpBackward,
+      Capability.JumpForward,
+      Capability.SeekTo,
+    ],
+    capabilities: [
+      Capability.Play,
+      Capability.Pause,
+      Capability.JumpBackward,
+      Capability.JumpForward,
+      Capability.SeekTo,
+    ],
+    compactCapabilities: [Capability.Play, Capability.Pause],
+  });
+});
+
+
+
 
 PushNotification.createChannel(
   {

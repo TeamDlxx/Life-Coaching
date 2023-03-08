@@ -20,8 +20,7 @@ export const screens = {
   habitDetail: 'HABIT_DETAIL_SCREEN',
   NotesDetail: 'NOTE_DETAIL_SCREEN',
   AllNotes: 'ALL_NOTES_SCREEN',
-  moodTracker: 'MOOD_TRACKER_SCREEN',
-  addMood: 'ADD_MOOD_SCREEN',
+
   meditation: 'MEDITATION_SCREEN',
   trackPlayer: 'TRACK_PLAYER_SCREEN',
   favTracks: 'FAVOURITE_TRACKS_SCREEN',
@@ -30,7 +29,6 @@ export const screens = {
   timeTable: 'TIME_TABLE_SCREEN',
   addTask: 'ADD_TASK_SCREEN',
   taskDetail: 'TASK_DETAIL_SCREEN',
-  gratitude: 'GRATITUDE_SCREEN',
   dowloadedTracks: 'OFFLINE_TRACKS_SCREEN',
   allPackages: 'SUBSCRIPTIONS_SCREEN',
   comingSoon: 'COMINGSOON_SCREEN',
@@ -40,4 +38,19 @@ export const screens = {
   noteEditor: 'NOTE_EDITOR',
   notesFilter: 'NOTE_FILTER',
   notesDetail: 'NOTE_DETAIL',
+
+  //Mood trackPlayer
+  moodTracker: 'MOOD_TRACKER_SCREEN',
+  addMood: 'ADD_MOOD_SCREEN',
+  moodNote: 'ADD_MOOD_NOTE',
+  moodsJournal: 'MOODS_JOURNAL',
+
+  //Gratitude
+  gratitude: 'GRATITUDE_SCREEN',
+  addGratitude: 'ADD_GRATITUDE',
+  gratitudeDetail: 'GRATITUDE_DETAIL',
+  allGratitudes: 'ALL_GRATITUDES',
+
+  //Reminder
+  reminder: "REMINDER_SCREEN"
 };

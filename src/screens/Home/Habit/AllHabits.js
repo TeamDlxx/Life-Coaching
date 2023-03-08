@@ -8,36 +8,49 @@ import {
   Alert,
   RefreshControl,
   Dimensions,
+  TouchableOpacity,
+  StyleSheet,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
-import {mainStyles, allHabit_styles} from '../../../Utilities/styles';
-import {font} from '../../../Utilities/font';
-import {screens} from '../../../Navigation/Screens';
+import { mainStyles, allHabit_styles } from '../../../Utilities/styles';
+import { font } from '../../../Utilities/font';
+import { screens } from '../../../Navigation/Screens';
 import * as Progress from 'react-native-progress';
 import moment from 'moment';
 import CustomImage from '../../../Components/CustomImage';
 // fro API calling
-import {useContext} from 'react';
+import { useContext } from 'react';
 import Context from '../../../Context';
 import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
-import {fileURL} from '../../../Utilities/domains';
+import { fileURL } from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
 import PushNotification from 'react-native-push-notification';
 import SwipeableFlatList from 'react-native-swipeable-list';
 import analytics from '@react-native-firebase/analytics';
+import Modal from 'react-native-modal';
+import LoginAlert from '../../../Components/LoginAlert';
+import CustomButton from '../../../Components/CustomButton';
 
 const screen = Dimensions.get('screen');
 const ic_Hplaceholder = require('../../../Assets/Icons/h_placeholder1.png');
+
+
 const AllHabits = props => {
-  const {Token, habitList, setHabitList} = useContext(Context);
+
+
+  const [today, setToday] = useState(moment().format('YYYY-MM-DD'));
+  const [option, setOption] = useState(0);
+
+  const { Token, habitList, setHabitList , isHabitPurchased} = useContext(Context);
   const [sHabitList, setSHabitList] = useState([]);
   const [isLoading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [currentWeek, setCurrentWeekDays] = useState([]);
+  const [visibleAddHabitModal, setVisibleAddHabitModal] = useState(false);
 
   const makeDaysArray = () => {
     let selectedWeekDays = [];
@@ -47,6 +60,15 @@ const AllHabits = props => {
     setCurrentWeekDays(selectedWeekDays);
   };
   //  Functions
+
+
+  const onChooseHabitScreen = async () => {
+    await setVisibleAddHabitModal(false);
+    props.navigation.navigate(screens.chooseHabit, {
+      todo: option,
+    });
+  };
+
 
   const refreshFlatList = () => {
     setRefreshing(true);
@@ -103,6 +125,38 @@ const AllHabits = props => {
     newArray.splice(index, 1, item);
     setSHabitList(newArray);
   }
+
+
+  const btn_add = () => {
+    if (Token) {
+      if (habitList.length < 5 || isHabitPurchased == true) {
+        setVisibleAddHabitModal(true);
+      } else {
+        props.navigation.navigate(screens.allPackages, {
+          from: 'habit',
+        });
+        return;
+        Alert.alert(
+          'Subscription',
+          'Your Habit limit is over\nPlease buy subcription to add more?',
+          [
+            { text: 'No' },
+            {
+              text: 'Yes',
+              onPress: () => {
+                props.navigation.navigate(screens.allPackages, {
+                  from: 'habit',
+                });
+              },
+            },
+          ],
+        );
+      }
+    } else {
+      LoginAlert(props.navigation, props.route?.name);
+    }
+  };
+
 
   const api_deleteHabit = async id => {
     setisLoading(true);
@@ -176,8 +230,103 @@ const AllHabits = props => {
     };
   }, []);
 
+
+
   // Views
-  const renderHabitsList = ({item, index}) => {
+
+
+  const addhabitModal = () => {
+    return (
+      <Modal
+        isVisible={visibleAddHabitModal}
+        onBackButtonPress={() => setVisibleAddHabitModal(false)}
+        onBackdropPress={() => setVisibleAddHabitModal(false)}
+        useNativeDriverForBackdrop={true}
+        hideModalContentWhileAnimating={true}
+        style={{
+          marginHorizontal: 10,
+          marginBottom: Platform.OS == 'ios' ? 20 : 10,
+        }}>
+        <View
+          style={{
+            marginTop: 'auto',
+            backgroundColor: Colors.background,
+            borderRadius: 10,
+            paddingVertical: 20,
+          }}>
+          <View style={{ paddingHorizontal: 10, marginVertical: 10 }}>
+            <Text
+              style={{
+                color: Colors.gray14,
+                fontFamily: font.xbold,
+                textAlign: 'center',
+                fontSize: 16,
+              }}>
+              {moment(today, 'YYYY-MM-DD').format('DD MMM YYYY') ==
+                moment().format('DD MMM YYYY') && <Text>{'Today, '}</Text>}
+              {moment(today, 'YYYY-MM-DD').format('DD MMM YYYY')}
+            </Text>
+          </View>
+          <View style={{ marginTop: 30, marginBottom: 10, flexDirection: 'row' }}>
+            <Pressable
+              onPress={() => setOption(0)}
+              style={[
+                modalStyle.btn_view,
+                option == 0 ? modalStyle.selectedBtnView : null,
+              ]}>
+              <Image
+                source={require('../../../Assets/Icons/cancel.png')}
+                style={[
+                  modalStyle.btn_icon,
+                  option == 0 ? modalStyle.slectedIcon : null,
+                  { tintColor: 'tomato' },
+                ]}
+              />
+              <Text
+                style={[
+                  modalStyle.btn_text,
+                  option == 0 ? modalStyle.selectedBtnText : null,
+                ]}>
+                Break Bad Habit
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setOption(1)}
+              style={[
+                modalStyle.btn_view,
+                option == 1 ? modalStyle.selectedBtnView : null,
+              ]}>
+              <Image
+                source={require('../../../Assets/Icons/infinity.png')}
+                style={[
+                  modalStyle.btn_icon,
+                  option == 1 ? modalStyle.slectedIcon : null,
+                  { tintColor: '#5dbb63' },
+                ]}
+              />
+              <Text
+                style={[
+                  modalStyle.btn_text,
+                  option == 1 ? modalStyle.selectedBtnText : null,
+                ]}>
+                Create Good Habit
+              </Text>
+            </Pressable>
+          </View>
+          <View style={{ marginHorizontal: 10, marginTop: 20 }}>
+            <CustomButton
+              onPress={onChooseHabitScreen}
+              title={'Create Habit'}
+            />
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
+
+
+  const renderHabitsList = ({ item, index }) => {
     let progress = findProgress(item);
     return (
       <Pressable
@@ -193,8 +342,8 @@ const AllHabits = props => {
         <View style={allHabit_styles.imageView}>
           {!!item?.images?.large ? (
             <CustomImage
-              source={{uri: fileURL + item.images?.small}}
-              indicatorProps={{color: Colors.primary}}
+              source={{ uri: fileURL + item.images?.small }}
+              indicatorProps={{ color: Colors.primary }}
               style={allHabit_styles.itemImage}
             />
           ) : (
@@ -218,7 +367,7 @@ const AllHabits = props => {
           )}
         </View>
         <View style={allHabit_styles.detailView}>
-          <View style={{flex: 1}}>
+          <View style={{ flex: 1 }}>
             <Text numberOfLines={2} style={allHabit_styles.title}>
               {item.name}
             </Text>
@@ -284,7 +433,7 @@ const AllHabits = props => {
           </View>
 
           <View>
-            <View style={{flexDirection: 'row', marginTop: 5}}>
+            <View style={{ flexDirection: 'row', marginTop: 5 }}>
               {currentWeek.map(x => {
                 return (
                   <View
@@ -299,15 +448,15 @@ const AllHabits = props => {
                         moment(y.date).format('DDMMYYYY') ==
                         moment(x).format('DDMMYYYY'),
                     ) != -1 && (
-                      <Image
-                        style={{
-                          height: 10,
-                          width: 10,
-                          tintColor: Colors.primary,
-                        }}
-                        source={require('../../../Assets/Icons/tick.png')}
-                      />
-                    )}
+                        <Image
+                          style={{
+                            height: 10,
+                            width: 10,
+                            tintColor: Colors.primary,
+                          }}
+                          source={require('../../../Assets/Icons/tick.png')}
+                        />
+                      )}
                   </View>
                 );
               })}
@@ -337,7 +486,7 @@ const AllHabits = props => {
                   : '0%'}
               </Text>
             </View>
-            <View style={{flex: 1, marginTop: 5}}>
+            <View style={{ flex: 1, marginTop: 5 }}>
               <Progress.Bar
                 color={Colors.primary}
                 height={8}
@@ -358,7 +507,7 @@ const AllHabits = props => {
               backgroundColor: Colors.primary,
               paddingHorizontal: 30,
               paddingVertical: 5,
-              transform: [{rotateZ: '-45deg'}],
+              transform: [{ rotateZ: '-45deg' }],
               position: 'absolute',
               left: -30,
               top: 15,
@@ -396,48 +545,22 @@ const AllHabits = props => {
       />
       <Header navigation={props.navigation} title={'Your Habits'} />
 
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <Loader enable={isLoading} />
-        <View style={{flex: 1}}>
+        <View style={{ flex: 1 }}>
           <SwipeableFlatList
-            // useFlatList={true}
-            contentContainerStyle={{paddingVertical: 10}}
+            contentContainerStyle={{ paddingVertical: 10 }}
             showsVerticalScrollIndicator={false}
             data={sHabitList}
             renderItem={renderHabitsList}
-            // rightOpenValue={-60}
-            // disableRightSwipe={true}
-            // closeOnRowBeginSwipe={true}
-            // closeOnRowPress={true}
+
             shouldBounceOnMount={true}
             maxSwipeDistance={70}
             keyExtractor={item => {
               return item._id;
             }}
-            // renderHiddenItem={({item, index}) => {
-            //   console.log('renderHiddenItem', item);
-            //   return (
-            //     <Pressable
-            //       key={item._id}
-            //       onPress={() =>
-            //         Alert.alert(
-            //           'Delete Habit',
-            //           'Are you sure you want to delete this Habit',
-            //           [
-            //             {text: 'No'},
-            //             {text: 'Yes', onPress: () => api_deleteHabit(item._id)},
-            //           ],
-            //         )
-            //       }
-            //       style={allHabit_styles.hiddenView}>
-            //       <Image
-            //         source={require('../../../Assets/Icons/trash.png')}
-            //         style={allHabit_styles.hiddenIcon}
-            //       />
-            //     </Pressable>
-            //   );
-            // }}
-            renderQuickActions={({item, index}) => {
+
+            renderQuickActions={({ item, index }) => {
               return (
                 <Pressable
                   key={item._id}
@@ -446,8 +569,8 @@ const AllHabits = props => {
                       'Delete Habit',
                       'Are you sure you want to delete this Habit',
                       [
-                        {text: 'No'},
-                        {text: 'Yes', onPress: () => api_deleteHabit(item._id)},
+                        { text: 'No' },
+                        { text: 'Yes', onPress: () => api_deleteHabit(item._id) },
                       ],
                     )
                   }
@@ -462,14 +585,96 @@ const AllHabits = props => {
             ListEmptyComponent={() =>
               isLoading == false &&
               sHabitList.length == 0 && (
-                <EmptyView title={'No Habits'} noSubtitle />
+
+                <View style = {{flex:1, alignItems:"center", justifyContent:"center"}}>
+                  <EmptyView title={'No Habits Yet'} noSubtitle />
+                  <TouchableOpacity onPress={btn_add}  style = {{backgroundColor : Colors.lightPrimary, height:40, width:160, borderRadius:10, alignItems:"center", justifyContent:"center", marginTop:20}}>
+                        <Text style = {{color:Colors.primary, fontWeight:"bold"}}>Change My Habit   </Text>
+                    </TouchableOpacity>
+                </View>
               )
             }
           />
         </View>
+
+
+        {addhabitModal()}
+
+
       </View>
     </SafeAreaView>
   );
 };
 
 export default AllHabits;
+
+
+const modalStyle = StyleSheet.create({
+  btn_view: {
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: Colors.gray02,
+    backgroundColor: Colors.white,
+    marginHorizontal: 10,
+    marginBottom: 10,
+    borderRadius: 10,
+    // justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+    // height:120
+    paddingVertical: 20,
+
+    // shadowColor: '#000',
+    // shadowOffset: {
+    //   width: 0,
+    //   height: 1,
+    // },
+    // shadowOpacity: 0.2,
+    // shadowRadius: 1.41,
+
+    // elevation: 2,
+  },
+  selectedBtnView: {
+    borderColor: Colors.gray02,
+    backgroundColor: Colors.lightPrimary,
+  },
+  btn_text: {
+    fontFamily: font.medium,
+    fontSize: 16,
+    color: Colors.gray10,
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  selectedBtnText: {
+    color: Colors.black,
+  },
+  btn_icon: {
+    marginLeft: 5,
+    height: 30,
+    width: 30,
+    tintColor: Colors.gray10,
+  },
+  slectedIcon: {
+    tintColor: Colors.primary,
+  },
+  emojiView: {
+    borderColor: Colors.gray02,
+    backgroundColor: Colors.background,
+    borderWidth: 1,
+    marginHorizontal: 10,
+    borderRadius: 10,
+    flexDirection: 'row',
+    // justifyContent:"space-evenly"
+    alignItems: 'center',
+    // paddingVertical: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
+  },
+});

@@ -10,23 +10,23 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {mainStyles} from '../../Utilities/styles';
+import React, { useEffect, useState } from 'react';
+import { mainStyles } from '../../Utilities/styles';
 import Header from '../../Components/Header';
 import Colors from '../../Utilities/Colors';
-import {font} from '../../Utilities/font';
-import {HabitStats_style} from '../../Utilities/styles';
+import { font } from '../../Utilities/font';
+import { HabitStats_style } from '../../Utilities/styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
-import {screens} from '../../Navigation/Screens';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { screens } from '../../Navigation/Screens';
 import profile_placeholder from '../../Assets/Icons/dummy.png';
 import CustomImage from '../../Components/CustomImage';
-import {fileURL} from '../../Utilities/domains';
+import { fileURL } from '../../Utilities/domains';
 import ImageZoomer from '../../Components/ImageZoomer';
 import analytics from '@react-native-firebase/analytics';
 
 // For API's calling
-import {useContext} from 'react';
+import { useContext } from 'react';
 import Context from '../../Context';
 import showToast from '../../functions/showToast';
 import Loader from '../../Components/Loader';
@@ -38,7 +38,7 @@ import EmptyView from '../../Components/EmptyView';
 const ic_logo = require('../../Assets/app-icon/final.png');
 const screen = Dimensions.get('screen');
 const Profile = props => {
-  const {Token, habitList, setHabitList, completed, purchasedSKUs} =
+  const { Token, habitList, setHabitList, completed, purchasedSKUs } =
     useContext(Context);
   const [user, setUser] = useState(null);
   const [loading, setisLoading] = useState(true);
@@ -117,34 +117,33 @@ const Profile = props => {
     analytics().logEvent(props?.route?.name);
   }, []);
 
-  // React.useEffect(() => {
-  //   const unsubscribe = props.navigation.addListener('tabPress', e => {
-  //     console.log(e, 'hello bottom');
-  //     api_profile();
-  //   });
-  //   return unsubscribe;
-  // }, [props.navigation]);
+
 
   return (
     <SafeAreaView
       style={[
         mainStyles.MainViewForBottomTabScreens,
-        {marginBottom: useBottomTabBarHeight()},
+        { marginBottom: useBottomTabBarHeight() },
       ]}>
       <StatusBar
         backgroundColor={Colors.background}
         barStyle={'dark-content'}
       />
       <Header title="Profile" />
-      {Token ? (
-        <View style={{flex: 1}}>
-          <ImageZoomer
-            closeModal={hideImageModal}
-            visible={!!modalImage}
-            url={modalImage}
-          />
-          <ScrollView>
-            <View style={{alignItems: 'center'}}>
+      {/* {Token ? ( */}
+      <View style={{ flex: 1 }}>
+
+        <ImageZoomer
+          closeModal={hideImageModal}
+          visible={!!modalImage}
+          url={modalImage}
+        />
+
+
+        <ScrollView>
+          <View style={{ alignItems: 'center' }}>
+
+            {Token &&
               <Pressable
                 onPress={() => ShowImageModal(user.profile_image)}
                 style={{
@@ -161,14 +160,19 @@ const Profile = props => {
                 <CustomImage
                   source={
                     !!user && !!user.profile_image
-                      ? {uri: fileURL + user?.profile_image}
+                      ? { uri: fileURL + user?.profile_image }
                       : profile_placeholder
                   }
-                  style={{height: 100, width: 100}}
-                  imageStyle={{borderRadius: 100 / 2}}
+                  style={{ height: 100, width: 100 }}
+                  imageStyle={{ borderRadius: 100 / 2 }}
                 />
               </Pressable>
-              <View style={{marginTop: 10}}>
+            }
+
+
+
+            {Token &&
+              <View style={{ marginTop: 10 }}>
                 <Text
                   style={{
                     fontFamily: font.bold,
@@ -178,11 +182,16 @@ const Profile = props => {
                   {!!user && user?.name}
                 </Text>
               </View>
+            }
 
+
+
+
+            {Token &&
               <View
                 style={[
                   profile_styles.statRow,
-                  {justifyContent: 'space-evenly', width: '100%'},
+                  { justifyContent: 'space-evenly', width: '100%' },
                 ]}>
                 <View style={[profile_styles.statItemView]}>
                   <Text style={profile_styles.statItemtext1}>Total Habits</Text>
@@ -205,68 +214,118 @@ const Profile = props => {
                   </Text>
                 </View>
               </View>
-            </View>
+            }
 
-            <View style={{paddingHorizontal: 30, marginTop: 40}}>
-              {optionsList.map((x, i) => {
-                if (
-                  x.id == 'sub' &&
-                  !!purchasedSKUs.find(x => x == 'lifetime.purchase') == true
-                ) {
-                  return;
-                }
-                return (
-                  <Pressable
-                    key={x.id}
-                    onPress={() => {
-                      if (!!x.screen) {
-                        props.navigation.navigate(x.screen, {
-                          user: x.screen == screens.editProfile ? user : null,
-                        });
-                      }
-                    }}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      paddingVertical: 10,
-                    }}>
-                    <View
+
+
+
+
+          </View>
+
+          <View style={{ paddingHorizontal: 30, marginTop: 40 }}>
+            {optionsList.map((x, i) => {
+
+
+              if (
+                x.id == 'sub' &&
+                !!purchasedSKUs.find(x => x == 'lifetime.purchase') == true
+              ) {
+                return;
+              }
+
+
+              if (
+                x.id == '1' &&
+                !Token
+              ) {
+                return;
+              }
+
+
+              if (
+                x.id == '2' &&
+                !Token
+              ) {
+                return;
+              }
+
+              if (
+                x.id == '5' &&
+                Token
+              ) {
+                return;
+              }
+
+
+
+
+              return (
+
+                
+                    <Pressable
+                      key={x.id}
+                      onPress={() => {
+                        if (!!x.screen) {
+                          props.navigation.navigate(x.screen, {
+                            user: x.screen == screens.editProfile ? user : null,
+                          });
+                        }
+                      }}
                       style={{
-                        height: 40,
-                        width: 40,
-                        backgroundColor: '#BDC3C744',
-                        justifyContent: 'center',
+                        flexDirection: 'row',
                         alignItems: 'center',
-                        borderRadius: 10,
+                        paddingVertical: 10,
                       }}>
-                      <CustomImage
-                        source={x.icon}
-                        style={{height: 20, width: 20}}
-                      />
-                    </View>
-                    <View style={{flex: 1, marginLeft: 15}}>
-                      <Text
+                      <View
                         style={{
-                          fontFamily: font.medium,
-                          fontSize: 16,
-                          letterSpacing: 0.6,
+                          height: 40,
+                          width: 40,
+                          backgroundColor: '#BDC3C744',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          borderRadius: 10,
                         }}>
-                        {x.name}
-                      </Text>
-                    </View>
-                    <View>
-                      <CustomImage
-                        source={require('../../Assets/Icons/right_arrow.png')}
-                        style={{height: 15, width: 15}}
-                      />
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </ScrollView>
-        </View>
-      ) : (
+                        <CustomImage
+                          source={x.icon}
+                          style={{ height: 20, width: 20 }}
+                        />
+                      </View>
+                      <View style={{ flex: 1, marginLeft: 15 }}>
+                        <Text
+                          style={{
+                            fontFamily: font.medium,
+                            fontSize: 16,
+                            letterSpacing: 0.6,
+                          }}>
+                          {x.name}
+                        </Text>
+                      </View>
+                      <View>
+                        <CustomImage
+                          source={require('../../Assets/Icons/right_arrow.png')}
+                          style={{ height: 15, width: 15 }}
+                        />
+                      </View>
+                    </Pressable>
+               
+
+
+
+
+
+
+              );
+            })}
+          </View>
+        </ScrollView>
+      </View>
+      {/* ) */}
+
+
+      {/* : */}
+
+
+      {/* (
         <View style={{flex: 1}}>
           <View style={{alignItems: 'center', flex: 1, marginTop: '10%'}}>
             <View style={{borderRadius: 15, overflow: 'hidden'}}>
@@ -357,7 +416,7 @@ const Profile = props => {
             </Pressable>
           </View>
         </View>
-      )}
+      )} */}
     </SafeAreaView>
   );
 };
@@ -412,6 +471,8 @@ const profile_styles = StyleSheet.create({
 });
 
 const optionsList = [
+
+
   {
     id: '1',
     name: 'Edit Profile',
@@ -436,5 +497,12 @@ const optionsList = [
     name: 'Downloaded Meditations',
     icon: require('../../Assets/Icons/music.png'),
     screen: screens.dowloadedTracks,
+  },
+
+  {
+    id: '5',
+    name: 'Login',
+    icon: require('../../Assets/Icons/avatar.png'),
+    screen: screens.Login,
   },
 ];

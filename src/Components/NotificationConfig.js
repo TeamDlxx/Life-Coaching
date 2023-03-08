@@ -83,6 +83,15 @@ export default function NotificationConfig(props) {
           ],
         });
         break;
+        case 'gratitude':
+          props.navigation.reset({
+            index: 0,
+            routes: [
+              {name: screens.bottomTabs, },
+              {name: screens.gratitude, params: {id: data._id}},
+            ],
+          });
+          break;
     }
   };
 }

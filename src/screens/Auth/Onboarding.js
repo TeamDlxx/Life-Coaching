@@ -72,7 +72,7 @@ const Onboarding = props => {
           ) : (
             <CustomButton
               onPress={() => slider?.current?.goToSlide(index + 1)}
-              title="Next feature"
+              title="Next"
             />
           )}
         </View>

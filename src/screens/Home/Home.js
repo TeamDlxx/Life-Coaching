@@ -301,7 +301,7 @@ const options = [
     count: 7,
     screen: screens.moodTracker,
     color: '#A5A5DB',
-    comingsoon: true,
+    comingsoon: false,
   },
   {
     id: '6',
@@ -310,6 +310,6 @@ const options = [
     count: 7,
     screen: screens.gratitude,
     color: '#44BCDF',
-    comingsoon: true,
+    comingsoon: false,
   },
 ];

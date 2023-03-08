@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,33 +12,34 @@ import {
   TouchableHighlight,
   RefreshControl,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
-import {mainStyles, FAB_style, other_style} from '../../../Utilities/styles';
-import moment, {months} from 'moment';
-import {font} from '../../../Utilities/font';
+import { mainStyles, FAB_style, other_style } from '../../../Utilities/styles';
+import moment, { months } from 'moment';
+import { font } from '../../../Utilities/font';
 import Modal from 'react-native-modal';
-import {CustomMultilineTextInput} from '../../../Components/CustomTextInput';
+import { CustomMultilineTextInput } from '../../../Components/CustomTextInput';
 import CustomButton from '../../../Components/CustomButton';
-import {screens} from '../../../Navigation/Screens';
+import { screens } from '../../../Navigation/Screens';
 import CustomImage from '../../../Components/CustomImage';
 import Toast from 'react-native-toast-message';
 import PushNotification from 'react-native-push-notification';
 import LoginAlert from '../../../Components/LoginAlert';
 import analytics from '@react-native-firebase/analytics';
 
-import {BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
-import Admob_Ids from '../../../Utilities/AdmobIds';
+import { BannerAd, BannerAdSize, useRewardedAd } from 'react-native-google-mobile-ads';
+import Admob_Ids, { Admob_test_Ids } from '../../../Utilities/AdmobIds';
 
 // import {useLoginAlert} from '../../../hooks/useLoginAlert';
 // For API's calling
-import {useContext} from 'react';
+import { useContext } from 'react';
 import Context from '../../../Context';
 import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
-import {fileURL} from '../../../Utilities/domains';
+import { fileURL } from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
 
 const ic_nodata = require('../../../Assets/Icons/empty-box.png');
@@ -47,7 +48,11 @@ const ic_Hplaceholder = require('../../../Assets/Icons/h_placeholder1.png');
 const HabitTracker = props => {
   // const checkLogin = useLoginAlert();
 
-  const {Token, habitList, setHabitList, isHabitPurchased} =
+
+
+
+
+  const { Token, habitList, setHabitList, isHabitPurchased } =
     useContext(Context);
   const [isLoading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -108,7 +113,7 @@ const HabitTracker = props => {
           'Subscription',
           'Your Habit limit is over\nPlease buy subcription to add more?',
           [
-            {text: 'No'},
+            { text: 'No' },
             {
               text: 'Yes',
               onPress: () => {
@@ -146,21 +151,21 @@ const HabitTracker = props => {
       )._id;
       api_removeNote(item._id, id);
     } else {
-      setNote({...note, modalVisible: true, item: item});
+      setNote({ ...note, modalVisible: true, item: item });
     }
   };
 
   const markCompeleted = () => {
     console.log('markCompeleted');
 
-    let {item} = note;
+    let { item } = note;
     let obj_addNote = {
       note_text: note.text.trim(),
       date: moment(today, 'YYYY-MM-DD').toISOString(),
     };
     api_addNote(item._id, obj_addNote);
     setisLoading(true);
-    setNote({modalVisible: false, text: '', item: null});
+    setNote({ modalVisible: false, text: '', item: null });
   };
 
   const api_addNote = async (id, obj) => {
@@ -246,8 +251,8 @@ const HabitTracker = props => {
       if (days.includes(moment(today).format('dddd').toLowerCase())) {
         let scheduledTime = moment(
           moment(today).format('DD-MM-YYYY') +
-            ' ' +
-            moment(obj_habit?.reminder_time).format('HH:mm'),
+          ' ' +
+          moment(obj_habit?.reminder_time).format('HH:mm'),
           'DD-MM-YYYY HH:mm',
         ).toISOString();
         if (moment(scheduledTime).isAfter(moment())) {
@@ -313,6 +318,7 @@ const HabitTracker = props => {
     }
   };
 
+
   useEffect(() => {
     daysInMonth();
     if (Token) {
@@ -320,8 +326,10 @@ const HabitTracker = props => {
         callHabitListAPI();
       }
     }
-    return () => {};
+    return () => { };
   }, [Token]);
+
+
 
   useEffect(() => {
     let index = daysList.findIndex(
@@ -343,7 +351,7 @@ const HabitTracker = props => {
 
   //? Views
 
-  const renderDays = ({item, index}) => {
+  const renderDays = ({ item, index }) => {
     return (
       <Pressable
         onPress={() => setToday(moment(item.date).format('YYYY-MM-DD'))}
@@ -372,7 +380,7 @@ const HabitTracker = props => {
             </View>
           )}
         </View> */}
-        <View style={{alignItems: 'center'}}>
+        <View style={{ alignItems: 'center' }}>
           <Text
             style={{
               fontFamily: font.medium,
@@ -401,11 +409,11 @@ const HabitTracker = props => {
     );
   };
 
-  const renderHabitsList = ({item, index}) => {
+  const renderHabitsList = ({ item, index }) => {
     return (
       <Pressable
         onPress={() =>
-          props.navigation.navigate(screens.habitDetail, {id: item._id})
+          props.navigation.navigate(screens.habitDetail, { id: item._id })
         }
         style={{
           marginBottom: 15,
@@ -430,8 +438,8 @@ const HabitTracker = props => {
           }}>
           {item?.images ? (
             <CustomImage
-              source={{uri: fileURL + item?.images?.small}}
-              style={{height: 50, width: 50}}
+              source={{ uri: fileURL + item?.images?.small }}
+              style={{ height: 50, width: 50 }}
               indicatorProps={{
                 color: Colors.primary,
               }}
@@ -457,7 +465,7 @@ const HabitTracker = props => {
             </View>
           )}
         </View>
-        <View style={{marginLeft: 10, flex: 1}}>
+        <View style={{ marginLeft: 10, flex: 1 }}>
           <Text
             numberOfLines={2}
             style={{
@@ -510,7 +518,7 @@ const HabitTracker = props => {
                 }}
               />
 
-              <View style={{flex: 1}}>
+              <View style={{ flex: 1 }}>
                 <Text
                   style={{
                     fontFamily: font.medium,
@@ -527,7 +535,7 @@ const HabitTracker = props => {
           {moment(today, 'YYYY-MM-DD').isSameOrBefore(moment()) && (
             <TouchableHighlight
               underlayColor={Colors.lightPrimary2}
-              style={{padding: 10, borderRadius: 900}}
+              style={{ padding: 10, borderRadius: 900 }}
               onPress={() => checkboxButton(item)}>
               <Image
                 style={{
@@ -551,19 +559,19 @@ const HabitTracker = props => {
     return (
       <>
         <View
-          style={{paddingHorizontal: 20, backgroundColor: Colors.background}}>
+          style={{ paddingHorizontal: 20, backgroundColor: Colors.background }}>
           <Pressable
             onPress={() =>
               PushNotification.getScheduledLocalNotifications(list => {
                 console.log('list', list);
               })
             }
-            style={{marginTop: 5}}>
+            style={{ marginTop: 5 }}>
             <Text style={other_style.labelText}>
               {moment().format('DD MMM YYYY')}
             </Text>
           </Pressable>
-          <View style={{marginHorizontal: -20, marginTop: 5}}>
+          <View style={{ marginHorizontal: -20, marginTop: 5 }}>
             <FlatList
               listKey="days"
               initialNumToRender={7}
@@ -571,7 +579,7 @@ const HabitTracker = props => {
               keyExtractor={(item, index) => {
                 return index.toString();
               }}
-              contentContainerStyle={{paddingHorizontal: 20}}
+              contentContainerStyle={{ paddingHorizontal: 20 }}
               showsHorizontalScrollIndicator={false}
               data={daysList}
               horizontal={true}
@@ -582,7 +590,7 @@ const HabitTracker = props => {
             />
           </View>
 
-          <Pressable style={{marginTop: 5, marginBottom: 15}}>
+          <Pressable style={{ marginTop: 5, marginBottom: 15 }}>
             <Text style={other_style.labelText}>All Habits</Text>
           </Pressable>
         </View>
@@ -599,7 +607,7 @@ const HabitTracker = props => {
             }}>
             <BannerAd
               size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-              unitId={Admob_Ids.banner}
+              unitId={Admob_test_Ids.banner}
               requestOptions={{
                 requestNonPersonalizedAdsOnly: true,
               }}
@@ -635,7 +643,7 @@ const HabitTracker = props => {
             borderRadius: 10,
             paddingVertical: 20,
           }}>
-          <View style={{paddingHorizontal: 10, marginVertical: 10}}>
+          <View style={{ paddingHorizontal: 10, marginVertical: 10 }}>
             <Text
               style={{
                 color: Colors.gray14,
@@ -648,7 +656,7 @@ const HabitTracker = props => {
               {moment(today, 'YYYY-MM-DD').format('DD MMM YYYY')}
             </Text>
           </View>
-          <View style={{marginTop: 30, marginBottom: 10, flexDirection: 'row'}}>
+          <View style={{ marginTop: 30, marginBottom: 10, flexDirection: 'row' }}>
             <Pressable
               onPress={() => setOption(0)}
               style={[
@@ -660,7 +668,7 @@ const HabitTracker = props => {
                 style={[
                   modalStyle.btn_icon,
                   option == 0 ? modalStyle.slectedIcon : null,
-                  {tintColor: 'tomato'},
+                  { tintColor: 'tomato' },
                 ]}
               />
               <Text
@@ -682,7 +690,7 @@ const HabitTracker = props => {
                 style={[
                   modalStyle.btn_icon,
                   option == 1 ? modalStyle.slectedIcon : null,
-                  {tintColor: '#5dbb63'},
+                  { tintColor: '#5dbb63' },
                 ]}
               />
               <Text
@@ -694,7 +702,7 @@ const HabitTracker = props => {
               </Text>
             </Pressable>
           </View>
-          <View style={{marginHorizontal: 10, marginTop: 20}}>
+          <View style={{ marginHorizontal: 10, marginTop: 20 }}>
             <CustomButton
               onPress={onChooseHabitScreen}
               title={'Create Habit'}
@@ -709,8 +717,8 @@ const HabitTracker = props => {
     return (
       <Modal
         isVisible={note.modalVisible}
-        onBackButtonPress={() => setNote({...note, modalVisible: false})}
-        onBackdropPress={() => setNote({...note, modalVisible: false})}
+        onBackButtonPress={() => setNote({ ...note, modalVisible: false })}
+        onBackdropPress={() => setNote({ ...note, modalVisible: false })}
         useNativeDriverForBackdrop={true}
         avoidKeyboard={true}
         hideModalContentWhileAnimating={true}
@@ -739,11 +747,11 @@ const HabitTracker = props => {
               justifyContent: 'center',
             }}>
             <Image
-              style={{height: 70, width: 70}}
+              style={{ height: 70, width: 70 }}
               source={require('../../../Assets/Icons/check.png')}
             />
           </View>
-          <View style={{marginTop: 10}}>
+          <View style={{ marginTop: 10 }}>
             <CustomMultilineTextInput
               lable={'Add Note'}
               subLabel={'(Optional)'}
@@ -751,10 +759,10 @@ const HabitTracker = props => {
               lableBold
               lableColor={Colors.black}
               value={note.text}
-              onChangeText={text => setNote({...note, text: text})}
+              onChangeText={text => setNote({ ...note, text: text })}
             />
           </View>
-          <View style={{marginTop: 20}}>
+          <View style={{ marginTop: 20 }}>
             <CustomButton
               height={50}
               onPress={markCompeleted}
@@ -783,9 +791,9 @@ const HabitTracker = props => {
         rightIcononPress={() => props.navigation.navigate(screens.allHabits)}
       />
       <View style={mainStyles.innerView}>
-        <View style={{flex: 1, marginHorizontal: -20}}>
+        <View style={{ flex: 1, marginHorizontal: -20 }}>
           <Loader enable={isLoading} />
-          <View style={{flex: 1}}>
+          <View style={{ flex: 1 }}>
             <FlatList
               refreshControl={
                 <RefreshControl
@@ -803,8 +811,8 @@ const HabitTracker = props => {
               ListHeaderComponent={flatListHeader()}
               contentContainerStyle={
                 filterSelectedDayHabits(habitList).length == 0
-                  ? {flex: 1}
-                  : {paddingVertical: 10, paddingBottom: 50}
+                  ? { flex: 1 }
+                  : { paddingVertical: 10, paddingBottom: 50 }
               }
               showsVerticalScrollIndicator={false}
               data={filterSelectedDayHabits(habitList)}
@@ -814,11 +822,18 @@ const HabitTracker = props => {
               }}
               ListEmptyComponent={() =>
                 isLoading == false && (
-                  <EmptyView
-                    style={{marginTop: 0, flex: 1}}
-                    title={`No Habits for this date`}
-                    noSubtitle
-                  />
+
+                  <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                    <EmptyView
+                      style={{ marginTop: 0 }}
+                      title={`No Habits for this date`}
+                      noSubtitle
+                    />
+                    <TouchableOpacity onPress={btn_add} style={{ backgroundColor: Colors.lightPrimary, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center", marginTop: 20, paddingHorizontal:10 }}>
+                      <Text style={{ color: Colors.primary, fontWeight: "bold" }}>Change My Habit    </Text>
+                    </TouchableOpacity>
+                  </View>
+
                 )
               }
             />
@@ -842,13 +857,13 @@ const HabitTracker = props => {
 export default HabitTracker;
 
 const emojis = [
-  {name: 'Terrible', emoji: '😡', _id: '1'},
-  {name: 'Bad', emoji: '🙁', _id: '2'},
-  {name: 'Okay', emoji: '😐', _id: '3'},
-  {name: 'Good', emoji: '🙂', _id: '4'},
-  {name: 'Excellent', emoji: '😍', _id: '5'},
-  {name: 'Shocked', emoji: '😲', _id: '6'},
-  {name: 'Sad', emoji: '😥', _id: '6'},
+  { name: 'Terrible', emoji: '😡', _id: '1' },
+  { name: 'Bad', emoji: '🙁', _id: '2' },
+  { name: 'Okay', emoji: '😐', _id: '3' },
+  { name: 'Good', emoji: '🙂', _id: '4' },
+  { name: 'Excellent', emoji: '😍', _id: '5' },
+  { name: 'Shocked', emoji: '😲', _id: '6' },
+  { name: 'Sad', emoji: '😥', _id: '6' },
 ];
 
 const modalStyle = StyleSheet.create({

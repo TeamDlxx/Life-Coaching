@@ -1,7 +1,7 @@
-import {Platform, StyleSheet, Dimensions} from 'react-native';
+import { Platform, StyleSheet, Dimensions } from 'react-native';
 import Colors from './Colors';
-import {font} from './font';
-import {isIphoneX} from 'react-native-iphone-x-helper';
+import { font } from './font';
+import { isIphoneX } from 'react-native-iphone-x-helper';
 
 const screen = Dimensions.get('screen');
 
@@ -13,7 +13,7 @@ export const _styleTrackPlayer = StyleSheet.create({
   },
   posterView: {
     flex: 1,
-    transform: [{scaleX: 2}],
+    transform: [{ scaleX: 2 }],
     borderBottomStartRadius: 200,
     borderBottomEndRadius: 200,
     overflow: 'hidden',
@@ -21,7 +21,7 @@ export const _styleTrackPlayer = StyleSheet.create({
   },
   posterImageView: {
     flex: 1,
-    transform: [{scaleX: 0.5}],
+    transform: [{ scaleX: 0.5 }],
   },
 
   backButtonView: {
@@ -98,7 +98,7 @@ export const _styleTrackPlayer = StyleSheet.create({
     // color: Colors.gray05,
     marginTop: 5,
   },
-  controlView: {marginHorizontal: 35, },
+  controlView: { marginHorizontal: 35, },
   playerButtonsView: {
     flexDirection: 'row',
     marginTop: 5,
@@ -122,7 +122,7 @@ export const _styleTrackPlayer = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  previosAndNextButtonIcon: {width: 22, height: 22, tintColor: Colors.primary},
+  previosAndNextButtonIcon: { width: 22, height: 22, tintColor: Colors.primary },
 
   playPauseButtonView: {
     flex: 0.75,
@@ -139,8 +139,8 @@ export const _styleTrackPlayer = StyleSheet.create({
     borderColor: Colors.lightPrimary,
     borderWidth: 7,
   },
-  playPauseButtonIcon: {width: 22, height: 22, tintColor: Colors.white},
-  playPauseLockedButtonIcon: {width: 18, height: 18, tintColor: Colors.white},
+  playPauseButtonIcon: { width: 22, height: 22, tintColor: Colors.white },
+  playPauseLockedButtonIcon: { width: 18, height: 18, tintColor: Colors.white },
 });
 
 export const mainStyles = StyleSheet.create({
@@ -216,7 +216,7 @@ export const chooseHabit_style = StyleSheet.create({
     fontSize: 16,
     marginLeft: 10,
   },
-  addButtonIcon: {height: 20, width: 20},
+  addButtonIcon: { height: 20, width: 20 },
 });
 
 export const createHabit_styles = StyleSheet.create({
@@ -431,27 +431,27 @@ export const stat_styles = StyleSheet.create({
     borderColor: Colors.gray02,
     alignSelf: 'flex-start',
   },
-  listImage: {height: '100%', width: 120},
-  listDetailView: {marginLeft: 10, flex: 1, justifyContent: 'center'},
+  listImage: { height: '100%', width: 120 },
+  listDetailView: { marginLeft: 10, flex: 1, justifyContent: 'center' },
   listTitle: {
     fontFamily: font.bold,
     fontSize: 16,
     includeFontPadding: false,
     color: Colors.black,
   },
-  listTargetDateView: {marginTop: 5},
+  listTargetDateView: { marginTop: 5 },
   listTargetDateText: {
     fontFamily: font.medium,
     color: Colors.text,
     fontSize: 12,
   },
-  listCreatedAtView: {marginTop: 2},
+  listCreatedAtView: { marginTop: 2 },
   listCreatedAtText: {
     fontFamily: font.medium,
     color: Colors.text,
     fontSize: 12,
   },
-  listWeekView: {flexDirection: 'row', marginTop: 10},
+  listWeekView: { flexDirection: 'row', marginTop: 10 },
   weekItemView: {
     // borderWidth: 1,
     borderColor: Colors.placeHolder,
@@ -462,7 +462,7 @@ export const stat_styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  listProgressBarView: {flex: 1},
+  listProgressBarView: { flex: 1 },
 
   collapseButtonView: {
     flexDirection: 'row',
@@ -474,7 +474,7 @@ export const stat_styles = StyleSheet.create({
     marginHorizontal: -20,
     paddingHorizontal: 20,
   },
-  collapseButtonInnerView: {flexDirection: 'row'},
+  collapseButtonInnerView: { flexDirection: 'row' },
   appliedFilterView: {
     backgroundColor: Colors.lightPrimary,
     marginLeft: 10,
@@ -523,15 +523,15 @@ export const allHabit_styles = StyleSheet.create({
     borderColor: Colors.gray02,
     alignSelf: 'center',
   },
-  itemImage: {height: '100%', width: 115},
-  detailView: {marginLeft: 10, flex: 1, justifyContent: 'center'},
+  itemImage: { height: '100%', width: 115 },
+  detailView: { marginLeft: 10, flex: 1, justifyContent: 'center' },
   title: {
     fontFamily: font.bold,
     fontSize: 16,
     includeFontPadding: false,
     color: Colors.black,
   },
-  targetDateView: {marginTop: 10},
+  targetDateView: { marginTop: 10 },
   targetDate: {
     fontFamily: font.medium,
     color: Colors.text,
@@ -542,8 +542,8 @@ export const allHabit_styles = StyleSheet.create({
     color: Colors.text,
     fontSize: 12,
   },
-  reminderView: {marginTop: 2},
-  weekView: {flexDirection: 'row', marginTop: 10},
+  reminderView: { marginTop: 2 },
+  weekView: { flexDirection: 'row', marginTop: 10 },
   weekDayView: {
     borderColor: Colors.placeHolder,
     borderRadius: 4,
@@ -568,7 +568,185 @@ export const allHabit_styles = StyleSheet.create({
     borderColor: Colors.background,
     borderWidth: 3,
   },
-  hiddenIcon: {height: 25, width: 25, tintColor: Colors.white},
+  hiddenIcon: { height: 25, width: 25, tintColor: Colors.white },
+});
+
+export const reminder_styles = StyleSheet.create({
+  typeButton: {
+    // flexDirection: 'row',
+    // flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.gray02,
+    flex: 1,
+    width: screen.width * 0.5,
+    height: (screen.width * 0.5) / 2,
+
+    margin: 5,
+    borderRadius: 10,
+    backgroundColor: Colors.white,
+  },
+  selectedButton: {
+    backgroundColor: Colors.lightPrimary,
+    // borderColor: Colors.primary,
+  },
+  typeButtonText: {
+    fontFamily: font.medium,
+    fontSize: 14,
+    marginLeft: 5,
+    marginTop: 15,
+  },
+  typeButtonIcon: {
+    height: 25,
+    width: 25,
+  },
+
+  weekButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.gray02,
+    paddingVertical: 10,
+    margin: 5,
+    borderRadius: 10,
+    flex: 1,
+
+    backgroundColor: Colors.white,
+  },
+  weekButtonText: {
+    fontFamily: font.medium,
+    fontSize: 14,
+    textTransform: 'capitalize',
+    // backgroundColor:"pink",
+    includeFontPadding: false,
+  },
+
+  timeButton: {
+    // paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: Colors.gray02,
+    padding: 30,
+    borderRadius: 10,
+    marginTop: 15,
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    // marginBottom: 20,
+  },
+  timeButtonTextHeader: {
+    fontFamily: font.bold,
+    color: Colors.black,
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 10,
+  },
+  timeButtonText1: {
+    fontFamily: font.regular,
+    textAlign: 'center',
+    marginTop: 10,
+  },
+  timeButtonText2: {
+    fontFamily: font.bold,
+    color: Colors.primary,
+    fontSize: 16,
+    textAlign: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+  },
+  selectTimeButtion: {
+    borderWidth: 1,
+    alignSelf: 'center',
+    borderColor: Colors.primary,
+    borderRadius: 10,
+    marginTop: 15,
+  },
+
+  reminderView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    // marginTop: 15,
+    marginTop: 15,
+    borderWidth: 1,
+    borderColor: Colors.gray02,
+    borderRadius: 10,
+    padding: 10,
+    backgroundColor: Colors.white,
+  },
+});
+
+export const allGratitudes_styles = StyleSheet.create({
+  itemView: {
+    marginBottom: 15,
+    alignItems: 'center',
+    borderRadius: 20,
+    borderColor: Colors.gray02,
+    borderWidth: 1,
+    backgroundColor: Colors.white,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    paddingVertical: 10,
+    marginHorizontal: 20,
+    flex: 1,
+    overflow: 'hidden',
+  },
+  imageView: {
+    // height: 110,
+    aspectRatio: 1,
+    // height: '100%',
+    width: 115,
+    borderRadius: 15,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Colors.gray02,
+    alignSelf: 'center',
+  },
+  itemImage: { height: '100%', width: 115 },
+  detailView: { marginLeft: 10, flex: 1, justifyContent: 'center' },
+  title: {
+    fontFamily: font.bold,
+    fontSize: 16,
+    includeFontPadding: false,
+    color: Colors.black,
+  },
+  targetDateView: { marginTop: 10 },
+  targetDate: {
+    fontFamily: font.medium,
+    color: Colors.text,
+    fontSize: 12,
+  },
+  reminderText: {
+    fontFamily: font.medium,
+    color: Colors.text,
+    fontSize: 12,
+  },
+  reminderView: { marginTop: 2 },
+  weekView: { flexDirection: 'row', marginTop: 10 },
+  weekDayView: {
+    borderColor: Colors.placeHolder,
+    borderRadius: 4,
+    marginHorizontal: 3,
+    flex: 1,
+    aspectRatio: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  hiddenView: {
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    marginHorizontal: 12,
+    backgroundColor: Colors.delete,
+    borderRadius: 20,
+    borderBottomEndRadius: 20,
+    paddingRight: 20,
+    marginBottom: 20,
+    flex: 1,
+    borderColor: Colors.background,
+    borderWidth: 1,
+  },
+  hiddenIcon: { height: 25, width: 25, tintColor: Colors.white },
 });
 
 export default StyleSheet.create({

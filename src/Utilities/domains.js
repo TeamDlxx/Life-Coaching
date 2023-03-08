@@ -1,7 +1,8 @@
 // ? Live
-export const baseURL = 'http://3.231.197.76:4003/';
+// export const baseURL = 'https://bettermeapi.dynamitelifestyle.com/';
 
 //todo Local
+export const baseURL = 'http://192.168.1.210:1300/';
 
 // export const baseURL = 'http://192.168.1.248:1200/';
 

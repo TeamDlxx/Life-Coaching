@@ -10,26 +10,26 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import CustomImage from '../../../Components/CustomImage';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
-import {mainStyles} from '../../../Utilities/styles';
-import {font} from '../../../Utilities/font';
-import {screens} from '../../../Navigation/Screens';
+import { mainStyles } from '../../../Utilities/styles';
+import { font } from '../../../Utilities/font';
+import { screens } from '../../../Navigation/Screens';
 import formatTime from '../../../functions/formatTime';
 import LoginAlert from '../../../Components/LoginAlert';
 import analytics from '@react-native-firebase/analytics';
 import debounce from '../../../functions/debounce';
-import {BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
-import Admob_Ids from '../../../Utilities/AdmobIds';
+import { BannerAd, BannerAdSize, useRewardedAd, RewardedAd, RewardedAdEventType, TestIds } from 'react-native-google-mobile-ads';
+import { Admob_Ids, Admob_test_Ids } from '../../../Utilities/AdmobIds';
 // For API's calling
-import {useContext} from 'react';
+import { useContext } from 'react';
 import Context from '../../../Context';
 import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
-import {fileURL} from '../../../Utilities/domains';
+import { fileURL } from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
 
 //Icons
@@ -37,22 +37,114 @@ import play from '../../../Assets/Icons/play.png';
 import favList from '../../../Assets/Icons/favList.png';
 import ic_default from '../../../Assets/Icons/all.png';
 import ic_lock from '../../../Assets/Icons/locked.png';
+import CustomAlert from '../../../Components/CusromAlert';
+import { useFocusEffect } from '@react-navigation/native';
+
+
+
+const rewarded = RewardedAd.createForAdRequest(Admob_test_Ids.rewarded, {
+  requestNonPersonalizedAdsOnly: true,
+});
+
+
+
 
 const Meditation = props => {
-  const {Token, isMeditationPurchased} = useContext(Context);
+  const adRewardedId = TestIds.GAM_REWARDED_INTERSTITIAL;
+
+  const rewardedAdRef = useRef(RewardedAd.createForAdRequest(adRewardedId));
+
+
+
+
+  const { Token, isMeditationPurchased } = useContext(Context);
   const [isLoading, setisLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [categoryList, setCategoryList] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [alertVisibility, setAlertVisibility] = useState(false);
   const [adError, setAdError] = useState(false);
+  const [adLoaded, setAdLoaded] = useState(false);
+  const [selectedTrackIndex, setSelectedTrackIndex] = useState(false);
 
-  console.log('Token', Token);
-  console.log('isMeditationPurchased', isMeditationPurchased);
+
   //? Navigation Functions
 
+
+  //* UseEffect
+
+
+
+  const rewardedAd = useRewardedAd(Admob_test_Ids.rewarded, {
+    requestNonPersonalizedAdsOnly: true,
+    contentUrl: 'https://reactnative.dev/',
+  });
+
+
+
+
+  useEffect(() => {
+
+
+    const unsubscribeLoaded = rewardedAdRef.current.addAdEventListener(
+      RewardedAdEventType.LOADED,
+      () => {
+        console.log('Loaded add complete');
+        setisLoading(false)
+
+        setAlertVisibility(false)
+
+        setTimeout(() => {
+          rewardedAdRef.current.show();
+
+        }, 500);
+
+        // selectedCategory.category_track[selectedTrackIndex].is_locked = true;
+        // setSelectedCategory(selectedCategory);
+
+        setAdLoaded(true);
+      },
+    );
+
+
+    console.log('Add is being loading');
+    const unsubscribeEarned = rewardedAdRef.current.addAdEventListener(
+      RewardedAdEventType.EARNED_REWARD,
+      reward => {
+        console.log('User earned reward of ', reward);
+      },
+    );
+
+
+    console.log(rewardedAd.error, "loadededeed");
+
+
+
+    if (rewardedAd.isLoaded) {
+      console.log("ad is loaded now")
+    }
+
+    if (rewardedAd.error) {
+      console.log("error in loading ad")
+    }
+
+
+
+    call_categoryAPI();
+    analytics().logEvent(props?.route?.name);
+  }, []);
+
+
+
   const gotoTrackPlayer = (item, index) => {
+
+
+    setSelectedTrackIndex(index);
+
     if (!chooseScreenOnPurchasesAndLockedTrack(item.is_locked)) {
+
+
       let list = [];
       // if (!!Token == false || !!isMeditationPurchased == false) {
       //   list = selectedCategory?.category_track.filter(
@@ -68,15 +160,21 @@ const Meditation = props => {
         list: list,
         likeUnLikeFunc: likeUnLikeLocally,
       });
-    } else if (Token) {
-      props.navigation.navigate(screens.allPackages, {
-        from: 'meditation',
-      });
+    }
+
+    else {
+
+      setAlertVisibility(true)
+
+      // props.navigation.navigate(screens.allPackages, {
+      //   from: 'meditation',
+      // });
+
       // Alert.alert(
-      //   'Subscription',
-      //   'Are you sure you want to buy subscription?',
+      //   'Alert',
+      //   'Are you sure you want to buy subscription to unlock the tracks?',
       //   [
-      //     {text: 'No'},
+      //     { text: 'Not Now' },
       //     {
       //       text: 'Yes',
       //       onPress: () => {
@@ -87,10 +185,60 @@ const Meditation = props => {
       //     },
       //   ],
       // );
-    } else {
-      LoginAlert(props.navigation, props.route?.name);
     }
+    //  else if (Token) {
+    //   props.navigation.navigate(screens.allPackages, {
+    //     from: 'meditation',
+    //   });
+    //   // Alert.alert(
+    //   //   'Subscription',
+    //   //   'Are you sure you want to buy subscription?',
+    //   //   [
+    //   //     {text: 'No'},
+    //   //     {
+    //   //       text: 'Yes',
+    //   //       onPress: () => {
+    //   //         props.navigation.navigate(screens.allPackages, {
+    //   //           from: 'meditation',
+    //   //         });
+    //   //       },
+    //   //     },
+    //   //   ],
+    //   // );
+    // } else {
+    //   LoginAlert(props.navigation, props.route?.name);
+    // }
   };
+
+  const buyOfferScreen = async () => {
+
+    await setAlertVisibility(false)
+    props.navigation.navigate(screens.allPackages, {
+      from: 'meditation',
+    });
+  }
+
+
+
+
+  const showAd = () => {
+
+    setisLoading(true)
+    rewardedAdRef.current.load();
+
+    selectedCategory.category_track[selectedTrackIndex].is_locked = false;
+
+    setSelectedCategory(selectedCategory);
+
+    console.log(selectedCategory?.category_track[selectedTrackIndex], "selected category......")
+
+
+    // if (adLoaded) {
+    //   rewardedAdRef.current.show();
+    // }
+
+  }
+
 
   const findCategoryName = id => {
     categoryList.find(x => x.categoryList);
@@ -104,6 +252,10 @@ const Meditation = props => {
     }
   };
   //todo /////// API's
+
+  const backdropPressed = () => {
+    setAlertVisibility(false);
+  }
 
   const call_categoryAPI = () => {
     setisLoading(true);
@@ -151,7 +303,7 @@ const Meditation = props => {
   const handleResponse = res => {
     if (res) {
       if (res.code == 200) {
-        console.log('response', res);
+        console.log('response...', res);
         setCategoryList([res?.top_20_tracks, ...res?.category]);
         if (selectedCategory == null && res?.category.length > 0) {
           setSelectedCategory(res?.top_20_tracks);
@@ -239,6 +391,8 @@ const Meditation = props => {
     }
   };
 
+
+
   const likeUnLikeLocally = (id, val) => {
     let list = [...categoryList];
     list.map(obj => {
@@ -255,7 +409,7 @@ const Meditation = props => {
     let index1 = selectedCategory?.category_track.findIndex(x => x._id == id);
     if (index1 > -1) {
       let newList = [...selectedCategory?.category_track];
-      let newObj = {...newList[index1], is_favourite: val};
+      let newObj = { ...newList[index1], is_favourite: val };
       newList.splice(index1, 1, newObj);
       setSelectedCategory({
         ...selectedCategory,
@@ -265,16 +419,10 @@ const Meditation = props => {
     setCategoryList(list);
   };
 
-  //* UseEffect
-
-  useEffect(() => {
-    call_categoryAPI();
-    analytics().logEvent(props?.route?.name);
-  }, []);
 
   //? Views
 
-  const renderCategories = ({item, index}) => {
+  const renderCategories = ({ item, index }) => {
     return (
       <View>
         <Pressable
@@ -298,15 +446,15 @@ const Meditation = props => {
             <CustomImage
               style={
                 item._id == selectedCategory?._id
-                  ? {width: 30, height: 30, tintColor: Colors.primary}
-                  : {width: 30, height: 30}
+                  ? { width: 30, height: 30, tintColor: Colors.primary }
+                  : { width: 30, height: 30 }
               }
               source={
                 item?._id == 'all'
                   ? ic_default
-                  : {uri: fileURL + item?.images?.small}
+                  : { uri: fileURL + item?.images?.small }
               }
-              indicatorProps={{color: Colors.primary}}
+              indicatorProps={{ color: Colors.primary }}
             />
           </View>
         </Pressable>
@@ -324,7 +472,7 @@ const Meditation = props => {
     );
   };
 
-  const renderTrackList = ({item, index}) => {
+  const renderTrackList = ({ item, index }) => {
     return (
       <Pressable
         onPress={() => {
@@ -346,9 +494,9 @@ const Meditation = props => {
             borderColor: Colors.gray02,
           }}>
           <CustomImage
-            source={{uri: fileURL + item?.images?.small}}
-            style={{height: 70, width: 70}}
-            indicatorProps={{color: Colors.primary}}
+            source={{ uri: fileURL + item?.images?.small }}
+            style={{ height: 70, width: 70 }}
+            indicatorProps={{ color: Colors.primary }}
           />
           {/* {chooseScreenOnPurchasesAndLockedTrack(item.is_locked) ? (
             <View
@@ -395,13 +543,13 @@ const Meditation = props => {
               right: 5,
             }}>
             <Image
-              style={{height: 12, width: 12, tintColor: Colors.primary}}
+              style={{ height: 12, width: 12, tintColor: Colors.primary }}
               source={play}
             />
           </View>
           {/* )} */}
         </View>
-        <View style={{marginLeft: 15, flex: 1}}>
+        <View style={{ marginLeft: 15, flex: 1 }}>
           <Text
             style={{
               fontFamily: font.bold,
@@ -441,7 +589,7 @@ const Meditation = props => {
               }}>
               {formatTime(item.duration)}
             </Text>
-            <View style={{marginLeft: 5}}>
+            <View style={{ marginLeft: 5 }}>
               {chooseScreenOnPurchasesAndLockedTrack(item.is_locked) && (
                 <View
                   style={{
@@ -453,7 +601,7 @@ const Meditation = props => {
                   }}>
                   <Image
                     source={ic_lock}
-                    style={{height: 10, width: 10, tintColor: Colors.white}}
+                    style={{ height: 10, width: 10, tintColor: Colors.white }}
                   />
                 </View>
               )}
@@ -466,9 +614,9 @@ const Meditation = props => {
 
   const flatListHeader = () => {
     return (
-      <View style={{backgroundColor: Colors.background}}>
+      <View style={{ backgroundColor: Colors.background }}>
         <FlatList
-          contentContainerStyle={{paddingHorizontal: 20, paddingBottom: 15}}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 15 }}
           showsHorizontalScrollIndicator={false}
           data={categoryList}
           horizontal={true}
@@ -489,6 +637,7 @@ const Meditation = props => {
   };
 
   return (
+
     <SafeAreaView style={mainStyles.MainView}>
       <StatusBar
         barStyle={'dark-content'}
@@ -499,19 +648,18 @@ const Meditation = props => {
         navigation={props.navigation}
         title={'Meditation'}
         rightIcon={favList}
-        rightIconStyle={{height: 25, width: 25}}
+        rightIconStyle={{ height: 25, width: 25 }}
         rightIcononPress={onFavList}
       />
       <View style={mainStyles.innerView}>
-        <Loader enable={isLoading} />
 
-        <View style={{flex: 1, marginHorizontal: -20}}>
+        <View style={{ flex: 1, marginHorizontal: -20 }}>
           <FlatList
             listKey="main"
             stickyHeaderIndices={[0]}
             stickyHeaderHiddenOnScroll={true}
             ListHeaderComponent={flatListHeader()}
-            contentContainerStyle={{paddingVertical: 10, paddingBottom: 50}}
+            contentContainerStyle={{ paddingVertical: 10, paddingBottom: 50 }}
             showsVerticalScrollIndicator={false}
             onEndReached={_debounce}
             data={
@@ -533,9 +681,11 @@ const Meditation = props => {
                 progressViewOffset={-1}
               />
             }
+
             ListEmptyComponent={
               isLoading == false && <EmptyView title="No Tracks" />
             }
+
             onEndReachedThreshold={0.25}
             ListFooterComponent={
               isLoadingMore == true && (
@@ -548,9 +698,26 @@ const Meditation = props => {
                   <ActivityIndicator color={Colors.primary} size="small" />
                 </View>
               )
+
             }
           />
         </View>
+
+        <View>
+
+          <CustomAlert
+            visible={alertVisibility}
+            backdropPressed={backdropPressed}
+            buyOfferScreen={buyOfferScreen}
+            showAd={showAd}
+            isLoading={isLoading}
+          />
+
+        </View>
+
+
+
+
         {isMeditationPurchased == false && adError == false && (
           <View
             style={{
@@ -564,7 +731,7 @@ const Meditation = props => {
             }}>
             <BannerAd
               size={BannerAdSize.BANNER}
-              unitId={Admob_Ids.banner}
+              unitId={Admob_test_Ids.banner}
               requestOptions={{
                 requestNonPersonalizedAdsOnly: true,
               }}
@@ -575,7 +742,12 @@ const Meditation = props => {
             />
           </View>
         )}
+        <Loader enable={isLoading} />
+
+
       </View>
+
+
     </SafeAreaView>
   );
 };
