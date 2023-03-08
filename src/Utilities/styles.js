@@ -155,7 +155,7 @@ export const mainStyles = StyleSheet.create({
     // backgroundColor: 'pink',
   },
   innerView: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
     flex: 1,
   },
 });

@@ -35,7 +35,6 @@ const App = props => {
   React.useEffect(() => {
     if (Text.defaultProps == null) Text.defaultProps = {};
     Text.defaultProps.allowFontScaling = false;
-    TrackplayerSetup();
     initConnection().then(x => {
       console.log('initConnection', x);
     });
@@ -57,29 +56,7 @@ const App = props => {
     };
   }, []);
 
-  const TrackplayerSetup = async () => {
-    await TrackPlayer.setupPlayer({
-      waitForBuffer: true,
-    });
-    await TrackPlayer.updateOptions({
-      stoppingAppPausesPlayback: true,
-      notificationCapabilities: [
-        Capability.Play,
-        Capability.Pause,
-        Capability.JumpBackward,
-        Capability.JumpForward,
-        Capability.SeekTo,
-      ],
-      capabilities: [
-        Capability.Play,
-        Capability.Pause,
-        Capability.JumpBackward,
-        Capability.JumpForward,
-        Capability.SeekTo,
-      ],
-      compactCapabilities: [Capability.Play, Capability.Pause],
-    });
-  };
+ 
 
   return (
     <ContextWrapper>

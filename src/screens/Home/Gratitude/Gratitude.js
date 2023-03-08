@@ -81,6 +81,7 @@ const Gratitude = props => {
           </View>
         </Pressable>
         <Text
+        
           style={{
             fontFamily: font.medium,
             color: Colors.black,

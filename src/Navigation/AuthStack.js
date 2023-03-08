@@ -41,6 +41,9 @@ import AllNotes from '../screens/Home/Habit/AllNotes';
 // //? MoodTracker
 import MoodTracker from '../screens/Home/MoodTracker/MoodTracker';
 import AddMood from '../screens/Home/MoodTracker/AddMood';
+import MoodNote from '../screens/Home/MoodTracker/MoodNote';
+import MoodsJournal from '../screens/Home/MoodTracker/MoodsJournal';
+import MoodChat from '../screens/Home/MoodTracker/MoodChart';
 
 // //? Quotes
 import List from '../screens/Home/Quotes/List';
@@ -145,10 +148,24 @@ const AuthStack = () => {
         <Stack.Screen name={screens.NotesDetail} component={NotesDetail} />
         <Stack.Screen name={screens.AllNotes} component={AllNotes} />
 
+
+
+
         {/* MoodTracker */}
         <Stack.Screen name={screens.moodTracker} component={MoodTracker} />
         <Stack.Screen name={screens.addMood} component={AddMood} />
+        <Stack.Screen name={screens.moodNote} component={MoodNote} />
+        <Stack.Screen name={screens.moodsJournal} component={MoodsJournal} />
+        <Stack.Screen name={screens.moodChart} component={MoodChat} />
+
+
+
+
         <Stack.Screen name={screens.favTracks} component={FavouriteTracks} />
+
+
+
+
         {/* Quotes */}
         <Stack.Screen name={screens.qouteList} component={List} />
         <Stack.Screen name={screens.favQuoteList} component={FavQuoteList} />

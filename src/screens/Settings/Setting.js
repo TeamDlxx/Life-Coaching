@@ -11,30 +11,34 @@ import {
   Platform,
   FlatList,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import VersionCheck from 'react-native-version-check';
-import {mainStyles} from '../../Utilities/styles';
+import { mainStyles } from '../../Utilities/styles';
 import Header from '../../Components/Header';
 import Colors from '../../Utilities/Colors';
-import {font} from '../../Utilities/font';
+import { font } from '../../Utilities/font';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {screens} from '../../Navigation/Screens';
+import { screens } from '../../Navigation/Screens';
 import showToast from '../../functions/showToast';
 import Loader from '../../Components/Loader';
 import invokeApi from '../../functions/invokeAPI';
-import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
-import {useContext} from 'react';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useContext } from 'react';
 import Context from '../../Context';
 import PushNotification from 'react-native-push-notification';
 import DeviceInfo from 'react-native-device-info';
-import {deepLinkQuote} from '../../Utilities/domains';
+import { androidAppLink, deepLinkQuote, iosAppLink } from '../../Utilities/domains';
 import analytics from '@react-native-firebase/analytics';
 import messaging from '@react-native-firebase/messaging';
+import * as RNIap from 'react-native-iap';
 
 const Setting = props => {
   const [isLoading, setisLoading] = useState(false);
-  const {Token, setToken, setHabitList, adminURLsAndEmail} =
+  const { Token, setToken, setHabitList, adminURLsAndEmail,  CheckPurchases, purchasedSKUs } =
     useContext(Context);
+
+
+
   console.log('adminURLsAndEmail', useContext(Context));
   const logout = async () => {
     try {
@@ -112,11 +116,12 @@ const Setting = props => {
     }
   };
 
+
   const performAction = async type => {
     switch (type) {
       case 'terms_of_use':
         try {
-          let {terms_and_conditions_link} = adminURLsAndEmail;
+          let { terms_and_conditions_link } = adminURLsAndEmail;
           await Linking.openURL(terms_and_conditions_link);
         } catch (e) {
           console.log('Link Open Error', e);
@@ -125,7 +130,7 @@ const Setting = props => {
 
       case 'privacy_policy':
         try {
-          let {privacy_policy_link} = adminURLsAndEmail;
+          let { privacy_policy_link } = adminURLsAndEmail;
           await Linking.openURL(privacy_policy_link);
         } catch (e) {
           console.log('Link Open Error', e);
@@ -136,8 +141,8 @@ const Setting = props => {
         try {
           const result = await Share.share({
             title: 'Better.Me',
-            message: `Please install this app, AppLink :${deepLinkQuote}`,
-            url: deepLinkQuote,
+            message: `Get yourself an app that will guide you through your routine and walk you to a better and more disciplined life., AppLink :${deepLinkQuote}`,
+            url: Platform.OS == "android" ? androidAppLink : iosAppLink,
           });
           if (result.action === Share.sharedAction) {
             if (result.activityType) {
@@ -163,6 +168,60 @@ const Setting = props => {
         // FN_InAppReview();
         break;
 
+      case 'restore_purchase':
+        try {
+
+          setisLoading(true)
+          const purchases = await RNIap.getAvailablePurchases();
+
+          setisLoading(false)
+
+
+          console.log(purchases, "purchases from store...")
+
+
+          purchases.forEach(async (purchase) => {
+            switch (purchase.productId) {
+
+              case 'lifetime.purchase':
+                Alert.alert("All in one lifetime purchase successfully restored.")
+                await CheckPurchases()
+                break
+
+              case 'all_in_one.monthly.subscription':
+                Alert.alert("All in one monthly subscription successfully restored.")
+                await CheckPurchases()
+                break
+
+              case 'habits.monthly.subscription':
+                Alert.alert("Habit tracker monthly subscription successfully restored.")
+                await CheckPurchases()
+                break
+
+              case 'meditation.monthly.subscription':
+                Alert.alert("Meditations  monthly subscription successfully restored.")
+                await CheckPurchases()
+                break
+
+              default:
+                Alert.alert("Nothing to restore!");
+                break
+
+            }
+
+          })
+
+          console.log('Restore Successful', 'You successfully restored the following purchases: ');
+        } catch (err) {
+          setisLoading(false)
+          console.warn(err); // standardized err.code and err.message available
+          console.log(err.message);
+        }
+
+        break;
+
+
+
       case 'report':
         fn_report();
         break;
@@ -171,32 +230,32 @@ const Setting = props => {
         Alert.alert(
           'Delete Account',
           'Are you sure you want to delete your account?',
-          [{text: 'No'}, {text: 'Yes', onPress: () => api_deleteAccount()}],
+          [{ text: 'No' }, { text: 'Yes', onPress: () => api_deleteAccount() }],
         );
 
         break;
 
       case 'logout':
         Alert.alert('Logout', 'Are you sure you want to logout?', [
-          {text: 'No'},
-          {text: 'Yes', onPress: () => api_LogOut()},
+          { text: 'No' },
+          { text: 'Yes', onPress: () => api_LogOut() },
         ]);
 
         break;
     }
-  };
+  }
+
 
   const fn_report = async () => {
     console.log('getUserEmail', await getUserEmail());
     let email = await getUserEmail();
-    let subject = `Better.Me Feedback, Platform: ${
-      Platform.OS
-    }, Brand: ${DeviceInfo.getBrand()}, OS Version: ${DeviceInfo.getSystemVersion()}, App Version: ${VersionCheck.getCurrentVersion()} (${VersionCheck.getCurrentBuildNumber()})`;
+    let subject = `Better.Me Feedback, Platform: ${Platform.OS
+      }, Brand: ${DeviceInfo.getBrand()}, OS Version: ${DeviceInfo.getSystemVersion()}, App Version: ${VersionCheck.getCurrentVersion()} (${VersionCheck.getCurrentBuildNumber()})`;
 
     if (email) {
       subject = subject + `, User Email: ${email}`;
     }
-    let {support_email} = adminURLsAndEmail;
+    let { support_email } = adminURLsAndEmail;
     Linking.openURL(`mailto:${support_email}?subject=${subject}`).catch(e => {
       console.log('Mail open error', e);
     });
@@ -218,7 +277,7 @@ const Setting = props => {
     }
   };
 
-  const ItemView = ({item, index}) => {
+  const ItemView = ({ item, index }) => {
     if ((item.id == 'logout' || item.id == 'delete_user') && !Token) {
       return;
     }
@@ -257,7 +316,7 @@ const Setting = props => {
             }}
           />
         </View>
-        <View style={{flex: 1, marginLeft: 15}}>
+        <View style={{ flex: 1, marginLeft: 15 }}>
           <Text
             style={{
               fontFamily: font.medium,
@@ -296,7 +355,7 @@ const Setting = props => {
     <SafeAreaView
       style={[
         mainStyles.MainViewForBottomTabScreens,
-        {marginBottom: useBottomTabBarHeight()},
+        { marginBottom: useBottomTabBarHeight() },
       ]}>
       <StatusBar
         backgroundColor={Colors.background}
@@ -304,8 +363,8 @@ const Setting = props => {
       />
       <Header title="Settings" />
 
-      <View style={{flex: 1}}>
-        <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
+        <View style={{ flex: 1 }}>
           <FlatList
             contentContainerStyle={{
               paddingHorizontal: 30,
@@ -316,7 +375,7 @@ const Setting = props => {
           />
         </View>
 
-        <View style={{alignItems: 'center', marginBottom: 10}}>
+        <View style={{ alignItems: 'center', marginBottom: 10 }}>
           <Text
             style={{
               fontFamily: font.medium,
@@ -324,7 +383,7 @@ const Setting = props => {
               color: Colors.black,
             }}>
             Version:
-            <Text style={{fontFamily: font.bold, fontSize: 16}}>
+            <Text style={{ fontFamily: font.bold, fontSize: 16 }}>
               {' ' + VersionCheck.getCurrentVersion()}
             </Text>
           </Text>
@@ -368,6 +427,14 @@ const settings = [
     icon: require('../../Assets/Icons/star.png'),
     action: 'rate_us',
   },
+
+  {
+    id: '6',
+    name: 'Restore Purchase',
+    icon: require('../../Assets/Icons/restore.png'),
+    action: 'restore_purchase',
+  },
+
   {
     id: 'delete_user',
     name: 'Delete Account',

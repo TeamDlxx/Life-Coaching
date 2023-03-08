@@ -1,23 +1,23 @@
-import {Platform} from 'react-native';
-import {TestIds} from 'react-native-google-mobile-ads';
+import { Platform } from 'react-native';
+import { TestIds } from 'react-native-google-mobile-ads';
 
-const Admob_Ids = Platform.select({
+
+
+
+export const Admob_Ids = Platform.select({
   ios: {
-    banner: !__DEV__
-      ? 'ca-app-pub-1612661276193414/3453084331'
-      : TestIds.BANNER,
-    rewarded: !__DEV__
-      ? 'ca-app-pub-1612661276193414/1291074987'
-      : TestIds.REWARDED,
+    // banner: TestIds.BANNER,
+    // rewarded: TestIds.GAM_REWARDED_INTERSTITIAL,
+    banner: 'ca-app-pub-1612661276193414/3522414246',
+    rewarded: 'ca-app-pub-1612661276193414/4699764541'
   },
   android: {
-    banner: !__DEV__
-      ? 'ca-app-pub-1612661276193414/3552037126'
-      : TestIds.BANNER,
-    rewarded: !__DEV__
-      ? 'ca-app-pub-1612661276193414/6078714849'
-      : TestIds.REWARDED,
+    // banner: TestIds.BANNER,
+    // rewarded: TestIds.REWARDED,
+    banner: 'ca-app-pub-1612661276193414/3552037126',
+    rewarded: 'ca-app-pub-1612661276193414/6078714849'
   },
+
 });
 
-export default Admob_Ids;
+

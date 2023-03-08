@@ -20,8 +20,7 @@ export const screens = {
   habitDetail: 'HABIT_DETAIL_SCREEN',
   NotesDetail: 'NOTE_DETAIL_SCREEN',
   AllNotes: 'ALL_NOTES_SCREEN',
-  moodTracker: 'MOOD_TRACKER_SCREEN',
-  addMood: 'ADD_MOOD_SCREEN',
+
   meditation: 'MEDITATION_SCREEN',
   trackPlayer: 'TRACK_PLAYER_SCREEN',
   favTracks: 'FAVOURITE_TRACKS_SCREEN',
@@ -40,4 +39,13 @@ export const screens = {
   noteEditor: 'NOTE_EDITOR',
   notesFilter: 'NOTE_FILTER',
   notesDetail: 'NOTE_DETAIL',
+
+  //Mood trackPlayer
+  moodTracker: 'MOOD_TRACKER_SCREEN',
+  addMood: 'ADD_MOOD_SCREEN',
+  moodNote: 'ADD_MOOD_NOTE',
+  moodsJournal: 'MOODS_JOURNAL',
+  moodChart: 'MOOD_CHART',
+
+
 };

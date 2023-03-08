@@ -27,7 +27,6 @@ import {
 
   const AddMood = (props ) => {
     const {params} = props.route;
-  const [selectedMood, setSelectedMood] = useState(props.route.params.selectedMood);
    
   const changeMood=(item)=>
   {
