@@ -21,6 +21,7 @@ export const screens = {
   NotesDetail: 'NOTE_DETAIL_SCREEN',
   AllNotes: 'ALL_NOTES_SCREEN',
 
+
   meditation: 'MEDITATION_SCREEN',
   trackPlayer: 'TRACK_PLAYER_SCREEN',
   favTracks: 'FAVOURITE_TRACKS_SCREEN',
@@ -29,7 +30,6 @@ export const screens = {
   timeTable: 'TIME_TABLE_SCREEN',
   addTask: 'ADD_TASK_SCREEN',
   taskDetail: 'TASK_DETAIL_SCREEN',
-  gratitude: 'GRATITUDE_SCREEN',
   dowloadedTracks: 'OFFLINE_TRACKS_SCREEN',
   allPackages: 'SUBSCRIPTIONS_SCREEN',
   comingSoon: 'COMINGSOON_SCREEN',
@@ -45,6 +45,15 @@ export const screens = {
   addMood: 'ADD_MOOD_SCREEN',
   moodNote: 'ADD_MOOD_NOTE',
   moodsJournal: 'MOODS_JOURNAL',
+
+  //Gratitude
+  gratitude: 'GRATITUDE_SCREEN',
+  addGratitude: 'ADD_GRATITUDE',
+  gratitudeDetail: 'GRATITUDE_DETAIL',
+  allGratitudes: 'ALL_GRATITUDES',
+
+  //Reminder
+  reminder: "REMINDER_SCREEN",
   moodChart: 'MOOD_CHART',
 
 

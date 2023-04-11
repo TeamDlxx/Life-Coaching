@@ -4,208 +4,252 @@ import {
   SafeAreaView,
   StatusBar,
   FlatList,
-  StyleSheet,
-  Pressable,
   Image,
-  TouchableOpacity,
+  Pressable,
+  TouchableOpacity
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
-import {mainStyles} from '../../../Utilities/styles';
-import {font} from '../../../Utilities/font';
-import {screens} from '../../../Navigation/Screens';
-import play from '../../../Assets/Icons/play.png';
+import { mainStyles, FAB_style } from '../../../Utilities/styles';
+import { font } from '../../../Utilities/font';
+import { screens } from '../../../Navigation/Screens';
+import { Dimensions } from 'react-native';
+import { useContext } from 'react';
+import Context from '../../../Context';
+import LoginAlert from '../../../Components/LoginAlert';
+import showToast from '../../../functions/showToast';
+import { other_style } from '../../../Utilities/styles';
+import moment from 'moment';
+import ListItem from './components/listItem';
+import EmptyView from '../../../Components/EmptyView';
+import invokeApi from '../../../functions/invokeAPI';
+import Loader from '../../../Components/Loader';
 
-import anxious from '../../../Assets/meditationIcons/anxious.png';
-import breathe from '../../../Assets/meditationIcons/breathe.png';
-import focus from '../../../Assets/meditationIcons/focus.png';
-import morning from '../../../Assets/meditationIcons/morning.png';
-import sleep from '../../../Assets/meditationIcons/sleep.png';
+
 
 const Gratitude = props => {
-  const [categoryList, setCategoryList] = useState([
-    {_id: '1', name: 'Breathe', image: breathe},
-    {_id: '2', name: 'Anxious', image: anxious},
-    {_id: '3', name: 'Focus', image: focus},
-    {_id: '4', name: 'Morning', image: morning},
-    {_id: '5', name: 'Sleep', image: sleep},
-  ]);
-  const [selectedCategory, setSelectedCategory] = useState({
-    _id: '1',
-    name: 'Breathe',
-    image: breathe,
-  });
-  const [trackList, setTrackList] = useState([]);
+  const win = Dimensions.get("window");
+  const { Token, gratitudesList, setGratitudesList , gratitudeExist, setGratitudeExist} = useContext(Context);
+  const [daysList, setDays] = useState([]);
+  const daysFlatList = React.useRef();
+  const [today, setToday] = useState(moment().format('YYYY-MM-DD'));
+  const [isLoading, setisLoading] = useState(false);
 
-  //? Navigation Functions
 
   useEffect(() => {
-    setTrackList(tracksList);
-  }, []);
+    daysofWeek();
+    if (Token) {
+      setisLoading(true);
+      api_myGratitudes();
+    }
+    return () => { };
+  }, [Token]);
 
-  const gotoTrackPlayer = item => {
-    props.navigation.navigate(screens.trackPlayer, {item: item});
+
+  const api_myGratitudes = async () => {
+    let dateObj = {
+      date_from: moment().startOf("week").format('YYYY-MM-DD'),
+      date_to: moment().endOf("week").format('YYYY-MM-DD'),
+    };
+
+    console.log(dateObj, "date object")
+    let res = await invokeApi({
+      path: 'api/gratitude/get_gratitude_list',
+      method: 'POST',
+      postData: dateObj,
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    if (res) {
+      if (res.code == 200) {
+        await setGratitudesList(res?.gratitude);
+        console.log(gratitudesList, "Gratitude List......")
+        await setGratitudeExist(res?.is_exist)
+        console.log(gratitudeExist , "is Data Exist ... ?")
+      } else {
+        showToast(res.message);
+      }
+    }
   };
 
-  //? Views
 
-  const renderCategories = ({item, index}) => {
-    return (
-      <View>
-        <Pressable
-          onPress={() => setSelectedCategory(item)}
-          style={{
-            margin: 6,
-            alignItems: 'center',
-            justifyContent: 'center',
-            // padding: 10,
-            borderRadius: 20,
-            borderColor: Colors.gray07,
-            borderWidth: 0.8,
-            backgroundColor:
-              item._id == selectedCategory._id ? Colors.lightPrimary : Colors.white,
-            paddingHorizontal: 15,
-            height: 60,
-            width: 60,
-          }}>
-          <View>
-            <Image
-              style={
-                item._id == selectedCategory._id
-                  ? {width: 30, height: 30, tintColor: Colors.white}
-                  : {width: 30, height: 30}
-              }
-              source={item.image}
-            />
-          </View>
-        </Pressable>
-        <Text
-        
-          style={{
-            fontFamily: font.medium,
-            color: Colors.black,
-            textAlign: 'center',
-            fontSize: 12,
-          }}>
-          {item.name}
-        </Text>
-      </View>
-    );
+  function updateGratitude(item) {
+    let newArray = [...gratitudesList];
+    let index = newArray.findIndex(x => x._id == item._id);
+    newArray.splice(index, 1, item);
+    setGratitudesList(newArray);
+  }
+
+  
+  const removeGratitude = async (id) => {
+    let newArray = [...gratitudesList];
+    let index = newArray.findIndex(x => x._id == id);
+    if (index != -1) {
+      newArray.splice(index, 1);
+      setGratitudesList(newArray);
+    }
+    if(gratitudesList.length == 0){
+      setToday(moment().format('YYYY-MM-DD'))
+    }
+    // await setGratitudesList((currentData) => currentData.filter((item) => item.id !== id));
   };
 
-  const renderTrackList = ({item, index}) => {
-    return (
-      <TouchableOpacity
-        onPress={() => {
-          gotoTrackPlayer(item);
-        }}
-        activeOpacity={1}
-        style={{
-          marginBottom: 20,
-          alignItems: 'center',
-          borderRadius: 20,
-          paddingHorizontal: 10,
-          flexDirection: 'row',
-          marginHorizontal: 12,
-          minHeight: 70,
-        }}>
-        <View
-          style={{
-            height: 70,
-            width: 70,
-            borderRadius: 26,
-            overflow: 'hidden',
-            borderWidth: 1,
-            borderColor: Colors.gray02,
-          }}>
-          <Image source={{uri: item.image}} style={{height: 70, width: 70}} />
-        </View>
-        <View style={{marginLeft: 15, flex: 1}}>
-          <Text
-            style={{
-              fontFamily: font.bold,
-              fontSize: 16,
-              includeFontPadding: false,
-              color: Colors.black,
-            }}>
-            {item.title}
-          </Text>
 
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginTop: 5,
-            }}>
-            <Text
-              style={{
-                fontFamily: font.medium,
-                color: Colors.text,
-                fontSize: 12,
-              }}>
-              {item.note}
-            </Text>
-          </View>
-        </View>
-        <View style={{}}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{padding: 10}}
-            //   onPress={() => checkboxButton(item)}
-          >
-            <TouchableOpacity
-              onPress={() => {
-                gotoTrackPlayer(item);
-              }}
-              style={{
-                width: 35,
-                height: 35,
-                backgroundColor: Colors.white,
-                borderRadius: 12,
-                alignItems: 'center',
-                justifyContent: 'center',
-                shadowColor: Colors.primary,
-                shadowOffset: {width: 0, height: 1},
-                shadowOpacity: 0.2,
-                shadowRadius: 1.41,
-                elevation: 5,
-              }}>
-              <Image
-                style={{
-                  height: 18,
-                  width: 18,
-                  //   tintColor:Colors.primary
-                }}
-                source={play}
-              />
-            </TouchableOpacity>
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
+  useEffect(() => {
+    let index = daysList.findIndex(
+      x => today == moment(x.date).format('YYYY-MM-DD'),
     );
+    if (index != -1) {
+      setTimeout(() => {
+        daysFlatList?.current?.scrollToIndex({
+          animated: true,
+          index: index,
+        });
+      }, 300);
+    }
+  }, [daysList]);
+
+  const daysofWeek = () => {
+    let currentWeek = moment().startOf('week').isoWeekday(1);
+    let count = 6;
+    let days = [];
+
+    for (let i = 0; i <= count; i++) {
+      let newobj = {};
+      newobj.date = moment(currentWeek).add(i, 'day');
+      days.push(newobj);
+    }
+    setDays([...days]);
+  };
+
+  const btn_add = () => {
+    if (Token) {
+      props.navigation.navigate(screens.addGratitude,{
+        date :  today
+      });
+    } else {
+      LoginAlert(props.navigation, props.route?.name);
+    }
   };
 
   const flatListHeader = () => {
     return (
-      <View style={{paddingHorizontal: 20, backgroundColor: Colors.background}}>
-        <View style={{marginHorizontal: -20, marginTop: 0}}>
-          <FlatList
-            contentContainerStyle={{paddingHorizontal: 20}}
-            showsHorizontalScrollIndicator={false}
-            data={categoryList}
-            horizontal={true}
-            renderItem={renderCategories}
-          />
+      <>
+        <View
+          style={{ paddingHorizontal: 20, backgroundColor: Colors.background, marginBottom: 15 }}>
+
+          <Text style={other_style.labelText}>
+            {moment().format('DD MMM YYYY')}
+          </Text>
+
+          <View style={{ marginHorizontal: -20, marginTop: 5 }}>
+            <FlatList
+              listKey="days"
+              initialNumToRender={7}
+              ref={daysFlatList}
+              keyExtractor={(item, index) => {
+                return index.toString();
+              }}
+              contentContainerStyle={{ paddingHorizontal: 20 }}
+              showsHorizontalScrollIndicator={false}
+              data={daysList}
+              horizontal={true}
+              renderItem={renderDays}
+              onScrollToIndexFailed={() => {
+                console.log('scroll error');
+              }}
+            />
+          </View>
+
+          <View style={{ marginTop: 5, }}>
+            <Text style={other_style.labelText}>All Gratitudes </Text>
+          </View>
         </View>
-        <View style={{marginTop: 5, marginBottom: 25}}>
-          {/* <Text style={other_style.labelText}>All Habits</Text> */}
-        </View>
-      </View>
+
+      </>
     );
   };
 
-  // Modal
+  const renderDays = ({ item, index }) => {
+    return (
+      <Pressable
+        onPress={() => setToday(moment(item.date).format('YYYY-MM-DD'))}
+        style={{
+          margin: 10,
+          alignItems: 'center',
+          borderRadius: 20,
+          alignSelf: 'flex-start',
+          borderColor: Colors.gray02,
+          borderWidth: 1,
+          backgroundColor:
+            today == moment(item.date).format('YYYY-MM-DD')
+              ? Colors.lightPrimary
+              : Colors.white,
+          paddingHorizontal: 15,
+          height: 70,
+          flexDirection: 'row',
+        }}>
+
+        <View style={{ alignItems: 'center' }}>
+          <Text
+            style={{
+              fontFamily: font.medium,
+              color:
+                today == moment(item.date).format('YYYY-MM-DD')
+                  ? Colors.black
+                  : Colors.gray06,
+            }}>
+            {moment(item.date).format('dd')}
+          </Text>
+
+          <Text
+            style={{
+              fontFamily: font.medium,
+              color:
+                today == moment(item.date).format('YYYY-MM-DD')
+                  ? Colors.black
+                  : Colors.gray10,
+              fontSize: 16,
+              marginTop: 5,
+            }}>
+            {moment(item.date).format('D')}
+          </Text>
+        </View>
+      </Pressable>
+    );
+  };
+
+  const renderGratitudeList = ({ item, index }) => {
+    let extraImg = item.images.length - 3;
+    item.extraImages = extraImg;
+    return (
+      <ListItem
+        onPress={() => {
+          props.navigation.navigate(screens.gratitudeDetail, {
+            id: item._id,
+            updateGratitude: updateGratitude,
+            removeGratitudeFromList: removeGratitude,
+          });
+        }}
+        item={item}
+        extraImg={extraImg}
+      />
+    );
+  }
+
+
+  const filterSelectedDayGratitudes = list => {
+    return list.slice().filter(x => {
+      if (moment(x.date).format('DD MMM YYYY') == moment(today).format('DD MMM YYYY')) {
+        return true;
+      }
+      return false;
+    });
+  };
 
   return (
     <SafeAreaView style={mainStyles.MainView}>
@@ -217,77 +261,116 @@ const Gratitude = props => {
       <Header
         navigation={props.navigation}
         title={'Gratitude'}
-        // titleAlignLeft
+        titleAlignLeft
+        rightIcon={require('../../../Assets/Icons/list.png')}
+        rightIcononPress={() => props.navigation.navigate(screens.allGratitudes,
+        )}
       />
       <View style={mainStyles.innerView}>
-        <View style={{flex: 1, marginHorizontal: -20}}>
-          <FlatList
-            listKey="main"
-            stickyHeaderIndices={[0]}
-            stickyHeaderHiddenOnScroll={true}
-            ListHeaderComponent={flatListHeader()}
-            contentContainerStyle={{paddingVertical: 10, paddingBottom: 50}}
-            showsVerticalScrollIndicator={false}
-            data={trackList}
-            renderItem={renderTrackList}
-            keyExtractor={item => {
-              return item._id;
-            }}
+        <Loader enable={isLoading} />
+        {gratitudesList.length == 0 && gratitudeExist == false ?
+          <View
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              flex: 1,
+            }}>
+            <Image
+              source={require('../../../Assets/illustractions/gratitude-journal.png')}
+              style={{
+                width: win.width * 0.65,
+                height: win.width * 0.65,
+              }}
+            />
+            <Text
+              style={{
+                fontFamily: font.xbold,
+                fontSize: 30,
+                marginTop: 15,
+              }}>
+              No Gratitudes
+            </Text>
+            <Text
+              style={{
+                fontFamily: font.bold,
+                fontSize: 16,
+                marginTop: 10,
+                color: Colors.placeHolder,
+                width: '80%',
+                textAlign: 'center',
+              }}>
+              Creat a memorandum for something you're grateful for!
+            </Text>
+
+            <View style={{ flex: 0.5, justifyContent: 'center', marginTop: 10 }}>
+              <Pressable
+                onPress={btn_add}
+                style={[
+                  FAB_style.View,
+                  {
+                    position: 'relative',
+                    right: 0,
+                    height: 65,
+                    width: 65,
+                    borderRadius: 65 / 2,
+                  },
+                ]}>
+                <Image
+                  source={require('../../../Assets/Icons/plus.png')}
+                  style={FAB_style.image}
+                />
+              </Pressable>
+
+
+            </View>
+
+          </View>
+          :
+          <>
+            <View style={{ flex: 1, marginHorizontal: -20 }}>
+              <FlatList
+                contentContainerStyle={
+                  filterSelectedDayGratitudes(gratitudesList).length == 0
+                    ? { flex: 1 }
+                    : { paddingVertical: 10, paddingBottom: 50 }
+                }
+                showsVerticalScrollIndicator={false}
+                data={filterSelectedDayGratitudes(gratitudesList)}
+                ListHeaderComponent={(gratitudesList.length != 0 || gratitudeExist == true) && flatListHeader()}
+                renderItem={renderGratitudeList}
+                keyExtractor={item => {
+                  return item._id;
+                }}
+                ListEmptyComponent={() => {
+                  return (
+                    isLoading == false && (<View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                      <EmptyView
+                        style={{ marginTop: 0 }}
+                        title={`No Gratitudes for this date`}
+                        noSubtitle
+                      />
+                      <TouchableOpacity onPress={btn_add} style={{ backgroundColor: Colors.lightPrimary, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center", marginTop: 20, paddingHorizontal: 10 }}>
+                        <Text style={{ color: Colors.primary, fontWeight: "bold" }}>Create Gratitude    </Text>
+                      </TouchableOpacity>
+                    </View>
+                    ))
+                }
+                }
+              />
+            </View>
+          </>
+
+        }
+        {(gratitudesList.length != 0 || gratitudeExist == true) && <Pressable style={FAB_style.View} onPress={btn_add}>
+          <Image
+            source={require('../../../Assets/Icons/plus.png')}
+            style={FAB_style.image}
           />
-        </View>
+        </Pressable>
+        }
       </View>
     </SafeAreaView>
   );
 };
 
 export default Gratitude;
-
-const tracksList = [
-  {
-    _id: '1',
-    title: 'Relax',
-    note: 'Release the tention',
-    image:
-      'https://images.unsplash.com/photo-1604251405903-b8c4e83cdf7c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cmVsYXhhdGlvbnxlbnwwfHwwfHw%3D&w=1000&q=80',
-  },
-
-  {
-    _id: '2',
-    title: 'Breathe',
-    note: 'Nature',
-    image:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7ZBrBNBKLvZB9Q3BXmxmdi54NJ9v4ND82rg&usqp=CAU',
-  },
-
-  {
-    _id: '3',
-    title: 'Sleep',
-    note: 'deep sleep',
-    image:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_kPxS5Mrgm6uERvdjdtEee8OwPMY2pWGoyg&usqp=CAU',
-  },
-
-  {
-    _id: '4',
-    title: 'Relax',
-    note: 'Release the tention',
-    image:
-      'https://images.unsplash.com/photo-1604251405903-b8c4e83cdf7c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cmVsYXhhdGlvbnxlbnwwfHwwfHw%3D&w=1000&q=80',
-  },
-
-  {
-    _id: '5',
-    title: 'Breathe',
-    note: 'Nature',
-    image:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7ZBrBNBKLvZB9Q3BXmxmdi54NJ9v4ND82rg&usqp=CAU',
-  },
-
-  {
-    _id: '6',
-    title: 'Sleep',
-    note: 'deep sleep',
-    image:
-      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_kPxS5Mrgm6uERvdjdtEee8OwPMY2pWGoyg&usqp=CAU',
-  },
-];

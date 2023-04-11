@@ -50,35 +50,35 @@ const MoodTracker = props => {
 
 
   const [emotions, setEmotions] = useState([
-    { "emotion": "Excited", "isSelected": false },
-    { "emotion": "Relaxed", "isSelected": false },
-    { "emotion": "Proud", "isSelected": false },
-    { "emotion": "Hopeful", "isSelected": false },
-    { "emotion": "Happy", "isSelected": false },
-    { "emotion": "Enthusiactic", "isSelected": false },
-    { "emotion": "Refreshed", "isSelected": false },
-    { "emotion": "Gloomy", "isSelected": false },
-    { "emotion": "Lonely", "isSelected": false },
-    { "emotion": "Anxious", "isSelected": false },
-    { "emotion": "Sad", "isSelected": false },
-    { "emotion": "Angry", "isSelected": false },
-    { "emotion": "Tired", "isSelected": false },
-    { "emotion": "Burdensome", "isSelected": false },
-    { "emotion": "Bored", "isSelected": false },
-    { "emotion": "Stressed", "isSelected": false },
+    { "emotion": "Excited ", "isSelected": false },
+    { "emotion": "Relaxed  ", "isSelected": false },
+    { "emotion": "Proud ", "isSelected": false },
+    { "emotion": "Hopeful ", "isSelected": false },
+    { "emotion": "Happy  ", "isSelected": false },
+    { "emotion": "Enthusiactic ", "isSelected": false },
+    { "emotion": "Refreshed  ", "isSelected": false },
+    { "emotion": "Gloomy  ", "isSelected": false },
+    { "emotion": "Lonely ", "isSelected": false },
+    { "emotion": "Anxious  ", "isSelected": false },
+    { "emotion": "Sad ", "isSelected": false },
+    { "emotion": "Angry  ", "isSelected": false },
+    { "emotion": "Tired ", "isSelected": false },
+    { "emotion": "Burdensome  ", "isSelected": false },
+    { "emotion": "Bored ", "isSelected": false },
+    { "emotion": "Stressed ", "isSelected": false },
   ])
 
 
   const [sphereOfLife, setSphereOfLife] = useState([
 
-    { 'id': 1, 'source': Portfolio, 'isSelected': false, "sphere": "Work", },
-    { 'id': 2, 'source': FriendShip, 'isSelected': false, "sphere": "Friends" },
-    { 'id': 3, 'source': Heart, 'isSelected': false, "sphere": "Love" },
-    { 'id': 4, 'source': Family, 'isSelected': false, "sphere": "Family" },
-    { 'id': 5, 'source': Lock, 'isSelected': false, "sphere": "Personal" },
-    { 'id': 6, 'source': Stethoscope, 'isSelected': false, "sphere": "Health" },
-    { 'id': 7, 'source': Money, 'isSelected': false, "sphere": "Finance" },
-    { 'id': 8, 'source': BeachChair, 'isSelected': false, "sphere": "Leisure" },
+    { 'id': 1, 'source': Portfolio, 'isSelected': false, "sphere": "Work  ", },
+    { 'id': 2, 'source': FriendShip, 'isSelected': false, "sphere": "Friends " },
+    { 'id': 3, 'source': Heart, 'isSelected': false, "sphere": "Love " },
+    { 'id': 4, 'source': Family, 'isSelected': false, "sphere": "Family " },
+    { 'id': 5, 'source': Lock, 'isSelected': false, "sphere": "Personal " },
+    { 'id': 6, 'source': Stethoscope, 'isSelected': false, "sphere": "Health " },
+    { 'id': 7, 'source': Money, 'isSelected': false, "sphere": "Finance " },
+    { 'id': 8, 'source': BeachChair, 'isSelected': false, "sphere": "Leisure " },
 
   ])
 

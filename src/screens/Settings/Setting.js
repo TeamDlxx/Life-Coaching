@@ -247,6 +247,10 @@ const Setting = props => {
         ]);
 
         break;
+
+      case 'reminder':
+        props.navigation.navigate(screens.reminder);
+        break;
     }
   }
 
@@ -438,6 +442,13 @@ const settings = [
     name: 'Restore Purchase',
     icon: require('../../Assets/Icons/restore.png'),
     action: 'restore_purchase',
+  },
+
+  {
+    id: 'reminder',
+    name: 'Reminders',
+    icon: require('../../Assets/Icons/alert.png'),
+    action: 'reminder',
   },
 
   {

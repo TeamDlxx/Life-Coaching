@@ -179,7 +179,7 @@ const MoodsJournal = props => {
           animated: true,
           index: index,
         });
-      }, 500);
+      }, 300);
     }
   }, [daysList]);
 

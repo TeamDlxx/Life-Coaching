@@ -28,7 +28,7 @@ import LoginAlert from '../../../Components/LoginAlert';
 import analytics from '@react-native-firebase/analytics';
 
 import { BannerAd, BannerAdSize, useRewardedAd } from 'react-native-google-mobile-ads';
-import {Admob_Ids} from '../../../Utilities/AdmobIds';
+import { Admob_Ids } from '../../../Utilities/AdmobIds';
 
 // import {useLoginAlert} from '../../../hooks/useLoginAlert';
 // For API's calling
@@ -46,49 +46,6 @@ import Cry from "../../../Assets/emojy/cry.gif"
 import Angry from "../../../Assets/emojy/angrygif.gif"
 
 
-const data = {
-  labels: ["Happy", "Excited", "Sad", "Cry", "Neutral", "Angry"],
-  datasets: [
-    {
-      data: [10, 20, 79, 50, 90, 95],
-      color: (opacity = 1) => Colors.primary, // optional
-      strokeWidth: 2 // optional
-    }
-  ],
-  legend: [] // optional
-};
-
-
-const chartConfig = {
-
-  backgroundColor: "gray",
-  backgroundGradientFrom: "",
-
-
-  backgroundGradientTo: "",
-  color: (opacity = 1) => `silver`,
-  labelColor: (opacity = 1) => `black`,
-  strokeWidth: 2, // optional, default 3
-  barPercentage: 0.5,
-  decimalPlaces: 0,
-  withVerticalLines: false,
-
-  useShadowColorFromDataset: true, // optional
-
-
-  propsForDots: {
-    r: "5",
-    strokeWidth: "2",
-    stroke: Colors.primary,
-
-  },
-
-  style: {
-    borderRadius: 16,
-  },
-
-};
-
 import {
   LineChart,
   BarChart,
@@ -102,7 +59,6 @@ import {
 
 
 const MoodsJournal = props => {
-
 
   const { Token, habitList, setHabitList, isHabitPurchased } =
     useContext(Context);
@@ -121,7 +77,50 @@ const MoodsJournal = props => {
 
   const [adError, setAdError] = useState(false);
 
+  const [currentWeek, setCurrentWeek] = useState({
+    startDate: moment().startOf("week").format("MMM DD"),
+    endDate: moment().endOf("week").format("MMM DD"),
+  })
 
+  const updateCurrentWeek = updation => setCurrentWeek({ ...currentWeek, ...updation });
+
+  
+const data = {
+  // labels : daysList,
+  labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  datasets: [
+    {
+      data: [10, 20, 79, 50, 90, 95, 120],
+      color: (opacity = 1) => Colors.primary, // optional
+      strokeWidth: 2 // optional
+    }
+  ],
+  legend: [] // optional
+};
+
+
+const chartConfig = {
+  backgroundColor: "gray",
+  backgroundGradientFrom: "white",
+  backgroundGradientTo: "white",
+  color: (opacity = 1) => `silver`,
+  labelColor: (opacity = 1) => `black`,
+  strokeWidth: 2, // optional, default 3
+  barPercentage: 0.5,
+  decimalPlaces: 0,
+  withVerticalLines: false,
+  useShadowColorFromDataset: true, // optional
+  propsForDots: {
+    r: "5",
+    strokeWidth: "2",
+    stroke: Colors.primary,
+
+  },
+  style: {
+    borderRadius: 16,
+  },
+
+};
 
   const checkCompleted = notes => {
     let index = notes.findIndex(
@@ -138,7 +137,7 @@ const MoodsJournal = props => {
 
 
   const btn_add = () => {
-        props.navigation.navigate(screens.moodTracker)
+    props.navigation.navigate(screens.moodTracker)
 
   }
 
@@ -344,6 +343,27 @@ const MoodsJournal = props => {
     );
   };
 
+  
+  const previousWeek = async () => {
+    let start = moment(currentWeek.startDate).toDate();
+    let end = moment(currentWeek.endDate).toDate();
+    await updateCurrentWeek({
+      startDate: moment(start).subtract({day : 7}).format("MMM DD"),
+      endDate: moment(end).subtract({day : 7}).format("MMM DD"),
+    })
+   console.log("previous Week .....")
+};
+
+
+const nextWeek = async () => {
+  let start = moment(currentWeek.startDate).toDate();
+  let end = moment(currentWeek.endDate).toDate();
+  await updateCurrentWeek({
+    startDate: moment(start).add({day : 7}).format("MMM DD"),
+    endDate: moment(end).add({day : 7}).format("MMM DD"),
+  })
+  console.log("next Week .....")
+};
 
 
 
@@ -381,15 +401,15 @@ const MoodsJournal = props => {
                 />
 
                 <View style={{ flexDirection: "row", marginTop: 12 }}>
-                  <TouchableOpacity style={{ height: 50, flex: 1.5, backgroundColor: "white", borderWidth: 1, borderColor: Colors.lightPrimary, margin: 2, borderRadius: 10, alignItems: "center", justifyContent: "center" }}>
+                  <TouchableOpacity onPress={previousWeek} style={{ height: 50, flex: 1.5, backgroundColor: "white", borderWidth: 1, borderColor: Colors.lightPrimary, margin: 2, borderRadius: 10, alignItems: "center", justifyContent: "center" }}>
                     <Image style={{ height: 11, width: 11, tintColor: Colors.black }} source={require('../../../Assets/Icons/left_arrow.png')} />
                   </TouchableOpacity>
 
                   <TouchableOpacity style={{ height: 50, flex: 7, backgroundColor: "white", borderWidth: 1, borderColor: Colors.lightPrimary, margin: 2, borderRadius: 10, alignItems: "center", justifyContent: "center" }}>
-                    <Text style={{ fontFamily: font.medium }}>Feb 12 - Feb 14</Text>
+                    <Text style={{ fontFamily: font.medium }}>{currentWeek.startDate + " - " + currentWeek.endDate}</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={{ height: 50, flex: 1.5, backgroundColor: "white", borderWidth: 1, borderColor: Colors.lightPrimary, margin: 2, borderRadius: 10, alignItems: "center", justifyContent: "center" }}>
+                  <TouchableOpacity onPress={nextWeek} style={{ height: 50, flex: 1.5, backgroundColor: "white", borderWidth: 1, borderColor: Colors.lightPrimary, margin: 2, borderRadius: 10, alignItems: "center", justifyContent: "center" }}>
                     <Image style={{ height: 11, width: 11, tintColor: Colors.black }} source={require('../../../Assets/Icons/right_arrow.png')} />
                   </TouchableOpacity>
 

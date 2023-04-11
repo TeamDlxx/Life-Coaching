@@ -20,4 +20,3 @@ export const Admob_Ids = Platform.select({
 
 });
 
-

@@ -310,6 +310,6 @@ const options = [
     count: 7,
     screen: screens.gratitude,
     color: '#44BCDF',
-    comingsoon: true,
+    comingsoon: false,
   },
 ];
