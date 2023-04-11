@@ -16,7 +16,7 @@
 		38353009A9AC24E56A8E40AD /* libPods-LifeCoaching.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2680722A6D6955847A6F5853 /* libPods-LifeCoaching.a */; };
 		3D3D76EBA4FE4BEABE4CFE5A /* Pangram-Light.otf in Resources */ = {isa = PBXBuildFile; fileRef = 707B1D1064BA4DFC964FB511 /* Pangram-Light.otf */; };
 		466A6EEF29237E8900FE7231 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 466A6EEE29237E8900FE7231 /* StoreKit.framework */; };
-		48B2E264295C2040006676E4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 48B2E263295C2040006676E4 /* GoogleService-Info.plist */; };
+		48E4DBA629D69DAC00C8A7B9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 48E4DBA529D69DAC00C8A7B9 /* GoogleService-Info.plist */; };
 		506CEFB8CD6B4F1497353D58 /* Pangram-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 7D027CF0842649BD97FC6C8E /* Pangram-Medium.otf */; };
 		605C0848172948BA90F4DCCD /* Pangram-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 4C23C6C8D72F46C68AF8D8F6 /* Pangram-Bold.otf */; };
 		7A99F5D4A43044E393DD0F3C /* Pangram-Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = D2AA9408FC4645F7BF4C5FD4 /* Pangram-Italic.otf */; };
@@ -52,7 +52,7 @@
 		3B4392A12AC88292D35C810B /* Pods-LifeCoaching.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LifeCoaching.debug.xcconfig"; path = "Target Support Files/Pods-LifeCoaching/Pods-LifeCoaching.debug.xcconfig"; sourceTree = "<group>"; };
 		463A340C28FFCAE300CD8F73 /* LifeCoaching.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = LifeCoaching.entitlements; path = LifeCoaching/LifeCoaching.entitlements; sourceTree = "<group>"; };
 		466A6EEE29237E8900FE7231 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
-		48B2E263295C2040006676E4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		48E4DBA529D69DAC00C8A7B9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		4C23C6C8D72F46C68AF8D8F6 /* Pangram-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Pangram-Bold.otf"; path = "../src/Assets/fonts/Pangram-Bold.otf"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-LifeCoaching.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LifeCoaching.release.xcconfig"; path = "Target Support Files/Pods-LifeCoaching/Pods-LifeCoaching.release.xcconfig"; sourceTree = "<group>"; };
 		5B7EB9410499542E8C5724F5 /* Pods-LifeCoaching-LifeCoachingTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-LifeCoaching-LifeCoachingTests.debug.xcconfig"; path = "Target Support Files/Pods-LifeCoaching-LifeCoachingTests/Pods-LifeCoaching-LifeCoachingTests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -108,7 +108,7 @@
 		13B07FAE1A68108700A75B9A /* LifeCoaching */ = {
 			isa = PBXGroup;
 			children = (
-				48B2E263295C2040006676E4 /* GoogleService-Info.plist */,
+				48E4DBA529D69DAC00C8A7B9 /* GoogleService-Info.plist */,
 				463A340C28FFCAE300CD8F73 /* LifeCoaching.entitlements */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
@@ -294,7 +294,7 @@
 				DD146367282745AE99F2F096 /* Pangram-ExtraLight.otf in Resources */,
 				3D3D76EBA4FE4BEABE4CFE5A /* Pangram-Light.otf in Resources */,
 				506CEFB8CD6B4F1497353D58 /* Pangram-Medium.otf in Resources */,
-				48B2E264295C2040006676E4 /* GoogleService-Info.plist in Resources */,
+				48E4DBA629D69DAC00C8A7B9 /* GoogleService-Info.plist in Resources */,
 				BC0B06E1E1354C95ADD2C193 /* Pangram-Regular.otf in Resources */,
 				7A99F5D4A43044E393DD0F3C /* Pangram-Italic.otf in Resources */,
 			);
@@ -590,7 +590,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.8;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -622,7 +622,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.8;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
