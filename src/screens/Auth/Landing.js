@@ -16,11 +16,13 @@ import SplashScreen from 'react-native-splash-screen';
 import Context from '../../Context';
 import analytics from '@react-native-firebase/analytics';
 import showToast from '../../functions/showToast';
+import TrackPlayer from 'react-native-track-player';
 
 export default function Landing({navigation}, props) {
   const {setToken} = useContext(Context);
   React.useEffect(() => {
     console.log('props', props);
+
     SplashScreen.hide();
     setToken(null);
   }, []);

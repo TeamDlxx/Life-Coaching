@@ -14,7 +14,7 @@ export const Admob_Ids = Platform.select({
   android: {
     // banner: TestIds.BANNER,
     // rewarded: TestIds.REWARDED,
-    banner: 'ca-app-pub-1612661276193414/3552037126',
+    banner: 'ca-app-pub-1612661276193414/2813670522',
     rewarded: 'ca-app-pub-1612661276193414/6078714849'
   },
 

@@ -141,7 +141,7 @@ const Setting = props => {
         try {
           const result = await Share.share({
             title: 'Better.Me',
-            message: `Get yourself an app that will guide you through your routine and walk you to a better and more disciplined life., AppLink :${deepLinkQuote}`,
+            message: `Get yourself an app that will guide you through your routine and walk you to a better and more disciplined life., AppLink :${Platform.OS == "android" ? androidAppLink : iosAppLink}`,
             url: Platform.OS == "android" ? androidAppLink : iosAppLink,
           });
           if (result.action === Share.sharedAction) {
@@ -174,10 +174,15 @@ const Setting = props => {
           setisLoading(true)
           const purchases = await RNIap.getAvailablePurchases();
 
-          setisLoading(false)
 
 
           console.log(purchases, "purchases from store...")
+          setisLoading(false)
+
+          if(purchases.length == 0){
+            Alert.alert("Nothing to restore.")
+            return
+          }
 
 
           purchases.forEach(async (purchase) => {

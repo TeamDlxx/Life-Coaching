@@ -23,7 +23,7 @@ android:gravity="center"
     <ImageView
         android:layout_width="180dp"
         android:layout_height="180dp"
-        android:src='@drawable/logo'
+        android:src='@mipmap/splash'
         />
 
 
