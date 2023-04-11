@@ -1,36 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   SafeAreaView,
   StatusBar,
-  FlatList,
-  StyleSheet,
   Pressable,
   Image,
-  Platform,
-  TouchableHighlight,
-  RefreshControl,
-  Alert,
-  TouchableOpacity,
   Dimensions,
   ScrollView,
+  FlatList,
+  InteractionManager,
 } from 'react-native';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
-import { mainStyles, FAB_style, other_style } from '../../../Utilities/styles';
-import moment, { months } from 'moment';
+import { mainStyles, FAB_style } from '../../../Utilities/styles';
+import moment from 'moment';
 import { font } from '../../../Utilities/font';
 
 import { screens } from '../../../Navigation/Screens';
-import PushNotification from 'react-native-push-notification';
 import LoginAlert from '../../../Components/LoginAlert';
 import analytics from '@react-native-firebase/analytics';
 
-import { BannerAd, BannerAdSize, useRewardedAd } from 'react-native-google-mobile-ads';
-import { Admob_Ids } from '../../../Utilities/AdmobIds';
-
-// import {useLoginAlert} from '../../../hooks/useLoginAlert';
 // For API's calling
 import { useContext } from 'react';
 import Context from '../../../Context';
@@ -38,240 +28,282 @@ import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 
+import { VictoryChart, VictoryTheme, VictoryLine, VictoryScatter, VictoryAxis } from "victory-native";
 
+
+/// Emojis
 import Happy from "../../../Assets/emojy/smile.gif"
 import Neutral from "../../../Assets/emojy/neutral.gif"
 import Sad from "../../../Assets/emojy/sad.gif"
 import Cry from "../../../Assets/emojy/cry.gif"
 import Angry from "../../../Assets/emojy/angrygif.gif"
 
+let allMoods = [];
+let selectedMoods = [];
 
-import {
-  LineChart,
-  BarChart,
-  PieChart,
-  ProgressChart,
-  ContributionGraph,
-  StackedBarChart
-} from "react-native-chart-kit";
-
-
-
+let moods = [
+  { 'source': Happy, 'isSelected': true, "mood": "Happy" },
+  { 'source': Neutral, 'isSelected': false, "mood": "Neutral" },
+  { 'source': Sad, 'isSelected': false, "mood": "Sad" },
+  { 'source': Cry, 'isSelected': false, "mood": "Cry" },
+  { 'source': Angry, 'isSelected': false, "mood": "Angry" },
+]
 
 const MoodsJournal = props => {
-
-  const { Token, habitList, setHabitList, isHabitPurchased } =
-    useContext(Context);
+  const win = Dimensions.get("window");
+  VictoryTheme.material.axis.style.grid.strokeWidth = 0;
+  let start;
+  let end;
+  const { Token, } = useContext(Context);
   const [isLoading, setisLoading] = useState(false);
-  const daysFlatList = React.useRef();
-  const [daysList, setDays] = useState([]);
-
-  const [moodsJournal, setMoodsJournal] = useState([
-    { "icon": Happy, "emotion": "Happy", "date": "Today, 08:15pm", "sphere": "Work", "title": "I am so Happy Today", "description": "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as a placeholder before final copy is available." },
-    { "icon": Sad, "emotion": "Sad", "date": "Today, 08:15pm", "sphere": "Health", "title": "I am so Happy Today", "description": "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as a placeholder before final copy is available." },
-    { "icon": Cry, "emotion": "Crying", "date": "Today, 08:15pm", "sphere": "Friends", "title": "I am so Happy Today", "description": "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as a placeholder before final copy is available." },
-    { "icon": Angry, "emotion": "Angry", "date": "Today, 08:15pm", "sphere": "Family", "title": "I am so Happy Today", "description": "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as a placeholder before final copy is available." }
-  ]);
-
-  const [today, setToday] = useState(moment().format('YYYY-MM-DD'));
-
-  const [adError, setAdError] = useState(false);
 
   const [currentWeek, setCurrentWeek] = useState({
-    startDate: moment().startOf("week").format("MMM DD"),
-    endDate: moment().endOf("week").format("MMM DD"),
+    startDate: moment().startOf("week"),
+    endDate: moment().endOf("week"),
   })
-
   const updateCurrentWeek = updation => setCurrentWeek({ ...currentWeek, ...updation });
 
-  
-const data = {
-  // labels : daysList,
-  labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-  datasets: [
-    {
-      data: [10, 20, 79, 50, 90, 95, 120],
-      color: (opacity = 1) => Colors.primary, // optional
-      strokeWidth: 2 // optional
-    }
-  ],
-  legend: [] // optional
-};
+  const [chartData, setChartData] = useState({
+    happy: [],
+    neutral: [],
+    sad: [],
+    cry: [],
+    angry: []
+  });
+
+  const [exist, setIsExist] = useState(false)
 
 
-const chartConfig = {
-  backgroundColor: "gray",
-  backgroundGradientFrom: "white",
-  backgroundGradientTo: "white",
-  color: (opacity = 1) => `silver`,
-  labelColor: (opacity = 1) => `black`,
-  strokeWidth: 2, // optional, default 3
-  barPercentage: 0.5,
-  decimalPlaces: 0,
-  withVerticalLines: false,
-  useShadowColorFromDataset: true, // optional
-  propsForDots: {
-    r: "5",
-    strokeWidth: "2",
-    stroke: Colors.primary,
+  React.useEffect(() => {
+    const unsubscribe = props.navigation.addListener('focus', () => {
+      initFunction()
+    });
+    analytics().logEvent(props?.route?.name);
+    return unsubscribe;
+  }, [Token, props.navigation, allMoods]);
 
-  },
-  style: {
-    borderRadius: 16,
-  },
+  const initFunction = async () => {
+    InteractionManager.runAfterInteractions(() => {
+      if (Token) {
+        start = moment(new Date(currentWeek.startDate)).toDate();
+        end = moment(new Date(currentWeek.endDate)).toDate();
 
-};
+        apiChartData({
+          start_date: moment(start).toISOString(),
+          end_date: moment(end).toISOString(),
+        });
 
-  const checkCompleted = notes => {
-    let index = notes.findIndex(
-      x => moment(x.date).format('YYYY-MM-DD') == today,
-    );
+      } else {
+        setIsExist(false)
+        allMoods = []
+        selectedMoods = []
+        setChartData({
+          ...chartData,
+          happy: [],
+          neutral: [],
+          sad: [],
+          cry: [],
+          angry: []
+        })
+      }
 
-    if (index < 0) {
-      return false;
-    } else {
-      return true;
-    }
+    });
   }
 
+
+  const apiChartData = async body => {
+    setisLoading(true);
+    let res = await invokeApi({
+      path: 'api/mood/mood_graph',
+      method: 'POST',
+      postData: body,
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    if (res) {
+      setisLoading(false);
+
+      if (res.code == 200) {
+
+        chartData.happy = [];
+        chartData.neutral = [];
+        chartData.sad = [];
+        chartData.cry = [];
+        chartData.angry = [];
+        await setChartData({ ...chartData })
+
+        allMoods = [];
+        allMoods = res.moods;
+
+        let isExist = res?.is_exist;
+        setIsExist(isExist)
+        console.log(exist, "Is more data exist ....")
+
+        if (selectedMoods.length == 0) {
+          let index = moods.findIndex(x => x.isSelected == true);
+          if (index != -1) {
+            addToSelectedMoods(moods[index].mood)
+          } else {
+            showToast('Please select a mood', 'Alert');
+          }
+        }
+        else {
+          graphData(selectedMoods)
+        }
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+
+  const addToSelectedMoods = async mood => {
+    let temp = [...selectedMoods]
+    temp.push(mood)
+    selectedMoods = temp;
+    await graphData(temp)
+  }
+
+
+  const renderEmojis = (moodItem, index) => {
+    return (
+      <Pressable
+        onPress={() => emojiPressed(moodItem.index)}
+        style={{
+          flex: 1,
+          flexDirection: 'row',
+          alignItems: "center",
+          justifyContent: "center",
+          marginRight: 5,
+          height: 40,
+          width: 45,
+          borderRadius: 8,
+          backgroundColor: moodItem.item.isSelected ? Colors.lightPrimary1 : Colors.background,
+
+        }}>
+        <View
+          style={{
+            height: 12,
+            width: 12,
+            borderRadius: 6,
+            borderWidth: 1,
+            borderColor: moodItem.item.mood == "Happy" ? "#c2b074" :
+              moodItem.item.mood == "Sad" ? "#d4811b" :
+                moodItem.item.mood == "Cry" ? "#cfa6a1" :
+                  moodItem.item.mood == "Angry" ? "#7c926d" : "#8ebeb2",
+            backgroundColor: moodItem.item.mood == "Happy" ? "#E8D595" :
+              moodItem.item.mood == "Sad" ? "#ec9326" :
+                moodItem.item.mood == "Cry" ? "#E9BBB5" :
+                  moodItem.item.mood == "Angry" ? "#8DA47E" : "#AAD9CD",
+            marginRight: 3,
+          }}
+        />
+        <Image source={moodItem.item.source} style={{ height: 20, width: 20, }} />
+      </Pressable>
+    )
+  }
+
+
+  const emojiPressed = async (idx) => {
+    moods[idx].isSelected = !moods[idx].isSelected;
+
+    if (moods[idx].isSelected == true) {
+      addToSelectedMoods(moods[idx].mood)
+    }
+    else (
+      removeItemData(moods[idx].mood)
+    )
+  }
+
+
+  const graphData = async (moodsList) => {
+    for (let i = 0; i < moodsList.length; i++) {
+
+      let array = [];
+
+      allMoods.slice().filter(async x => {
+        if (x.mood == moodsList[i]) {
+          let obj = {
+            day: moment(x.date).format("ddd"),
+            intensity: x.intensity,
+          };
+          array.push(obj);
+
+          if (x.mood == "Happy") {
+            chartData.happy = array;
+          }
+          else if (x.mood == "Neutral") {
+            chartData.neutral = array;
+          }
+          else if (x.mood == "Sad") {
+            chartData.sad = array;
+
+          }
+          else if (x.mood == "Cry") {
+            chartData.cry = array;
+          }
+          else {
+            chartData.angry = array;
+          }
+
+          let newState = chartData;
+          setChartData({ ...newState });
+
+          return true;
+        }
+        return false;
+      });
+    }
+    console.log(chartData, "chart data...")
+  }
+
+
+  const removeItemData = async (mood) => {
+
+    let moodList = [...selectedMoods]
+    let moodIdx = await moodList.findIndex((data) => data === mood)
+    moodList.splice(moodIdx, 1)
+    selectedMoods = moodList;
+    console.log(selectedMoods, "remainig moods....")
+
+
+    let emptyArr = []
+    if (mood == "Happy") {
+      chartData.happy = emptyArr;
+    }
+    else if (mood == "Neutral") {
+      chartData.neutral = emptyArr;
+    }
+    else if (mood == "Sad") {
+      chartData.sad = emptyArr;
+
+    }
+    else if (mood == "Cry") {
+      chartData.cry = emptyArr;
+    }
+    else {
+      chartData.angry = emptyArr;
+    }
+
+    let newState = chartData;
+    setChartData({ ...newState });
+
+    console.log(chartData, "remaining chart data...")
+
+  }
 
 
   const btn_add = () => {
-    props.navigation.navigate(screens.moodTracker)
-
+    if (Token) {
+      props.navigation.navigate(screens.moodTracker, {
+        isComingFrom: "note"
+      });
+    } else {
+      LoginAlert(props.navigation, props.route?.name);
+    }
   }
-
-
-
-  const daysInMonth = () => {
-    let currentWeek = moment().startOf('week').isoWeekday(1);
-    let count = 6;
-    let days = [];
-
-    for (let i = 0; i <= count; i++) {
-      let newobj = {};
-      newobj.date = moment(currentWeek).add(i, 'day');
-      days.push(newobj);
-    }
-    setDays([...days]);
-  };
-
-
-
-
-
-
-
-
-
-
-
-
-  useEffect(() => {
-    daysInMonth();
-
-  }, [Token]);
-
-
-
-  useEffect(() => {
-    let index = daysList.findIndex(
-      x => today == moment(x.date).format('YYYY-MM-DD'),
-    );
-    if (index != -1) {
-      setTimeout(() => {
-        daysFlatList?.current?.scrollToIndex({
-          animated: true,
-          index: index,
-        });
-      }, 500);
-    }
-  }, [daysList]);
-
-  useEffect(() => {
-    analytics().logEvent(props?.route?.name);
-  }, []);
-
-  //? Views
-
-  const renderDays = ({ item, index }) => {
-    return (
-      <Pressable
-        onPress={() => setToday(moment(item.date).format('YYYY-MM-DD'))}
-        style={{
-          margin: 10,
-          alignItems: 'center',
-          // padding: 10,
-          borderRadius: 20,
-          alignSelf: 'flex-start',
-          borderColor: Colors.gray02,
-          borderWidth: 1,
-          backgroundColor:
-            today == moment(item.date).format('YYYY-MM-DD')
-              ? Colors.lightPrimary
-              : Colors.white,
-          paddingHorizontal: 15,
-          height: 70,
-          flexDirection: 'row',
-        }}>
-
-        <View style={{ alignItems: 'center' }}>
-          <Text
-            style={{
-              fontFamily: font.medium,
-              color:
-                today == moment(item.date).format('YYYY-MM-DD')
-                  ? Colors.black
-                  : Colors.gray06,
-            }}>
-            {moment(item.date).format('dd')}
-          </Text>
-
-          <Text
-            style={{
-              fontFamily: font.medium,
-              color:
-                today == moment(item.date).format('YYYY-MM-DD')
-                  ? Colors.black
-                  : Colors.gray10,
-              fontSize: 16,
-              marginTop: 5,
-            }}>
-            {moment(item.date).format('D')}
-          </Text>
-        </View>
-      </Pressable>
-    );
-  };
-
-  const renderJournalItem = ({ item, index }) => {
-    return (
-      <View style={{ backgroundColor: "white", borderRadius: 15, borderWidth: 0, borderColor: Colors.lightPrimary, padding: 14.5, marginTop: 15 }}>
-
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-
-          <Image source={item.icon} style={{ height: 47, width: 47 }} />
-
-          <View style={{ marginLeft: 10, flex: 1 }}>
-            <Text style={{ fontFamily: font.bold, fontSize: 15 }}>{item.emotion} </Text>
-            <Text style={{ marginTop: 6, fontFamily: font.regular, fontSize: 12, color: Colors.gray12 }}>{item.date}</Text>
-          </View>
-
-          <View style={{ height: 28, paddingHorizontal: 12, alignItems: "center", justifyContent: "center", backgroundColor: Colors.lightPrimary, borderRadius: 13 }}>
-            <Text style={{ color: Colors.primary, fontWeight: "500", fontSize: 13 }}>{item.sphere}  </Text>
-          </View>
-
-        </View>
-
-
-        <View>
-          <Text style={{ fontFamily: font.regular, fontSize: 18.5, marginTop: 9 }}>{item.title}</Text>
-          <Text style={{ marginTop: 9, fontFamily: font.regular, lineHeight: 20.5, color: Colors.gray14 }}>{item.description}</Text>
-        </View>
-
-      </View>
-    );
-  };
 
 
   const moodJournal = () => {
@@ -279,94 +311,43 @@ const chartConfig = {
   }
 
 
+  const onPressPreviousBtn = async () => {
+    if (exist == true) {
+      start = moment(new Date(currentWeek.startDate)).toDate();
+      end = moment(new Date(currentWeek.endDate)).toDate();
+      await updateCurrentWeek({
+        startDate: moment(start).subtract({ day: 7 }),
+        endDate: moment(end).subtract({ day: 7 }),
+      })
 
+      console.log(currentWeek, "previous Week .....")
 
-  const FlatListHeader = () => {
-    return (
-      <>
-        <View
-          style={{ paddingHorizontal: 20, backgroundColor: Colors.background }}>
-
-          <View style={{ marginHorizontal: -20, marginTop: 5 }}>
-            <FlatList
-              listKey="days"
-              initialNumToRender={7}
-              ref={daysFlatList}
-              keyExtractor={(item, index) => {
-                return index.toString();
-              }}
-              contentContainerStyle={{ paddingHorizontal: 20 }}
-              showsHorizontalScrollIndicator={false}
-              data={daysList}
-              horizontal={true}
-              renderItem={renderDays}
-              onScrollToIndexFailed={() => {
-                console.log('scroll error');
-              }}
-            />
-          </View>
-
-          <View style={{ backgroundColor: Colors.lightPrimary, height: 1, width: "100%", marginTop: 10 }} />
-
-
-          <Text style={[other_style.labelText, { marginTop: 20 }]}>
-            {moment().format('DD MMM YYYY')}
-          </Text>
-
-
-        </View>
-        {isHabitPurchased == false && adError == false && (
-          <View
-            style={{
-              width: '100%',
-              height: 100,
-              alignItems: 'center',
-              paddingVertical: 15,
-              // backgroundColor:'pink',
-              justifyContent: 'center',
-              marginTop: -15,
-            }}>
-            <BannerAd
-              size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-              unitId={Admob_Ids.banner}
-              requestOptions={{
-                requestNonPersonalizedAdsOnly: true,
-              }}
-              onAdFailedToLoad={err => {
-                console.log(err, 'Banner Ad Error...');
-                setAdError(true);
-              }}
-            />
-          </View>
-        )}
-      </>
-    );
+      await apiChartData({
+        start_date: moment(start).subtract({ day: 7 }).toISOString(),
+        end_date: moment(end).subtract({ day: 7 }).toISOString(),
+      })
+    }
   };
 
-  
-  const previousWeek = async () => {
-    let start = moment(currentWeek.startDate).toDate();
-    let end = moment(currentWeek.endDate).toDate();
-    await updateCurrentWeek({
-      startDate: moment(start).subtract({day : 7}).format("MMM DD"),
-      endDate: moment(end).subtract({day : 7}).format("MMM DD"),
-    })
-   console.log("previous Week .....")
-};
 
+  const onPressNextBtn = async () => {
 
-const nextWeek = async () => {
-  let start = moment(currentWeek.startDate).toDate();
-  let end = moment(currentWeek.endDate).toDate();
-  await updateCurrentWeek({
-    startDate: moment(start).add({day : 7}).format("MMM DD"),
-    endDate: moment(end).add({day : 7}).format("MMM DD"),
-  })
-  console.log("next Week .....")
-};
+    if (moment(currentWeek.endDate).format("DD") != moment().endOf("week").format("DD")) {
+      start = moment(new Date(currentWeek.startDate)).toDate();
+      end = moment(new Date(currentWeek.endDate)).toDate();
 
+      await updateCurrentWeek({
+        startDate: moment(start).add({ day: 7 }),
+        endDate: moment(end).add({ day: 7 }),
+      })
+      console.log(currentWeek, "next Week .....")
 
-
+      await apiChartData({
+        start_date: moment(start).add({ day: 7 }).toISOString(),
+        end_date: moment(end).add({ day: 7 }).toISOString(),
+      })
+    }
+  };
 
 
   return (
@@ -379,63 +360,243 @@ const nextWeek = async () => {
       <Header
         navigation={props.navigation}
         title={'Mood Tracker'}
-        titleAlignLeft
       />
 
       <View style={mainStyles.innerView}>
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          <View style={{ flex: 1, }}>
-            <Loader enable={isLoading} />
-            <View style={{ flex: 1 }}>
+          <Loader enable={isLoading} />
 
-              <View>
+          {isLoading == false && allMoods.length == 0 && exist == false ?
+            <View
+              style={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                flex: 1,
+              }}>
+              <Image
+                source={require('../../../Assets/illustractions/MoodTracker.png')}
+                style={{
+                  marginTop: 40,
+                  width: win.width * 0.85,
+                  height: win.width * 0.65,
+                }}
+              />
+              <Text
+                style={{
+                  fontFamily: font.xbold,
+                  fontSize: 28,
+                  marginTop: 25,
+                }}>
+                No Mood Insights
+              </Text>
+              <Text
+                style={{
+                  fontFamily: font.bold,
+                  fontSize: 16,
+                  marginTop: 10,
+                  color: Colors.placeHolder,
+                  width: '80%',
+                  textAlign: 'center',
+                }}>
+                Start keeping a record of your moods at regular intervals with some additional notes !
+              </Text>
 
-
-                <LineChart
-                  withVerticalLines={false}
-                  data={data}
-                  width={Dimensions.get("window").width}
-                  height={270}
-                  chartConfig={chartConfig}
-                  style={{ backgroundColor: "white", marginTop: 35, borderRadius: 20 }}
-                />
-
-                <View style={{ flexDirection: "row", marginTop: 12 }}>
-                  <TouchableOpacity onPress={previousWeek} style={{ height: 50, flex: 1.5, backgroundColor: "white", borderWidth: 1, borderColor: Colors.lightPrimary, margin: 2, borderRadius: 10, alignItems: "center", justifyContent: "center" }}>
-                    <Image style={{ height: 11, width: 11, tintColor: Colors.black }} source={require('../../../Assets/Icons/left_arrow.png')} />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={{ height: 50, flex: 7, backgroundColor: "white", borderWidth: 1, borderColor: Colors.lightPrimary, margin: 2, borderRadius: 10, alignItems: "center", justifyContent: "center" }}>
-                    <Text style={{ fontFamily: font.medium }}>{currentWeek.startDate + " - " + currentWeek.endDate}</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity onPress={nextWeek} style={{ height: 50, flex: 1.5, backgroundColor: "white", borderWidth: 1, borderColor: Colors.lightPrimary, margin: 2, borderRadius: 10, alignItems: "center", justifyContent: "center" }}>
-                    <Image style={{ height: 11, width: 11, tintColor: Colors.black }} source={require('../../../Assets/Icons/right_arrow.png')} />
-                  </TouchableOpacity>
-
-                </View>
-
-
-                <TouchableOpacity onPress={moodJournal} style={{ backgroundColor: Colors.primary, borderRadius: 10, height: 50, alignItems: "center", justifyContent: "center", marginTop: 20 }}>
-                  <Text style={{ color: "white", fontFamily: font.medium, fontSize: 14 }}>Your Mood Journal</Text>
-                </TouchableOpacity>
+              <View style={{ flex: 0.5, justifyContent: 'center', marginTop: 50 }}>
+                <Pressable
+                  onPress={btn_add}
+                  style={[
+                    FAB_style.View,
+                    {
+                      position: 'relative',
+                      right: 0,
+                      height: 65,
+                      width: 65,
+                      borderRadius: 65 / 2,
+                    },
+                  ]}>
+                  <Image
+                    source={require('../../../Assets/Icons/plus.png')}
+                    style={FAB_style.image}
+                  />
+                </Pressable>
 
 
               </View>
 
+            </View>
+            :
+            <View style={{ flex: 1 }}>
+              <View
+                style={{
+                  marginTop: 35,
+                  backgroundColor: 'white',
+                  paddingBottom: 0,
+                  borderRadius: 20,
+                }}>
+
+                <View style={{ marginTop: 15, marginBottom: 0, marginLeft: 70 }}>
+                  <FlatList
+                    showsHorizontalScrollIndicator={false}
+                    horizontal
+                    data={moods}
+                    keyExtractor={(item, index) => {
+                      return index.toString();
+                    }}
+                    renderItem={renderEmojis}
+                  />
+                </View>
+
+                <View style={{ top: -10 }}>
+                  <VictoryChart
+                    height={300}
+                    width={Dimensions.get("window").width * 0.95}
+                    maxDomain={{ y: 10 }}
+                    minDomain={{ y: 0 }}
+                    theme={VictoryTheme.material}
+                    domainPadding={{ x: 0, y: 0 }}
+                    animate={{ duration: 0, onLoad: { duration: 0 }, onExit: { duration: 0 }, onEnter: { duration: 0 } }}
+                    categories={{
+                      x: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+                      y: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+                    }}
+                  >
+                    <VictoryAxis
+                      domain={[1, 7]}
+                      style={{
+                        axis: { stroke: Colors.disable, strokeWidth: 0.5 },
+                        ticks: { stroke: "none" },
+                        tickLabels: { fill: Colors.black }
+                      }}
+                    />
+                    <VictoryAxis
+                      dependentAxis
+                      style={{
+                        axis: { stroke: Colors.disable, strokeWidth: 0.5 },
+                        ticks: { stroke: "none" },
+                        tickLabels: { fill: Colors.black }
+                      }}
+                    />
+
+                    <VictoryLine
+                      interpolation="natural"
+                      style={{ data: { stroke: "#E8D595", strokeWidth: 2, strokeLinecap: "round", } }}
+                      data={chartData.happy} x="day" y="intensity" />
+                    <VictoryScatter style={{ data: { fill: "#E8D595" } }} size={5} data={chartData.happy} x="day" y="intensity" />
+
+                    <VictoryLine
+                      interpolation="natural"
+                      style={{ data: { stroke: "#AAD9CD", strokeWidth: 2, strokeLinecap: "round", } }}
+                      data={chartData.neutral} x="day" y="intensity" />
+                    <VictoryScatter style={{ data: { fill: "#AAD9CD" } }} size={5} data={chartData.neutral} x="day" y="intensity" />
+
+                    <VictoryLine
+                      interpolation="natural"
+                      style={{ data: { stroke: "#ec9326", strokeWidth: 2, strokeLinecap: "round", } }}
+                      data={chartData.sad} x="day" y="intensity" />
+                    <VictoryScatter style={{ data: { fill: "#ec9326" } }} size={5} data={chartData.sad} x="day" y="intensity" />
+
+                    <VictoryLine
+                      interpolation="natural"
+                      style={{ data: { stroke: "#E9BBB5", strokeWidth: 2, strokeLinecap: "round", } }}
+                      data={chartData.cry} x="day" y="intensity" />
+                    <VictoryScatter style={{ data: { fill: "#E9BBB5" } }} size={5} data={chartData.cry} x="day" y="intensity" />
+
+                    <VictoryLine
+                      interpolation="natural"
+                      style={{ data: { stroke: "#8DA47E", strokeWidth: 2, strokeLinecap: "round", } }}
+                      data={chartData.angry} x="day" y="intensity" />
+                    <VictoryScatter style={{ data: { fill: "#8DA47E" } }} size={5} data={chartData.angry} x="day" y="intensity" />
+
+
+                  </VictoryChart>
+                </View>
+
+              </View>
+
+              <View style={{ flexDirection: "row", marginTop: 12 }}>
+                <Pressable
+                  onPress={onPressPreviousBtn}
+                  style={{
+                    height: 50,
+                    flex: 1.5,
+                    backgroundColor: "white",
+                    borderWidth: 1,
+                    borderColor: Colors.lightPrimary,
+                    margin: 2, borderRadius: 10,
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}>
+                  <Image style={{
+                    height: 11, width: 11,
+                    tintColor: exist == true ? Colors.black : Colors.disable
+                  }} source={require('../../../Assets/Icons/left_arrow.png')} />
+                </Pressable>
+
+                <View style={{
+                  height: 50,
+                  flex: 7,
+                  backgroundColor: "white",
+                  borderWidth: 1,
+                  borderColor: Colors.lightPrimary,
+                  margin: 2,
+                  borderRadius: 10,
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}>
+                  <Text style={{ fontFamily: font.medium }}>
+                    {moment(currentWeek.startDate).format("MMM DD") + " - " + moment(currentWeek.endDate).format("MMM DD")}</Text>
+                </View>
+
+                <Pressable
+                  onPress={onPressNextBtn}
+                  style={{
+                    height: 50,
+                    flex: 1.5,
+                    backgroundColor: "white",
+                    borderWidth: 1,
+                    borderColor: Colors.lightPrimary,
+                    margin: 2, borderRadius: 10,
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}>
+                  <Image style={{
+                    height: 11, width: 11,
+                    tintColor: moment(currentWeek.endDate).format("DD") != moment().endOf("week").format("DD") ? Colors.black : Colors.disable
+                  }} source={require('../../../Assets/Icons/right_arrow.png')} />
+                </Pressable>
+
+              </View>
+
+
+              <Pressable
+                onPress={moodJournal}
+                style={{
+                  backgroundColor: Colors.primary,
+                  borderRadius: 10,
+                  height: 50,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginTop: 20
+                }}>
+                <Text style={{
+                  color: "white",
+                  fontFamily: font.medium,
+                  fontSize: 14
+                }}>{"Your Mood Journal >"}</Text>
+              </Pressable>
 
 
             </View>
-          </View>
-
+          }
 
         </ScrollView>
-        <Pressable style={FAB_style.View} onPress={btn_add}>
+
+        {(allMoods.length != 0 || exist == true) && <Pressable style={FAB_style.View} onPress={btn_add}>
           <Image
             source={require('../../../Assets/Icons/plus.png')}
             style={FAB_style.image}
           />
-        </Pressable>
+        </Pressable>}
       </View>
     </SafeAreaView>
   );

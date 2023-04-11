@@ -1,4 +1,4 @@
-import {View, Text, TextInput, Pressable, Image} from 'react-native';
+import {View, Text, TextInput, Pressable, Image, ScrollView} from 'react-native';
 import React from 'react';
 import colors from '../Utilities/Colors';
 import {font} from '../Utilities/font';
@@ -17,6 +17,7 @@ export function CustomSimpleTextInput(props) {
       <View style={{marginBottom: 10}}>
         <Text
           style={{
+            marginLeft: 5,
             color: !!props.lableColor ? props.lableColor : '#454545',
             fontFamily: !!props.lableBold ? font.bold : font.regular,
             letterSpacing: 0.5,
@@ -57,6 +58,7 @@ export function CustomMultilineTextInput(props) {
       <View style={{marginBottom: 10}}>
         <Text
           style={{
+            marginLeft: 5,
             color: !!props.lableColor ? props.lableColor : '#454545',
             fontFamily: !!props.lableBold ? font.bold : font.regular,
             letterSpacing: 0.5,
@@ -76,8 +78,7 @@ export function CustomMultilineTextInput(props) {
       </View>
       <View
         style={{
-          // height: height,
-          height: 150,
+          height: 200,
           // maxHeight:300,
           backgroundColor: '#fff',
           borderRadius: 15,
@@ -87,6 +88,7 @@ export function CustomMultilineTextInput(props) {
         }}>
         <TextInput
           editable={props?.editable}
+          scrollEnabled
           style={{
             flex: 1,
             paddingHorizontal: 20,
@@ -115,6 +117,7 @@ export function CustomTouchableTextInput(props) {
         <Text
           style={[
             {
+              marginLeft: 5,
               color: !!props.lableColor ? props.lableColor : '#454545',
               fontFamily: !!props.lableBold ? font.bold : font.regular,
               letterSpacing: 0.5,

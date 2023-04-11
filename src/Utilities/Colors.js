@@ -13,6 +13,7 @@ export default colors = {
   white: '#fff',
   black: '#000',
   placeHolder: '#9D9D9D',
+  disable: '#bebdbd',
   background: '#F2F3F3',
   label: '#454545',
 

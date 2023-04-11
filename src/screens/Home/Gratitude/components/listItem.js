@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, Text, FlatList, ImageBackground, Image, Dimensions } from "react-native";
+import { View, Text, FlatList, ImageBackground, Image, Dimensions, Pressable } from "react-native";
 import React from 'react';
 import Colors from "../../../../Utilities/Colors";
 import { font } from "../../../../Utilities/font";
@@ -13,13 +13,14 @@ const ListItem = props => {
             <View
                 style={{
                     marginVertical: 8,
-                    marginHorizontal: 7,
+                    marginLeft: 15,
+                    marginRight: 2,
                     alignItems: 'center',
                     justifyContent: 'center',
                     borderRadius: 20,
                     borderWidth: 0.8,
                     height: 60,
-                    width: win.width / 5.8,
+                    width: win.width / 5.7,
                     overflow: 'hidden',
                 }}>
                 {index >= 3 ?
@@ -40,51 +41,91 @@ const ListItem = props => {
     };
 
     return (
-        <TouchableOpacity
+        <Pressable
             onPress={props?.onPress}
-            activeOpacity={1}
             style={{
                 overflow: "hidden",
                 borderColor: Colors.gray02,
                 borderWidth: 1,
                 backgroundColor: Colors.white,
                 marginBottom: 20,
-                alignItems: 'center',
                 borderRadius: 20,
                 paddingHorizontal: 10,
                 paddingVertical: 15,
-                flexDirection: 'row',
                 marginHorizontal: 12,
                 minHeight: 70,
             }}>
-            <View style={{ marginLeft: 10, flex: 1 }}>
+            <View style={{ marginLeft: 5, flex: 1 }}>
 
                 <Text
                     style={{
-                        fontFamily: font.bold,
-                        fontSize: 16,
-                        includeFontPadding: false,
                         color: Colors.black,
+                        fontFamily: font.bold,
+                        letterSpacing: 0.5,
+                        fontSize: 15,
                     }}>
-                    {props?.item.title}
+                    {moment(props?.item.date).format("YYYY-MM-DD") == moment().format("YYYY-MM-DD") ? "Today I am so Happy and Grateful for..." : "I was so Happy and Grateful for......"}
                 </Text>
+
+                <View style={{ marginTop: 10, }}>
+                    <FlatList
+                        showsHorizontalScrollIndicator={false}
+                        data={props?.item.title}
+                        scrollEnabled={false}
+                        renderItem={(itemData) => {
+                            return (
+                                <View style={{
+                                    marginTop: 5,
+                                    marginBottom: 8,
+                                    padding: 8,
+                                    paddingLeft: 10,
+                                    marginRight: 5,
+                                    backgroundColor: Colors.lightPrimary2,
+                                    borderRadius: 10,
+                                }}>
+                                    <Text
+                                        style={{
+                                            fontFamily: font.regular,
+                                            color: Colors.black,
+                                            fontSize: 13,
+                                        }}
+                                    >{itemData.item} </Text>
+                                </View>
+                            )
+
+                        }
+                        }
+                    />
+                </View>
+
 
                 <View
                     style={{
-                        alignItems: "flex-start",
-                        marginTop: 5,
+                        marginTop: 8,
                     }}>
                     <Text
+                        numberOfLines={5}
                         style={{
                             fontFamily: font.medium,
                             color: Colors.text,
                             fontSize: 12,
+                            lineHeight: 17,
                         }}>
                         {props?.item.description}
                     </Text>
                 </View>
 
-                <View
+                <View style={{ marginTop: 5, marginLeft: -14 }}>
+                    <FlatList
+                        showsHorizontalScrollIndicator={false}
+                        data={props?.item.images}
+                        horizontal={true}
+                        scrollEnabled={false}
+                        renderItem={(itemData) => renderImages({ item: itemData.item, index: itemData.index, mainIdx: props?.extraImg })}
+                    />
+                </View>
+
+                {props?.allGratitudes && <View
                     style={{
                         alignItems: "flex-end",
                         marginTop: 5,
@@ -96,22 +137,13 @@ const ListItem = props => {
                             color: Colors.text,
                             fontSize: 12,
                         }}>
-                        {moment(props?.item.date).format('DD MMM YYYY')}
+                        {moment(props?.item.date).format("YYYY-MM-DD") == moment().format("YYYY-MM-DD") ? "Today, " + moment(props?.item.date).format("hh:mm a") : moment(props?.item.date).format("MMMM DD, YYYY , hh:mm a")}
+                        {/* {moment(props?.item.date).format('MMMM DD, YYYY')} */}
                     </Text>
-                </View>
-
-                <View >
-                    <FlatList
-                        showsHorizontalScrollIndicator={false}
-                        data={props?.item.images}
-                        horizontal={true}
-                        scrollEnabled={false}
-                        renderItem={(itemData) => renderImages({ item: itemData.item, index: itemData.index, mainIdx: props?.extraImg })}
-                    />
-                </View>
+                </View>}
 
             </View>
-        </TouchableOpacity>
+        </Pressable>
     )
 }
 

@@ -31,7 +31,12 @@ const ContextWrapper = props => {
   const [gratitudesList, setGratitudesList] = useState([]);
  const updateGratitudeList =  updation => setGratitudesList([ updation , ...gratitudesList ]);
  const [gratitudeExist, setGratitudeExist] = useState();
+ const [allGratitudesList, setAllGratitudesList] = useState([]);
 
+
+
+ const [allMoodJournals, setAllMoodJournals] = useState([]);
+ const updateAllMoodJournals =  updation => setAllMoodJournals([ updation , ...allMoodJournals ]);
 
 
   const checkPermissions = async () => {
@@ -533,7 +538,12 @@ const ContextWrapper = props => {
     setGratitudesList,
     updateGratitudeList,
     gratitudeExist,
-    setGratitudeExist
+    setGratitudeExist,
+    allMoodJournals,
+    setAllMoodJournals,
+    updateAllMoodJournals,
+    allGratitudesList,
+    setAllGratitudesList,
   };
 
   return (

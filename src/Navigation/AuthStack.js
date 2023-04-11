@@ -1,10 +1,10 @@
-import {screens} from './Screens';
-import {useState, useEffect} from 'react';
+import { screens } from './Screens';
+import { useState, useEffect } from 'react';
 import * as React from 'react';
-import {View, StatusBar, SafeAreaView} from 'react-native';
+import { View, StatusBar, SafeAreaView } from 'react-native';
 import Colors from '../Utilities/Colors';
 
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 //Screens
 
@@ -44,6 +44,8 @@ import AddMood from '../screens/Home/MoodTracker/AddMood';
 import MoodNote from '../screens/Home/MoodTracker/MoodNote';
 import MoodsJournal from '../screens/Home/MoodTracker/MoodsJournal';
 import MoodChat from '../screens/Home/MoodTracker/MoodChart';
+import AllMoodJournals from '../screens/Home/MoodTracker/AllMoodJournals';
+import MoodDetail from '../screens/Home/MoodTracker/MoodDetail';
 
 // //? Quotes
 import List from '../screens/Home/Quotes/List';
@@ -67,7 +69,7 @@ import NoteDetail from '../screens/Home/Notes/Detail';
 
 // import Colors from '../Utilities/Colors';
 import Context from '../Context';
-import {useContext} from 'react';
+import { useContext } from 'react';
 
 // //? Gratitude
 import Gratitude from '../screens/Home/Gratitude/Gratitude';
@@ -83,7 +85,7 @@ const Stack = createNativeStackNavigator();
 
 const AuthStack = () => {
   const [whichScreen, setWhichScreen] = useState(undefined);
-  const {Token, setToken} = useContext(Context);
+  const { Token, setToken } = useContext(Context);
 
   const checkOBoarding = async () => {
     let seen = await AsyncStorage.multiGet([
@@ -115,7 +117,7 @@ const AuthStack = () => {
   if (whichScreen != undefined) {
     return (
       <Stack.Navigator
-        screenListeners={() => {}}
+        screenListeners={() => { }}
         screenOptions={{
           headerShown: false,
           orientation: 'portrait',
@@ -134,7 +136,7 @@ const AuthStack = () => {
         {/* Profile */}
         <Stack.Screen name={screens.dowloadedTracks} component={OfflineTracks} />
         <Stack.Screen name={screens.editProfile} component={EditProfile} />
-        <Stack.Screen name={screens.changePassword} component={ChangePassword}/>
+        <Stack.Screen name={screens.changePassword} component={ChangePassword} />
 
         {/* Habits */}
         <Stack.Screen name={screens.habitTracker} component={HabitTracker} />
@@ -147,22 +149,15 @@ const AuthStack = () => {
         <Stack.Screen name={screens.AllNotes} component={AllNotes} />
 
 
-
-
         {/* MoodTracker */}
         <Stack.Screen name={screens.moodTracker} component={MoodTracker} />
         <Stack.Screen name={screens.addMood} component={AddMood} />
         <Stack.Screen name={screens.moodNote} component={MoodNote} />
         <Stack.Screen name={screens.moodsJournal} component={MoodsJournal} />
         <Stack.Screen name={screens.moodChart} component={MoodChat} />
-
-
-
-
+        <Stack.Screen name={screens.allMoodJournals} component={AllMoodJournals} />
+        <Stack.Screen name={screens.moodDetail} component={MoodDetail} />
         <Stack.Screen name={screens.favTracks} component={FavouriteTracks} />
-
-
-
 
         {/* Quotes */}
         <Stack.Screen name={screens.qouteList} component={List} />
@@ -198,7 +193,7 @@ const AuthStack = () => {
     );
   } else {
     return (
-      <View style={{flex: 1, backgroundColor: Colors.background}}>
+      <View style={{ flex: 1, backgroundColor: Colors.background }}>
         <StatusBar
           barStyle={'dark-content'}
           backgroundColor={Colors.background}

@@ -45,6 +45,9 @@ export const screens = {
   addMood: 'ADD_MOOD_SCREEN',
   moodNote: 'ADD_MOOD_NOTE',
   moodsJournal: 'MOODS_JOURNAL',
+  allMoodJournals: "ALL_MOOD_JOURNALS",
+  moodDetail: "MOOD_DETAIL",
+  moodChart: 'MOOD_CHART',
 
   //Gratitude
   gratitude: 'GRATITUDE_SCREEN',
@@ -54,7 +57,6 @@ export const screens = {
 
   //Reminder
   reminder: "REMINDER_SCREEN",
-  moodChart: 'MOOD_CHART',
 
 
 };
