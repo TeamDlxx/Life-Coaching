@@ -2,5 +2,6 @@
     <string name="app_name">Better.Me</string>
     <string name="facebook_app_id">2472333716251140</string>
 
+    <string name="facebook_client_token">529580dd676522738d6d31f1f09bbea9</string>
 
 </resources>

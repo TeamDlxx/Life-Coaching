@@ -6,7 +6,6 @@ import {
   FlatList,
   Image,
   Pressable,
-  TouchableOpacity
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Header from '../../../Components/Header';
@@ -30,7 +29,7 @@ import Loader from '../../../Components/Loader';
 
 const Gratitude = props => {
   const win = Dimensions.get("window");
-  const { Token, gratitudesList, setGratitudesList , gratitudeExist, setGratitudeExist} = useContext(Context);
+  const { Token, gratitudesList, setGratitudesList, gratitudeExist, setGratitudeExist, allGratitudesList, setAllGratitudesList } = useContext(Context);
   const [daysList, setDays] = useState([]);
   const daysFlatList = React.useRef();
   const [today, setToday] = useState(moment().format('YYYY-MM-DD'));
@@ -39,12 +38,45 @@ const Gratitude = props => {
 
   useEffect(() => {
     daysofWeek();
-    if (Token) {
-      setisLoading(true);
-      api_myGratitudes();
+    const unsubscribe = props.navigation.addListener('focus', () => {
+      if (Token) {
+        setisLoading(true);
+        api_myGratitudes();
+        apiAllGratitudes({
+          start_date: '',
+          end_date: '',
+        });
+      } else {
+        setGratitudeExist(false)
+        setGratitudesList([])
+        setAllGratitudesList([])
+      }
+    });
+    return unsubscribe;
+
+  }, [props.navigation, allGratitudesList, Token]);
+
+
+  async function apiAllGratitudes(body) {
+    let res = await invokeApi({
+      path: 'api/gratitude/get_all_gratitude',
+      method: 'POST',
+      postData: body,
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    if (res) {
+      if (res.code == 200) {
+        console.log('response', res);
+        setAllGratitudesList(res?.gratitude)
+        console.log(allGratitudesList, "All Gratitudes List ......")
+      } else {
+        showToast(res.message);
+      }
     }
-    return () => { };
-  }, [Token]);
+  }
 
 
   const api_myGratitudes = async () => {
@@ -69,7 +101,7 @@ const Gratitude = props => {
         await setGratitudesList(res?.gratitude);
         console.log(gratitudesList, "Gratitude List......")
         await setGratitudeExist(res?.is_exist)
-        console.log(gratitudeExist , "is Data Exist ... ?")
+        console.log(gratitudeExist, "is Data Exist ... ?")
       } else {
         showToast(res.message);
       }
@@ -84,7 +116,7 @@ const Gratitude = props => {
     setGratitudesList(newArray);
   }
 
-  
+
   const removeGratitude = async (id) => {
     let newArray = [...gratitudesList];
     let index = newArray.findIndex(x => x._id == id);
@@ -92,7 +124,7 @@ const Gratitude = props => {
       newArray.splice(index, 1);
       setGratitudesList(newArray);
     }
-    if(gratitudesList.length == 0){
+    if (gratitudesList.length == 0) {
       setToday(moment().format('YYYY-MM-DD'))
     }
     // await setGratitudesList((currentData) => currentData.filter((item) => item.id !== id));
@@ -128,9 +160,7 @@ const Gratitude = props => {
 
   const btn_add = () => {
     if (Token) {
-      props.navigation.navigate(screens.addGratitude,{
-        date :  today
-      });
+      props.navigation.navigate(screens.addGratitude, { allGratitudes: allGratitudesList });
     } else {
       LoginAlert(props.navigation, props.route?.name);
     }
@@ -140,13 +170,12 @@ const Gratitude = props => {
     return (
       <>
         <View
-          style={{ paddingHorizontal: 20, backgroundColor: Colors.background, marginBottom: 15 }}>
-
+          style={{ paddingHorizontal: 15, backgroundColor: Colors.background, marginBottom: 15 }}>
           <Text style={other_style.labelText}>
-            {moment().format('DD MMM YYYY')}
+            {moment().format('MMMM DD, YYYY')}
           </Text>
 
-          <View style={{ marginHorizontal: -20, marginTop: 5 }}>
+          <View style={{ marginHorizontal: -32, marginTop: 5 }}>
             <FlatList
               listKey="days"
               initialNumToRender={7}
@@ -163,10 +192,6 @@ const Gratitude = props => {
                 console.log('scroll error');
               }}
             />
-          </View>
-
-          <View style={{ marginTop: 5, }}>
-            <Text style={other_style.labelText}>All Gratitudes </Text>
           </View>
         </View>
 
@@ -261,14 +286,13 @@ const Gratitude = props => {
       <Header
         navigation={props.navigation}
         title={'Gratitude'}
-        titleAlignLeft
         rightIcon={require('../../../Assets/Icons/list.png')}
         rightIcononPress={() => props.navigation.navigate(screens.allGratitudes,
         )}
       />
       <View style={mainStyles.innerView}>
         <Loader enable={isLoading} />
-        {gratitudesList.length == 0 && gratitudeExist == false ?
+        {isLoading == false && gratitudesList.length == 0 && gratitudeExist == false ?
           <View
             style={{
               justifyContent: 'center',
@@ -299,7 +323,7 @@ const Gratitude = props => {
                 width: '80%',
                 textAlign: 'center',
               }}>
-              Creat a memorandum for something you're grateful for!
+              Create a memorandum for something you're grateful for!
             </Text>
 
             <View style={{ flex: 0.5, justifyContent: 'center', marginTop: 10 }}>
@@ -327,11 +351,11 @@ const Gratitude = props => {
           </View>
           :
           <>
-            <View style={{ flex: 1, marginHorizontal: -20 }}>
+            <View style={{ flex: 1, marginHorizontal: -15 }}>
               <FlatList
                 contentContainerStyle={
                   filterSelectedDayGratitudes(gratitudesList).length == 0
-                    ? { flex: 1 }
+                    ? { flex: 1, paddingVertical: 10, paddingBottom: 50 }
                     : { paddingVertical: 10, paddingBottom: 50 }
                 }
                 showsVerticalScrollIndicator={false}
@@ -349,9 +373,6 @@ const Gratitude = props => {
                         title={`No Gratitudes for this date`}
                         noSubtitle
                       />
-                      <TouchableOpacity onPress={btn_add} style={{ backgroundColor: Colors.lightPrimary, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center", marginTop: 20, paddingHorizontal: 10 }}>
-                        <Text style={{ color: Colors.primary, fontWeight: "bold" }}>Create Gratitude    </Text>
-                      </TouchableOpacity>
                     </View>
                     ))
                 }

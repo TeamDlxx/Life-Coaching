@@ -446,7 +446,7 @@ const settings = [
 
   {
     id: 'reminder',
-    name: 'Reminders',
+    name: 'Reminder',
     icon: require('../../Assets/Icons/alert.png'),
     action: 'reminder',
   },

@@ -13,35 +13,40 @@ import {
   Image,
   Pressable,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import HeadingText from '../../Components/HeadingText';
 import {
   CustomSimpleTextInput,
   CustomPasswordTextInput,
 } from '../../Components/CustomTextInput';
 import CustomButton from '../../Components/CustomButton';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {font} from '../../Utilities/font';
-import {screens} from '../../Navigation/Screens';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { font } from '../../Utilities/font';
+import { screens } from '../../Navigation/Screens';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
-import {isIphoneX, getStatusBarHeight} from 'react-native-iphone-x-helper';
+import { isIphoneX, getStatusBarHeight } from 'react-native-iphone-x-helper';
 import analytics from '@react-native-firebase/analytics';
 import showToast from '../../functions/showToast';
-import {validateEmail, checkSpace} from '../../functions/regex';
+import { validateEmail, checkSpace } from '../../functions/regex';
 import Loader from '../../Components/Loader';
 import invokeApi from '../../functions/invokeAPI';
-import {useContext} from 'react';
+import { useContext } from 'react';
 import Context from '../../Context';
 import moment from 'moment';
 import PushNotification from 'react-native-push-notification';
 import Colors from '../../Utilities/Colors';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import { LoginButton, AccessToken } from 'react-native-fbsdk';
+import { LoginManager } from "react-native-fbsdk";
+
+
 
 const height = Dimensions.get('screen').height;
 const Login = props => {
   console.log('props', props);
-  const {params} = props?.route;
-  const {setToken} = useContext(Context);
+  const { params } = props?.route;
+  const { setToken } = useContext(Context);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setisLoading] = useState(false);
@@ -61,7 +66,7 @@ const Login = props => {
       let res = await AsyncStorage.setItem('@guestMode', 'true');
       props.navigation.reset({
         index: 0,
-        routes: [{name: screens.bottomTabs}],
+        routes: [{ name: screens.bottomTabs }],
       });
     } catch (e) {
       showToast('Please try again', 'Something went wrong');
@@ -98,13 +103,13 @@ const Login = props => {
         if (!!params?.from) {
           props.navigation.navigate({
             name: params?.from,
-            params: {loggedIn: true},
+            params: { loggedIn: true },
             merge: true,
           });
         } else {
           props.navigation.reset({
             index: 0,
-            routes: [{name: screens.bottomTabs}],
+            routes: [{ name: screens.bottomTabs }],
           });
         }
         scheduleNotifications(data?.habit);
@@ -142,8 +147,8 @@ const Login = props => {
           if (days.includes(day.format('dddd').toLowerCase())) {
             let scheduledTime = moment(
               moment(day).format('DD-MM-YYYY') +
-                ' ' +
-                moment(x?.reminder_time).format('HH:mm'),
+              ' ' +
+              moment(x?.reminder_time).format('HH:mm'),
               'DD-MM-YYYY HH:mm',
             ).toISOString();
             if (moment(scheduledTime).isAfter(moment()))
@@ -223,6 +228,51 @@ const Login = props => {
     analytics().logEvent(props?.route?.name);
   }, []);
 
+
+  const signInWithGoogle = async () => {
+    try {
+      await GoogleSignin.configure({
+        offlineAccess: true,
+        webClientId: "943544818199-rl7j7rbngtg07d17ehktlonq40ldmki6.apps.googleusercontent.com"
+      });
+      let hasPlayServices = await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      if (hasPlayServices) {
+        const userInfo = await GoogleSignin.signIn();
+        console.log(userInfo);
+      }
+    } catch (error) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        // user cancelled the login flow
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        // operation (e.g. sign in) is in progress already
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        // play services not available or outdated
+      } else {
+        // some other error happened
+      }
+    }
+  };
+
+  const signInWithFacebook = async () => {
+
+    const result = await LoginManager.logInWithPermissions(['public_profile']);
+    console.log(result, "result....")
+    if (result.isCancelled) {
+      console.log("Login is cancelled ...")
+      throw 'User cancelled the login process';
+    }
+
+    // Once signed in, get the users AccesToken
+    const data = await AccessToken.getCurrentAccessToken();
+
+    if (!data) {
+      throw 'Something went wrong obtaining access token';
+    } else {
+      console.log(data.accessToken.toString())
+    }
+  }
+
+
   return (
     <KeyboardAwareScrollView
       bounces={false}
@@ -231,7 +281,7 @@ const Login = props => {
       style={{}}>
       <ImageBackground
         resizeMode="stretch"
-        style={{height: height, width: '100%', backgroundColor: '#fff'}}
+        style={{ height: height, width: '100%', backgroundColor: '#fff' }}
         source={require('../../Assets/Images/loginBackgorund.png')}>
         <StatusBar
           backgroundColor={'transparent'}
@@ -249,8 +299,8 @@ const Login = props => {
               Platform.OS == 'android'
                 ? 50
                 : isIphoneX()
-                ? 50
-                : 50 - getStatusBarHeight(),
+                  ? 50
+                  : 50 - getStatusBarHeight(),
             alignItems: 'center',
             justifyContent: 'center',
             position: 'absolute',
@@ -259,17 +309,17 @@ const Login = props => {
           }}>
           <Image
             source={require('../../Assets/Icons/back.png')}
-            style={{height: 25, width: 25, tintColor: Colors.black}}
+            style={{ height: 25, width: 25, tintColor: Colors.black }}
           />
         </Pressable>
 
-        <View style={{marginTop: 35}}>
+        <View style={{ marginTop: 35 }}>
           <View style={loginStyles.headerView}>
             <HeadingText>Sign In</HeadingText>
           </View>
           <View
             style={{
-              height: height * 0.67,
+              height: height * 0.69,
               paddingHorizontal: 20,
             }}>
             <View>
@@ -281,7 +331,7 @@ const Login = props => {
                 type="email-address"
               />
             </View>
-            <View style={{marginTop: 20}}>
+            <View style={{ marginTop: 20 }}>
               <CustomPasswordTextInput
                 lable={'Password'}
                 placeholder={'Password'}
@@ -292,13 +342,13 @@ const Login = props => {
 
             <TouchableOpacity
               onPress={() => onForgotPasswordScreen()}
-              style={{marginVertical: 10, alignItems: 'flex-end'}}>
-              <Text style={{color: '#6C747E', fontFamily: font.medium}}>
+              style={{ marginVertical: 10, alignItems: 'flex-end' }}>
+              <Text style={{ color: '#6C747E', fontFamily: font.medium }}>
                 Forgot Password?
               </Text>
             </TouchableOpacity>
 
-            <View style={{marginVertical: 20}}>
+            <View style={{ marginVertical: 20 }}>
               <CustomButton onPress={btn_Login} title={'Sign In'} />
             </View>
 
@@ -307,17 +357,58 @@ const Login = props => {
                 alignItems: 'center',
                 // flex: 1,
                 justifyContent: 'flex-end',
-                marginTop: 20,
+                // marginTop: 20,
               }}>
-              <Text style={{color: '#313131', fontFamily: font.regular}}>
+              <Text style={{ color: '#313131', fontFamily: font.regular }}>
                 Continue as{' '}
                 <Text
                   onPress={() => GuestLogin()}
-                  style={{color: Colors.primary}}>
+                  style={{ color: Colors.primary }}>
                   Guest
                 </Text>
               </Text>
             </View>
+
+            <View style={{
+              flexDirection: "row",
+              justifyContent: "space-evenly",
+              alignItems: "center",
+              marginTop: 70,
+              marginHorizontal: 20,
+            }}>
+              <View style={{ backgroundColor: Colors.gray04, height: 1, flex: 1 }} />
+              <Text style={{ color: '#313131', fontFamily: font.regular, marginHorizontal: 10, }}>
+                Or continue with
+              </Text>
+              <View style={{ backgroundColor: Colors.gray04, height: 1, flex: 1 }} />
+            </View>
+
+
+            <View style={{
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+              marginTop: 20,
+            }}>
+              <Pressable onPress={signInWithGoogle}
+                style={loginStyles.buttonStyle}>
+                <Image source={require("../../Assets/Icons/google.png")} style={loginStyles.btnImageStyle} />
+              </Pressable>
+
+              <Pressable onPress={() => { }}
+                style={loginStyles.buttonStyle}>
+                <Image source={require("../../Assets/Icons/apple.png")} style={loginStyles.btnImageStyle} />
+              </Pressable>
+
+              <Pressable
+                onPress={() => { }}
+                // onPress={sigFnInWithFacebook}
+                style={loginStyles.buttonStyle}>
+                <Image source={require("../../Assets/Icons/facebook.png")} style={loginStyles.btnImageStyle} />
+              </Pressable>
+
+            </View>
+
 
             <View
               style={{
@@ -325,11 +416,11 @@ const Login = props => {
                 flex: 1,
                 justifyContent: 'flex-end',
               }}>
-              <Text style={{color: '#313131', fontFamily: font.regular}}>
+              <Text style={{ color: '#313131', fontFamily: font.regular }}>
                 Don't have account?{' '}
                 <Text
                   onPress={() => onSignUpScreen()}
-                  style={{color: Colors.primary}}>
+                  style={{ color: Colors.primary }}>
                   Sign Up
                 </Text>
               </Text>
@@ -356,4 +447,22 @@ const loginStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
+  buttonStyle: {
+    width: Dimensions.get("window").width / 6,
+    // backgroundColor: Colors.secondary,
+    height: 60,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 15,
+    borderColor: Colors.primary,
+    borderWidth: 0.5,
+    marginRight: 5,
+    marginHorizontal: 15
+  },
+
+  btnImageStyle: {
+    width: 35,
+    height: 35,
+  }
 });

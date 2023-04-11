@@ -5,169 +5,54 @@ import {
   SafeAreaView,
   StatusBar,
   FlatList,
-  StyleSheet,
   Pressable,
   Image,
-  Platform,
-  TouchableHighlight,
-  RefreshControl,
-  Alert,
   TouchableOpacity,
-  Dimensions,
-  ScrollView,
 } from 'react-native';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
 import { mainStyles, FAB_style, other_style } from '../../../Utilities/styles';
-import moment, { months } from 'moment';
+import moment from 'moment';
 import { font } from '../../../Utilities/font';
 
 import { screens } from '../../../Navigation/Screens';
-import PushNotification from 'react-native-push-notification';
 import LoginAlert from '../../../Components/LoginAlert';
 import analytics from '@react-native-firebase/analytics';
 
 import { BannerAd, BannerAdSize, useRewardedAd } from 'react-native-google-mobile-ads';
-import {Admob_Ids} from '../../../Utilities/AdmobIds';
+import { Admob_Ids } from '../../../Utilities/AdmobIds';
 
-// import {useLoginAlert} from '../../../hooks/useLoginAlert';
 // For API's calling
 import { useContext } from 'react';
 import Context from '../../../Context';
 import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
-
-
-import Happy from "../../../Assets/emojy/smile.gif"
-import Neutral from "../../../Assets/emojy/neutral.gif"
-import Sad from "../../../Assets/emojy/sad.gif"
-import Cry from "../../../Assets/emojy/cry.gif"
-import Angry from "../../../Assets/emojy/angrygif.gif"
-
-
-const data = {
-  labels: ["Happy", "Excited", "Sad", "Cry", "Neutral", "Angry"],
-  datasets: [
-    {
-      data: [10, 20, 79, 50, 90, 95],
-      color: (opacity = 1) => Colors.primary, // optional
-      strokeWidth: 2 // optional
-    }
-  ],
-  legend: [] // optional
-};
-
-
-const chartConfig = {
-
-  backgroundColor: "gray",
-  backgroundGradientFrom: "",
-  backgroundGradientTo: "",
-  color: (opacity = 1) => `silver`,
-  labelColor: (opacity = 1) => `black`,
-  strokeWidth: 2, // optional, default 3
-  barPercentage: 0.5,
-  decimalPlaces: 0,
-
-  useShadowColorFromDataset: true, // optional
-
-
-  propsForDots: {
-    r: "5",
-    strokeWidth: "2",
-    stroke: Colors.primary,
-
-  },
-
-  style: {
-    borderRadius: 16
-  },
-
-};
-
-import {
-  LineChart,
-  BarChart,
-  PieChart,
-  ProgressChart,
-  ContributionGraph,
-  StackedBarChart
-} from "react-native-chart-kit";
-
-
-
+import EmptyView from '../../../Components/EmptyView';
+import MoodListItem from './components/ListItem';
 
 const MoodsJournal = props => {
-
-
-  const { Token, habitList, setHabitList, isHabitPurchased } =
-    useContext(Context);
+  const { Token, allMoodJournals, setAllMoodJournals, updateAllMoodJournals } = useContext(Context);
   const [isLoading, setisLoading] = useState(false);
   const daysFlatList = React.useRef();
   const [daysList, setDays] = useState([]);
-
-  const [moodsJournal, setMoodsJournal] = useState([
-    { "icon": Happy, "emotion": "Happy", "date": "Today, 08:15pm", "sphere": "Work", "title": "I am so Happy Today", "description": "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as a placeholder before final copy is available." },
-    { "icon": Sad, "emotion": "Sad", "date": "Today, 08:15pm", "sphere": "Health", "title": "I am so Happy Today", "description": "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as a placeholder before final copy is available." },
-    { "icon": Cry, "emotion": "Crying", "date": "Today, 08:15pm", "sphere": "Friends", "title": "I am so Happy Today", "description": "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as a placeholder before final copy is available." },
-    { "icon": Angry, "emotion": "Angry", "date": "Today, 08:15pm", "sphere": "Family", "title": "I am so Happy Today", "description": "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as a placeholder before final copy is available." }
-  ]);
-
   const [today, setToday] = useState(moment().format('YYYY-MM-DD'));
 
   const [adError, setAdError] = useState(false);
 
 
-
-  const checkCompleted = notes => {
-    let index = notes.findIndex(
-      x => moment(x.date).format('YYYY-MM-DD') == today,
-    );
-
-    if (index < 0) {
-      return false;
-    } else {
-      return true;
-    }
-  };
-
-  const btn_add = () => {
-      props.navigation.navigate(screens.moodTracker)
-
-
-  };
-
-  const daysInMonth = () => {
-    let currentWeek = moment().startOf('week').isoWeekday(1);
-    let count = 6;
-    let days = [];
-
-    for (let i = 0; i <= count; i++) {
-      let newobj = {};
-      newobj.date = moment(currentWeek).add(i, 'day');
-      days.push(newobj);
-    }
-    setDays([...days]);
-  };
-
-
-
-
-
-
-
-
-
-
-
-
   useEffect(() => {
-    daysInMonth();
-
+    daysInWeek();
+    if (Token) {
+      setisLoading(true);
+      api_myMoods();
+    }
+    return () => { };
   }, [Token]);
 
-
+  useEffect(() => {
+    analytics().logEvent(props?.route?.name);
+  }, []);
 
   useEffect(() => {
     let index = daysList.findIndex(
@@ -183,9 +68,72 @@ const MoodsJournal = props => {
     }
   }, [daysList]);
 
-  useEffect(() => {
-    analytics().logEvent(props?.route?.name);
-  }, []);
+  const daysInWeek = () => {
+    let currentWeek = moment().startOf('week').isoWeekday(1);
+    let count = 6;
+    let days = [];
+
+    for (let i = 0; i <= count; i++) {
+      let newobj = {};
+      newobj.date = moment(currentWeek).add(i, 'day');
+      days.push(newobj);
+    }
+    setDays([...days]);
+  };
+
+  const btn_add = () => {
+    if (Token) {
+      props.navigation.navigate(screens.moodTracker,);
+    } else {
+      LoginAlert(props.navigation, props.route?.name);
+    }
+  };
+
+  const api_myMoods = async () => {
+    let dateObj = {
+      start_date: moment().startOf("week").toISOString(),
+      end_date: moment().endOf("week").toISOString(),
+    };
+
+    console.log(dateObj, "date object")
+    let res = await invokeApi({
+      path: 'api/mood/mood_listing',
+      method: 'POST',
+      postData: dateObj,
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    if (res) {
+      if (res.code == 200) {
+        await setAllMoodJournals(res?.moods);
+        console.log(allMoodJournals, "Moods List......")
+      } else {
+        showToast(res.message);
+      }
+    }
+  };
+
+  const removeMoodFromGlobalList = async (id) => {
+    let newArray = [...allMoodJournals];
+    let index = newArray.findIndex(x => x._id == id);
+    if (index != -1) {
+      newArray.splice(index, 1);
+      setAllMoodJournals(newArray);
+    }
+    if (allMoodJournals.length == 0) {
+      setToday(moment().toISOString())
+    }
+  };
+
+  function updateMoodInGlobalList(item) {
+    let newArray = [...allMoodJournals];
+    let index = newArray.findIndex(x => x._id == item._id);
+    newArray.splice(index, 1, item);
+    setAllMoodJournals(newArray);
+  }
 
   //? Views
 
@@ -196,7 +144,6 @@ const MoodsJournal = props => {
         style={{
           margin: 10,
           alignItems: 'center',
-          // padding: 10,
           borderRadius: 20,
           alignSelf: 'flex-start',
           borderColor: Colors.gray02,
@@ -241,43 +188,29 @@ const MoodsJournal = props => {
 
   const renderJournalItem = ({ item, index }) => {
     return (
-      <View style={{ backgroundColor: "white", borderRadius: 15, borderWidth: 0, borderColor: Colors.lightPrimary, padding: 14.5, marginTop: 15 }}>
-
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-
-          <Image source={item.icon} style={{ height: 47, width: 47 }} />
-
-          <View style={{ marginLeft: 10, flex: 1 }}>
-            <Text style={{ fontFamily: font.bold, fontSize: 15 }}>{item.emotion} </Text>
-            <Text style={{ marginTop: 6, fontFamily: font.regular, fontSize: 12, color: Colors.gray12 }}>{item.date}</Text>
-          </View>
-
-          <View style={{ height: 28, paddingHorizontal: 12, alignItems: "center", justifyContent: "center", backgroundColor: Colors.lightPrimary, borderRadius: 13 }}>
-            <Text style={{ color: Colors.primary, fontWeight: "500", fontSize: 13 }}>{item.sphere}  </Text>
-          </View>
-
-        </View>
-
-
-        <View>
-          <Text style={{ fontFamily: font.regular, fontSize: 18.5, marginTop: 9 }}>{item.title}</Text>
-          <Text style={{ marginTop: 9, fontFamily: font.regular, lineHeight: 20.5, color: Colors.gray14 }}>{item.description}</Text>
-        </View>
-
-      </View>
+      <MoodListItem
+        onPress={() => {
+          props.navigation.navigate(screens.moodDetail, {
+            id: item._id,
+            updateMood: updateMoodInGlobalList,
+            removeMoodFromList: removeMoodFromGlobalList,
+          });
+        }}
+        item={item}
+      />
     );
   };
-
-
 
 
   const FlatListHeader = () => {
     return (
       <>
         <View
-          style={{ paddingHorizontal: 20, backgroundColor: Colors.background }}>
-
-          <View style={{ marginHorizontal: -20, marginTop: 5 }}>
+          style={{ paddingHorizontal: 15, backgroundColor: Colors.background, marginBottom: 15 }}>
+          <Text style={other_style.labelText}>
+            {moment().format('MMMM DD, YYYY')}
+          </Text>
+          <View style={{ marginHorizontal: -32, marginTop: 5 }}>
             <FlatList
               listKey="days"
               initialNumToRender={7}
@@ -291,21 +224,15 @@ const MoodsJournal = props => {
               horizontal={true}
               renderItem={renderDays}
               onScrollToIndexFailed={() => {
-                console.log('scroll error');
+                console.log('daysList index scroll error');
               }}
             />
           </View>
 
-          <View style={{ backgroundColor: Colors.lightPrimary, height: 1, width: "100%", marginTop: 10 }} />
-
-
-          <Text style={[other_style.labelText, { marginTop: 20 }]}>
-            {moment().format('DD MMM YYYY')}
-          </Text>
-
+          {/* <View style={{ backgroundColor: Colors.lightPrimary, height: 1, width: "100%", marginTop: 10 }} /> */}
 
         </View>
-        {isHabitPurchased == false && adError == false && (
+        {/* {adError == false && (
           <View
             style={{
               width: '100%',
@@ -328,11 +255,19 @@ const MoodsJournal = props => {
               }}
             />
           </View>
-        )}
+        )} */}
       </>
     );
   };
 
+  const filterSelectedDayJournals = list => {
+    return list.slice().filter(x => {
+      if (moment(x.date).format('YYYY-MM-DD') == moment(today).format('YYYY-MM-DD')) {
+        return true;
+      }
+      return false;
+    });
+  };
 
 
   return (
@@ -344,45 +279,45 @@ const MoodsJournal = props => {
 
       <Header
         navigation={props.navigation}
-        title={'Mood Tracker'}
-        titleAlignLeft
+        title={'Mood Journals'}
+        rightIcon={require('../../../Assets/Icons/list.png')}
+        rightIcononPress={() => props.navigation.navigate(screens.allMoodJournals,
+        )}
       />
 
       <View style={mainStyles.innerView}>
-        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          <View style={{ flex: 1, }}>
-            <Loader enable={isLoading} />
-            <View style={{ flex: 1 }}>
-              <FlatListHeader />
+      <Loader enable={isLoading} />
+        <View style={{ flex: 1, marginHorizontal: -15}}>
+            <FlatList
+              contentContainerStyle={
+                filterSelectedDayJournals(allMoodJournals).length == 0
+                  ? { flex: 1 ,paddingVertical: 10, paddingBottom: 50}
+                  : { paddingVertical: 10, paddingBottom: 50 }
+              }
+              keyExtractor={(item, index) => {
+                return index.toString();
+              }}
+              showsVerticalScrollIndicator={false}
+              data={filterSelectedDayJournals(allMoodJournals)}
+              renderItem={renderJournalItem}
+              onScrollToIndexFailed={() => {
+                console.log('scroll error');
+              }}
+              ListHeaderComponent={FlatListHeader()}
+              ListEmptyComponent={() => {
+                return (
+                  isLoading == false && (<View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                    <EmptyView
+                      style={{ marginTop: 0 }}
+                      title={`No mood journal for this date`}
+                      noSubtitle
+                    />
+                  </View>
+                  ))
+              }}
+            />
+        </View>
 
-              <View>
-
-
-              
-
-              </View>
-
-
-              <View style={{ marginTop: 5, flex: 1 }}>
-                <FlatList
-                  listKey="days"
-                  keyExtractor={(item, index) => {
-                    return index.toString();
-                  }}
-                  showsVerticalScrollIndicator={false}
-                  data={moodsJournal}
-                  renderItem={renderJournalItem}
-                  onScrollToIndexFailed={() => {
-                    console.log('scroll error');
-                  }}
-                />
-              </View>
-
-            </View>
-          </View>
-
-
-        </ScrollView>
         <Pressable style={FAB_style.View} onPress={btn_add}>
           <Image
             source={require('../../../Assets/Icons/plus.png')}

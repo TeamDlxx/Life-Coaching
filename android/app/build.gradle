@@ -81,7 +81,7 @@ import com.android.build.OutputFile
  */
 
 project.ext.react = [
-    enableHermes: true,  // clean and rebuild if changing
+    enableHermes: false,
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
@@ -273,6 +273,8 @@ android {
 }
 
 dependencies {
+
+
     implementation fileTree(dir: "libs", include: ["*.jar"])
 
     //noinspection GradleDynamicVersion
@@ -290,7 +292,10 @@ dependencies {
 
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
+    implementation 'com.facebook.android:facebook-android-sdk:[8,9)'
 
+    implementation 'com.facebook.android:facebook-android-sdk:latest.release'
+    implementation 'com.facebook.android:facebook-login:latest.release'
 
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {

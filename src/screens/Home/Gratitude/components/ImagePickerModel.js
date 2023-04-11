@@ -210,9 +210,10 @@ const ImagePickerModel = props => {
             marginVertical: 12,
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: Colors.white,
-            borderColor: Colors.gray02,
+            backgroundColor: Colors.lightPrimary2,
+            borderColor: Colors.primary,
             borderWidth: 1,
+            borderStyle: "dashed"
           },
           props.height == undefined
             ? {
@@ -228,7 +229,7 @@ const ImagePickerModel = props => {
             style={{
               width: 35,
               height: 35,
-              tintColor: Colors.placeHolder,
+              tintColor: Colors.primary,
             }}
           />
         </>
