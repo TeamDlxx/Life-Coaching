@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,6 @@ import {
   Dimensions,
   ScrollView,
   FlatList,
-  InteractionManager,
 } from 'react-native';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
@@ -41,14 +40,6 @@ import Angry from "../../../Assets/emojy/angrygif.gif"
 let allMoods = [];
 let selectedMoods = [];
 
-let moods = [
-  { 'source': Happy, 'isSelected': true, "mood": "Happy" },
-  { 'source': Neutral, 'isSelected': false, "mood": "Neutral" },
-  { 'source': Sad, 'isSelected': false, "mood": "Sad" },
-  { 'source': Cry, 'isSelected': false, "mood": "Cry" },
-  { 'source': Angry, 'isSelected': false, "mood": "Angry" },
-]
-
 const MoodsJournal = props => {
   const win = Dimensions.get("window");
   VictoryTheme.material.axis.style.grid.strokeWidth = 0;
@@ -71,19 +62,24 @@ const MoodsJournal = props => {
     angry: []
   });
 
+  const [moods, setMoods] = useState([
+    { 'source': Happy, 'isSelected': true, "mood": "Happy" },
+    { 'source': Neutral, 'isSelected': false, "mood": "Neutral" },
+    { 'source': Sad, 'isSelected': false, "mood": "Sad" },
+    { 'source': Cry, 'isSelected': false, "mood": "Cry" },
+    { 'source': Angry, 'isSelected': false, "mood": "Angry" },
+  ])
+
   const [exist, setIsExist] = useState(false)
 
 
+  useEffect(() => {
+    analytics().logEvent(props?.route?.name);
+  })
+
   React.useEffect(() => {
     const unsubscribe = props.navigation.addListener('focus', () => {
-      initFunction()
-    });
-    analytics().logEvent(props?.route?.name);
-    return unsubscribe;
-  }, [Token, props.navigation, allMoods]);
-
-  const initFunction = async () => {
-    InteractionManager.runAfterInteractions(() => {
+      setSelectedMoods()
       if (Token) {
         start = moment(new Date(currentWeek.startDate)).toDate();
         end = moment(new Date(currentWeek.endDate)).toDate();
@@ -106,10 +102,20 @@ const MoodsJournal = props => {
           angry: []
         })
       }
-
     });
-  }
+    return unsubscribe;
+  }, [Token, props.navigation, allMoods]);
 
+
+  const setSelectedMoods = async () => {
+    for (let i = 0; i < selectedMoods.length; i++) {
+      let idx = moods.findIndex(x => x.mood == selectedMoods[i])
+      if (idx != 0) {
+        moods[idx].isSelected = true;
+      }
+    }
+    setMoods([...moods])
+  }
 
   const apiChartData = async body => {
     setisLoading(true);
@@ -132,14 +138,14 @@ const MoodsJournal = props => {
         chartData.sad = [];
         chartData.cry = [];
         chartData.angry = [];
-        await setChartData({ ...chartData })
+        setChartData({ ...chartData })
 
         allMoods = [];
         allMoods = res.moods;
 
         let isExist = res?.is_exist;
         setIsExist(isExist)
-        console.log(exist, "Is more data exist ....")
+
 
         if (selectedMoods.length == 0) {
           let index = moods.findIndex(x => x.isSelected == true);
@@ -163,11 +169,12 @@ const MoodsJournal = props => {
     let temp = [...selectedMoods]
     temp.push(mood)
     selectedMoods = temp;
-    await graphData(temp)
+    graphData(temp)
+    console.log(selectedMoods, "current moods....")
   }
 
 
-  const renderEmojis = (moodItem, index) => {
+  const renderEmojis = (moodItem) => {
     return (
       <Pressable
         onPress={() => emojiPressed(moodItem.index)}
@@ -208,7 +215,7 @@ const MoodsJournal = props => {
 
   const emojiPressed = async (idx) => {
     moods[idx].isSelected = !moods[idx].isSelected;
-
+    await setMoods([...moods])
     if (moods[idx].isSelected == true) {
       addToSelectedMoods(moods[idx].mood)
     }

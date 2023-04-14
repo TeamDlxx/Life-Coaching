@@ -223,6 +223,23 @@ const Login = props => {
     }
   };
 
+  const googleLoginApi = async obj => {
+    let res = await invokeApi({
+      path: 'api/app_api/register_by_social_media',
+      method: 'POST',
+      postData: obj,
+    });
+    if (res) {
+      if (res.code == 200) {
+        console.log(res , "response...")
+        onBottomTabScreen(res);
+      } else {
+        setisLoading(false);
+        showToast(res.message);
+      }
+    }
+  };
+
   useEffect(() => {
     checkNotificationPermission();
     analytics().logEvent(props?.route?.name);
@@ -235,10 +252,19 @@ const Login = props => {
         offlineAccess: true,
         webClientId: "943544818199-rl7j7rbngtg07d17ehktlonq40ldmki6.apps.googleusercontent.com"
       });
+      await GoogleSignin.signOut();
       let hasPlayServices = await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       if (hasPlayServices) {
         const userInfo = await GoogleSignin.signIn();
-        console.log(userInfo);
+        let idToken = userInfo.idToken;
+
+        let loginObj = {
+          code: idToken,
+          login_by: 'Google',
+        };
+
+        setisLoading(true);
+        googleLoginApi(loginObj);
       }
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {

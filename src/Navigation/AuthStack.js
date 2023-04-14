@@ -80,6 +80,9 @@ import AllGratitudes from '../screens/Home/Gratitude/AllGratitudes';
 // //? Reminder
 import Reminders from '../screens/Settings/Reminders';
 
+// //? HomeScreen
+import HomeScreen from '../screens/HomeScreen/HomeScreen';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -189,6 +192,10 @@ const AuthStack = () => {
 
         {/* Reminders */}
         <Stack.Screen name={screens.reminder} component={Reminders} />
+
+        {/* HomeScreen */}
+        <Stack.Screen name={screens.homeScreen} component={HomeScreen} />
+
       </Stack.Navigator>
     );
   } else {

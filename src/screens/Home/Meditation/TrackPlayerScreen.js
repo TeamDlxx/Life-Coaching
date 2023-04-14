@@ -641,7 +641,7 @@ const TrackPlayerScreen = props => {
             }}>
             <BannerAd
               size={BannerAdSize.BANNER}
-              unitId={Admob_test_Ids.banner}
+              unitId={Admob_Ids.banner}
               requestOptions={{
                 requestNonPersonalizedAdsOnly: true,
               }}
