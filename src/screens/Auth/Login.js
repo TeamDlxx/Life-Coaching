@@ -13,6 +13,9 @@ import {
   Image,
   Pressable,
 } from 'react-native';
+
+import { appleAuth } from '@invertase/react-native-apple-authentication';
+
 import React, { useState, useEffect } from 'react';
 import HeadingText from '../../Components/HeadingText';
 import {
@@ -229,6 +232,7 @@ const Login = props => {
   }, []);
 
 
+
   const signInWithGoogle = async () => {
     try {
       await GoogleSignin.configure({
@@ -238,8 +242,9 @@ const Login = props => {
       let hasPlayServices = await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       if (hasPlayServices) {
         const userInfo = await GoogleSignin.signIn();
-        console.log(userInfo);
+        console.log(userInfo , "user info from google signin");
       }
+
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         // user cancelled the login flow
@@ -251,7 +256,40 @@ const Login = props => {
         // some other error happened
       }
     }
-  };
+  }
+
+
+  async function signInWithApple() {
+    // performs login request
+
+    try {
+      
+   
+
+    console.log("button clicked apple")
+    const appleAuthRequestResponse = await appleAuth.performRequest({
+      requestedOperation: appleAuth.Operation.LOGIN,
+      // Note: it appears putting FULL_NAME first is important, see issue #293
+      requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
+    });
+  
+    console.log(appleAuthRequestResponse , "response from apple")
+    // get current authentication state for user
+    // /!\ This method must be tested on a real device. On the iOS simulator it always throws an error.
+    const credentialState = await appleAuth.getCredentialStateForUser(appleAuthRequestResponse.user);
+  
+    // use credentialState response to ensure the user is authenticated
+    if (credentialState === appleAuth.State.AUTHORIZED) {
+      // user is authenticated
+    }
+
+  } catch (e) {
+      console.log("error", e)
+  }
+  }
+
+
+
 
   const signInWithFacebook = async () => {
 
@@ -395,10 +433,10 @@ const Login = props => {
                 <Image source={require("../../Assets/Icons/google.png")} style={loginStyles.btnImageStyle} />
               </Pressable>
 
-              <Pressable onPress={() => { }}
+              <TouchableOpacity onPress={() => { signInWithApple()}}
                 style={loginStyles.buttonStyle}>
                 <Image source={require("../../Assets/Icons/apple.png")} style={loginStyles.btnImageStyle} />
-              </Pressable>
+              </ TouchableOpacity>
 
               <Pressable
                 onPress={() => { }}
