@@ -172,7 +172,10 @@ const Login = props => {
         }
       }
     });
-  };
+  }
+
+
+  
 
   async function checkNotificationPermission() {
     const authorizationStatus = await messaging().requestPermission();
