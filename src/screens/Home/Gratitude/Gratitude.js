@@ -291,8 +291,8 @@ const Gratitude = props => {
         )}
       />
       <View style={mainStyles.innerView}>
-        <Loader enable={isLoading} />
-        {isLoading == false && gratitudesList.length == 0 && gratitudeExist == false ?
+       
+        {isLoading == false ? gratitudesList.length == 0 && gratitudeExist == false ?
           <View
             style={{
               justifyContent: 'center',
@@ -386,16 +386,9 @@ const Gratitude = props => {
                 style={FAB_style.image}
               />
             </Pressable>
-          </>
-
+          </> : <Loader enable={isLoading} />
         }
-        {/* {(gratitudesList.length != 0 || gratitudeExist == true) && <Pressable style={FAB_style.View} onPress={btn_add}>
-          <Image
-            source={require('../../../Assets/Icons/plus.png')}
-            style={FAB_style.image}
-          />
-        </Pressable>
-        } */}
+
       </View>
     </SafeAreaView>
   );

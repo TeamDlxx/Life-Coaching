@@ -1151,12 +1151,6 @@ const Editor = props => {
     if (res) {
       if (res.code == 200) {
         await analytics().logEvent('NOTE_CREATED_BY_USER_EVENT');
-        if (props?.route?.params) {
-          props.navigation.reset({
-            index: 0,
-            routes: [{ name: 'BOTTOM_TABS_SCREEN' }, { name: 'NOTES_LIST' }]
-        })
-        } else {
           navigation.navigate({
             name: screens.notesList,
             params: {
@@ -1164,7 +1158,6 @@ const Editor = props => {
             },
             merge: false,
           });
-        }
         let tempObj = [...dashboardData.notes]
         tempObj[1] = tempObj[0]
         tempObj[0] = res.Note,

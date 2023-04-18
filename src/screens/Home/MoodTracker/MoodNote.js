@@ -123,6 +123,10 @@ const MoodNote = props => {
                 await updateAllMoodJournals(res?.mood);
                 if (params?.parameters) {
                     props.navigation.pop(2)
+                    // props.navigation.reset({
+                    //     index: 0,
+                    //     routes: [{ name: 'BOTTOM_TABS_SCREEN' }, { name: 'MOOD_CHART' }, { name: 'MOODS_JOURNAL' },]
+                    // })
                 } else {
                     props.navigation.navigate(screens.moodsJournal);
                 }

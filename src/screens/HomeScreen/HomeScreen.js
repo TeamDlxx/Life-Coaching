@@ -180,23 +180,6 @@ const HomeScreen = (props) => {
         }
     }
 
-    const onNoteEditorScreen = () => {
-        if (Token) {
-            props.navigation.navigate(screens.noteEditor, { isComingFrom: "DashBoard" })
-        } else {
-            LoginAlert(props.navigation, props.route?.name);
-        }
-    };
-
-    const onHabitTrackerScreen = () => {
-        if (Token) {
-            props.navigation.navigate(screens.habitTracker)
-        } else {
-            LoginAlert(props.navigation, props.route?.name);
-        }
-    };
-
-
     const appendZero = val => {
         if (val < 10) {
             return '0' + val;
@@ -364,19 +347,29 @@ const HomeScreen = (props) => {
 
             <View
                 style={{
-                    marginTop: 15,
-                    paddingRight: 50,
+                    // marginTop: 15,
+                    // paddingRight: 50,
+                    // marginLeft: 30,
                     height: 50,
-                    marginLeft: 30,
                     width: '100%',
                     flexDirection: "row",
-                    justifyContent: "space-between"
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginLeft: 15,
+                    paddingRight: 35,
                 }}>
-                <View style={{}}>
+                {/* <View style={{}}>
                     <Text >Welcome back,{'   '}</Text>
                     <Text style={home_styles.nameText}>{!!user && !!user.name
                         ? user?.name + ' '
                         : " "}</Text>
+                </View> */}
+                <View>
+                    <Image
+                        resizeMode="contain"
+                        source={require('../../Assets/app-icon/text.png')}
+                        style={{ height: 25.5, aspectRatio: 6 }}
+                    />
                 </View>
                 <View style={{}}>
                     <CustomImage
@@ -391,7 +384,7 @@ const HomeScreen = (props) => {
                 </View>
             </View>
 
-            <ScrollView style={{ flex: 1, marginTop: 15 }}>
+            <ScrollView style={{ flex: 1, marginTop: 10 }}>
 
                 <Animatable.View
                     useNativeDriver
@@ -451,7 +444,7 @@ const HomeScreen = (props) => {
                             </>
                             :
                             <>
-                            <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }} >
+                                <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }} >
                                     <Image source={empty_habits} style={{ height: 130, width: 150 }} />
                                     <Text
                                         style={{
@@ -474,7 +467,7 @@ const HomeScreen = (props) => {
                                     </Text>
                                     <View style={{ flex: 0.5, justifyContent: 'center' }}>
                                         <Pressable
-                                            onPress={onHabitTrackerScreen}
+                                            onPress={ () => {props.navigation.navigate(screens.habitTracker)}}
                                             style={[
                                                 FAB_style.View,
                                                 {
@@ -690,7 +683,7 @@ const HomeScreen = (props) => {
                                     </Text>
                                     <View style={{ flex: 0.5, justifyContent: 'center' }}>
                                         <Pressable
-                                            onPress={onNoteEditorScreen}
+                                            onPress={() => props.navigation.navigate(screens.notesList)}
                                             style={[
                                                 FAB_style.View,
                                                 {
