@@ -71,6 +71,7 @@ const Login = props => {
         index: 0,
         routes: [{ name: screens.bottomTabs }],
       });
+      await AsyncStorage.setItem('@googleOrAppleLogin', "false")
     } catch (e) {
       showToast('Please try again', 'Something went wrong');
     }
@@ -218,6 +219,7 @@ const Login = props => {
     });
     if (res) {
       if (res.code == 200) {
+        await AsyncStorage.setItem('@googleOrAppleLogin', "false")
         onBottomTabScreen(res);
       } else {
         setisLoading(false);
@@ -234,7 +236,8 @@ const Login = props => {
     });
     if (res) {
       if (res.code == 200) {
-        console.log(res, "response...")
+        console.log(res , "response...")
+        await AsyncStorage.setItem('@googleOrAppleLogin', "true")
         onBottomTabScreen(res);
       } else {
         setisLoading(false);

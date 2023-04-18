@@ -15,10 +15,10 @@ import {
   Platform,
   ToastAndroid,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
-import {mainStyles} from '../../../Utilities/styles';
+import { mainStyles } from '../../../Utilities/styles';
 import CustomImage from '../../../Components/CustomImage';
 import Share from 'react-native-share';
 import axios from 'axios';
@@ -28,12 +28,12 @@ import ImageZoomer from '../../../Components/ImageZoomer';
 import analytics from '@react-native-firebase/analytics';
 import debounnce from '../../../functions/debounce';
 // For API's calling
-import {useContext} from 'react';
+import { useContext } from 'react';
 import Context from '../../../Context';
 import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
-import {fileURL} from '../../../Utilities/domains';
+import { fileURL } from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
 
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -48,12 +48,12 @@ import qouteSign from '../../../Assets/Icons/quote.png';
 import favList from '../../../Assets/Icons/favList.png';
 import ic_share from '../../../Assets/Icons/share.png';
 import ic_download from '../../../Assets/Icons/ic_download.png';
-import {font} from '../../../Utilities/font';
-import {screens} from '../../../Navigation/Screens';
+import { font } from '../../../Utilities/font';
+import { screens } from '../../../Navigation/Screens';
 const limit = 10;
 const FavQuoteList = props => {
-  const {params} = props?.route;
-  const {Token, downloadQuote} = useContext(Context);
+  const { params } = props?.route;
+  const { Token, downloadQuote, dashboardData, setDashBoardData } = useContext(Context);
   const [QuoteList, setQuoteList] = useState([]);
   const [loading, setisLoading] = useState(false);
   const [modalImage, setModalImage] = useState(null);
@@ -64,8 +64,8 @@ const FavQuoteList = props => {
     isLoadingMore: false,
     canLoadMore: false,
   });
-  const {pageNumber, isLoadingMore, canLoadMore} = PGN;
-  const setPGN = val => updatePGN({...PGN, ...val});
+  const { pageNumber, isLoadingMore, canLoadMore } = PGN;
+  const setPGN = val => updatePGN({ ...PGN, ...val });
 
   const shareQuote = async item => {
     setIsSharing(item._id);
@@ -148,7 +148,7 @@ const FavQuoteList = props => {
     });
     setisLoading(false);
     setRefreshing(false);
-    setPGN({isLoadingMore: false});
+    setPGN({ isLoadingMore: false });
     if (res) {
       if (res.code == 200) {
         let count = QuoteList?.length;
@@ -167,7 +167,7 @@ const FavQuoteList = props => {
   const onEndReached = () => {
     console.log('onEndReached');
     if (canLoadMore) {
-      setPGN({isLoadingMore: true, canLoadMore: false});
+      setPGN({ isLoadingMore: true, canLoadMore: false });
       api_quoteList();
     }
   };
@@ -212,8 +212,10 @@ const FavQuoteList = props => {
     });
     if (res) {
       if (res.code == 200) {
+        favQuotesOfTheDay(val)
       } else {
         toggleLike(!val, id);
+        favQuotesOfTheDay(!val)
         if (!!params?.toggleBackScreenLike) {
           params?.toggleBackScreenLike(!val, item._id);
         }
@@ -221,6 +223,22 @@ const FavQuoteList = props => {
       }
     }
   };
+
+  const favQuotesOfTheDay = async (val) => {
+    let newObj = dashboardData.quoteOfTheDay;
+    newObj.is_favourite_by_me = val;
+
+    if (newObj.is_favourite_by_me) {
+      newObj.favourite = newObj.favourite + 1;
+    } else {
+      newObj.favourite = newObj.favourite - 1;
+    }
+    dashboardData.quoteOfTheDay = newObj;
+
+    await setDashBoardData({
+      ...dashboardData,
+    })
+  }
 
   const download = item => {
     debounceDownload(item);
@@ -249,7 +267,7 @@ const FavQuoteList = props => {
     setModalImage(null);
   };
 
-  const flatItemView = ({item, index}) => {
+  const flatItemView = ({ item, index }) => {
     return (
       <View
         style={{
@@ -263,7 +281,7 @@ const FavQuoteList = props => {
         <Pressable onPress={() => showImageModal(item?.images?.large)}>
           <CustomImage
             resizeMode={'cover'}
-            source={{uri: fileURL + item?.images?.large}}
+            source={{ uri: fileURL + item?.images?.large }}
             style={{
               width: '100%',
               aspectRatio:
@@ -346,7 +364,7 @@ const FavQuoteList = props => {
             }}>
             <Image
               source={ic_download}
-              style={{height: 20, width: 20, tintColor: Colors.placeHolder}}
+              style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
             />
           </TouchableOpacity>
 
@@ -363,7 +381,7 @@ const FavQuoteList = props => {
             {isSharing != item._id ? (
               <Image
                 source={ic_share}
-                style={{height: 20, width: 20, tintColor: Colors.placeHolder}}
+                style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
               />
             ) : (
               <ActivityIndicator color={Colors.placeHolder} size="small" />
@@ -385,11 +403,11 @@ const FavQuoteList = props => {
         navigation={props.navigation}
         title={'Favourite Quotes'}
       />
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <Loader enable={loading} />
-        <View style={{flex: 1}}>
+        <View style={{ flex: 1 }}>
           <FlatList
-            contentContainerStyle={{marginTop: 10, marginBottom: 10}}
+            contentContainerStyle={{ marginTop: 10, marginBottom: 10 }}
             showsVerticalScrollIndicator={false}
             keyExtractor={(item, index) => {
               return index.toString();

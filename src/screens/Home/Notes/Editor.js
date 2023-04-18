@@ -18,14 +18,14 @@ import {
   ActivityIndicator,
   Keyboard,
 } from 'react-native';
-import React, {useEffect, useState, useLayoutEffect} from 'react';
+import React, { useEffect, useState, useLayoutEffect } from 'react';
 import Header from '../../../Components/Header';
-import Colors, {notesColors} from '../../../Utilities/Colors';
-import {mainStyles, stat_styles} from '../../../Utilities/styles';
-import {font} from '../../../Utilities/font';
-import {screens} from '../../../Navigation/Screens';
+import Colors, { notesColors } from '../../../Utilities/Colors';
+import { mainStyles, stat_styles } from '../../../Utilities/styles';
+import { font } from '../../../Utilities/font';
+import { screens } from '../../../Navigation/Screens';
 import Modal from 'react-native-modal';
-import {actions, RichEditor, RichToolbar} from 'react-native-pell-rich-editor';
+import { actions, RichEditor, RichToolbar } from 'react-native-pell-rich-editor';
 import Collapsible from 'react-native-collapsible';
 import ImagePicker from 'react-native-image-crop-picker';
 import * as Animatable from 'react-native-animatable';
@@ -34,7 +34,7 @@ import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import ImageZoomer from '../../../Components/ImageZoomer';
 
 // fro API calling
-import {useContext} from 'react';
+import { useContext } from 'react';
 import Context from '../../../Context';
 import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
@@ -63,15 +63,16 @@ import ic_download from '../../../Assets/Icons/download.png';
 
 // import ic_cross from '../../../Assets/Icons/cross.png';
 import ic_trash from '../../../Assets/Icons/trash.png';
-import {isIphoneX} from 'react-native-iphone-x-helper';
-import {fileURL} from '../../../Utilities/domains';
+import { isIphoneX } from 'react-native-iphone-x-helper';
+import { fileURL } from '../../../Utilities/domains';
+import { not } from 'expect';
 const screen = Dimensions.get('screen');
 const Editor = props => {
   const oldnote1 = props?.route?.params?.note;
-  const {navigation} = props;
+  const { navigation } = props;
   const RichText = React.useRef();
   const scrollRef = React.useRef();
-  const {Token, downloadAudioNote} = useContext(Context);
+  const { Token, downloadAudioNote, dashboardData, setDashBoardData } = useContext(Context);
 
   const [isLoading, setisLoading] = useState(false);
   const [LinkModal, setLinkModal] = useState({
@@ -108,8 +109,8 @@ const Editor = props => {
     oldImages: oldnote1 ? oldnote1.images : [],
     removeImage: [],
   });
-  const setRecorder = val => updateRecorder({...recorder, ...val});
-  const setNotes = val => updateNotes({...notes, ...val});
+  const setRecorder = val => updateRecorder({ ...recorder, ...val });
+  const setNotes = val => updateNotes({ ...notes, ...val });
 
   const [colorPickerModal, updateColorPickerModal] = useState({
     visibility: false,
@@ -119,21 +120,21 @@ const Editor = props => {
   const download = async () => {
     console.log('download');
     try {
-      setNotes({audio: 'downloading'});
+      setNotes({ audio: 'downloading' });
       let AudioPath = await downloadAudioNote(oldnote1?.audio);
-      setNotes({audio: {uri: 'file://' + AudioPath}});
+      setNotes({ audio: { uri: 'file://' + AudioPath } });
     } catch (e) {
-      setNotes({audio: 'error'});
+      setNotes({ audio: 'error' });
     }
   };
 
   //? Link MOdal
 
   const openDialogue = () => {
-    setLinkModal({showDialog: true, link: ''});
+    setLinkModal({ showDialog: true, link: '' });
   };
   const closeDialogue = () => {
-    setLinkModal({showDialog: false, link: ''});
+    setLinkModal({ showDialog: false, link: '' });
   };
 
   const LinkDialog = () => {
@@ -142,16 +143,16 @@ const Editor = props => {
         <Dialog.Container
           visible={LinkModal.showDialog}
           onBackdropPress={() => closeDialogue()}>
-          <Dialog.Title style={{color: Colors.black, fontFamily: font.semi}}>
+          <Dialog.Title style={{ color: Colors.black, fontFamily: font.semi }}>
             Insert Link
           </Dialog.Title>
           <Dialog.Description
-            style={{color: Colors.black, fontFamily: font.medium}}>
+            style={{ color: Colors.black, fontFamily: font.medium }}>
             Please enter the link
           </Dialog.Description>
           <Dialog.Input
-            style={{color: Colors.black, fontFamily: font.medium}}
-            onChangeText={link => setLinkModal({...LinkModal, link: link})}
+            style={{ color: Colors.black, fontFamily: font.medium }}
+            onChangeText={link => setLinkModal({ ...LinkModal, link: link })}
           />
           <Dialog.Button label="Cancel" onPress={() => closeDialogue()} />
           <Dialog.Button
@@ -181,7 +182,7 @@ const Editor = props => {
   };
 
   const setColorPickerModal = val =>
-    updateColorPickerModal({...colorPickerModal, ...val});
+    updateColorPickerModal({ ...colorPickerModal, ...val });
 
   //? backgroundColorModal
 
@@ -192,7 +193,7 @@ const Editor = props => {
         onBackButtonPress={() => setBackgroundColorModalVisiblity(false)}
         onBackdropPress={() => setBackgroundColorModalVisiblity(false)}
         useNativeDriverForBackdrop={true}
-        style={{marginTop: 'auto', margin: 0}}>
+        style={{ marginTop: 'auto', margin: 0 }}>
         <View
           style={{
             backgroundColor: '#fff',
@@ -210,26 +211,26 @@ const Editor = props => {
               alignItems: 'center',
               height: 50,
             }}>
-            <View style={{width: 25}} />
-            <View style={{flex: 1, alignItems: 'center'}}>
-              <Text style={{fontFamily: font.bold, fontSize: 16}}>
+            <View style={{ width: 25 }} />
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <Text style={{ fontFamily: font.bold, fontSize: 16 }}>
                 Select Note Color
               </Text>
             </View>
             <Pressable
-              style={{width: 25}}
+              style={{ width: 25 }}
               // disabled={recorder.recorderStatus == 'playing'}
               onPress={() => setBackgroundColorModalVisiblity(false)}>
-              <Image source={ic_cross} style={{height: 25, width: 25}} />
+              <Image source={ic_cross} style={{ height: 25, width: 25 }} />
             </Pressable>
           </View>
           <FlatList
             data={notesColors}
             numColumns={2}
-            renderItem={({item, index}) => {
+            renderItem={({ item, index }) => {
               return (
                 <Pressable
-                  style={{flex: 1 / 2}}
+                  style={{ flex: 1 / 2 }}
                   onPress={() => toggleSelect(item)}>
                   <View
                     style={{
@@ -247,8 +248,8 @@ const Editor = props => {
                       borderColor: Colors.gray02,
                     }}>
                     {item._id == 'none' ? (
-                      <View style={{height: 30, justifyContent: 'center'}}>
-                        <Text style={{fontFamily: font.medium}}>None</Text>
+                      <View style={{ height: 30, justifyContent: 'center' }}>
+                        <Text style={{ fontFamily: font.medium }}>None</Text>
                       </View>
                     ) : (
                       <View
@@ -270,7 +271,7 @@ const Editor = props => {
                         />
                       </View>
                     )}
-                    <View style={{flex: 1, alignItems: 'flex-end'}}>
+                    <View style={{ flex: 1, alignItems: 'flex-end' }}>
                       <Image
                         source={
                           item._id == notes.colors._id ? checked : unChecked
@@ -292,7 +293,7 @@ const Editor = props => {
   };
 
   const toggleSelect = item => {
-    setNotes({colors: item});
+    setNotes({ colors: item });
     setBackgroundColorModalVisiblity(false);
   };
 
@@ -309,11 +310,11 @@ const Editor = props => {
 
         if (
           grants['android.permission.WRITE_EXTERNAL_STORAGE'] ===
-            PermissionsAndroid.RESULTS.GRANTED &&
+          PermissionsAndroid.RESULTS.GRANTED &&
           grants['android.permission.READ_EXTERNAL_STORAGE'] ===
-            PermissionsAndroid.RESULTS.GRANTED &&
+          PermissionsAndroid.RESULTS.GRANTED &&
           grants['android.permission.RECORD_AUDIO'] ===
-            PermissionsAndroid.RESULTS.GRANTED
+          PermissionsAndroid.RESULTS.GRANTED
         ) {
           console.log('Permissions granted');
 
@@ -336,7 +337,7 @@ const Editor = props => {
       granted = await checkPermissionsAndroid();
     }
     if (granted) {
-      setRecorder({isAudioModalVisible: true});
+      setRecorder({ isAudioModalVisible: true });
     } else {
       showToast('Please grant permission', 'Permission denied');
     }
@@ -349,7 +350,7 @@ const Editor = props => {
         animationOut={'zoomOut'}
         isVisible={recorder.isAudioModalVisible}
         useNativeDriverForBackdrop={true}
-        style={{margin: 0}}>
+        style={{ margin: 0 }}>
         <View
           style={{
             backgroundColor: '#fff',
@@ -369,17 +370,17 @@ const Editor = props => {
               alignItems: 'center',
               height: 25,
             }}>
-            <View style={{width: 25}} />
-            <View style={{flex: 1, alignItems: 'center'}}>
-              <Text style={{fontFamily: font.bold, fontSize: 16}}>
+            <View style={{ width: 25 }} />
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <Text style={{ fontFamily: font.bold, fontSize: 16 }}>
                 Voice Note
               </Text>
             </View>
             <Pressable
-              style={{width: 25}}
+              style={{ width: 25 }}
               // disabled={recorder.recorderStatus == 'playing'}
               onPress={() => closeModal()}>
-              <Image source={ic_cross} style={{height: 25, width: 25}} />
+              <Image source={ic_cross} style={{ height: 25, width: 25 }} />
             </Pressable>
           </View>
           <View
@@ -446,20 +447,20 @@ const Editor = props => {
                   source={
                     recorder.recorderStatus == 'playing' ? ic_pause : ic_play
                   }
-                  style={{height: 20, width: 20, tintColor: Colors.white}}
+                  style={{ height: 20, width: 20, tintColor: Colors.white }}
                 />
               </Pressable>
             </View>
 
-            <View style={{marginLeft: 30}}>
+            <View style={{ marginLeft: 30 }}>
               <View style={{}}>
-                <Text style={{fontFamily: font.medium, fontSize: 18}}>
+                <Text style={{ fontFamily: font.medium, fontSize: 18 }}>
                   {recordingTime}
                 </Text>
               </View>
               {recorder.recorderStatus == 'playing' && (
-                <View style={{minHeight: 20, marginTop: 10}}>
-                  <Text style={{fontFamily: font.regular, fontSize: 16}}>
+                <View style={{ minHeight: 20, marginTop: 10 }}>
+                  <Text style={{ fontFamily: font.regular, fontSize: 16 }}>
                     Listening...
                   </Text>
                 </View>
@@ -539,7 +540,7 @@ const Editor = props => {
       name: result.split('/').pop(),
       type: 'audio/' + result.split('.').pop(),
     };
-    setNotes({audio: audioObj});
+    setNotes({ audio: audioObj });
 
     await onStopPlay();
     const msg = await audioRecorderPlayer.startPlayer(result);
@@ -594,14 +595,14 @@ const Editor = props => {
   };
 
   const onPauseRecord = async () => {
-    setRecorder({recorderStatus: 'paused'});
+    setRecorder({ recorderStatus: 'paused' });
     const result = await audioRecorderPlayer.pauseRecorder();
     console.log('result: ' + result);
   };
 
   const onResumeRecord = async () => {
     const result = await audioRecorderPlayer.resumeRecorder();
-    setRecorder({recorderStatus: 'playing'});
+    setRecorder({ recorderStatus: 'playing' });
     console.log('result: ' + result);
   };
 
@@ -637,7 +638,7 @@ const Editor = props => {
               type: image.mime,
             };
           }
-          setNotes({images: [objImge, ...notes.images]});
+          setNotes({ images: [objImge, ...notes.images] });
         })
         .catch(e => {
           console.log('Error', e);
@@ -698,7 +699,7 @@ const Editor = props => {
                 type: image.mime,
               };
             }
-            setNotes({images: [objImge, ...notes.images]});
+            setNotes({ images: [objImge, ...notes.images] });
           })
           .catch(e => {
             console.log('Error', e);
@@ -717,7 +718,7 @@ const Editor = props => {
         onBackButtonPress={() => setModalVisibility(false)}
         onBackdropPress={() => setModalVisibility(false)}
         useNativeDriverForBackdrop={true}
-        style={{marginTop: 'auto', margin: 0}}>
+        style={{ marginTop: 'auto', margin: 0 }}>
         <View
           style={{
             backgroundColor: '#fff',
@@ -727,8 +728,8 @@ const Editor = props => {
             borderRadius: 10,
             padding: 20,
           }}>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <View style={{flex: 1}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flex: 1 }}>
               <Text
                 style={{
                   fontSize: 18,
@@ -755,15 +756,15 @@ const Editor = props => {
               </View>
             </Pressable> */}
             <Pressable
-              style={{width: 25}}
+              style={{ width: 25 }}
               // disabled={recorder.recorderStatus == 'playing'}
               onPress={() => setModalVisibility(false)}>
-              <Image source={ic_cross} style={{height: 25, width: 25}} />
+              <Image source={ic_cross} style={{ height: 25, width: 25 }} />
             </Pressable>
           </View>
           <View
-            style={{marginTop: 25, flexDirection: 'row', alignItems: 'center'}}>
-            <Pressable onPress={openCamera} style={{alignItems: 'center'}}>
+            style={{ marginTop: 25, flexDirection: 'row', alignItems: 'center' }}>
+            <Pressable onPress={openCamera} style={{ alignItems: 'center' }}>
               <View
                 style={{
                   backgroundColor: '#BDC3C744',
@@ -773,7 +774,7 @@ const Editor = props => {
                   justifyContent: 'center',
                   borderRadius: 25,
                 }}>
-                <Image source={ic_camera} style={{height: 20, width: 20}} />
+                <Image source={ic_camera} style={{ height: 20, width: 20 }} />
               </View>
               <Text
                 style={{
@@ -788,7 +789,7 @@ const Editor = props => {
 
             <Pressable
               onPress={openGallery}
-              style={{alignItems: 'center', marginLeft: 30}}>
+              style={{ alignItems: 'center', marginLeft: 30 }}>
               <View
                 style={{
                   backgroundColor: '#BDC3C744',
@@ -798,7 +799,7 @@ const Editor = props => {
                   justifyContent: 'center',
                   borderRadius: 25,
                 }}>
-                <Image source={ic_gallery} style={{height: 20, width: 20}} />
+                <Image source={ic_gallery} style={{ height: 20, width: 20 }} />
               </View>
               <Text
                 style={{
@@ -826,7 +827,7 @@ const Editor = props => {
         onPress: () => {
           let temp = [...notes.images];
           temp.splice(i, 1);
-          setNotes({images: [...temp]});
+          setNotes({ images: [...temp] });
         },
       },
     ]);
@@ -836,8 +837,8 @@ const Editor = props => {
     return (
       <Modal
         isVisible={colorPickerModal.visibility}
-        onBackdropPress={() => setColorPickerModal({visibility: false})}
-        onBackButtonPress={() => setColorPickerModal({visibility: false})}
+        onBackdropPress={() => setColorPickerModal({ visibility: false })}
+        onBackButtonPress={() => setColorPickerModal({ visibility: false })}
         useNativeDriverForBackdrop={true}
         style={{}}>
         <View
@@ -868,8 +869,8 @@ const Editor = props => {
               justifyContent: 'center',
             }}
             // disabled={recorder.recorderStatus == 'playing'}
-            onPress={() => setColorPickerModal({visibility: false})}>
-            <Image source={ic_cross} style={{height: 25, width: 25}} />
+            onPress={() => setColorPickerModal({ visibility: false })}>
+            <Image source={ic_cross} style={{ height: 25, width: 25 }} />
           </Pressable>
 
           <View
@@ -892,7 +893,7 @@ const Editor = props => {
                 onPress={() => {
                   RichText?.current.sendAction('foreColor', 'result', item);
                   // RichText?.current.setTextColor(item)
-                  setColorPickerModal({currentColor: item, visibility: false});
+                  setColorPickerModal({ currentColor: item, visibility: false });
                 }}>
                 <View
                   style={{
@@ -1055,7 +1056,7 @@ const Editor = props => {
 
   const removeAudio = () => {
     Alert.alert('Delete Audio', 'Are you sure you want to delete this audio?', [
-      {text: 'No'},
+      { text: 'No' },
       {
         text: 'Yes',
         onPress: () => {
@@ -1150,13 +1151,25 @@ const Editor = props => {
     if (res) {
       if (res.code == 200) {
         await analytics().logEvent('NOTE_CREATED_BY_USER_EVENT');
-        navigation.navigate({
-          name: screens.notesList,
-          params: {
-            addNew: res.Note,
-          },
-          merge: false,
-        });
+        if (props?.route?.params) {
+          props.navigation.reset({
+            index: 0,
+            routes: [{ name: 'BOTTOM_TABS_SCREEN' }, { name: 'NOTES_LIST' }]
+        })
+        } else {
+          navigation.navigate({
+            name: screens.notesList,
+            params: {
+              addNew: res.Note,
+            },
+            merge: false,
+          });
+        }
+        let tempObj = [...dashboardData.notes]
+        tempObj[1] = tempObj[0]
+        tempObj[0] = res.Note,
+          dashboardData.notes = [...tempObj];
+        await setDashBoardData({ ...dashboardData })
       } else {
         showToast(res.message);
       }
@@ -1184,11 +1197,26 @@ const Editor = props => {
         navigation.navigate(screens.notesDetail, {
           editedNote: res.note,
         });
+        await updateDashBoardNote(res.note);
       } else {
         showToast(res.message);
       }
     }
   };
+
+  const updateDashBoardNote = async (note) => {
+    let tempArr = [...dashboardData.notes]
+    let idx = tempArr.findIndex(x => x._id == note._id)
+    if (idx != -1) {
+      tempArr[idx].title = note.title;
+      tempArr[idx].updatedAt = note.updatedAt;
+      console.log(note.title, "Updated Title...")
+    }
+    await setDashBoardData({
+      ...dashboardData,
+      notes: [...tempArr]
+    })
+  }
 
   useEffect(() => {
     LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
@@ -1221,7 +1249,7 @@ const Editor = props => {
     //   } else {
     //     edit = false;
     //   }
-    return () => {};
+    return () => { };
   }, []);
 
   return (
@@ -1294,7 +1322,7 @@ const Editor = props => {
               }}>
               <Image
                 source={require('../../../Assets/Icons/down-arrow.png')}
-                style={{height: 12, width: 12, tintColor: Colors.black}}
+                style={{ height: 12, width: 12, tintColor: Colors.black }}
               />
             </View>
           </Pressable>
@@ -1317,14 +1345,14 @@ const Editor = props => {
               borderColor: Colors.gray02,
               borderWidth: 1 / 2,
             }}>
-            <Text style={{fontFamily: font.medium}}>Save</Text>
+            <Text style={{ fontFamily: font.medium }}>Save</Text>
             <View
               style={{
                 marginLeft: 5,
               }}>
               <Image
                 source={ic_save}
-                style={{height: 12, width: 12, tintColor: Colors.black}}
+                style={{ height: 12, width: 12, tintColor: Colors.black }}
               />
             </View>
           </Pressable>
@@ -1339,18 +1367,18 @@ const Editor = props => {
         //   </Pressable>
         // }
         // rightIcon2={ic_colorPicker}
-        rightIcon2onPress={() => {}}
+        rightIcon2onPress={() => { }}
       />
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <KeyboardAvoidingView
-          style={{flex: 1}}
+          style={{ flex: 1 }}
           keyboardVerticalOffset={
             Platform.OS === 'ios' ? (isIphoneX() ? 97 : 70) : 0
           }
           enabled={true}
           behavior={Platform.OS == 'ios' ? 'padding' : null}>
           <>
-            <View style={{flex: 1}}>
+            <View style={{ flex: 1 }}>
               <View
                 style={{
                   paddingTop: 20,
@@ -1366,7 +1394,7 @@ const Editor = props => {
                   }}
                   autoCorrect={false}
                   autoComplete={'off'}
-                  onChangeText={text => setNotes({title: text})}
+                  onChangeText={text => setNotes({ title: text })}
                   placeholder="Title"
                   value={notes.title}
                   selectionColor={Colors.primary}
@@ -1406,7 +1434,7 @@ const Editor = props => {
                     minHeight: 150,
                     // flex: 1,
                   }}>
-                  <View style={{minHeight: 150, paddingHorizontal: 20}}>
+                  <View style={{ minHeight: 150, paddingHorizontal: 20 }}>
                     <RichEditor
                       ref={RichText}
                       style={{
@@ -1442,7 +1470,7 @@ const Editor = props => {
                       pasteAsPlainText={true}
                       placeholder={"What's in your mind"}
                       onChange={text => {
-                        setNotes({note: text});
+                        setNotes({ note: text });
 
                         // scrollRef?.current.scrollToEnd({
                         //   animated: true,
@@ -1582,9 +1610,9 @@ const Editor = props => {
                             flexDirection: 'row',
                             alignItems: 'center',
                           }}>
-                          <View style={{flex: 1, marginHorizontal: 15}}>
+                          <View style={{ flex: 1, marginHorizontal: 15 }}>
                             <Slider
-                              style={{transform: [{scaleY: 2}]}}
+                              style={{ transform: [{ scaleY: 2 }] }}
                               value={playerTime.curTimeInSeconds}
                               thumbTintColor={'transparent'}
                               // thumbImage={undefined}
@@ -1634,7 +1662,7 @@ const Editor = props => {
                       numColumns={3}
                       scrollEnabled={false}
                       data={[...notes?.images, ...notes?.oldImages]}
-                      renderItem={({item, index}) => {
+                      renderItem={({ item, index }) => {
                         if (!!item?.uri) {
                           return (
                             <Pressable
@@ -1646,12 +1674,12 @@ const Editor = props => {
                                 margin: 1,
                               }}>
                               <CustomImage
-                                source={{uri: item.uri}}
+                                source={{ uri: item.uri }}
                                 style={{
                                   height: '100%',
                                   width: '100%',
                                 }}
-                                indicatorProps={{color: Colors.primary}}
+                                indicatorProps={{ color: Colors.primary }}
                               />
                               <Pressable
                                 onPress={() => removeImage(index)}
@@ -1679,7 +1707,7 @@ const Editor = props => {
                                 }}>
                                 <Image
                                   source={ic_cross}
-                                  style={{height: 15, width: 15}}
+                                  style={{ height: 15, width: 15 }}
                                 />
                               </Pressable>
                             </Pressable>
@@ -1753,12 +1781,12 @@ const Editor = props => {
                                 margin: 1,
                               }}>
                               <CustomImage
-                                source={{uri: fileURL + item.medium}}
+                                source={{ uri: fileURL + item.medium }}
                                 style={{
                                   height: '100%',
                                   width: '100%',
                                 }}
-                                indicatorProps={{color: Colors.primary}}
+                                indicatorProps={{ color: Colors.primary }}
                               />
                               <Pressable
                                 onPress={() => addInRemoveArray(item)}
@@ -1786,7 +1814,7 @@ const Editor = props => {
                                 }}>
                                 <Image
                                   source={ic_cross}
-                                  style={{height: 15, width: 15}}
+                                  style={{ height: 15, width: 15 }}
                                 />
                               </Pressable>
                             </Pressable>
@@ -1857,8 +1885,8 @@ const Editor = props => {
             </View>
 
             <View
-              style={{paddingBottom: 10, marginHorizontal: 20}}
-              // collapsed={!isFocused}
+              style={{ paddingBottom: 10, marginHorizontal: 20 }}
+            // collapsed={!isFocused}
             >
               <RichToolbar
                 editor={RichText}
@@ -1891,7 +1919,7 @@ const Editor = props => {
                 }}
                 iconTint={Colors.placeHolder}
                 iconMap={{
-                  images: ({tintColor}) => (
+                  images: ({ tintColor }) => (
                     <TouchableOpacity
                       onPress={() => setModalVisibility(true)}
                       style={{
@@ -1911,7 +1939,7 @@ const Editor = props => {
                       />
                     </TouchableOpacity>
                   ),
-                  [actions.foreColor]: ({tintColor}) => (
+                  [actions.foreColor]: ({ tintColor }) => (
                     <TouchableOpacity
                       style={{
                         width: '100%',
@@ -1919,7 +1947,7 @@ const Editor = props => {
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}
-                      onPress={() => setColorPickerModal({visibility: true})}>
+                      onPress={() => setColorPickerModal({ visibility: true })}>
                       <Image
                         source={ic_pallete}
                         style={{
@@ -1931,7 +1959,7 @@ const Editor = props => {
                     </TouchableOpacity>
                   ),
 
-                  audio: ({tintColor}) => (
+                  audio: ({ tintColor }) => (
                     <TouchableOpacity
                       onPress={onMicPress}
                       style={{
@@ -1951,38 +1979,38 @@ const Editor = props => {
                       />
                     </TouchableOpacity>
                   ),
-                  [actions.heading1]: ({tintColor}) => (
-                    <Text style={{color: tintColor, fontWeight: '700'}}>
+                  [actions.heading1]: ({ tintColor }) => (
+                    <Text style={{ color: tintColor, fontWeight: '700' }}>
                       H1
                     </Text>
                   ),
-                  [actions.heading2]: ({tintColor}) => (
-                    <Text style={{color: tintColor, fontWeight: '700'}}>
+                  [actions.heading2]: ({ tintColor }) => (
+                    <Text style={{ color: tintColor, fontWeight: '700' }}>
                       H2
                     </Text>
                   ),
-                  [actions.heading3]: ({tintColor}) => (
-                    <Text style={{color: tintColor, fontWeight: '700'}}>
+                  [actions.heading3]: ({ tintColor }) => (
+                    <Text style={{ color: tintColor, fontWeight: '700' }}>
                       H3
                     </Text>
                   ),
-                  [actions.heading4]: ({tintColor}) => (
-                    <Text style={{color: tintColor, fontWeight: '700'}}>
+                  [actions.heading4]: ({ tintColor }) => (
+                    <Text style={{ color: tintColor, fontWeight: '700' }}>
                       H4
                     </Text>
                   ),
-                  [actions.heading5]: ({tintColor}) => (
-                    <Text style={{color: tintColor, fontWeight: '700'}}>
+                  [actions.heading5]: ({ tintColor }) => (
+                    <Text style={{ color: tintColor, fontWeight: '700' }}>
                       H5
                     </Text>
                   ),
-                  [actions.heading6]: ({tintColor}) => (
-                    <Text style={{color: tintColor, fontWeight: '700'}}>
+                  [actions.heading6]: ({ tintColor }) => (
+                    <Text style={{ color: tintColor, fontWeight: '700' }}>
                       H6
                     </Text>
                   ),
-                  [actions.setParagraph]: ({tintColor}) => (
-                    <Text style={{color: tintColor, fontWeight: '700'}}>P</Text>
+                  [actions.setParagraph]: ({ tintColor }) => (
+                    <Text style={{ color: tintColor, fontWeight: '700' }}>P</Text>
                   ),
                 }}
                 selectedIconTint={Colors.primary}

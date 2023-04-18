@@ -1,15 +1,15 @@
-import React, {useState, useEffect} from 'react';
-import {ContextProvider} from '.';
+import React, { useState, useEffect } from 'react';
+import { ContextProvider } from '.';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PushNotification from 'react-native-push-notification';
-import {baseURL, fileURL} from '../Utilities/domains';
+import { baseURL, fileURL } from '../Utilities/domains';
 import RNFS from 'react-native-fs';
 import showToast from '../functions/showToast';
 import moment from 'moment';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import * as RNIap from 'react-native-iap';
-import {Platform, PermissionsAndroid, DevSettings} from 'react-native';
-import {CameraRoll} from '@react-native-camera-roll/camera-roll';
+import { Platform, PermissionsAndroid, DevSettings } from 'react-native';
+import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import invokeApi from '../functions/invokeAPI';
 
 
@@ -27,17 +27,23 @@ const ContextWrapper = props => {
     meditation: false,
     skus: [],
   });
-  
+
   const [gratitudesList, setGratitudesList] = useState([]);
- const updateGratitudeList =  updation => setGratitudesList([ updation , ...gratitudesList ]);
- const [gratitudeExist, setGratitudeExist] = useState();
- const [allGratitudesList, setAllGratitudesList] = useState([]);
+  const updateGratitudeList = updation => setGratitudesList([updation, ...gratitudesList]);
+  const [gratitudeExist, setGratitudeExist] = useState();
+  const [allGratitudesList, setAllGratitudesList] = useState([]);
 
 
+  const [allMoodJournals, setAllMoodJournals] = useState([]);
+  const updateAllMoodJournals = updation => setAllMoodJournals([updation, ...allMoodJournals]);
 
- const [allMoodJournals, setAllMoodJournals] = useState([]);
- const updateAllMoodJournals =  updation => setAllMoodJournals([ updation , ...allMoodJournals ]);
 
+  const [dashboardData, setDashBoardData] = useState({
+    meditationOfTheDay: {},
+    quoteOfTheDay: {},
+    habitStats: {},
+    notes: [],
+  })
 
   const checkPermissions = async () => {
     let granted;
@@ -112,7 +118,7 @@ const ContextWrapper = props => {
     if (!granted) {
       return;
     }
-    let obj = {...track};
+    let obj = { ...track };
     addInProgress(obj._id);
     try {
       if (!(await RNFS.exists(RNFS.DocumentDirectoryPath + '/tracks/'))) {
@@ -223,8 +229,8 @@ const ContextWrapper = props => {
     if (
       await RNFS.exists(
         RNFS.DocumentDirectoryPath +
-          '/Audio Note/' +
-          splitfile[splitfile.length - 1],
+        '/Audio Note/' +
+        splitfile[splitfile.length - 1],
       )
     ) {
       return 0;
@@ -246,8 +252,8 @@ const ContextWrapper = props => {
       if (
         await RNFS.exists(
           RNFS.DocumentDirectoryPath +
-            '/Note/' +
-            splitfile[splitfile.length - 1],
+          '/Note/' +
+          splitfile[splitfile.length - 1],
         )
       ) {
         return (
@@ -260,8 +266,8 @@ const ContextWrapper = props => {
       if (
         !(await RNFS.exists(
           RNFS.DocumentDirectoryPath +
-            '/Note/' +
-            splitfile[splitfile.length - 1],
+          '/Note/' +
+          splitfile[splitfile.length - 1],
         ))
       ) {
         await RNFS.mkdir(RNFS.DocumentDirectoryPath + '/Note/');
@@ -430,7 +436,7 @@ const ContextWrapper = props => {
 
   const addInProgress = _id => {
     let newProgress = [...progress];
-    newProgress.push({_id: _id, progress: '0'});
+    newProgress.push({ _id: _id, progress: '0' });
     setProgress(newProgress);
   };
 
@@ -506,7 +512,7 @@ const ContextWrapper = props => {
       console.log('resetPurchase');
       resetPurchase();
     }
-    return () => {};
+    return () => { };
   }, [Token]);
 
   useEffect(() => {
@@ -544,6 +550,8 @@ const ContextWrapper = props => {
     updateAllMoodJournals,
     allGratitudesList,
     setAllGratitudesList,
+    dashboardData,
+    setDashBoardData,
   };
 
   return (

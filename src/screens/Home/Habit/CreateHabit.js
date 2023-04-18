@@ -12,50 +12,51 @@ import {
   BackHandler,
   Alert,
 } from 'react-native';
-import React, {useEffect, useState, useCallback} from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Header from '../../../Components/Header';
-import {useFocusEffect} from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   mainStyles,
   other_style,
   createHabit_styles,
 } from '../../../Utilities/styles';
 import Colors from '../../../Utilities/Colors';
-import {font} from '../../../Utilities/font';
+import { font } from '../../../Utilities/font';
 import CustomButton from '../../../Components/CustomButton';
-import {screens} from '../../../Navigation/Screens';
-import {CustomSimpleTextInput} from '../../../Components/CustomTextInput';
+import { screens } from '../../../Navigation/Screens';
+import { CustomSimpleTextInput } from '../../../Components/CustomTextInput';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import moment from 'moment';
 import UploadImage from '../../../Components/UploadImage';
 import analytics from '@react-native-firebase/analytics';
 
 // For API's
-import {useContext} from 'react';
+import { useContext } from 'react';
 import Context from '../../../Context';
 import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
-import {fileURL} from '../../../Utilities/domains';
+import { fileURL } from '../../../Utilities/domains';
 import rountToNextmins from '../../../functions/rountToNextmins';
 import PushNotification from 'react-native-push-notification';
 import FastImage from 'react-native-fast-image';
 const screen = Dimensions.get('screen');
 const week = [
-  {day: 'monday', status: false},
-  {day: 'tuesday', status: false},
-  {day: 'wednesday', status: false},
-  {day: 'thursday', status: false},
-  {day: 'friday', status: false},
-  {day: 'saturday', status: false},
-  {day: 'sunday', status: false},
+  { day: 'monday', status: false },
+  { day: 'tuesday', status: false },
+  { day: 'wednesday', status: false },
+  { day: 'thursday', status: false },
+  { day: 'friday', status: false },
+  { day: 'saturday', status: false },
+  { day: 'sunday', status: false },
 ];
 
+let habitType = null;
 const CreateHabit = props => {
   // Hooks
-  const {params} = props.route;
-  const {navigation} = props;
-  const {Token, setHabitList, habitList} = useContext(Context);
+  const { params } = props.route;
+  const { navigation } = props;
+  const { Token, setHabitList, habitList, dashboardData, setDashBoardData } = useContext(Context);
   const [isLoading, setisLoading] = useState(false);
 
   const [Habit, setHabit] = useState({
@@ -112,8 +113,8 @@ const CreateHabit = props => {
     image,
     preDefinedImage,
   } = Habit;
-  const updateHabit = updation => setHabit({...Habit, ...updation});
-  const updateOldData = updation => setoldData({...Habit, ...updation});
+  const updateHabit = updation => setHabit({ ...Habit, ...updation });
+  const updateOldData = updation => setoldData({ ...Habit, ...updation });
   const selectDay = day => {
     let newArray = [...frequency];
     let index = newArray.findIndex(x => x.day == day.day);
@@ -123,11 +124,11 @@ const CreateHabit = props => {
       status: !newObj.status,
     };
     newArray.splice(index, 1, newObj);
-    updateHabit({frequency: [...newArray]});
+    updateHabit({ frequency: [...newArray] });
   };
 
   const btn_editHabit = async () => {
-    let t_image = {...Habit.image};
+    let t_image = { ...Habit.image };
     let t_habitName = Habit.title.trim();
     let t_type = Habit.type;
     let t_reminder = Habit.reminder;
@@ -186,6 +187,22 @@ const CreateHabit = props => {
     setisLoading(false);
     if (res) {
       if (res.code == 200) {
+        
+        let obj = dashboardData.habitStats;
+        if (habitType != res?.habit?.type) {
+          if (res?.habit?.type == "to-do") {
+            obj.good_habits = obj.good_habits + 1;
+            obj.bad_habits = obj.bad_habits - 1;
+          } else {
+            obj.good_habits = obj.good_habits - 1;
+            obj.bad_habits = obj.bad_habits + 1;
+          }
+        }
+        await setDashBoardData({
+          ...dashboardData,
+          habitStats: obj
+        })
+
         if (res?.habit?.reminder) {
           RemoveThisHabitScheduleNotifications(res?.habit?._id);
           scheduleNotification(res?.habit);
@@ -204,6 +221,8 @@ const CreateHabit = props => {
         if (!!params?.updateHabit) {
           params?.updateHabit(res.habit);
         }
+
+        // Habit.type != oldData?.type
         navigation.goBack();
       } else {
         showToast(res.message);
@@ -232,7 +251,7 @@ const CreateHabit = props => {
   };
 
   const btn_addHabit = async () => {
-    let t_image = {...Habit.image};
+    let t_image = { ...Habit.image };
     let t_preDefinedImage = Habit.preDefinedImage;
     console.log('preDefinedImage', t_preDefinedImage);
     let t_habitName = Habit.title.trim();
@@ -306,6 +325,20 @@ const CreateHabit = props => {
         }
         setHabitList(res?.all_habits);
         navigation.navigate(screens.habitTracker);
+
+        let obj = dashboardData.habitStats;
+        obj.all_habits = obj.all_habits + 1;
+        obj.pending_habits = obj.pending_habits + 1;
+        if (res?.habit?.type == "to-do") {
+          obj.good_habits = obj.good_habits + 1;
+        } else if (res?.habit?.type == "not-to-do") {
+          obj.bad_habits = obj.bad_habits + 1;
+        }
+        await setDashBoardData({
+          ...dashboardData,
+          habitStats: obj
+        })
+
       } else {
         showToast(res.message);
       }
@@ -337,8 +370,8 @@ const CreateHabit = props => {
       if (days.includes(day.format('dddd').toLowerCase())) {
         let scheduledTime = moment(
           day.format('DD-MM-YYYY') +
-            ' ' +
-            moment(obj_habit?.reminder_time).format('HH:mm'),
+          ' ' +
+          moment(obj_habit?.reminder_time).format('HH:mm'),
           'DD-MM-YYYY HH:mm',
         ).toISOString();
         if (moment(scheduledTime).isAfter(moment())) {
@@ -408,15 +441,15 @@ const CreateHabit = props => {
       Habit?.localImage != oldData?.localImage ||
       JSON.stringify(arr1) != JSON.stringify(arr2) ||
       moment(Habit?.targetDate?.date).format('DDMMYYYY') !=
-        moment(oldData?.targetDate?.date).format('DDMMYYYY') ||
+      moment(oldData?.targetDate?.date).format('DDMMYYYY') ||
       Habit?.reminder?.value != oldData?.reminder?.value ||
       moment(Habit?.reminder?.time).format('HH:mm') !=
-        moment(oldData?.reminder?.time).format('HH:mm')
+      moment(oldData?.reminder?.time).format('HH:mm')
     ) {
       Alert.alert(
         'Unsaved Changes',
         'Are you sure you want to discard changes?',
-        [{text: 'No'}, {text: 'Yes', onPress: () => props.navigation.goBack()}],
+        [{ text: 'No' }, { text: 'Yes', onPress: () => props.navigation.goBack() }],
       );
     } else {
       props.navigation.goBack();
@@ -434,7 +467,7 @@ const CreateHabit = props => {
   );
   useEffect(() => {
     if (params?.item) {
-      let {item} = params;
+      let { item } = params;
       let changes = {
         title: item?.name,
         localImage: item?.images && fileURL + item?.images.large,
@@ -450,22 +483,24 @@ const CreateHabit = props => {
         },
         frequency: [...item?.frequency],
       };
-      updateHabit({...changes});
-      updateOldData({...changes});
+      updateHabit({ ...changes });
+      updateOldData({ ...changes });
+      habitType = item?.type;
     } else if (params?.habit) {
-      let {habit} = params;
+      let { habit } = params;
       let changes = {
         title: habit?.name,
         type: params.todo,
         preDefinedImage: habit?.images,
       };
-      updateHabit({...changes});
-      updateOldData({...changes});
+      updateHabit({ ...changes });
+      updateOldData({ ...changes });
     } else if (params?.todo != null && params?.todo != undefined) {
-      let changes = {type: params?.todo};
-      updateHabit({...changes});
-      updateOldData({...changes});
+      let changes = { type: params?.todo };
+      updateHabit({ ...changes });
+      updateOldData({ ...changes });
     } else {
+      habitType = null;
     }
     analytics().logEvent(props?.route?.name);
   }, []);
@@ -482,9 +517,9 @@ const CreateHabit = props => {
         onBackPress={onBackPress}
         title={!!params?.item ? 'Edit Habit' : 'Create Habit'}
       />
-      <View style={[mainStyles.innerView, {paddingTop: 10}]}>
+      <View style={[mainStyles.innerView, { paddingTop: 10 }]}>
         <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
-          <View style={{alignItems: 'center'}}>
+          <View style={{ alignItems: 'center' }}>
             <UploadImage
               Token={Token}
               NetworkImage={image?.path}
@@ -492,8 +527,8 @@ const CreateHabit = props => {
                 !!localImage
                   ? localImage
                   : !!preDefinedImage
-                  ? fileURL + preDefinedImage?.large
-                  : ''
+                    ? fileURL + preDefinedImage?.large
+                    : ''
               }
               setImage={setImage}
               borderRadius={20}
@@ -503,7 +538,7 @@ const CreateHabit = props => {
               }
             />
           </View>
-          <View style={{marginTop: 10}}>
+          <View style={{ marginTop: 10 }}>
             <CustomSimpleTextInput
               autoCapitalize={true}
               lable={'Habit Name'}
@@ -511,57 +546,57 @@ const CreateHabit = props => {
               lableBold={true}
               placeholder={'Your Custom Habit Name'}
               value={title}
-              onChangeText={text => updateHabit({title: text})}
+              onChangeText={text => updateHabit({ title: text })}
             />
           </View>
 
-          <View style={{marginTop: 15}}>
-            <View style={{marginBottom: 10}}>
+          <View style={{ marginTop: 15 }}>
+            <View style={{ marginBottom: 10 }}>
               <Text style={other_style.labelText}>Type of Habit</Text>
             </View>
-            <View style={{flexDirection: 'row'}}>
+            <View style={{ flexDirection: 'row' }}>
               {(!!params?.habit == false ||
                 (!!params?.todo == 0 && !!params?.habit == true)) && (
-                <Pressable
-                  onPress={() => updateHabit({type: 0})}
-                  style={[
-                    createHabit_styles.typeButton,
-                    type == 0 && createHabit_styles.selectedButton,
-                  ]}>
-                  <Image
-                    style={[createHabit_styles.typeButtonIcon]}
-                    source={require('../../../Assets/Icons/remove.png')}
-                  />
-                  <Text style={createHabit_styles.typeButtonText}>
-                    Not To-Do
-                  </Text>
-                </Pressable>
-              )}
+                  <Pressable
+                    onPress={() => updateHabit({ type: 0 })}
+                    style={[
+                      createHabit_styles.typeButton,
+                      type == 0 && createHabit_styles.selectedButton,
+                    ]}>
+                    <Image
+                      style={[createHabit_styles.typeButtonIcon]}
+                      source={require('../../../Assets/Icons/remove.png')}
+                    />
+                    <Text style={createHabit_styles.typeButtonText}>
+                      Not To-Do
+                    </Text>
+                  </Pressable>
+                )}
               {(!!params?.habit == false ||
                 (!!params?.todo == 1 && !!params?.habit == true)) && (
-                <Pressable
-                  onPress={() => updateHabit({type: 1})}
-                  style={[
-                    createHabit_styles.typeButton,
-                    type == 1 && createHabit_styles.selectedButton,
-                  ]}>
-                  <Image
-                    style={[createHabit_styles.typeButtonIcon]}
-                    source={require('../../../Assets/Icons/correct.png')}
-                  />
-                  <Text style={createHabit_styles.typeButtonText}>To-Do</Text>
-                </Pressable>
-              )}
+                  <Pressable
+                    onPress={() => updateHabit({ type: 1 })}
+                    style={[
+                      createHabit_styles.typeButton,
+                      type == 1 && createHabit_styles.selectedButton,
+                    ]}>
+                    <Image
+                      style={[createHabit_styles.typeButtonIcon]}
+                      source={require('../../../Assets/Icons/correct.png')}
+                    />
+                    <Text style={createHabit_styles.typeButtonText}>To-Do</Text>
+                  </Pressable>
+                )}
             </View>
           </View>
 
-          <View style={{marginTop: 15}}>
-            <View style={{marginBottom: 10}}>
+          <View style={{ marginTop: 15 }}>
+            <View style={{ marginBottom: 10 }}>
               <Text style={other_style.labelText}>Target Date</Text>
             </View>
             <Pressable
               onPress={() =>
-                updateHabit({targetDate: {...targetDate, showModal: true}})
+                updateHabit({ targetDate: { ...targetDate, showModal: true } })
               }
               style={{
                 backgroundColor: Colors.white,
@@ -572,7 +607,7 @@ const CreateHabit = props => {
                 flexDirection: 'row',
                 alignItems: 'center',
               }}>
-              <View style={{width: 20}} />
+              <View style={{ width: 20 }} />
               <Text
                 style={{
                   fontFamily: font.medium,
@@ -585,16 +620,16 @@ const CreateHabit = props => {
 
               <Image
                 source={require('../../../Assets/Icons/calendar.png')}
-                style={{height: 20, width: 20, tintColor: Colors.placeHolder}}
+                style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
               />
             </Pressable>
           </View>
 
-          <View style={{marginTop: 15}}>
-            <View style={{marginBottom: 10}}>
+          <View style={{ marginTop: 15 }}>
+            <View style={{ marginBottom: 10 }}>
               <Text style={other_style.labelText}>Frequency</Text>
             </View>
-            <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
               {frequency.map((x, i) => {
                 return (
                   <Pressable
@@ -620,15 +655,15 @@ const CreateHabit = props => {
           </View>
 
           <View style={createHabit_styles.reminderView}>
-            <View style={{marginBottom: 0, paddingVertical: 10}}>
+            <View style={{ marginBottom: 0, paddingVertical: 10 }}>
               <Text style={other_style.labelText}>Habit Reminder</Text>
             </View>
             <View>
               <Switch
                 onChange={() =>
-                  updateHabit({reminder: {...reminder, value: !reminder.value}})
+                  updateHabit({ reminder: { ...reminder, value: !reminder.value } })
                 }
-                trackColor={{true: Colors.primary}}
+                trackColor={{ true: Colors.primary }}
                 thumbColor={
                   Platform.OS == 'android' ? Colors.gray01 : Colors.white
                 }
@@ -642,7 +677,7 @@ const CreateHabit = props => {
               <Pressable
                 onPress={() =>
                   updateHabit({
-                    reminder: {...reminder, showModal: !reminder.showModal},
+                    reminder: { ...reminder, showModal: !reminder.showModal },
                   })
                 }
                 style={{
@@ -667,10 +702,10 @@ const CreateHabit = props => {
               <View style={{}}>
                 <Image
                   source={require('../../../Assets/Icons/alert.png')}
-                  style={{height: 80, width: 80}}
+                  style={{ height: 80, width: 80 }}
                 />
               </View>
-              <View style={{marginTop: 20}}>
+              <View style={{ marginTop: 20 }}>
                 <View
                   style={{
                     flexDirection: 'row',
@@ -681,7 +716,7 @@ const CreateHabit = props => {
                   <Text
                     style={[
                       createHabit_styles.timeButtonTextHeader,
-                      {marginTop: 0},
+                      { marginTop: 0 },
                     ]}>
                     Set Reminder
                   </Text>
@@ -693,7 +728,7 @@ const CreateHabit = props => {
                 <Pressable
                   onPress={() =>
                     updateHabit({
-                      reminder: {...reminder, showModal: !reminder.showModal},
+                      reminder: { ...reminder, showModal: !reminder.showModal },
                     })
                   }
                   style={createHabit_styles.selectTimeButtion}>
@@ -705,7 +740,7 @@ const CreateHabit = props => {
             </View>
           )}
 
-          <View style={{marginVertical: 20}}>
+          <View style={{ marginVertical: 20 }}>
             {!!params?.item ? (
               <CustomButton onPress={btn_editHabit} title={'Save Changes'} />
             ) : (
@@ -733,7 +768,7 @@ const CreateHabit = props => {
           })
         }
         onCancel={() =>
-          updateHabit({reminder: {...reminder, showModal: false}})
+          updateHabit({ reminder: { ...reminder, showModal: false } })
         }
       />
 
@@ -754,7 +789,7 @@ const CreateHabit = props => {
           })
         }
         onCancel={() =>
-          updateHabit({targetDate: {...targetDate, showModal: false}})
+          updateHabit({ targetDate: { ...targetDate, showModal: false } })
         }
         accentColor={Colors.primary}
         buttonTextColorIOS={Colors.primary}

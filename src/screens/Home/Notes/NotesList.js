@@ -11,18 +11,18 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import React, {useState, useEffect, useRef, useCallback, useMemo} from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
-import {mainStyles, FAB_style} from '../../../Utilities/styles';
-import {font} from '../../../Utilities/font';
-import {screens} from '../../../Navigation/Screens';
+import { mainStyles, FAB_style } from '../../../Utilities/styles';
+import { font } from '../../../Utilities/font';
+import { screens } from '../../../Navigation/Screens';
 import moment from 'moment';
 import Collapsible from 'react-native-collapsible';
 import SwipeableFlatList from 'react-native-swipeable-list';
 import debounnce from '../../../functions/debounce';
 // fro API calling
-import {useContext} from 'react';
+import { useContext } from 'react';
 import Context from '../../../Context';
 import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
@@ -54,8 +54,8 @@ let endDate = '';
 let selectedColors = [];
 
 const List = props => {
-  const {navigation} = props;
-  const {Token} = useContext(Context);
+  const { navigation } = props;
+  const { Token, dashboardData, setDashBoardData } = useContext(Context);
   const searchTextRef = useRef();
   const [list, setList] = useState([]);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
@@ -74,7 +74,7 @@ const List = props => {
   React.useEffect(() => {
     console.log(props.route, 'props.route');
     if (!!props.route?.params?.filter) {
-      let {filter} = props.route.params;
+      let { filter } = props.route.params;
       startDate = filter?.date.start;
       endDate = filter?.date.end;
       selectedColors = filter?.selectedColors;
@@ -220,14 +220,35 @@ const List = props => {
     }
   };
 
-  const deleteLocallyfromList = noteID => {
+  const deleteLocallyfromList = async noteID => {
     let arr = [...list];
     let index = arr.findIndex(x => x._id === noteID);
     if (index !== -1) {
       arr.splice(index, 1);
+      await deleteDashBoardNotes(noteID, arr)
       setList(arr);
     }
   };
+
+  const deleteDashBoardNotes = async (id, arr) => {
+    let tempArr = [...dashboardData.notes]
+    let idx = tempArr.findIndex(x => x._id == id)
+    if (idx != -1) {
+      tempArr = []
+
+      if (arr[0] != undefined) {
+        tempArr.push(arr[0])
+      }
+      if (arr[1] != undefined) {
+        tempArr.push(arr[1])
+      }
+      console.log(tempArr, "new Arr......")
+    }
+    await setDashBoardData({
+      ...dashboardData,
+      notes: [...tempArr]
+    })
+  }
 
   useEffect(() => {
     if (Token) {
@@ -260,7 +281,7 @@ const List = props => {
   }, []);
 
   const flatListRenderItem = useCallback(
-    ({item, index}) => {
+    ({ item, index }) => {
       let regex = /<p(?:\sclass="[^"]+")?>([^(?:<\/p)]+)<\/p>/;
 
       return (
@@ -293,7 +314,7 @@ const List = props => {
             <View>
               <Image
                 source={ic_notes}
-                style={{height: 40, width: 40, tintColor: item?.color.dark}}
+                style={{ height: 40, width: 40, tintColor: item?.color.dark }}
               />
             </View>
             <View
@@ -302,7 +323,7 @@ const List = props => {
                 justifyContent: 'center',
                 flex: 1,
               }}>
-              <Text style={{fontFamily: font.bold, fontSize: 18}}>
+              <Text style={{ fontFamily: font.bold, fontSize: 18 }}>
                 {item.title}
               </Text>
 
@@ -447,7 +468,7 @@ const List = props => {
             startDate == '' &&
             endDate == '' &&
             selectedColors.length == 0 && (
-              <View style={{flex: 0.5, justifyContent: 'center'}}>
+              <View style={{ flex: 0.5, justifyContent: 'center' }}>
                 <Pressable
                   onPress={onNoteEditorScreen}
                   style={[
@@ -504,7 +525,7 @@ const List = props => {
         rightIcon2onPress={() => {
           if (Token) {
             props.navigation.navigate(screens.notesFilter, {
-              filter: {startDate, endDate, selectedColors},
+              filter: { startDate, endDate, selectedColors },
             });
           } else {
             onLoginScreen();
@@ -512,7 +533,7 @@ const List = props => {
         }}
       />
 
-      <View style={{flex: 1, backgroundColor: Colors.white}}>
+      <View style={{ flex: 1, backgroundColor: Colors.white }}>
         <Collapsible collapsed={!isSearchVisible}>
           <View
             style={{
@@ -525,7 +546,7 @@ const List = props => {
             <TextInput
               ref={searchTextRef}
               placeholder="Search..."
-              style={{flex: 1, height: '100%', fontSize: 16}}
+              style={{ flex: 1, height: '100%', fontSize: 16 }}
               onChangeText={searchFromAPI}
               value={searchText}
             />
@@ -535,7 +556,7 @@ const List = props => {
                 setSearchText('');
                 searchFromAPI('');
               }}
-              style={{alignItems: 'center'}}>
+              style={{ alignItems: 'center' }}>
               <View
                 style={{
                   // backgroundColor: '#BDC3C744',
@@ -545,12 +566,12 @@ const List = props => {
                   justifyContent: 'center',
                   // borderRadius: 25,
                 }}>
-                <Image source={ic_cross} style={{height: 20, width: 20}} />
+                <Image source={ic_cross} style={{ height: 20, width: 20 }} />
               </View>
             </Pressable>
           </View>
         </Collapsible>
-        <View style={{flex: 1, paddingHorizontal: 5}}>
+        <View style={{ flex: 1, paddingHorizontal: 5 }}>
           <SwipeableFlatList
             contentContainerStyle={[
               list.length == 0 && {
@@ -570,7 +591,7 @@ const List = props => {
             data={list}
             renderItem={flatListRenderItem}
             ListEmptyComponent={flatListEmptyComponent}
-            renderQuickActions={({item, index}) => {
+            renderQuickActions={({ item, index }) => {
               return (
                 <Pressable
                   key={item._id}
@@ -579,8 +600,8 @@ const List = props => {
                       'Delete Note',
                       'Are you sure you want to delete this Note',
                       [
-                        {text: 'No'},
-                        {text: 'Yes', onPress: () => api_deleteNote(item._id)},
+                        { text: 'No' },
+                        { text: 'Yes', onPress: () => api_deleteNote(item._id) },
                       ],
                     )
                   }
@@ -606,7 +627,7 @@ const List = props => {
                   }}>
                   <Image
                     source={require('../../../Assets/Icons/trash.png')}
-                    style={{height: 25, width: 25, tintColor: Colors.white}}
+                    style={{ height: 25, width: 25, tintColor: Colors.white }}
                   />
                 </Pressable>
               );
@@ -624,7 +645,7 @@ const List = props => {
             }}
             ListFooterComponent={
               isLoadingMore && (
-                <View style={{height: 100, justifyContent: 'center'}}>
+                <View style={{ height: 100, justifyContent: 'center' }}>
                   <ActivityIndicator color={Colors.primary} size="small" />
                 </View>
               )
@@ -633,7 +654,7 @@ const List = props => {
           {list.length != 0 && (
             <Pressable
               onPress={onNoteEditorScreen}
-              style={[FAB_style.View, {borderRadius: 50 / 2}]}>
+              style={[FAB_style.View, { borderRadius: 50 / 2 }]}>
               <Image
                 source={require('../../../Assets/Icons/plus.png')}
                 style={FAB_style.image}

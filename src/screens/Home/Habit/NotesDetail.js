@@ -39,7 +39,7 @@ import EmptyView from '../../../Components/EmptyView';
 import Toast from 'react-native-toast-message';
 
 const NotesDetail = props => {
-  const {Token, habitList, setHabitList} = useContext(Context);
+  const {Token, habitList, setHabitList, dashboardData, setDashBoardData} = useContext(Context);
   const {params} = props.route;
   const detailNoteMenu = useRef();
   const [habit, sethabit] = useState(null);
@@ -255,11 +255,47 @@ const NotesDetail = props => {
         setTimeout(() => {
           props.navigation.goBack();
         }, 200);
+        
+        dashBoardApi();
+
+        // let obj = dashboardData.habitStats;
+        // obj.completed_habits = obj.completed_habits != 0 ? obj.completed_habits - 1 : 0;
+        // obj.pending_habits = obj.pending_habits + 1;
+        // await setDashBoardData({
+        //   ...dashboardData,
+        //   habitStats: obj
+        // })
       } else {
         showToast(res.message);
       }
     }
   };
+
+  const dashBoardApi = async () => {
+    let res = await invokeApi({
+      path: 'api/customer/app_dashboard',
+      method: 'GET',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    if (res) {
+      if (res.code == 200) {
+        let meditation = res.meditation_of_the_day;
+        let quote = res.quote_of_day;
+        let habit = res.habit_stats;
+        let note = res.notes;
+        await setDashBoardData({
+          ...dashboardData,
+          habitStats: habit,
+          meditationOfTheDay: meditation,
+          quoteOfTheDay: quote,
+          notes: note,
+        })
+      } else { }
+    }
+  }
 
   const addScheduleNotification = obj_habit => {
     console.log('addScheduleNotification', obj_habit);

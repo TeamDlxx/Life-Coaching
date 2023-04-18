@@ -10,25 +10,25 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import Colors from '../../../Utilities/Colors';
-import TrackPlayer, {State} from 'react-native-track-player';
+import TrackPlayer, { State } from 'react-native-track-player';
 import ProgressBar from '../../../Components/ProgreeBar';
-import {_styleTrackPlayer} from '../../../Utilities/styles';
+import { _styleTrackPlayer } from '../../../Utilities/styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoginAlert from '../../../Components/LoginAlert';
 import analytics from '@react-native-firebase/analytics';
-import {screens} from '../../../Navigation/Screens';
+import { screens } from '../../../Navigation/Screens';
 
-import {BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
-import {Admob_Ids} from '../../../Utilities/AdmobIds';
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import { Admob_Ids } from '../../../Utilities/AdmobIds';
 
 // For API's calling
-import {useContext} from 'react';
+import { useContext } from 'react';
 import Context from '../../../Context';
 import showToast from '../../../functions/showToast';
 import invokeApi from '../../../functions/invokeAPI';
-import {fileURL} from '../../../Utilities/domains';
+import { fileURL } from '../../../Utilities/domains';
 //Icons
 
 import favIcon from '../../../Assets/TrackPlayer/favIcon.png';
@@ -42,14 +42,14 @@ import ic_download from '../../../Assets/Icons/download.png';
 
 import ic_share from '../../../Assets/TrackPlayer/share.png';
 import ic_tick from '../../../Assets/Icons/tick.png';
-import {duration} from 'moment';
-import {font} from '../../../Utilities/font';
+import { duration } from 'moment';
+import { font } from '../../../Utilities/font';
 import ic_lock from '../../../Assets/Icons/locked.png';
 const TrackPlayerScreen = props => {
   console.log(State, 'State...');
-  const {navigation} = props;
-  const {params} = props?.route;
-  const {Token, downloadTrack, progress, deleteTrack, isMeditationPurchased} =
+  const { navigation } = props;
+  const { params } = props?.route;
+  const { Token, downloadTrack, progress, deleteTrack, isMeditationPurchased, dashboardData, setDashBoardData } =
     useContext(Context);
   const [tracksList, setTrackList] = useState(params?.list);
   const [trackItem, setTrackItem] = useState(params?.item);
@@ -102,7 +102,7 @@ const TrackPlayerScreen = props => {
           'Remove Track',
           'Are you sure you want to remove this track from your downloads',
           [
-            {text: 'No'},
+            { text: 'No' },
             {
               text: 'Yes',
               onPress: async () => {
@@ -252,7 +252,7 @@ const TrackPlayerScreen = props => {
   }, [trackItem]);
 
   useEffect(() => {
-    TrackPlayer.addEventListener('playback-state', async ({state}) => {
+    TrackPlayer.addEventListener('playback-state', async ({ state }) => {
       console.log('state: ' + state);
 
       if (state == 'playing' || state == 2) {
@@ -270,7 +270,7 @@ const TrackPlayerScreen = props => {
       }
     });
 
-    TrackPlayer.addEventListener('remote-play', async ({state}) => {
+    TrackPlayer.addEventListener('remote-play', async ({ state }) => {
       console.log('state: ' + state);
     });
 
@@ -369,6 +369,12 @@ const TrackPlayerScreen = props => {
   const api_likeUnLike = async (val, id) => {
     if (!!params?.likeUnLikeFunc) {
       params?.likeUnLikeFunc(id, val);
+      if (id == dashboardData.meditationOfTheDay._id) {
+        dashboardData.meditationOfTheDay.is_favourite = val;
+        await setDashBoardData({
+          ...dashboardData,
+        })
+      }
     }
 
     if (!!params?.unLike && val == false) {
@@ -399,6 +405,12 @@ const TrackPlayerScreen = props => {
         console.log('blah blah');
         if (!!params?.likeUnLikeFunc) {
           params?.likeUnLikeFunc(id, !val);
+          if (id == dashboardData.meditationOfTheDay._id) {
+            dashboardData.meditationOfTheDay.is_favourite = !val;
+            await setDashBoardData({
+              ...dashboardData,
+            })
+          }
         }
         togglelike(id, !val);
         showToast(res.message);
@@ -433,7 +445,7 @@ const TrackPlayerScreen = props => {
             backgroundColor={'transparent'}
             translucent={true}
           />
-          <SafeAreaView style={{flex: 1}}>
+          <SafeAreaView style={{ flex: 1 }}>
             <View
               style={{
                 marginTop:
@@ -449,16 +461,16 @@ const TrackPlayerScreen = props => {
                   source={require('../../../Assets/Icons/back.png')}
                 />
               </Pressable>
-              <View style={{flexDirection: 'row', marginRight: 10}}>
+              <View style={{ flexDirection: 'row', marginRight: 10 }}>
                 <Pressable
                   disabled={downloading()}
                   onPress={downloadTheTrack}
                   style={[
                     _styleTrackPlayer.backButtonView,
                     !!downloaded &&
-                      !!Token && {
-                        paddingHorizontal: 5,
-                      },
+                    !!Token && {
+                      paddingHorizontal: 5,
+                    },
                   ]}>
                   {downloading() ? (
                     <ActivityIndicator color={Colors.black} size="small" />
@@ -467,17 +479,17 @@ const TrackPlayerScreen = props => {
                       style={[
                         _styleTrackPlayer.backButton2Icon,
                         !!downloaded &&
-                          !!Token && {
-                            height: 20,
-                            width: 20,
-                          },
+                        !!Token && {
+                          height: 20,
+                          width: 20,
+                        },
                       ]}
                       source={!!downloaded && !!Token ? ic_tick : ic_download}
                     />
                   )}
                   {!!downloaded && !!Token && (
                     <Text
-                      style={{fontFamily: font.medium, marginHorizontal: 5}}>
+                      style={{ fontFamily: font.medium, marginHorizontal: 5 }}>
                       Downloaded
                     </Text>
                   )}
@@ -494,7 +506,7 @@ const TrackPlayerScreen = props => {
                   zIndex: -1,
                 }}>
                 <Image
-                  style={{height: 100, width: 100, tintColor: Colors.gray05}}
+                  style={{ height: 100, width: 100, tintColor: Colors.gray05 }}
                   source={require('../../../Assets/Icons/ic_music.png')}
                 />
               </View>
@@ -560,7 +572,7 @@ const TrackPlayerScreen = props => {
               <Image
                 style={[
                   _styleTrackPlayer.previosAndNextButtonIcon,
-                  {tintColor: repeat ? Colors.primary : Colors.gray05},
+                  { tintColor: repeat ? Colors.primary : Colors.gray05 },
                 ]}
                 source={ic_repeat}
               />
@@ -586,13 +598,13 @@ const TrackPlayerScreen = props => {
                   trackItem?.is_locked == true && isMeditationPurchased == false
                     ? false
                     : loading
-                    ? true
-                    : false
+                      ? true
+                      : false
                 }
                 onPress={changeStatus}
                 style={_styleTrackPlayer.playPauseButtonInnerView}>
                 {trackItem?.is_locked == true &&
-                isMeditationPurchased == false ? (
+                  isMeditationPurchased == false ? (
                   <Image
                     style={_styleTrackPlayer.playPauseLockedButtonIcon}
                     source={ic_lock}
