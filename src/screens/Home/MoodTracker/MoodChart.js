@@ -129,8 +129,6 @@ const MoodsJournal = props => {
       navigation: props.navigation,
     });
     if (res) {
-      setisLoading(false);
-
       if (res.code == 200) {
 
         chartData.happy = [];
@@ -158,6 +156,7 @@ const MoodsJournal = props => {
         else {
           graphData(selectedMoods)
         }
+        await setisLoading(false);
       } else {
         showToast(res.message);
       }
@@ -371,9 +370,10 @@ const MoodsJournal = props => {
 
       <View style={mainStyles.innerView}>
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          <Loader enable={isLoading} />
+          {/* <Loader enable={isLoading} /> */}
 
-          {isLoading == false && allMoods.length == 0 && exist == false ?
+          {isLoading == false ? allMoods.length == 0 && exist == false ?
+
             <View
               style={{
                 justifyContent: 'center',
@@ -593,7 +593,8 @@ const MoodsJournal = props => {
               </Pressable>
 
 
-            </View>
+            </View> :
+              <Loader style = {{flex : 1, }} enable={isLoading} />
           }
 
         </ScrollView>
