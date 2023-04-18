@@ -47,6 +47,8 @@ const MoodsJournal = props => {
   let end;
   const { Token, } = useContext(Context);
   const [isLoading, setisLoading] = useState(false);
+  const [isRefreshing, setisRefreshing] = useState(false);
+
 
   const [currentWeek, setCurrentWeek] = useState({
     startDate: moment().startOf("week"),
@@ -84,6 +86,7 @@ const MoodsJournal = props => {
         start = moment(new Date(currentWeek.startDate)).toDate();
         end = moment(new Date(currentWeek.endDate)).toDate();
 
+        setisLoading(true);
         apiChartData({
           start_date: moment(start).toISOString(),
           end_date: moment(end).toISOString(),
@@ -118,7 +121,6 @@ const MoodsJournal = props => {
   }
 
   const apiChartData = async body => {
-    setisLoading(true);
     let res = await invokeApi({
       path: 'api/mood/mood_graph',
       method: 'POST',
@@ -129,6 +131,9 @@ const MoodsJournal = props => {
       navigation: props.navigation,
     });
     if (res) {
+      setisLoading(false);
+      setisRefreshing(false)
+
       if (res.code == 200) {
 
         chartData.happy = [];
@@ -156,7 +161,6 @@ const MoodsJournal = props => {
         else {
           graphData(selectedMoods)
         }
-        await setisLoading(false);
       } else {
         showToast(res.message);
       }
@@ -328,6 +332,7 @@ const MoodsJournal = props => {
 
       console.log(currentWeek, "previous Week .....")
 
+      setisRefreshing(true)
       await apiChartData({
         start_date: moment(start).subtract({ day: 7 }).toISOString(),
         end_date: moment(end).subtract({ day: 7 }).toISOString(),
@@ -348,6 +353,7 @@ const MoodsJournal = props => {
       })
       console.log(currentWeek, "next Week .....")
 
+      setisRefreshing(true)
       await apiChartData({
         start_date: moment(start).add({ day: 7 }).toISOString(),
         end_date: moment(end).add({ day: 7 }).toISOString(),
@@ -369,69 +375,67 @@ const MoodsJournal = props => {
       />
 
       <View style={mainStyles.innerView}>
-        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          {/* <Loader enable={isLoading} /> */}
 
-          {isLoading == false ? allMoods.length == 0 && exist == false ?
+        {isLoading == false ? allMoods.length == 0 && exist == false ?
 
-            <View
+          <View
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              flex: 1,
+            }}>
+            <Image
+              source={require('../../../Assets/illustractions/MoodTracker.png')}
               style={{
-                justifyContent: 'center',
-                alignItems: 'center',
-                flex: 1,
+                width: win.width * 0.85,
+                height: win.width * 0.65,
+              }}
+            />
+            <Text
+              style={{
+                fontFamily: font.xbold,
+                fontSize: 28,
+                marginTop: 25,
               }}>
-              <Image
-                source={require('../../../Assets/illustractions/MoodTracker.png')}
-                style={{
-                  marginTop: 40,
-                  width: win.width * 0.85,
-                  height: win.width * 0.65,
-                }}
-              />
-              <Text
-                style={{
-                  fontFamily: font.xbold,
-                  fontSize: 28,
-                  marginTop: 25,
-                }}>
-                No Mood Insights
-              </Text>
-              <Text
-                style={{
-                  fontFamily: font.bold,
-                  fontSize: 16,
-                  marginTop: 10,
-                  color: Colors.placeHolder,
-                  width: '80%',
-                  textAlign: 'center',
-                }}>
-                Start keeping a record of your moods at regular intervals with some additional notes !
-              </Text>
+              No Mood Insights
+            </Text>
+            <Text
+              style={{
+                fontFamily: font.bold,
+                fontSize: 16,
+                marginTop: 10,
+                color: Colors.placeHolder,
+                width: '80%',
+                textAlign: 'center',
+              }}>
+              Start keeping a record of your moods at regular intervals with some additional notes !
+            </Text>
 
-              <View style={{ flex: 0.5, justifyContent: 'center', marginTop: 50 }}>
-                <Pressable
-                  onPress={btn_add}
-                  style={[
-                    FAB_style.View,
-                    {
-                      position: 'relative',
-                      right: 0,
-                      height: 65,
-                      width: 65,
-                      borderRadius: 65 / 2,
-                    },
-                  ]}>
-                  <Image
-                    source={require('../../../Assets/Icons/plus.png')}
-                    style={FAB_style.image}
-                  />
-                </Pressable>
+            <View style={{ flex: 0.5, justifyContent: 'center', marginTop: 10 }}>
+              <Pressable
+                onPress={btn_add}
+                style={[
+                  FAB_style.View,
+                  {
+                    position: 'relative',
+                    right: 0,
+                    height: 65,
+                    width: 65,
+                    borderRadius: 65 / 2,
+                  },
+                ]}>
+                <Image
+                  source={require('../../../Assets/Icons/plus.png')}
+                  style={FAB_style.image}
+                />
+              </Pressable>
 
-
-              </View>
 
             </View>
-            :
+
+          </View>
+          :
+          <>
             <View style={{ flex: 1 }}>
               <View
                 style={{
@@ -592,20 +596,19 @@ const MoodsJournal = props => {
                 }}>{"Your Mood Journal >"}</Text>
               </Pressable>
 
+            </View>
+            <Pressable style={FAB_style.View} onPress={btn_add}>
+              <Image
+                source={require('../../../Assets/Icons/plus.png')}
+                style={FAB_style.image}
+              />
+            </Pressable>
+          </>
+          : <Loader enable={isLoading} />
+        }
 
-            </View> :
-              <Loader style = {{flex : 1, }} enable={isLoading} />
-          }
-
-        </ScrollView>
-
-        {(allMoods.length != 0 || exist == true) && <Pressable style={FAB_style.View} onPress={btn_add}>
-          <Image
-            source={require('../../../Assets/Icons/plus.png')}
-            style={FAB_style.image}
-          />
-        </Pressable>}
       </View>
+      <Loader style={{ bottom: win.height / 3, }} enable={isRefreshing} />
     </SafeAreaView>
   );
 };
