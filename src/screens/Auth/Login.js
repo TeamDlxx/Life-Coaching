@@ -226,6 +226,23 @@ const Login = props => {
     }
   };
 
+  const socialLoginApi = async obj => {
+    let res = await invokeApi({
+      path: 'api/app_api/register_by_social_media',
+      method: 'POST',
+      postData: obj,
+    });
+    if (res) {
+      if (res.code == 200) {
+        console.log(res, "response...")
+        onBottomTabScreen(res);
+      } else {
+        setisLoading(false);
+        showToast(res.message);
+      }
+    }
+  };
+
   useEffect(() => {
     checkNotificationPermission();
     analytics().logEvent(props?.route?.name);
@@ -239,10 +256,20 @@ const Login = props => {
         offlineAccess: true,
         webClientId: "943544818199-rl7j7rbngtg07d17ehktlonq40ldmki6.apps.googleusercontent.com"
       });
+      await GoogleSignin.signOut();
       let hasPlayServices = await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       if (hasPlayServices) {
         const userInfo = await GoogleSignin.signIn();
-        console.log(userInfo , "user info from google signin");
+        console.log(userInfo, "user info from google signin");
+        let idToken = userInfo.idToken;
+
+        let loginObj = {
+          code: idToken,
+          login_by: 'Google',
+        };
+
+        setisLoading(true);
+        socialLoginApi(loginObj);
       }
 
     } catch (error) {
@@ -263,29 +290,37 @@ const Login = props => {
     // performs login request
 
     try {
-      
-   
+      console.log("button clicked apple")
+      const appleAuthRequestResponse = await appleAuth.performRequest({
+        requestedOperation: appleAuth.Operation.LOGIN,
+        // Note: it appears putting FULL_NAME first is important, see issue #293
+        requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
+      });
 
-    console.log("button clicked apple")
-    const appleAuthRequestResponse = await appleAuth.performRequest({
-      requestedOperation: appleAuth.Operation.LOGIN,
-      // Note: it appears putting FULL_NAME first is important, see issue #293
-      requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
-    });
-  
-    console.log(appleAuthRequestResponse , "response from apple")
-    // get current authentication state for user
-    // /!\ This method must be tested on a real device. On the iOS simulator it always throws an error.
-    const credentialState = await appleAuth.getCredentialStateForUser(appleAuthRequestResponse.user);
-  
-    // use credentialState response to ensure the user is authenticated
-    if (credentialState === appleAuth.State.AUTHORIZED) {
-      // user is authenticated
-    }
 
-  } catch (e) {
+      // get current authentication state for user
+      // /!\ This method must be tested on a real device. On the iOS simulator it always throws an error.
+      const credentialState = await appleAuth.getCredentialStateForUser(appleAuthRequestResponse.user);
+
+      // use credentialState response to ensure the user is authenticated
+      if (credentialState === appleAuth.State.AUTHORIZED) {
+        // user is authenticated
+      }
+
+      console.log(appleAuthRequestResponse, "response from apple")
+
+      let loginObj = {
+        code: appleAuthRequestResponse.identityToken,
+        login_by: 'Apple',
+      };
+      setisLoading(true);
+      socialLoginApi(loginObj);
+
+
+
+    } catch (e) {
       console.log("error", e)
-  }
+    }
   }
 
 
@@ -433,7 +468,7 @@ const Login = props => {
                 <Image source={require("../../Assets/Icons/google.png")} style={loginStyles.btnImageStyle} />
               </Pressable>
 
-              <TouchableOpacity onPress={() => { signInWithApple()}}
+              <TouchableOpacity onPress={() => { signInWithApple() }}
                 style={loginStyles.buttonStyle}>
                 <Image source={require("../../Assets/Icons/apple.png")} style={loginStyles.btnImageStyle} />
               </ TouchableOpacity>

@@ -360,7 +360,8 @@ const Gratitude = props => {
                 }
                 showsVerticalScrollIndicator={false}
                 data={filterSelectedDayGratitudes(gratitudesList)}
-                ListHeaderComponent={(gratitudesList.length != 0 || gratitudeExist == true) && flatListHeader()}
+                ListHeaderComponent={flatListHeader()}
+                // ListHeaderComponent={(gratitudesList.length != 0 || gratitudeExist == true) && flatListHeader()}
                 renderItem={renderGratitudeList}
                 keyExtractor={item => {
                   return item._id;
@@ -379,16 +380,22 @@ const Gratitude = props => {
                 }
               />
             </View>
+            <Pressable style={FAB_style.View} onPress={btn_add}>
+              <Image
+                source={require('../../../Assets/Icons/plus.png')}
+                style={FAB_style.image}
+              />
+            </Pressable>
           </>
 
         }
-        {(gratitudesList.length != 0 || gratitudeExist == true) && <Pressable style={FAB_style.View} onPress={btn_add}>
+        {/* {(gratitudesList.length != 0 || gratitudeExist == true) && <Pressable style={FAB_style.View} onPress={btn_add}>
           <Image
             source={require('../../../Assets/Icons/plus.png')}
             style={FAB_style.image}
           />
         </Pressable>
-        }
+        } */}
       </View>
     </SafeAreaView>
   );

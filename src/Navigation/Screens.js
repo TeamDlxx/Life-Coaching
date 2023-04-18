@@ -58,5 +58,6 @@ export const screens = {
   //Reminder
   reminder: "REMINDER_SCREEN",
 
-
+  //HomeScreen
+  homeScreen : 'HOME'
 };

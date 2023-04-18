@@ -1,18 +1,20 @@
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import Setting from '../screens/Settings/Setting';
 import Home from '../screens/Home/Home';
 import Profile from '../screens/Profile/Profile';
-import {screens} from './Screens';
+import HomeScreen from '../screens/HomeScreen/HomeScreen';
+import { screens } from './Screens';
 import Colors from '../Utilities/Colors';
 
 import React from 'react';
-import {Image, View, Text, StyleSheet, SafeAreaView} from 'react-native';
-import {font} from '../Utilities/font';
+import { Image, View, Text, StyleSheet, SafeAreaView } from 'react-native';
+import { font } from '../Utilities/font';
 
 //Icons
 
 const homeIcon = require('../Assets/Icons/home.png');
+const toolsIcon = require('../Assets/Icons/tools.png');
 const profileIcon = require('../Assets/Icons/user1.png');
 const settingsIcon = require('../Assets/Icons/settings.png');
 
@@ -21,7 +23,7 @@ const Tab = createBottomTabNavigator();
 export default function BottomTabs() {
   return (
     <Tab.Navigator
-      initialRouteName={screens.home}
+      initialRouteName={screens.homeScreen}
       screenOptions={{
         headerShown: false,
         keyboardHidesTabBar: true,
@@ -39,10 +41,10 @@ export default function BottomTabs() {
         },
       }}>
       <Tab.Screen
-        name={screens.home}
-        component={Home}
+        name={screens.homeScreen}
+        component={HomeScreen}
         options={{
-          tabBarIcon: ({focused}) => (
+          tabBarIcon: ({ focused }) => (
             <View style={focused ? _styles.selectedTabView : _styles.TabView}>
               <Image
                 resizeMode="contain"
@@ -56,10 +58,27 @@ export default function BottomTabs() {
       />
 
       <Tab.Screen
+        name={screens.home}
+        component={Home}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <View style={focused ? _styles.selectedTabView : _styles.TabView}>
+              <Image
+                resizeMode="contain"
+                source={toolsIcon}
+                style={focused ? _styles.selectedIcon : _styles.Icon}
+              />
+              {focused && <Text style={_styles.selectedText}>Tools</Text>}
+            </View>
+          ),
+        }}
+      />
+
+      <Tab.Screen
         name={screens.profile}
         component={Profile}
         options={{
-          tabBarIcon: ({focused}) => (
+          tabBarIcon: ({ focused }) => (
             <View style={focused ? _styles.selectedTabView : _styles.TabView}>
               <Image
                 resizeMode="contain"
@@ -76,7 +95,7 @@ export default function BottomTabs() {
         name={screens.settings}
         component={Setting}
         options={{
-          tabBarIcon: ({focused}) => (
+          tabBarIcon: ({ focused }) => (
             <View style={focused ? _styles.selectedTabView : _styles.TabView}>
               <Image
                 resizeMode="contain"
@@ -102,8 +121,9 @@ const _styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   selectedTabView: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    marginLeft: 1,
+    paddingVertical: 9,
+    paddingHorizontal: 13,
     borderRadius: 30,
     flexDirection: 'row',
     alignItems: 'center',
@@ -127,7 +147,7 @@ const _styles = StyleSheet.create({
   },
   selectedText: {
     color: Colors.primary,
-    fontSize: 14,
+    fontSize: 13,
     marginLeft: 10,
     fontFamily: font.medium,
   },
