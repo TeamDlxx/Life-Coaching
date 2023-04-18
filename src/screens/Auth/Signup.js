@@ -359,12 +359,12 @@ const Signup = props => {
                 <Image source={require("../../Assets/Icons/apple.png")} style={loginStyles.btnImageStyle} />
               </Pressable>
 
-              <Pressable
+              {/* <Pressable
                 onPress={() => { }}
                 // onPress={sigFnInWithFacebook}
                 style={loginStyles.buttonStyle}>
                 <Image source={require("../../Assets/Icons/facebook.png")} style={loginStyles.btnImageStyle} />
-              </Pressable>
+              </Pressable> */}
 
             </View>
 
