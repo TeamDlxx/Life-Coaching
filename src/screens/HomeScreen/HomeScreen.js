@@ -14,6 +14,7 @@ import {
     TouchableHighlight,
     TouchableOpacity,
     Platform,
+    ToastAndroid,
     ActivityIndicator,
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
@@ -21,19 +22,21 @@ import SplashScreen from 'react-native-splash-screen';
 import NotificationConfig from '../../Components/NotificationConfig';
 import { screens } from '../../Navigation/Screens';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { mainStyles } from '../../Utilities/styles';
+import { mainStyles, FAB_style } from '../../Utilities/styles';
 import Colors from '../../Utilities/Colors';
 import { font } from '../../Utilities/font';
-import { fileURL } from '../../Utilities/domains';
+import { fileURL, deepLinkQuote } from '../../Utilities/domains';
 import formatTime from '../../functions/formatTime';
 import CustomImage from '../../Components/CustomImage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import analytics from '@react-native-firebase/analytics';
 import messaging from '@react-native-firebase/messaging';
 import showToast from '../../functions/showToast';
+import moment from 'moment';
 
 import Share from 'react-native-share';
 import axios from 'axios';
+import _ from 'buffer';
 import kFormatter from '../../functions/kFormatter';
 
 import ImageZoomer from '../../Components/ImageZoomer';
@@ -49,34 +52,44 @@ import invokeApi from '../../functions/invokeAPI';
 import play from '../../Assets/Icons/play.png';
 import profile_placeholder from '../../Assets/Icons/dummy.png';
 import CustomButton from './Components/CustomButton';
+import LoginAlert from '../../Components/LoginAlert';
+
 
 import Fav from '../../Assets/Icons/fav.png';
 import notFav from '../../Assets/Icons/notfav.png';
-import favList from '../../Assets/Icons/favList.png';
 import ic_share from '../../Assets/Icons/share.png';
 import ic_download from '../../Assets/Icons/ic_download.png';
+const ic_notes = require('../../Assets/Icons/notes.png');
+const empty_notes = require('../../Assets/Icons/notes-empty.png');
+const empty_habits = require('../../Assets/Icons/habits-empty.png');
+
 
 
 const HomeScreen = (props) => {
-    const { Token } = useContext(Context);
+    const { Token, downloadQuote, dashboardData, setDashBoardData } = useContext(Context);
     const [loading, setisLoading] = useState(true);
     const [user, setUser] = useState(null);
-    const [dashboardData, setDashboardData] = useState({
-        meditation: [],
-        quote: [],
-        habitStats: {},
-        notes: [],
-    })
+    const [modalImage, setModalImage] = useState(null);
+    const [isSharing, setIsSharing] = useState(null);
+
+    let meditationOfTheDay = dashboardData.meditationOfTheDay;
+    let quoteOfTheDay = dashboardData.quoteOfTheDay;
+    let habitStats = dashboardData.habitStats;
+    let notes = dashboardData.notes;
 
 
     useEffect(() => {
+        if (Token) {
+            dashBoardApi();
+        } else {
+            guestDashBoardApi();
+        }
         checkNotificationPermission();
         NotificationConfig(props);
         analytics().logEvent(props?.route?.name);
         setTimeout(() => {
             SplashScreen.hide();
         }, 500);
-        dashBoardApi();
         return () => {
         };
     }, []);
@@ -89,6 +102,7 @@ const HomeScreen = (props) => {
         });
         return unsubscribe;
     }, [Token, props.navigation,]);
+
 
     async function checkNotificationPermission() {
         const authorizationStatus = await messaging().requestPermission();
@@ -114,12 +128,74 @@ const HomeScreen = (props) => {
         if (res) {
             if (res.code == 200) {
                 console.log(res, "response...")
-                // let meditation = 
+                let meditation = res.meditation_of_the_day;
+                let quote = res.quote_of_day;
+                let habit = res.habit_stats;
+                let note = res.notes;
+
+                await setDashBoardData({
+                    ...dashboardData,
+                    habitStats: habit,
+                    meditationOfTheDay: meditation,
+                    quoteOfTheDay: quote,
+                    notes: note,
+                })
+                setisLoading(false);
+
+                console.log(meditationOfTheDay, "Meditation of the Day......")
+                console.log(quoteOfTheDay, "Quote of the Day......")
+                console.log(habitStats, "Habit Stats of the Day......")
+                console.log(notes, "Notes of the Day......")
             } else {
                 showToast(res.message);
             }
         }
     }
+
+    const guestDashBoardApi = async () => {
+        let res = await invokeApi({
+            path: 'api/customer/guest_app_dashboard',
+            method: 'GET',
+            navigation: props.navigation,
+        });
+        if (res) {
+            if (res.code == 200) {
+                console.log(res, "response...")
+                let meditation = res.meditation_of_the_day;
+                let quote = res.quote_of_day;
+                let habit = res.habit_stats;
+                let note = res.notes;
+
+                await setDashBoardData({
+                    ...dashboardData,
+                    habitStats: habit,
+                    meditationOfTheDay: meditation,
+                    quoteOfTheDay: quote,
+                    notes: note,
+                })
+                setisLoading(false);
+            } else {
+                showToast(res.message);
+            }
+        }
+    }
+
+    const onNoteEditorScreen = () => {
+        if (Token) {
+            props.navigation.navigate(screens.noteEditor, { isComingFrom: "DashBoard" })
+        } else {
+            LoginAlert(props.navigation, props.route?.name);
+        }
+    };
+
+    const onHabitTrackerScreen = () => {
+        if (Token) {
+            props.navigation.navigate(screens.habitTracker)
+        } else {
+            LoginAlert(props.navigation, props.route?.name);
+        }
+    };
+
 
     const appendZero = val => {
         if (val < 10) {
@@ -136,53 +212,144 @@ const HomeScreen = (props) => {
         });
     };
 
-    const gotoTrackPlayer = (item, index) => {
-
-
-        trackIndex = index;
-        setSelectedTrackIndex(index);
-
-        if (!chooseScreenOnPurchasesAndLockedTrack(item.is_locked)) {
-
-
-            let list = [];
-            list = selectedCategory?.category_track;
-
-            props.navigation.navigate(screens.trackPlayer, {
-                item: item,
-                category: selectedCategory?.name,
-                list: list,
-                likeUnLikeFunc: likeUnLikeLocally,
-            });
-        }
-    };
-
-    const likeUnLikeLocally = (id, val) => {
-        let list = [...categoryList];
-        list.map(obj => {
-            let index = obj?.category_track.findIndex(x => x._id == id);
-            if (index > -1) {
-                let newObj = {
-                    ...obj.category_track[index],
-                    is_favourite: val,
-                };
-                obj?.category_track.splice(index, 1, newObj);
-            }
+    const gotoTrackPlayer = (item) => {
+        props.navigation.navigate(screens.trackPlayer, {
+            item: item,
+            category: item?.category_id[0]?.name,
+            list: [item],
+            likeUnLikeFunc: likeUnLikeLocally,
         });
 
-        let index1 = selectedCategory?.category_track.findIndex(x => x._id == id);
-        if (index1 > -1) {
-            let newList = [...selectedCategory?.category_track];
-            let newObj = { ...newList[index1], is_favourite: val };
-            newList.splice(index1, 1, newObj);
-            setSelectedCategory({
-                ...selectedCategory,
-                category_track: newList,
-            });
-        }
-        setCategoryList(list);
     };
 
+    const likeUnLikeLocally = async (id, val) => {
+        meditationOfTheDay.is_favourite = val;
+        setDashBoardData({
+            ...dashboardData,
+        })
+    };
+
+
+    const showImageModal = image => {
+        setModalImage(image);
+    };
+
+    const hideImageModal = () => {
+        setModalImage(null);
+    };
+
+    const copyText = async text => {
+        try {
+            await Clipboard.setString(text);
+            ToastAndroid.show('Text Copied', ToastAndroid.SHORT);
+        } catch (e) {
+            console.log(e, 'copyText...');
+        }
+    };
+
+    const favUnFavFunction = async (item) => {
+        if (Token) {
+            api_favOrUnfavQuote(!item?.is_favourite_by_me, item._id);
+            toggleLike(!item?.is_favourite_by_me, item._id);
+            if (!item?.is_favourite_by_me) {
+                await analytics().logEvent(`LIKE_QUOTE_EVENT`);
+            }
+        } else {
+            LoginAlert(props.navigation, props.route?.name);
+        }
+    };
+
+    const api_favOrUnfavQuote = async (val, id) => {
+        let res = await invokeApi({
+            path: 'api/quotes/favourite_quotes/' + id,
+            method: 'POST',
+            headers: {
+                'x-sh-auth': Token,
+            },
+            postData: {
+                favourite: val,
+            },
+            navigation: props.navigation,
+        });
+        if (res) {
+            if (res.code == 200) {
+            } else {
+                showToast(res.message);
+                toggleLike(!val, id);
+            }
+        }
+    };
+
+    const toggleLike = (val, id) => {
+        let newObj = quoteOfTheDay;
+        newObj.is_favourite_by_me = val;
+
+        if (newObj.is_favourite_by_me) {
+            newObj.favourite = newObj.favourite + 1;
+        } else {
+            newObj.favourite = newObj.favourite - 1;
+        }
+        quoteOfTheDay = newObj;
+
+        setDashBoardData({
+            ...dashboardData,
+        })
+    };
+
+
+    const download = item => {
+        debounceDownload(item);
+    };
+
+    const debounceDownload = debounnce(async item => {
+        console.log('download');
+        await downloadQuote(item?.images?.large, item?._id);
+        await analytics().logEvent('QUOTE_DOWLOAD_EVENT');
+    }, 500);
+
+    const shareQuote = async item => {
+        setIsSharing(item._id);
+        try {
+            let image = item?.images?.large;
+            let description = !!item?.description ? item?.description.trim() : '';
+            let res = await GetBase64(fileURL + image);
+            let ext = await image.split('.')[image.split('.').length - 1];
+            if (ext == 'jpg') {
+                ext = 'jpeg';
+            }
+            let file = `data:image/${ext};base64,${res}`;
+
+            setIsSharing(null);
+            let objShare = {
+                title: 'Better.Me | Quotes',
+                message: description + '\n' + deepLinkQuote,
+                url: file,
+            };
+            console.log('objShare', objShare);
+            await Share.open(objShare)
+                .then(async res => {
+                    await analytics().logEvent('QUOTE_SHARE_EVENT');
+                    console.log('res', res);
+                })
+                .catch(err => {
+                    console.log('error', err);
+                });
+        } catch (e) {
+            console.log('error1', e);
+            setIsSharing(null);
+        }
+    };
+
+    const GetBase64 = async url => {
+        return await axios
+            .get(url, {
+                responseType: 'arraybuffer',
+            })
+            .then(response =>
+                _.Buffer.from(response.data, 'binary').toString('base64'),
+            )
+            .catch(err => console.log('Error', err));
+    };
 
     return (
         <SafeAreaView
@@ -214,7 +381,6 @@ const HomeScreen = (props) => {
                 <View style={{}}>
                     <CustomImage
                         source={
-                            // profile_placeholder
                             !!user && !!user.profile_image
                                 ? { uri: fileURL + user?.profile_image }
                                 : profile_placeholder
@@ -232,36 +398,103 @@ const HomeScreen = (props) => {
                     animation={'bounceInDown'}
                     delay={2 * 250}>
                     <View
-                        style={[home_styles.customCardView, { minHeight: 245 }]}>
+                        style={home_styles.customCardView}>
                         <Text style={home_styles.heading}>Habit Tracker </Text>
 
-                        <View style={{ marginTop: 10, }}>
-                            <FlatList
-                                contentContainerStyle={{ justifyContent: 'space-evenly', width: '100%' }}
-                                showsHorizontalScrollIndicator={false}
-                                data={habitCount}
-                                scrollEnabled={false}
-                                numColumns={3}
-                                keyExtractor={item => {
-                                    return item.id;
-                                }}
-                                renderItem={(itemData) => {
-                                    return (
-                                        <View style={home_styles.statItemView}>
-                                            <Text style={home_styles.statItemtext1}>{itemData.item.title}</Text>
+                        {Token && habitStats.all_habits != 0 ?
+                            <>
+                                <View style={{ marginTop: 10, }}>
+                                    <View
+                                        style={{ justifyContent: 'space-evenly', width: '100%', flexDirection: 'row', }}>
+                                        <View style={[home_styles.statItemView]}>
+                                            <Text style={home_styles.statItemtext1}>Total Habits</Text>
                                             <Text style={home_styles.statItemtext2}>
-                                                {appendZero(itemData.item.count)}
-                                                {/* {loading ? '--' : appendZero(itemData.item.count)} */}
+                                                {loading ? '--' : appendZero(habitStats.all_habits)}
                                             </Text>
                                         </View>
-                                    )
-                                }
-                                }
-                            />
-                        </View>
-                        <View style={{ alignItems: "flex-end", }}>
-                            <CustomButton onPress={() => props.navigation.navigate(screens.habitTracker)} />
-                        </View>
+
+                                        <View style={home_styles.statItemView}>
+                                            <Text style={home_styles.statItemtext1}>Completed</Text>
+                                            <Text style={home_styles.statItemtext2}>
+                                                {loading ? '--' : appendZero(habitStats.completed_habits)}
+                                            </Text>
+                                        </View>
+
+                                        <View style={home_styles.statItemView}>
+                                            <Text style={home_styles.statItemtext1}>Pending</Text>
+                                            <Text style={home_styles.statItemtext2}>
+                                                {loading ? '--' : appendZero(habitStats.pending_habits)}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    <View
+                                        style={{ justifyContent: 'flex-start', width: '100%', flexDirection: 'row', }}>
+                                        <View style={[home_styles.statItemView]}>
+                                            <Text style={home_styles.statItemtext1}>Good Habits</Text>
+                                            <Text style={home_styles.statItemtext2}>
+                                                {loading ? '--' : appendZero(habitStats.good_habits)}
+                                            </Text>
+                                        </View>
+
+                                        <View style={home_styles.statItemView}>
+                                            <Text style={home_styles.statItemtext1}>Bad Habits</Text>
+                                            <Text style={home_styles.statItemtext2}>
+                                                {loading ? '--' : appendZero(habitStats.bad_habits)}
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                </View>
+                                <View style={{ alignItems: "flex-end", }}>
+                                    <CustomButton onPress={() => props.navigation.navigate(screens.habitTracker)} />
+                                </View>
+                            </>
+                            :
+                            <>
+                            <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }} >
+                                    <Image source={empty_habits} style={{ height: 130, width: 150 }} />
+                                    <Text
+                                        style={{
+                                            fontFamily: font.bold,
+                                            fontSize: 15,
+                                            includeFontPadding: false,
+                                            color: Colors.black,
+                                            marginTop: -25,
+                                        }}>
+                                        No Habits Yet
+                                    </Text>
+                                    <Text style={{
+                                        fontFamily: font.medium,
+                                        color: Colors.text,
+                                        fontSize: 13,
+                                        textAlign: 'center',
+                                        marginTop: 8,
+                                        paddingHorizontal: 30,
+                                    }}>{"Start by creating a new habit to improve your daily routine!"}
+                                    </Text>
+                                    <View style={{ flex: 0.5, justifyContent: 'center' }}>
+                                        <Pressable
+                                            onPress={onHabitTrackerScreen}
+                                            style={[
+                                                FAB_style.View,
+                                                {
+                                                    position: 'relative',
+                                                    marginTop: 35,
+                                                    right: 0,
+                                                    height: 40,
+                                                    width: 40,
+                                                    borderRadius: 40 / 2,
+                                                },
+                                            ]}>
+                                            <Image
+                                                source={require('../../Assets/Icons/plus.png')}
+                                                style={{ height: 10, width: 10, tintColor: Colors.white }}
+                                            />
+                                        </Pressable>
+                                    </View>
+
+                                </View>
+                            </>}
                     </View>
                 </Animatable.View>
 
@@ -271,13 +504,13 @@ const HomeScreen = (props) => {
                     animation={'bounceInDown'}
                     delay={2 * 250}>
                     <View
-                        style={[home_styles.customCardView, { minHeight: 165 }]}>
+                        style={home_styles.customCardView}>
                         <Text style={home_styles.heading}>Meditation Of The Day </Text>
 
                         <View style={{ marginTop: 10, }}>
                             <Pressable
                                 onPress={() => {
-                                    // gotoTrackPlayer(item, index);
+                                    gotoTrackPlayer(meditationOfTheDay);
                                 }}
                                 style={{
                                     marginTop: 5,
@@ -295,7 +528,7 @@ const HomeScreen = (props) => {
                                         borderColor: Colors.gray02,
                                     }}>
                                     <CustomImage
-                                        source={{ uri: fileURL + "TRACK/8e7d82d0-7078-11ed-a8f1-554b0ac616b5.jpg" }}
+                                        source={{ uri: fileURL + meditationOfTheDay?.images?.medium }}
                                         style={{ height: 70, width: 70 }}
                                         indicatorProps={{ color: Colors.primary }}
                                     />
@@ -327,7 +560,7 @@ const HomeScreen = (props) => {
                                             includeFontPadding: false,
                                             color: Colors.black,
                                         }}>
-                                        {"Happy Life"}
+                                        {meditationOfTheDay?.name}
                                     </Text>
 
                                     <View
@@ -341,7 +574,7 @@ const HomeScreen = (props) => {
                                                 color: Colors.text,
                                                 fontSize: 12,
                                             }}>
-                                            {"Let the state of happiness be your constant thing with energetic meditation music. Be the carrier of your own happiness with the help of this music. \n"}
+                                            {meditationOfTheDay?.description}
                                         </Text>
                                     </View>
 
@@ -357,7 +590,7 @@ const HomeScreen = (props) => {
                                                 color: Colors.gray12,
                                                 fontSize: 12,
                                             }}>
-                                            {formatTime(170.031)}
+                                            {formatTime(meditationOfTheDay?.duration)}
                                         </Text>
                                     </View>
                                 </View>
@@ -376,22 +609,109 @@ const HomeScreen = (props) => {
                     animation={'bounceInDown'}
                     delay={1 * 250}>
                     <View
-                        style={[home_styles.customCardView, { minHeight: 185 }]}>
+                        style={home_styles.customCardView}>
                         <Text style={home_styles.heading}>Note Of The Day </Text>
 
-                        <View style={{ marginTop: 10, }}>
-                            <View style={home_styles.noteText}>
-                                <Text style={{ fontFamily: font.regular, color: Colors.black, fontSize: 13, }}
-                                >{"Good thoughts make a happy person!"} </Text>
-                            </View>
-                            <View style={home_styles.noteText}>
-                                <Text style={{ fontFamily: font.regular, color: Colors.black, fontSize: 13, }}
-                                >{"Make yourself your own competition!"} </Text>
-                            </View>
-                        </View>
-                        <View style={{ alignItems: "flex-end", marginTop: 10, }}>
-                            <CustomButton onPress={() => props.navigation.navigate(screens.notesList)} />
-                        </View>
+                        {Token && notes.length != 0 ?
+                            <>
+                                <View style={{ marginTop: 10, }}>
+                                    {notes[0] &&
+                                        <View
+                                            style={home_styles.note}>
+                                            <View>
+                                                <Image
+                                                    source={ic_notes} style={{ height: 20, width: 20, tintColor: Colors.primary3 }}
+                                                />
+                                            </View>
+                                            <View
+                                                style={{ marginLeft: 15, justifyContent: 'center', flex: 1, }}>
+                                                <Text style={home_styles.noteTitle}>{notes[0].title}</Text>
+                                                <Text numberOfLines={1} style={home_styles.noteDate}>
+                                                    <Text>
+                                                        {notes[0]?.updatedAt == notes[0]?.createdAt
+                                                            ? 'Created on : '
+                                                            : 'Updated on : '}
+                                                    </Text>
+                                                    {moment(notes[0]?.updatedAt).format('DD-MM-YYYY')}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    }
+                                    {notes[1] &&
+                                        <View
+                                            style={home_styles.note}>
+                                            <View>
+                                                <Image
+                                                    source={ic_notes} style={{ height: 20, width: 20, tintColor: Colors.primary3 }}
+                                                />
+                                            </View>
+                                            <View
+                                                style={{ marginLeft: 15, justifyContent: 'center', flex: 1, }}>
+                                                <Text style={home_styles.noteTitle}>{notes[1].title}</Text>
+                                                <Text numberOfLines={1} style={home_styles.noteDate}>
+                                                    <Text>
+                                                        {notes[1]?.updatedAt == notes[1]?.createdAt
+                                                            ? 'Created on : '
+                                                            : 'Updated on : '}
+                                                    </Text>
+                                                    {moment(notes[1]?.updatedAt).format('DD-MM-YYYY')}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    }
+                                </View>
+
+                                <View style={{ alignItems: "flex-end", marginTop: 10, }}>
+                                    <CustomButton onPress={() => props.navigation.navigate(screens.notesList)} />
+                                </View>
+                            </>
+                            :
+                            <>
+                                <View style={{ justifyContent: "center", alignItems: "center", flex: 1, marginTop: 20, }} >
+                                    <Image source={empty_notes} style={{ height: 80, width: 80 }} />
+                                    <Text
+                                        style={{
+                                            fontFamily: font.bold,
+                                            fontSize: 15,
+                                            includeFontPadding: false,
+                                            color: Colors.black,
+                                            marginTop: 10,
+                                        }}>
+                                        No Notes Yet
+                                    </Text>
+                                    <Text style={{
+                                        fontFamily: font.medium,
+                                        color: Colors.text,
+                                        fontSize: 13,
+                                        textAlign: 'center',
+                                        marginTop: 8,
+                                        paddingHorizontal: 30,
+                                    }}>{"Start jotting down your thoughts and ideas to get organized!"}
+                                    </Text>
+                                    <View style={{ flex: 0.5, justifyContent: 'center' }}>
+                                        <Pressable
+                                            onPress={onNoteEditorScreen}
+                                            style={[
+                                                FAB_style.View,
+                                                {
+                                                    position: 'relative',
+                                                    marginTop: 35,
+                                                    right: 0,
+                                                    height: 40,
+                                                    width: 40,
+                                                    borderRadius: 40 / 2,
+                                                },
+                                            ]}>
+                                            <Image
+                                                source={require('../../Assets/Icons/plus.png')}
+                                                style={{ height: 10, width: 10, tintColor: Colors.white }}
+                                            />
+                                        </Pressable>
+                                    </View>
+
+                                </View>
+                            </>
+                        }
                     </View>
                 </Animatable.View>
 
@@ -401,56 +721,123 @@ const HomeScreen = (props) => {
                     animation={'bounceInDown'}
                     delay={1 * 250}>
                     <View
-                        style={[home_styles.customCardView, { minHeight: 185 }]}>
+                        style={home_styles.customCardView}>
                         <Text style={home_styles.heading}>Quote Of The Day </Text>
-                        {/* <View
-                            style={{
-                                margin: 10,
-                                borderRadius: 15,
-                                overflow: 'hidden',
-                                borderColor: Colors.gray02,
-                                borderWidth: 1,
-                                backgroundColor: Colors.white,
-                            }}> */}
-                        <Pressable onPress={() => showImageModal(item?.images?.large)}>
+
+                        <Pressable onPress={() => showImageModal(quoteOfTheDay?.images?.large)}>
                             <View style={{
                                 marginTop: 12,
-                                overflow:"hidden",
+                                overflow: "hidden",
                                 borderRadius: 12, borderColor: Colors.gray02,
                                 borderWidth: 1,
                             }}>
                                 <CustomImage
-                                    source={{ uri: fileURL + "HABIT/e3fa30c0-43cb-11ed-b6d8-e1cced6e1241.jpg" }}
+                                    source={{ uri: fileURL + quoteOfTheDay?.images?.large }}
                                     style={{
                                         width: '100%',
-                                        aspectRatio: 1
-                                        // item?.image_height != 0
-                                        //     ? item?.image_width / item?.image_height
-                                        //     : 1,
+                                        aspectRatio:
+                                            !!quoteOfTheDay?.image_height != 0
+                                                ? quoteOfTheDay?.image_width / quoteOfTheDay?.image_height
+                                                : 1,
                                     }}
                                 />
                             </View>
                         </Pressable>
-                        {/* {!!item?.description && ( */}
-                        <TouchableHighlight
-                            disabled={Platform.OS == 'ios'}
-                            onLongPress={() => copyText(item?.description.trim())}
-                            delayLongPress={500}
-                            underlayColor={Colors.gray01}
-                            style={{}}>
-                            <Text
-                                selectable={Platform.OS == 'ios' ? true : false}
-                                style={{
-                                    fontSize: 14,
-                                    fontFamily: font.regular,
-                                    paddingHorizontal: 5,
-                                    paddingVertical: 10,
-                                }}> {"Description"}
-                            </Text>
-                        </TouchableHighlight>
-                        {/* )} */}
 
-                        {/* </View> */}
+                        {!!quoteOfTheDay?.description &&
+                            <TouchableHighlight
+                                disabled={Platform.OS == 'ios'}
+                                onLongPress={() => copyText(quoteOfTheDay?.description.trim())}
+                                delayLongPress={500}
+                                underlayColor={Colors.gray01}
+                                style={{}}>
+                                <Text
+                                    selectable={Platform.OS == 'ios' ? true : false}
+                                    style={{
+                                        fontSize: 14,
+                                        fontFamily: font.regular,
+                                        paddingHorizontal: 5,
+                                        paddingVertical: 10,
+                                    }}>
+                                    {quoteOfTheDay?.description.trim()}
+                                </Text>
+                            </TouchableHighlight>
+                        }
+
+
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                backgroundColor: '#FFF',
+                            }}>
+                            <TouchableOpacity
+                                onPress={() => favUnFavFunction(quoteOfTheDay)}
+                                style={{
+                                    flex: 1,
+                                    alignItems: 'center',
+                                    height: 50,
+                                    justifyContent: 'center',
+                                    flexDirection: 'row',
+                                }}>
+                                <Image
+                                    source={quoteOfTheDay?.is_favourite_by_me ? Fav : notFav}
+                                    style={{
+                                        height: 20,
+                                        width: 20,
+                                        tintColor: quoteOfTheDay?.is_favourite_by_me
+                                            ? Colors.primary
+                                            : Colors.placeHolder,
+                                    }}
+                                />
+                                <Text
+                                    style={{
+                                        marginLeft: 5,
+                                        fontFamily: font.medium,
+                                        color: Colors.placeHolder,
+                                        letterSpacing: 1,
+                                        includeFontPadding: false,
+                                    }}>
+                                    {kFormatter(quoteOfTheDay?.favourite)}
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => download(quoteOfTheDay)}
+                                style={{
+                                    flex: 1,
+                                    alignItems: 'center',
+                                    height: 50,
+                                    justifyContent: 'center',
+                                }}>
+                                <Image
+                                    source={ic_download}
+                                    style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
+                                />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                disabled={isSharing != null}
+                                onPress={async () => {
+                                    await shareQuote(quoteOfTheDay);
+                                }}
+                                style={{
+                                    flex: 1,
+                                    alignItems: 'center',
+                                    height: 50,
+                                    justifyContent: 'center',
+                                }}>
+                                {isSharing != quoteOfTheDay._id ?
+                                    (
+                                        <Image
+                                            source={ic_share}
+                                            style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
+                                        />
+                                    ) : (
+                                        <ActivityIndicator color={Colors.placeHolder} size="small" />
+                                    )
+                                }
+                            </TouchableOpacity>
+                        </View>
 
                         <View style={{ alignItems: "flex-end", marginTop: 10, }}>
                             <CustomButton onPress={() => props.navigation.navigate(screens.qouteList)} />
@@ -459,6 +846,11 @@ const HomeScreen = (props) => {
                 </Animatable.View>
 
             </ScrollView>
+            <ImageZoomer
+                closeModal={hideImageModal}
+                visible={!!modalImage}
+                url={modalImage}
+            />
 
         </SafeAreaView>
     )
@@ -506,7 +898,6 @@ const home_styles = StyleSheet.create({
         aspectRatio: 1.3,
         marginHorizontal: 5,
         alignItems: 'center',
-        // backgroundColor: '#BDC3C733',
         backgroundColor: Colors.lightPrimary2,
         paddingVertical: 10,
         justifyContent: 'center',
@@ -520,7 +911,7 @@ const home_styles = StyleSheet.create({
         textTransform: 'capitalize',
     },
 
-    noteText: {
+    note: {
         marginTop: 5,
         marginBottom: 8,
         padding: 8,
@@ -528,6 +919,15 @@ const home_styles = StyleSheet.create({
         marginHorizontal: 5,
         backgroundColor: Colors.lightPrimary2,
         borderRadius: 10,
+        alignItems: 'center',
+        flexDirection: 'row',
+    },
+    noteTitle: {
+        color: Colors.black, fontFamily: font.bold, fontSize: 13, includeFontPadding: false
+    },
+
+    noteDate: {
+        fontFamily: font.medium, fontSize: 12, marginTop: 5, color: Colors.text,
     }
 });
 
@@ -562,87 +962,3 @@ const habitCount = [
     },
 
 ];
-
-
-// {/* {kFormatter(item?.favourite)} */ }
-
-// {/* {item?.description.trim()} */ }
-
-
-<View
-    style={{
-        flexDirection: 'row',
-        backgroundColor: '#FFF',
-    }}>
-    <TouchableOpacity
-        onPress={() => favUnFavFunction(item, index)}
-        style={{
-            flex: 1,
-            alignItems: 'center',
-            height: 50,
-            justifyContent: 'center',
-            flexDirection: 'row',
-        }}>
-        <Image
-            // source={item?.is_favourite_by_me ? Fav : notFav}
-            source={Fav}
-            style={{
-                height: 20,
-                width: 20,
-                // tintColor: item?.is_favourite_by_me
-                //     ? Colors.primary
-                //     : Colors.placeHolder,
-            }}
-        />
-        <Text
-            style={{
-                marginLeft: 5,
-                fontFamily: font.medium,
-                color: Colors.placeHolder,
-                letterSpacing: 1,
-                includeFontPadding: false,
-            }}>{kFormatter("yes")}
-        </Text>
-    </TouchableOpacity>
-
-    <TouchableOpacity
-        onPress={() => download(item)}
-        style={{
-            flex: 1,
-            alignItems: 'center',
-            height: 50,
-            justifyContent: 'center',
-        }}>
-        {/* {!checkQuoteDownloading(item._id) ? ( */}
-        <Image
-            source={ic_download}
-            style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
-        />
-        {/* ) : (
-<ActivityIndicator color={Colors.placeHolder} size="small" />
-)} */}
-    </TouchableOpacity>
-
-    <TouchableOpacity
-        // disabled={isSharing != null}
-        onPress={async () => {
-            await shareQuote(item);
-        }}
-        style={{
-            flex: 1,
-            alignItems: 'center',
-            height: 50,
-            justifyContent: 'center',
-        }}>
-        {/* {isSharing != item._id ? */}
-        (
-        <Image
-            source={ic_share}
-            style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
-        />
-        ) : (
-        <ActivityIndicator color={Colors.placeHolder} size="small" />
-        )
-        {/* } */}
-    </TouchableOpacity>
-</View>

@@ -12,15 +12,15 @@ import {
   Dimensions,
   RefreshControl,
 } from 'react-native';
-import React, {useEffect, useState, useRef} from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Header from '../../../Components/Header';
-import Colors, {Bcolors} from '../../../Utilities/Colors';
-import {mainStyles, createHabit_styles} from '../../../Utilities/styles';
-import {CustomMultilineTextInput} from '../../../Components/CustomTextInput';
+import Colors, { Bcolors } from '../../../Utilities/Colors';
+import { mainStyles, createHabit_styles } from '../../../Utilities/styles';
+import { CustomMultilineTextInput } from '../../../Components/CustomTextInput';
 import CustomButton from '../../../Components/CustomButton';
-import {font} from '../../../Utilities/font';
-import {screens} from '../../../Navigation/Screens';
-import {Menu, MenuItem, MenuDivider} from 'react-native-material-menu';
+import { font } from '../../../Utilities/font';
+import { screens } from '../../../Navigation/Screens';
+import { Menu, MenuItem, MenuDivider } from 'react-native-material-menu';
 import moment from 'moment';
 import LinearGradient from 'react-native-linear-gradient';
 import Modal from 'react-native-modal';
@@ -30,12 +30,12 @@ import ImageProgress from 'react-native-image-progress';
 import analytics from '@react-native-firebase/analytics';
 
 // For API's calling
-import {useContext} from 'react';
+import { useContext } from 'react';
 import Context from '../../../Context';
 import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
-import {fileURL} from '../../../Utilities/domains';
+import { fileURL } from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
 import Toast from 'react-native-toast-message';
 import PushNotification from 'react-native-push-notification';
@@ -43,8 +43,8 @@ const ic_Hplaceholder = require('../../../Assets/Icons/h_placeholder1.png');
 const screen = Dimensions.get('screen');
 
 const HabitDetail = props => {
-  const {Token, habitList, setHabitList} = useContext(Context);
-  const {params} = props.route;
+  const { Token, habitList, setHabitList, dashboardData, setDashBoardData } = useContext(Context);
+  const { params } = props.route;
   const MenuRef = useRef([]);
   const EditMenu = useRef();
   const [habit, setHabitDetail] = useState(null);
@@ -69,7 +69,7 @@ const HabitDetail = props => {
     setCurrentWeekDays(selectedWeekDays);
   };
 
-  const updateNote = updation => setNote({...note, ...updation});
+  const updateNote = updation => setNote({ ...note, ...updation });
 
   const onPreviousWeek = () => {
     if (
@@ -89,7 +89,7 @@ const HabitDetail = props => {
   const onNextWeek = () => {
     if (
       moment(currentWeek).endOf('week').valueOf() <
-        moment(habit?.target_date).endOf('week').valueOf() &&
+      moment(habit?.target_date).endOf('week').valueOf() &&
       moment(currentWeek).endOf('week').valueOf() <= moment().valueOf()
     ) {
       setCurrentWeek(moment(currentWeek).add(1, 'week'));
@@ -143,14 +143,14 @@ const HabitDetail = props => {
   };
 
   const markCompeleted = () => {
-    let {item} = note;
+    let { item } = note;
     let obj_addNote = {
       note_text: note.text.trim(),
       date: moment(note.item).toISOString(),
     };
     api_addNote(item._id, obj_addNote, note.item);
     setisLoading(true);
-    setNote({modalVisible: false, text: '', item: null});
+    setNote({ modalVisible: false, text: '', item: null });
   };
 
   const api_addNote = async (id, obj, date) => {
@@ -173,22 +173,59 @@ const HabitDetail = props => {
         if (!!params?.updateHabit) {
           params?.updateHabit(res.habit);
         }
+        dashBoardApi();
+
+        // let obj = dashboardData.habitStats;
+        // obj.completed_habits = obj.completed_habits + 1;
+        // obj.pending_habits = obj.pending_habits != 0 ? obj.pending_habits - 1 : 0;
+
+        // await setDashBoardData({
+        //   ...dashboardData,
+        //   habitStats: obj
+        // })
       } else {
         showToast(res.message);
       }
     }
   };
 
+  const dashBoardApi = async () => {
+    let res = await invokeApi({
+      path: 'api/customer/app_dashboard',
+      method: 'GET',
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    if (res) {
+      if (res.code == 200) {
+        let meditation = res.meditation_of_the_day;
+        let quote = res.quote_of_day;
+        let habit = res.habit_stats;
+        let note = res.notes;
+        await setDashBoardData({
+          ...dashboardData,
+          habitStats: habit,
+          meditationOfTheDay: meditation,
+          quoteOfTheDay: quote,
+          notes: note,
+        })
+      } else { }
+    }
+  }
+
+
   const editNoteModal = () => {
     return (
       <Modal
         isVisible={note.modalVisible}
-        onBackButtonPress={() => updateNote({modalVisible: false})}
-        onBackdropPress={() => updateNote({modalVisible: false})}
+        onBackButtonPress={() => updateNote({ modalVisible: false })}
+        onBackdropPress={() => updateNote({ modalVisible: false })}
         useNativeDriverForBackdrop={true}
         avoidKeyboard={true}
         hideModalContentWhileAnimating={true}
-        style={{marginHorizontal: 5}}>
+        style={{ marginHorizontal: 5 }}>
         <View
           style={{
             marginTop: 'auto',
@@ -211,11 +248,11 @@ const HabitDetail = props => {
               justifyContent: 'center',
             }}>
             <Image
-              style={{height: 70, width: 70}}
+              style={{ height: 70, width: 70 }}
               source={require('../../../Assets/Icons/check.png')}
             />
           </View>
-          <View style={{marginTop: 10}}>
+          <View style={{ marginTop: 10 }}>
             <CustomMultilineTextInput
               lable={note.update == false ? 'Add Note' : 'Edit Note'}
               subLabel={'(Optional)'}
@@ -223,10 +260,10 @@ const HabitDetail = props => {
               lableBold
               lableColor={Colors.black}
               value={note.text}
-              onChangeText={text => updateNote({text: text})}
+              onChangeText={text => updateNote({ text: text })}
             />
           </View>
-          <View style={{marginTop: 20}}>
+          <View style={{ marginTop: 20 }}>
             <CustomButton
               height={50}
               onPress={note.update == false ? markCompeleted : btn_saveChnages}
@@ -261,7 +298,7 @@ const HabitDetail = props => {
     api_editNote(obj);
     setisLoading(true);
     setTimeout(() => {
-      updateNote({text: '', modalVisible: false, item: null});
+      updateNote({ text: '', modalVisible: false, item: null });
     }, 50);
   };
 
@@ -424,6 +461,21 @@ const HabitDetail = props => {
     setisLoading(false);
     if (res) {
       if (res.code == 200) {
+        let obj = dashboardData.habitStats;
+        obj.all_habits = obj.all_habits - 1;
+        obj.completed_habits = obj.completed_habits != 0 ? obj.completed_habits - 1 : 0;
+        obj.pending_habits = obj.pending_habits != 0 ? obj.pending_habits - 1 : 0;
+        if (habit?.type == "to-do") {
+          obj.good_habits = obj.good_habits != 0 ? obj.good_habits - 1 : 0;
+        } else {
+          obj.bad_habits = obj.bad_habits != 0 ? obj.bad_habits - 1 : 0;
+        }
+
+        await setDashBoardData({
+          ...dashboardData,
+          habitStats: obj
+        })
+
         RemoveThisHabitScheduleNotifications(id);
         showToast(
           'Habit has been deleted successfully',
@@ -468,7 +520,7 @@ const HabitDetail = props => {
 
     analytics().logEvent(props?.route?.name);
 
-    return () => {};
+    return () => { };
   }, []);
 
   const dropDownMenu = () => {
@@ -492,7 +544,7 @@ const HabitDetail = props => {
             }}>
             <Image
               source={require('../../../Assets/Icons/threeDots.png')}
-              style={{height: 15, width: 15, tintColor: Colors.black}}
+              style={{ height: 15, width: 15, tintColor: Colors.black }}
             />
           </TouchableHighlight>
         }>
@@ -505,7 +557,7 @@ const HabitDetail = props => {
               updateHabitDetail: updateHabitLocally,
             });
           }}>
-          <Text style={{fontFamily: font.bold}}>Edit</Text>
+          <Text style={{ fontFamily: font.bold }}>Edit</Text>
         </MenuItem>
 
         <MenuDivider />
@@ -516,10 +568,10 @@ const HabitDetail = props => {
             Alert.alert(
               'Delete Habit',
               'Are you sure you want to delete this Habit',
-              [{text: 'No'}, {text: 'Yes', onPress: () => api_deleteHabit()}],
+              [{ text: 'No' }, { text: 'Yes', onPress: () => api_deleteHabit() }],
             );
           }}>
-          <Text style={{fontFamily: font.bold}}>Delete</Text>
+          <Text style={{ fontFamily: font.bold }}>Delete</Text>
         </MenuItem>
       </Menu>
     );
@@ -531,18 +583,18 @@ const HabitDetail = props => {
         barStyle={'dark-content'}
         backgroundColor={Colors.background}
       />
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <Header
           menu={dropDownMenu}
           navigation={props.navigation}
           title={'Habit Detail'}
         />
-        <View style={{flex: 1}}>
+        <View style={{ flex: 1 }}>
           {habit != null && (
             <ScrollView
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{paddingBottom: 30}}>
-              <View style={{flex: 1}}>
+              contentContainerStyle={{ paddingBottom: 30 }}>
+              <View style={{ flex: 1 }}>
                 <View
                   style={{
                     backgroundColor: Colors.white,
@@ -618,10 +670,10 @@ const HabitDetail = props => {
                       </View>
                     )}
                   </View>
-                  <View style={{marginTop: 30}}>
+                  <View style={{ marginTop: 30 }}>
                     <Text style={HabitDetail_style.lable}>Habit Name</Text>
                     <Text
-                      style={[HabitDetail_style.detailText, {fontSize: 20}]}>
+                      style={[HabitDetail_style.detailText, { fontSize: 20 }]}>
                       {habit.name}
                     </Text>
                   </View>
@@ -640,10 +692,10 @@ const HabitDetail = props => {
                             ? require('../../../Assets/Icons/check.png')
                             : require('../../../Assets/Icons/remove.png')
                         }
-                        style={{height: 15, width: 15, marginRight: 5}}
+                        style={{ height: 15, width: 15, marginRight: 5 }}
                       />
                       <Text
-                        style={[HabitDetail_style.detailText, {marginTop: -2}]}>
+                        style={[HabitDetail_style.detailText, { marginTop: -2 }]}>
                         {habit.type == 'to-do' ? 'TO-DO' : 'Not TO-DO'}
                       </Text>
                     </View>
@@ -677,7 +729,7 @@ const HabitDetail = props => {
                             style={[
                               createHabit_styles.weekButton,
                               x.status && createHabit_styles.selectedButton,
-                              {margin: 3},
+                              { margin: 3 },
                             ]}>
                             <Text
                               adjustsFontSizeToFit={true}
@@ -744,7 +796,7 @@ const HabitDetail = props => {
                             width: 10,
                             tintColor:
                               moment(currentWeek).startOf('week').valueOf() >
-                              moment(habit?.createdAt).startOf('week').valueOf()
+                                moment(habit?.createdAt).startOf('week').valueOf()
                                 ? Colors.black
                                 : Colors.gray05,
                           }}
@@ -810,7 +862,7 @@ const HabitDetail = props => {
                                   moment(habit?.target_date)
                                     .endOf('week')
                                     .valueOf() &&
-                                moment(currentWeek).endOf('week').valueOf() <=
+                                  moment(currentWeek).endOf('week').valueOf() <=
                                   moment().valueOf()
                                   ? Colors.black
                                   : Colors.gray05,
@@ -819,13 +871,13 @@ const HabitDetail = props => {
                         </Pressable>
                       </View>
                     </View>
-                    <View style={{flexDirection: 'row'}}>
+                    <View style={{ flexDirection: 'row' }}>
                       {currentWeekDays.map((x, i) => {
                         if (
                           habit?.frequency.findIndex(
                             y =>
                               y.day.toLowerCase() ===
-                                moment(x).format('dddd').toLowerCase() &&
+                              moment(x).format('dddd').toLowerCase() &&
                               y.status == true,
                           ) != -1 &&
                           moment(x).isSameOrAfter(
@@ -1022,7 +1074,7 @@ const HabitDetail = props => {
                           title="No Notes for this week"
                           subView={
                             habit.notes.filter(x => x.note_text != '').length !=
-                              0 && (
+                            0 && (
                               <Pressable
                                 onPress={onViewAllNotes}
                                 style={{
@@ -1039,10 +1091,9 @@ const HabitDetail = props => {
                                     fontFamily: font.bold,
                                     includeFontPadding: false,
                                   }}>
-                                  {`View other ${
-                                    habit.notes.filter(x => x.note_text != '')
-                                      .length
-                                  } Notes`}
+                                  {`View other ${habit.notes.filter(x => x.note_text != '')
+                                    .length
+                                    } Notes`}
                                 </Text>
                               </Pressable>
                             )
@@ -1063,8 +1114,8 @@ const HabitDetail = props => {
                             return (
                               <LinearGradient
                                 key={x.id}
-                                start={{x: 0, y: 0}}
-                                end={{x: 1, y: 1}}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
                                 locations={[0.0, 0.99]}
                                 colors={['#FCE29F', '#FCE29F55']}
                                 style={{
@@ -1072,8 +1123,8 @@ const HabitDetail = props => {
                                   borderRadius: 10,
                                   padding: 10,
                                 }}>
-                                <View style={{flexDirection: 'row'}}>
-                                  <View style={{flex: 1}}>
+                                <View style={{ flexDirection: 'row' }}>
+                                  <View style={{ flex: 1 }}>
                                     <Text
                                       style={{
                                         fontFamily: font.medium,
@@ -1116,7 +1167,7 @@ const HabitDetail = props => {
                                       </Pressable>
                                     }>
                                     <MenuItem onPress={() => editNote(i, x)}>
-                                      <Text style={{fontFamily: font.bold}}>
+                                      <Text style={{ fontFamily: font.bold }}>
                                         Edit
                                       </Text>
                                     </MenuItem>
@@ -1133,7 +1184,7 @@ const HabitDetail = props => {
                                         );
                                         MenuRef.current[i].hide();
                                       }}>
-                                      <Text style={{fontFamily: font.bold}}>
+                                      <Text style={{ fontFamily: font.bold }}>
                                         Delete
                                       </Text>
                                     </MenuItem>

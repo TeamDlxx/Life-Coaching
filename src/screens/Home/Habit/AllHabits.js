@@ -45,7 +45,7 @@ const AllHabits = props => {
   const [today, setToday] = useState(moment().format('YYYY-MM-DD'));
   const [option, setOption] = useState(0);
 
-  const { Token, habitList, setHabitList , isHabitPurchased} = useContext(Context);
+  const { Token, habitList, setHabitList, isHabitPurchased, dashboardData, setDashBoardData } = useContext(Context);
   const [sHabitList, setSHabitList] = useState([]);
   const [isLoading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -171,6 +171,31 @@ const AllHabits = props => {
     setisLoading(false);
     if (res) {
       if (res.code == 200) {
+
+        let obj = dashboardData.habitStats;
+        obj.all_habits = obj.all_habits - 1;
+
+        let idx = sHabitList.findIndex(x => x._id == id)
+        if (idx != -1) {
+          if (sHabitList[idx].type == "to-do") {
+            obj.good_habits = obj.good_habits != 0 ? obj.good_habits - 1 : 0;
+          } else {
+            obj.bad_habits = obj.bad_habits != 0 ? obj.bad_habits - 1 : 0;
+          }
+
+          let progress = findProgress(sHabitList[idx]);
+
+          if (sHabitList[idx].total_days != 0 && progress / sHabitList[idx].total_days >= 1) {
+            obj.completed_habits = obj.completed_habits != 0 ? obj.completed_habits - 1 : 0;
+          } else {
+            obj.pending_habits = obj.pending_habits != 0 ? obj.pending_habits - 1 : 0;
+          }
+        }
+        await setDashBoardData({
+          ...dashboardData,
+          habitStats: obj
+        })
+
         RemoveThisHabitScheduleNotifications(id);
         showToast(
           'Habit has been deleted successfully',
@@ -586,11 +611,11 @@ const AllHabits = props => {
               isLoading == false &&
               sHabitList.length == 0 && (
 
-                <View style = {{flex:1, alignItems:"center", justifyContent:"center"}}>
+                <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
                   <EmptyView title={'No Habits Yet'} noSubtitle />
-                  <TouchableOpacity onPress={btn_add}  style = {{backgroundColor : Colors.lightPrimary, height:40, width:160, borderRadius:10, alignItems:"center", justifyContent:"center", marginTop:20}}>
-                        <Text style = {{color:Colors.primary, fontWeight:"bold"}}>Change My Habit   </Text>
-                    </TouchableOpacity>
+                  <TouchableOpacity onPress={btn_add} style={{ backgroundColor: Colors.lightPrimary, height: 40, width: 160, borderRadius: 10, alignItems: "center", justifyContent: "center", marginTop: 20 }}>
+                    <Text style={{ color: Colors.primary, fontWeight: "bold" }}>Change My Habit   </Text>
+                  </TouchableOpacity>
                 </View>
               )
             }

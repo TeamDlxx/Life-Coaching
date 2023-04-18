@@ -38,6 +38,7 @@ export default function Landing({navigation}, props) {
         index: 0,
         routes: [{name: screens.bottomTabs}],
       });
+      await AsyncStorage.setItem('@googleOrAppleLogin', "false")
     } catch (e) {
       showToast('Please try again', 'Something went wrong');
     }

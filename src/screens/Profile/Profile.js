@@ -38,11 +38,13 @@ import EmptyView from '../../Components/EmptyView';
 const ic_logo = require('../../Assets/app-icon/final.png');
 const screen = Dimensions.get('screen');
 const Profile = props => {
-  const { Token, habitList, setHabitList, completed, purchasedSKUs } =
+  const { Token, habitList, setHabitList, completed, purchasedSKUs, } =
     useContext(Context);
   const [user, setUser] = useState(null);
   const [loading, setisLoading] = useState(true);
   const [modalImage, setModalImage] = useState(null);
+  const [googleOrAppleLogin, setGoogleOrAppleLogin] = useState(null);
+
 
   const onLoginSignUpScreen = screen => {
     props.navigation.navigate(screen, {
@@ -57,6 +59,15 @@ const Profile = props => {
       }
     });
   };
+
+  const getUserLoginStatus = async () => {
+    return await AsyncStorage.getItem('@googleOrAppleLogin').then(val => {
+      if (val !== null) {
+        setGoogleOrAppleLogin(val);
+        console.log(googleOrAppleLogin, "googleOrAppleLogin ...")
+      }
+    })
+  }
 
   async function api_profile() {
     let res = await invokeApi({
@@ -107,6 +118,7 @@ const Profile = props => {
   }, [props.route.params]);
 
   useEffect(() => {
+    getUserLoginStatus();
     if (Token) {
       getUserDetail();
       api_profile();
@@ -225,7 +237,6 @@ const Profile = props => {
           <View style={{ paddingHorizontal: 30, marginTop: 40 }}>
             {optionsList.map((x, i) => {
 
-
               if (
                 x.id == 'sub' &&
                 !!purchasedSKUs.find(x => x == 'lifetime.purchase') == true
@@ -241,12 +252,18 @@ const Profile = props => {
                 return;
               }
 
+              // if (
+              //   x.id == '2' && !Token && googleOrAppleLogin == "false" && guest == "true"
+              // ) {
+              //   return;
+              // }
 
-              if (
-                x.id == '2' &&
-                !Token
-              ) {
-                return;
+              if (x.id == '2') {
+                if (!Token) {
+                  return;
+                } else if (googleOrAppleLogin == "true" && Token) {
+                  return;
+                }
               }
 
               if (
@@ -261,53 +278,53 @@ const Profile = props => {
 
               return (
 
-                
-                    <Pressable
-                      key={x.id}
-                      onPress={() => {
-                        if (!!x.screen) {
-                          props.navigation.navigate(x.screen, {
-                            user: x.screen == screens.editProfile ? user : null,
-                          });
-                        }
-                      }}
+
+                <Pressable
+                  key={x.id}
+                  onPress={() => {
+                    if (!!x.screen) {
+                      props.navigation.navigate(x.screen, {
+                        user: x.screen == screens.editProfile ? user : null,
+                      });
+                    }
+                  }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingVertical: 10,
+                  }}>
+                  <View
+                    style={{
+                      height: 40,
+                      width: 40,
+                      backgroundColor: '#BDC3C744',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      borderRadius: 10,
+                    }}>
+                    <CustomImage
+                      source={x.icon}
+                      style={{ height: 20, width: 20 }}
+                    />
+                  </View>
+                  <View style={{ flex: 1, marginLeft: 15 }}>
+                    <Text
                       style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        paddingVertical: 10,
+                        fontFamily: font.medium,
+                        fontSize: 16,
+                        letterSpacing: 0.6,
                       }}>
-                      <View
-                        style={{
-                          height: 40,
-                          width: 40,
-                          backgroundColor: '#BDC3C744',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          borderRadius: 10,
-                        }}>
-                        <CustomImage
-                          source={x.icon}
-                          style={{ height: 20, width: 20 }}
-                        />
-                      </View>
-                      <View style={{ flex: 1, marginLeft: 15 }}>
-                        <Text
-                          style={{
-                            fontFamily: font.medium,
-                            fontSize: 16,
-                            letterSpacing: 0.6,
-                          }}>
-                          {x.name}
-                        </Text>
-                      </View>
-                      <View>
-                        <CustomImage
-                          source={require('../../Assets/Icons/right_arrow.png')}
-                          style={{ height: 15, width: 15 }}
-                        />
-                      </View>
-                    </Pressable>
-               
+                      {x.name}
+                    </Text>
+                  </View>
+                  <View>
+                    <CustomImage
+                      source={require('../../Assets/Icons/right_arrow.png')}
+                      style={{ height: 15, width: 15 }}
+                    />
+                  </View>
+                </Pressable>
+
 
 
 
