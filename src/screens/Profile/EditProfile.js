@@ -64,7 +64,7 @@ const EditProfile = props => {
   const setUser = updation => updateUser({...user, ...updation});
 
   const SaveChangesButton = async () => {
-    let t_name = user.fullName.trim();
+    let t_name = user?.fullName.trim();
     // let t_image = !!user.imageURI ? user.imageURI : '';
     if (t_name == '') {
       showToast('Please enter your name', 'Alert');
