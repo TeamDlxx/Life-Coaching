@@ -12,7 +12,7 @@ const CustomButton = (props) => {
                 alignItems: "center",
                 justifyContent: "center",
             }}>
-            <Text style={{ color: Colors.primary, fontWeight: "bold" }}>More{' '}</Text>
+            <Text style={{ color: Colors.primary, fontWeight: "bold" , fontSize: 13,}}>View All{' '}</Text>
         </Pressable>
     )
 }
