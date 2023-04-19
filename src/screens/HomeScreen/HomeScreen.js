@@ -16,6 +16,7 @@ import {
     Platform,
     ToastAndroid,
     ActivityIndicator,
+    Modal,
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import SplashScreen from 'react-native-splash-screen';
@@ -58,12 +59,16 @@ import LoginAlert from '../../Components/LoginAlert';
 import Fav from '../../Assets/Icons/fav.png';
 import notFav from '../../Assets/Icons/notfav.png';
 import ic_share from '../../Assets/Icons/share.png';
+import ic_wallPaper from '../../Assets/Icons/wallpapers.png';
 import ic_download from '../../Assets/Icons/ic_download.png';
 const ic_notes = require('../../Assets/Icons/notes.png');
 const empty_notes = require('../../Assets/Icons/notes-empty.png');
 const empty_habits = require('../../Assets/Icons/habits-empty.png');
 
-
+import ic_gallery from '../../Assets/Icons/gallery.png';
+import ic_camera from '../../Assets/Icons/camera.png';
+import ic_cross from '../../Assets/Icons/cross.png';
+import ic_trash from '../../Assets/Icons/trash.png';
 
 const HomeScreen = (props) => {
     const { Token, downloadQuote, dashboardData, setDashBoardData } = useContext(Context);
@@ -71,6 +76,7 @@ const HomeScreen = (props) => {
     const [user, setUser] = useState(null);
     const [modalImage, setModalImage] = useState(null);
     const [isSharing, setIsSharing] = useState(null);
+    const [isModalVisible, setModalVisibility] = useState(false);
 
     let meditationOfTheDay = dashboardData.meditationOfTheDay;
     let quoteOfTheDay = dashboardData.quoteOfTheDay;
@@ -334,6 +340,123 @@ const HomeScreen = (props) => {
             .catch(err => console.log('Error', err));
     };
 
+    const updateNote = item => {
+        let arr = [...notes];
+        let index = arr.findIndex(x => x._id == item._id);
+        if (index > -1) {
+            arr.splice(index, 1, item);
+            notes = [...arr];
+            setDashBoardData({
+                ...dashboardData,
+            })
+        }
+    };
+
+      const wallpaperOptionsModal = () => {
+        return (
+          <Modal
+            isVisible={isModalVisible}
+            onBackButtonPress={() => setModalVisibility(false)}
+            onBackdropPress={() => setModalVisibility(false)}
+            useNativeDriverForBackdrop={true}
+            style={{ marginTop: 'auto', margin: 0 }}>
+            <View
+              style={{
+                backgroundColor: '#fff',
+                marginTop: 'auto',
+                marginBottom: Platform.OS == 'ios' ? 30 : 10,
+                marginHorizontal: 10,
+                borderRadius: 10,
+                padding: 20,
+              }}>
+    
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontFamily: font.bold,
+                      letterSpacing: 0.5,
+                    }}>
+                    Select Image
+                  </Text>
+                </View>
+    
+                <Pressable
+                  onPress={() => setModalVisibility(false)}
+                  style={{ alignItems: 'center' }}>
+                  <View
+                    style={{
+                      backgroundColor: '#BDC3C744',
+                      height: 30,
+                      width: 30,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: 25,
+                    }}>
+                    <Image source={ic_cross} style={{ height: 10, width: 10 }} />
+                  </View>
+                </Pressable>
+              </View>
+    
+    
+              <View
+                style={{ marginTop: 25, flexDirection: 'row', alignItems: 'center' }}>
+                <Pressable onPress={() => {}} style={{ alignItems: 'center' }}>
+                  <View
+                    style={{
+                      backgroundColor: '#BDC3C744',
+                      height: 50,
+                      width: 50,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: 25,
+                    }}>
+                    <Image source={ic_camera} style={{ height: 20, width: 20 }} />
+                  </View>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontFamily: font.medium,
+                      letterSpacing: 0.5,
+                      marginTop: 5,
+                    }}>
+                    Camera
+                  </Text>
+                </Pressable>
+    
+                <Pressable
+                  onPress={() => {}}
+                  style={{ alignItems: 'center', marginLeft: 30 }}>
+                  <View
+                    style={{
+                      backgroundColor: '#BDC3C744',
+                      height: 50,
+                      width: 50,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: 25,
+                    }}>
+                    <Image source={ic_gallery} style={{ height: 20, width: 20 }} />
+                  </View>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontFamily: font.medium,
+                      letterSpacing: 0.5,
+                      marginTop: 5,
+                    }}>
+                    Gallery
+                  </Text>
+                </Pressable>
+    
+              </View>
+    
+            </View>
+          </Modal>
+        );
+      };
+
     return (
         <SafeAreaView
             style={[
@@ -371,7 +494,12 @@ const HomeScreen = (props) => {
                         style={{ height: 25.5, aspectRatio: 6 }}
                     />
                 </View>
-                <View style={{}}>
+                {Token && <Pressable onPress={() => {
+                    props.navigation.navigate(screens.editProfile, {
+                        user: !!user ? user : null,
+                        isComingFrom: "dashBoard"
+                    });
+                }}>
                     <CustomImage
                         source={
                             !!user && !!user.profile_image
@@ -381,7 +509,7 @@ const HomeScreen = (props) => {
                         style={{ height: 40, width: 40 }}
                         imageStyle={{ borderRadius: 40 / 2 }}
                     />
-                </View>
+                </Pressable>}
             </View>
 
             <ScrollView style={{ flex: 1, marginTop: 10 }}>
@@ -467,7 +595,7 @@ const HomeScreen = (props) => {
                                     </Text>
                                     <View style={{ flex: 0.5, justifyContent: 'center' }}>
                                         <Pressable
-                                            onPress={ () => {props.navigation.navigate(screens.habitTracker)}}
+                                            onPress={() => { props.navigation.navigate(screens.habitTracker) }}
                                             style={[
                                                 FAB_style.View,
                                                 {
@@ -609,7 +737,11 @@ const HomeScreen = (props) => {
                             <>
                                 <View style={{ marginTop: 10, }}>
                                     {notes[0] &&
-                                        <View
+                                        <Pressable
+                                            onPress={() => props.navigation.navigate(screens.notesDetail, {
+                                                note: notes[0],
+                                                updateNote,
+                                            })}
                                             style={home_styles.note}>
                                             <View>
                                                 <Image
@@ -628,7 +760,7 @@ const HomeScreen = (props) => {
                                                     {moment(notes[0]?.updatedAt).format('DD-MM-YYYY')}
                                                 </Text>
                                             </View>
-                                        </View>
+                                        </Pressable>
                                     }
                                     {notes[1] &&
                                         <View
@@ -830,6 +962,21 @@ const HomeScreen = (props) => {
                                     )
                                 }
                             </TouchableOpacity>
+
+                            <TouchableOpacity
+                               onPress={() => setModalVisibility(true)}
+                                style={{
+                                    flex: 1,
+                                    alignItems: 'center',
+                                    height: 50,
+                                    justifyContent: 'center',
+                                }}>
+                                <Image
+                                    source={ic_wallPaper}
+                                    style={{ height: 18.5, width: 18.5, tintColor: Colors.placeHolder }}
+                                />
+
+                            </TouchableOpacity>
                         </View>
 
                         <View style={{ alignItems: "flex-end", marginTop: 10, }}>
@@ -844,7 +991,7 @@ const HomeScreen = (props) => {
                 visible={!!modalImage}
                 url={modalImage}
             />
-
+            {/* {wallpaperOptionsModal()} */}
         </SafeAreaView>
     )
 }

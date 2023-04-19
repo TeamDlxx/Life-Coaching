@@ -10,26 +10,26 @@ import {
   BackHandler,
   Alert,
 } from 'react-native';
-import React, {useCallback, useState} from 'react';
-import {useFocusEffect} from '@react-navigation/native';
-import {mainStyles} from '../../Utilities/styles';
+import React, { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { mainStyles } from '../../Utilities/styles';
 import Header from '../../Components/Header';
 import Colors from '../../Utilities/Colors';
-import {font} from '../../Utilities/font';
+import { font } from '../../Utilities/font';
 import ImagePicker from 'react-native-image-crop-picker';
 import Modal from 'react-native-modal';
-import {CustomSimpleTextInput} from '../../Components/CustomTextInput';
+import { CustomSimpleTextInput } from '../../Components/CustomTextInput';
 import analytics from '@react-native-firebase/analytics';
 
 import showToast from '../../functions/showToast';
-import {isFirstLetterAlphabet} from '../../functions/regex';
+import { isFirstLetterAlphabet } from '../../functions/regex';
 import Loader from '../../Components/Loader';
 import invokeApi from '../../functions/invokeAPI';
-import {fileURL} from '../../Utilities/domains';
+import { fileURL } from '../../Utilities/domains';
 import UploadImage from '../../Components/UploadImage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {screens} from '../../Navigation/Screens';
-import {useContext} from 'react';
+import { screens } from '../../Navigation/Screens';
+import { useContext } from 'react';
 import Context from '../../Context';
 import moment from 'moment';
 // Icons
@@ -45,7 +45,7 @@ import ic_trash from '../../Assets/Icons/trash.png';
 import CustomButton from '../../Components/CustomButton';
 
 const EditProfile = props => {
-  const {Token} = useContext(Context);
+  const { Token } = useContext(Context);
   const userData = props.route.params.user;
   const [isModalVisible, setModalVisibility] = useState(false);
   const [isLoading, setisLoading] = useState(false);
@@ -61,7 +61,7 @@ const EditProfile = props => {
     fullName: userData.name,
   };
 
-  const setUser = updation => updateUser({...user, ...updation});
+  const setUser = updation => updateUser({ ...user, ...updation });
 
   const SaveChangesButton = async () => {
     let t_name = user.fullName.trim();
@@ -117,9 +117,14 @@ const EditProfile = props => {
       'success',
     );
     AsyncStorage.setItem('@user', JSON.stringify(newData)).then(() => {
-      props.navigation.navigate(screens.profile, {
-        updated: true,
-      });
+      if (props?.route?.params?.isComingFrom == "dashBoard") {
+        props.navigation.pop(1)
+      }
+      else {
+        props.navigation.navigate(screens.profile, {
+          updated: true,
+        });
+      }
     });
   };
 
@@ -153,7 +158,7 @@ const EditProfile = props => {
               type: image.mime,
             };
           }
-          setUser({selectedImage: selectedImage});
+          setUser({ selectedImage: selectedImage });
         })
         .catch(e => {
           console.log('Error', e);
@@ -216,7 +221,7 @@ const EditProfile = props => {
                 type: image.mime,
               };
             }
-            setUser({selectedImage: selectedImage});
+            setUser({ selectedImage: selectedImage });
           })
           .catch(e => {
             console.log('Error', e);
@@ -260,7 +265,7 @@ const EditProfile = props => {
         onBackButtonPress={() => setModalVisibility(false)}
         onBackdropPress={() => setModalVisibility(false)}
         useNativeDriverForBackdrop={true}
-        style={{marginTop: 'auto', margin: 0}}>
+        style={{ marginTop: 'auto', margin: 0 }}>
         <View
           style={{
             backgroundColor: '#fff',
@@ -270,8 +275,8 @@ const EditProfile = props => {
             borderRadius: 10,
             padding: 20,
           }}>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <View style={{flex: 1}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flex: 1 }}>
               <Text
                 style={{
                   fontSize: 18,
@@ -284,7 +289,7 @@ const EditProfile = props => {
 
             <Pressable
               onPress={() => setModalVisibility(false)}
-              style={{alignItems: 'center'}}>
+              style={{ alignItems: 'center' }}>
               <View
                 style={{
                   backgroundColor: '#BDC3C744',
@@ -294,13 +299,13 @@ const EditProfile = props => {
                   justifyContent: 'center',
                   borderRadius: 25,
                 }}>
-                <Image source={ic_cross} style={{height: 10, width: 10}} />
+                <Image source={ic_cross} style={{ height: 10, width: 10 }} />
               </View>
             </Pressable>
           </View>
           <View
-            style={{marginTop: 25, flexDirection: 'row', alignItems: 'center'}}>
-            <Pressable onPress={openCamera} style={{alignItems: 'center'}}>
+            style={{ marginTop: 25, flexDirection: 'row', alignItems: 'center' }}>
+            <Pressable onPress={openCamera} style={{ alignItems: 'center' }}>
               <View
                 style={{
                   backgroundColor: '#BDC3C744',
@@ -310,7 +315,7 @@ const EditProfile = props => {
                   justifyContent: 'center',
                   borderRadius: 25,
                 }}>
-                <Image source={ic_camera} style={{height: 20, width: 20}} />
+                <Image source={ic_camera} style={{ height: 20, width: 20 }} />
               </View>
               <Text
                 style={{
@@ -325,7 +330,7 @@ const EditProfile = props => {
 
             <Pressable
               onPress={openGallery}
-              style={{alignItems: 'center', marginLeft: 30}}>
+              style={{ alignItems: 'center', marginLeft: 30 }}>
               <View
                 style={{
                   backgroundColor: '#BDC3C744',
@@ -335,7 +340,7 @@ const EditProfile = props => {
                   justifyContent: 'center',
                   borderRadius: 25,
                 }}>
-                <Image source={ic_gallery} style={{height: 20, width: 20}} />
+                <Image source={ic_gallery} style={{ height: 20, width: 20 }} />
               </View>
               <Text
                 style={{
@@ -350,10 +355,10 @@ const EditProfile = props => {
             {(user?.imageURI != '' || user?.selectedImage != null) && (
               <Pressable
                 onPress={() => {
-                  setUser({imageURI: '', selectedImage: null});
+                  setUser({ imageURI: '', selectedImage: null });
                   setModalVisibility(false);
                 }}
-                style={{alignItems: 'center', marginLeft: 30}}>
+                style={{ alignItems: 'center', marginLeft: 30 }}>
                 <View
                   style={{
                     backgroundColor: '#BDC3C744',
@@ -363,7 +368,7 @@ const EditProfile = props => {
                     justifyContent: 'center',
                     borderRadius: 25,
                   }}>
-                  <Image source={ic_trash} style={{height: 20, width: 20}} />
+                  <Image source={ic_trash} style={{ height: 20, width: 20 }} />
                 </View>
                 <Text
                   style={{
@@ -391,7 +396,7 @@ const EditProfile = props => {
       Alert.alert(
         'Unsaved Changes',
         'Are you sure you want to discard changes?',
-        [{text: 'No'}, {text: 'Yes', onPress: () => props.navigation.goBack()}],
+        [{ text: 'No' }, { text: 'Yes', onPress: () => props.navigation.goBack() }],
       );
     } else {
       props.navigation.goBack();
@@ -426,7 +431,7 @@ const EditProfile = props => {
         onBackPress={onBackPress}
         navigation={props.navigation}
       />
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <View>
           <Pressable
             onPress={() => setModalVisibility(true)}
@@ -445,10 +450,10 @@ const EditProfile = props => {
             <CustomImage
               source={
                 !!user?.selectedImage
-                  ? {uri: user?.selectedImage?.uri}
+                  ? { uri: user?.selectedImage?.uri }
                   : !!user?.imageURI
-                  ? {uri: fileURL + user?.imageURI}
-                  : profile_avatar
+                    ? { uri: fileURL + user?.imageURI }
+                    : profile_avatar
               }
               style={{
                 height: 100,
@@ -470,7 +475,7 @@ const EditProfile = props => {
                 borderRadius: 999,
                 overflow: 'hidden',
               }}>
-              <View style={{flex: 3}} />
+              <View style={{ flex: 3 }} />
               <View
                 style={{
                   flex: 1,
@@ -480,22 +485,22 @@ const EditProfile = props => {
                 }}>
                 <Image
                   source={pick_image}
-                  style={{height: 20, width: 20, tintColor: '#fff'}}
+                  style={{ height: 20, width: 20, tintColor: '#fff' }}
                 />
               </View>
             </View>
           </Pressable>
         </View>
-        <View style={{marginTop: 30, paddingHorizontal: 20}}>
+        <View style={{ marginTop: 30, paddingHorizontal: 20 }}>
           <CustomSimpleTextInput
             lable={'Full Name'}
             value={user.fullName}
             placeholder="Your Name"
-            onChangeText={val => setUser({fullName: val})}
+            onChangeText={val => setUser({ fullName: val })}
             autoCapitalize={true}
           />
         </View>
-        <View style={{marginTop: 10, paddingHorizontal: 20}}>
+        <View style={{ marginTop: 10, paddingHorizontal: 20 }}>
           <CustomButton title="Save Changes" onPress={SaveChangesButton} />
         </View>
         <Loader enable={isLoading} />
