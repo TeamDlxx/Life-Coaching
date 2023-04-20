@@ -352,110 +352,110 @@ const HomeScreen = (props) => {
         }
     };
 
-      const wallpaperOptionsModal = () => {
+    const wallpaperOptionsModal = () => {
         return (
-          <Modal
-            isVisible={isModalVisible}
-            onBackButtonPress={() => setModalVisibility(false)}
-            onBackdropPress={() => setModalVisibility(false)}
-            useNativeDriverForBackdrop={true}
-            style={{ marginTop: 'auto', margin: 0 }}>
-            <View
-              style={{
-                backgroundColor: '#fff',
-                marginTop: 'auto',
-                marginBottom: Platform.OS == 'ios' ? 30 : 10,
-                marginHorizontal: 10,
-                borderRadius: 10,
-                padding: 20,
-              }}>
-    
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={{ flex: 1 }}>
-                  <Text
+            <Modal
+                isVisible={isModalVisible}
+                onBackButtonPress={() => setModalVisibility(false)}
+                onBackdropPress={() => setModalVisibility(false)}
+                useNativeDriverForBackdrop={true}
+                style={{ marginTop: 'auto', margin: 0 }}>
+                <View
                     style={{
-                      fontSize: 18,
-                      fontFamily: font.bold,
-                      letterSpacing: 0.5,
+                        backgroundColor: '#fff',
+                        marginTop: 'auto',
+                        marginBottom: Platform.OS == 'ios' ? 30 : 10,
+                        marginHorizontal: 10,
+                        borderRadius: 10,
+                        padding: 20,
                     }}>
-                    Select Image
-                  </Text>
+
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{ flex: 1 }}>
+                            <Text
+                                style={{
+                                    fontSize: 18,
+                                    fontFamily: font.bold,
+                                    letterSpacing: 0.5,
+                                }}>
+                                Select Image
+                            </Text>
+                        </View>
+
+                        <Pressable
+                            onPress={() => setModalVisibility(false)}
+                            style={{ alignItems: 'center' }}>
+                            <View
+                                style={{
+                                    backgroundColor: '#BDC3C744',
+                                    height: 30,
+                                    width: 30,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: 25,
+                                }}>
+                                <Image source={ic_cross} style={{ height: 10, width: 10 }} />
+                            </View>
+                        </Pressable>
+                    </View>
+
+
+                    <View
+                        style={{ marginTop: 25, flexDirection: 'row', alignItems: 'center' }}>
+                        <Pressable onPress={() => { }} style={{ alignItems: 'center' }}>
+                            <View
+                                style={{
+                                    backgroundColor: '#BDC3C744',
+                                    height: 50,
+                                    width: 50,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: 25,
+                                }}>
+                                <Image source={ic_camera} style={{ height: 20, width: 20 }} />
+                            </View>
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    fontFamily: font.medium,
+                                    letterSpacing: 0.5,
+                                    marginTop: 5,
+                                }}>
+                                Camera
+                            </Text>
+                        </Pressable>
+
+                        <Pressable
+                            onPress={() => { }}
+                            style={{ alignItems: 'center', marginLeft: 30 }}>
+                            <View
+                                style={{
+                                    backgroundColor: '#BDC3C744',
+                                    height: 50,
+                                    width: 50,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: 25,
+                                }}>
+                                <Image source={ic_gallery} style={{ height: 20, width: 20 }} />
+                            </View>
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    fontFamily: font.medium,
+                                    letterSpacing: 0.5,
+                                    marginTop: 5,
+                                }}>
+                                Gallery
+                            </Text>
+                        </Pressable>
+
+                    </View>
+
                 </View>
-    
-                <Pressable
-                  onPress={() => setModalVisibility(false)}
-                  style={{ alignItems: 'center' }}>
-                  <View
-                    style={{
-                      backgroundColor: '#BDC3C744',
-                      height: 30,
-                      width: 30,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: 25,
-                    }}>
-                    <Image source={ic_cross} style={{ height: 10, width: 10 }} />
-                  </View>
-                </Pressable>
-              </View>
-    
-    
-              <View
-                style={{ marginTop: 25, flexDirection: 'row', alignItems: 'center' }}>
-                <Pressable onPress={() => {}} style={{ alignItems: 'center' }}>
-                  <View
-                    style={{
-                      backgroundColor: '#BDC3C744',
-                      height: 50,
-                      width: 50,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: 25,
-                    }}>
-                    <Image source={ic_camera} style={{ height: 20, width: 20 }} />
-                  </View>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontFamily: font.medium,
-                      letterSpacing: 0.5,
-                      marginTop: 5,
-                    }}>
-                    Camera
-                  </Text>
-                </Pressable>
-    
-                <Pressable
-                  onPress={() => {}}
-                  style={{ alignItems: 'center', marginLeft: 30 }}>
-                  <View
-                    style={{
-                      backgroundColor: '#BDC3C744',
-                      height: 50,
-                      width: 50,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: 25,
-                    }}>
-                    <Image source={ic_gallery} style={{ height: 20, width: 20 }} />
-                  </View>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontFamily: font.medium,
-                      letterSpacing: 0.5,
-                      marginTop: 5,
-                    }}>
-                    Gallery
-                  </Text>
-                </Pressable>
-    
-              </View>
-    
-            </View>
-          </Modal>
+            </Modal>
         );
-      };
+    };
 
     return (
         <SafeAreaView
@@ -573,14 +573,14 @@ const HomeScreen = (props) => {
                             :
                             <>
                                 <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }} >
-                                    <Image source={empty_habits} style={{ height: 130, width: 150 }} />
+                                    <Image source={empty_habits} style={{ height: 130, width: 130, resizeMode: "contain", marginTop: 20 }} />
                                     <Text
                                         style={{
                                             fontFamily: font.bold,
                                             fontSize: 15,
                                             includeFontPadding: false,
                                             color: Colors.black,
-                                            marginTop: -25,
+                                            marginTop: 15,
                                         }}>
                                         No Habits Yet
                                     </Text>
@@ -593,8 +593,8 @@ const HomeScreen = (props) => {
                                         paddingHorizontal: 30,
                                     }}>{"Start by creating a new habit to improve your daily routine!"}
                                     </Text>
-                                    <View style={{ flex: 0.5, justifyContent: 'center' }}>
-                                        <Pressable
+                                    {/* <View style={{ flex: 0.5, justifyContent: 'center' }}> */}
+                                    {/* <Pressable
                                             onPress={() => { props.navigation.navigate(screens.habitTracker) }}
                                             style={[
                                                 FAB_style.View,
@@ -611,9 +611,20 @@ const HomeScreen = (props) => {
                                                 source={require('../../Assets/Icons/plus.png')}
                                                 style={{ height: 10, width: 10, tintColor: Colors.white }}
                                             />
-                                        </Pressable>
-                                    </View>
-
+                                        // </Pressable> */}
+                                    {/* </View> */}
+                                    <Pressable onPress={props.onPress}
+                                        style={{
+                                            backgroundColor: Colors.primary,
+                                            height: 33,
+                                            borderRadius: 10,
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            paddingHorizontal: 10,
+                                            marginTop: 15
+                                        }}>
+                                        <Text style={{ color: "white", fontWeight: "bold", fontSize: 13, }}>Change My Habit{' '}</Text>
+                                    </Pressable>
                                 </View>
                             </>}
                     </View>
@@ -720,6 +731,18 @@ const HomeScreen = (props) => {
 
                         <View style={{ alignItems: "flex-end", marginTop: 7, }}>
                             <CustomButton onPress={() => props.navigation.navigate(screens.meditation)} />
+                            {/* <Pressable onPress={props.onPress}
+                                style={{
+                                    backgroundColor: Colors.primary,
+                                    height: 33,
+                                    borderRadius: 10,
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    paddingHorizontal: 10,
+                                    marginTop: 15
+                                }}>
+                                <Text style={{ color: "white", fontWeight: "bold", fontSize: 13, }}>Change My Habit{' '}</Text>
+                            </Pressable> */}
                         </View>
                     </View>
                 </Animatable.View>
@@ -731,7 +754,7 @@ const HomeScreen = (props) => {
                     delay={1 * 250}>
                     <View
                         style={home_styles.customCardView}>
-                        <Text style={home_styles.heading}>Note Of The Day </Text>
+                        <Text style={home_styles.heading}>Today's Notes </Text>
 
                         {Token && notes.length != 0 ?
                             <>
@@ -811,26 +834,21 @@ const HomeScreen = (props) => {
                                         textAlign: 'center',
                                         marginTop: 8,
                                         paddingHorizontal: 30,
-                                    }}>{"Start jotting down your thoughts and ideas to get organized!"}
+                                    }}>{"Start writing down your thoughts and ideas to get organized!"}
                                     </Text>
+
                                     <View style={{ flex: 0.5, justifyContent: 'center' }}>
-                                        <Pressable
-                                            onPress={() => props.navigation.navigate(screens.notesList)}
-                                            style={[
-                                                FAB_style.View,
-                                                {
-                                                    position: 'relative',
-                                                    marginTop: 35,
-                                                    right: 0,
-                                                    height: 40,
-                                                    width: 40,
-                                                    borderRadius: 40 / 2,
-                                                },
-                                            ]}>
-                                            <Image
-                                                source={require('../../Assets/Icons/plus.png')}
-                                                style={{ height: 10, width: 10, tintColor: Colors.white }}
-                                            />
+                                        <Pressable onPress={props.onPress}
+                                            style={{
+                                                backgroundColor: Colors.primary,
+                                                height: 33,
+                                                borderRadius: 10,
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                paddingHorizontal: 15,
+                                                marginTop: 15
+                                            }}>
+                                            <Text style={{ color: "white", fontWeight: "bold", fontSize: 13, }}>Add Notes{' '}</Text>
                                         </Pressable>
                                     </View>
 
@@ -964,7 +982,7 @@ const HomeScreen = (props) => {
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                               onPress={() => setModalVisibility(true)}
+                                onPress={() => setModalVisibility(true)}
                                 style={{
                                     flex: 1,
                                     alignItems: 'center',
@@ -1015,9 +1033,8 @@ const home_styles = StyleSheet.create({
         marginTop: 5,
         marginBottom: 10,
         borderRadius: 20,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
         marginHorizontal: 15,
+        padding: 22
     },
 
     statItemtext1: {
