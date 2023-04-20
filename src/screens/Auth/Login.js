@@ -237,7 +237,7 @@ const Login = props => {
     });
     if (res) {
       if (res.code == 200) {
-        console.log(res , "response...")
+        console.log(res, "response...")
         await AsyncStorage.setItem('@googleOrAppleLogin', "true")
         onBottomTabScreen(res);
       } else {
@@ -271,12 +271,11 @@ const Login = props => {
           code: idToken,
           login_by: 'Google',
         };
-
-        setisLoading(true);
         socialLoginApi(loginObj);
       }
 
     } catch (error) {
+      setisLoading(false);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         // user cancelled the login flow
       } else if (error.code === statusCodes.IN_PROGRESS) {
@@ -390,15 +389,11 @@ const Login = props => {
           />
         </Pressable>
 
-        <View style={{ marginTop: 35 }}>
+        <View style={{ marginTop: 35 , paddingHorizontal: 20,}}>
           <View style={loginStyles.headerView}>
             <HeadingText>Sign In</HeadingText>
           </View>
-          <View
-            style={{
-              height: height * 0.69,
-              paddingHorizontal: 20,
-            }}>
+          
             <View>
               <CustomSimpleTextInput
                 lable={'E-mail'}
@@ -408,6 +403,7 @@ const Login = props => {
                 type="email-address"
               />
             </View>
+
             <View style={{ marginTop: 20 }}>
               <CustomPasswordTextInput
                 lable={'Password'}
@@ -432,9 +428,7 @@ const Login = props => {
             <View
               style={{
                 alignItems: 'center',
-                // flex: 1,
                 justifyContent: 'flex-end',
-                // marginTop: 20,
               }}>
               <Text style={{ color: '#313131', fontFamily: font.regular }}>
                 Continue as{' '}
@@ -467,15 +461,18 @@ const Login = props => {
               alignItems: "center",
               marginTop: 20,
             }}>
-              <Pressable onPress={signInWithGoogle}
+              <Pressable onPress={async () => {
+                setisLoading(true);
+                signInWithGoogle()
+              }}
                 style={loginStyles.buttonStyle}>
                 <Image source={require("../../Assets/Icons/google.png")} style={loginStyles.btnImageStyle} />
               </Pressable>
 
-              <TouchableOpacity onPress={() => { signInWithApple() }}
+             { Platform.OS == 'ios' && <TouchableOpacity onPress={() => { signInWithApple() }}
                 style={loginStyles.buttonStyle}>
                 <Image source={require("../../Assets/Icons/apple.png")} style={loginStyles.btnImageStyle} />
-              </ TouchableOpacity>
+              </ TouchableOpacity>}
 
               {/* <Pressable
                 onPress={() => { }}
@@ -489,9 +486,8 @@ const Login = props => {
 
             <View
               style={{
+                marginTop: 30,
                 alignItems: 'center',
-                flex: 1,
-                justifyContent: 'flex-end',
               }}>
               <Text style={{ color: '#313131', fontFamily: font.regular }}>
                 Don't have account?{' '}
@@ -503,7 +499,7 @@ const Login = props => {
               </Text>
             </View>
           </View>
-        </View>
+       
         <Loader
           enable={isLoading}
           style={{

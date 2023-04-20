@@ -11,17 +11,17 @@ import {
   Share,
   Image,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
-import {mainStyles} from '../../Utilities/styles';
+import React, { useState, useEffect } from 'react';
+import { mainStyles } from '../../Utilities/styles';
 import Colors from '../../Utilities/Colors';
-import {font} from '../../Utilities/font';
-import {screens} from '../../Navigation/Screens';
+import { font } from '../../Utilities/font';
+import { screens } from '../../Navigation/Screens';
 import * as Animatable from 'react-native-animatable';
 import NotificationConfig from '../../Components/NotificationConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SplashScreen from 'react-native-splash-screen';
 import Context from '../../Context';
-import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import analytics from '@react-native-firebase/analytics';
 import showToast from '../../functions/showToast';
 import messaging from '@react-native-firebase/messaging';
@@ -67,20 +67,25 @@ const Home = props => {
     }
   }
 
-  useEffect(() => {
-    checkNotificationPermission();
-    NotificationConfig(props);
-    analytics().logEvent(props?.route?.name);
-    setTimeout(() => {
-      SplashScreen.hide();
-      setOpt(options);
-    }, 500);
+  // useEffect(() => {
+  //   checkNotificationPermission();
+  //   NotificationConfig(props);
+  //   analytics().logEvent(props?.route?.name);
+  //   setTimeout(() => {
+  //     SplashScreen.hide();
+  //     setOpt(options);
+  //   }, 500);
 
-    return () => {
-      // unsubscribeLoaded();
-      // unsubscribeEarned();
-    };
-  }, []);
+  //   return () => {
+  //     // unsubscribeLoaded();
+  //     // unsubscribeEarned();
+  //   };
+  // }, []);
+
+  useEffect(() => {
+    setOpt(options);
+    analytics().logEvent(props?.route?.name);
+  }, [])
 
   const onDisplayNotification = async () => {
     const token = await AsyncStorage.getItem('@firebaseToken');
@@ -127,7 +132,7 @@ const Home = props => {
     }
   };
 
-  const ItemView = ({item, index}) => {
+  const ItemView = ({ item, index }) => {
     let count = index < 2 ? 3 : index < 4 ? 2 : 1;
     return (
       <Animatable.View
@@ -156,8 +161,8 @@ const Home = props => {
         }}>
         <Pressable
           onPress={() => onNextScreen(item)}
-          style={{borderRadius: 20, overflow: 'hidden', elevation: 3}}>
-          <Image source={item.image} style={{height: 200, width: '100%'}} />
+          style={{ borderRadius: 20, overflow: 'hidden', elevation: 3 }}>
+          <Image source={item.image} style={{ height: 200, width: '100%' }} />
 
           <View
             style={{
@@ -172,7 +177,7 @@ const Home = props => {
                 fontSize: 18,
                 fontFamily: font.xbold,
                 textShadowColor: Colors.gray12,
-                textShadowOffset: {width: 1, height: 1},
+                textShadowOffset: { width: 1, height: 1 },
                 textShadowRadius: 1,
                 textTransform: 'capitalize',
               }}>
@@ -185,7 +190,7 @@ const Home = props => {
                 backgroundColor: Colors.primary,
                 paddingHorizontal: 30,
                 paddingVertical: 5,
-                transform: [{rotateZ: '-45deg'}],
+                transform: [{ rotateZ: '-45deg' }],
                 position: 'absolute',
                 right: -35,
                 bottom: 20,
@@ -222,7 +227,7 @@ const Home = props => {
     <SafeAreaView
       style={[
         mainStyles.MainViewForBottomTabScreens,
-        {marginBottom: useBottomTabBarHeight()},
+        { marginBottom: useBottomTabBarHeight() },
       ]}>
       <StatusBar
         barStyle={'dark-content'}
@@ -239,14 +244,14 @@ const Home = props => {
         <Image
           resizeMode="contain"
           source={require('../../Assets/app-icon/text.png')}
-          style={{height: 25.5, aspectRatio: 6}}
+          style={{ height: 25.5, aspectRatio: 6 }}
         />
       </View>
 
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <FlatList
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{paddingBottom: 20, marginTop: 15}}
+          contentContainerStyle={{ paddingBottom: 20, marginTop: 15 }}
           numColumns={2}
           data={opt}
           renderItem={ItemView}
