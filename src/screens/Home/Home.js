@@ -67,20 +67,24 @@ const Home = props => {
     }
   }
 
-  useEffect(() => {
-    checkNotificationPermission();
-    NotificationConfig(props);
-    analytics().logEvent(props?.route?.name);
-    setTimeout(() => {
-      SplashScreen.hide();
-      setOpt(options);
-    }, 500);
+  // useEffect(() => {
+  //   checkNotificationPermission();
+  //   NotificationConfig(props);
+  //   analytics().logEvent(props?.route?.name);
+  //   setTimeout(() => {
+  //     SplashScreen.hide();
+  //     setOpt(options);
+  //   }, 500);
 
-    return () => {
-      // unsubscribeLoaded();
-      // unsubscribeEarned();
-    };
-  }, []);
+  //   return () => {
+  //     // unsubscribeLoaded();
+  //     // unsubscribeEarned();
+  //   };
+  // }, []);
+
+  useEffect(() => {
+    analytics().logEvent(props?.route?.name);
+  },[])
 
   const onDisplayNotification = async () => {
     const token = await AsyncStorage.getItem('@firebaseToken');

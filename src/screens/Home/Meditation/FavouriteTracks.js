@@ -32,7 +32,7 @@ import Pressable from 'react-native/Libraries/Components/Pressable/Pressable';
 
 const FavouriteTracks = props => {
   const {params} = props.route;
-  const {Token, dashboardData, setDashBoardData} = useContext(Context);
+  const {Token} = useContext(Context);
   const [isLoading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [trackList, setTrackList] = useState([]);
@@ -115,12 +115,6 @@ const FavouriteTracks = props => {
 
     if (res) {
       if (res.code == 200) {
-        if (id == dashboardData.meditationOfTheDay._id) {
-          dashboardData.meditationOfTheDay.is_favourite = val;
-          await setDashBoardData({
-            ...dashboardData,
-          })
-        }
         console.log('response', res);
       } else {
         showToast(res.message);

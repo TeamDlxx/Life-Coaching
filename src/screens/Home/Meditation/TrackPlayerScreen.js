@@ -49,7 +49,7 @@ const TrackPlayerScreen = props => {
   console.log(State, 'State...');
   const { navigation } = props;
   const { params } = props?.route;
-  const { Token, downloadTrack, progress, deleteTrack, isMeditationPurchased, dashboardData, setDashBoardData } =
+  const { Token, downloadTrack, progress, deleteTrack, isMeditationPurchased } =
     useContext(Context);
   const [tracksList, setTrackList] = useState(params?.list);
   const [trackItem, setTrackItem] = useState(params?.item);
@@ -369,12 +369,6 @@ const TrackPlayerScreen = props => {
   const api_likeUnLike = async (val, id) => {
     if (!!params?.likeUnLikeFunc) {
       params?.likeUnLikeFunc(id, val);
-      if (id == dashboardData.meditationOfTheDay._id) {
-        dashboardData.meditationOfTheDay.is_favourite = val;
-        await setDashBoardData({
-          ...dashboardData,
-        })
-      }
     }
 
     if (!!params?.unLike && val == false) {
@@ -405,12 +399,6 @@ const TrackPlayerScreen = props => {
         console.log('blah blah');
         if (!!params?.likeUnLikeFunc) {
           params?.likeUnLikeFunc(id, !val);
-          if (id == dashboardData.meditationOfTheDay._id) {
-            dashboardData.meditationOfTheDay.is_favourite = !val;
-            await setDashBoardData({
-              ...dashboardData,
-            })
-          }
         }
         togglelike(id, !val);
         showToast(res.message);

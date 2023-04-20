@@ -16,8 +16,8 @@ import {
     Platform,
     ToastAndroid,
     ActivityIndicator,
-    Modal,
 } from 'react-native';
+import Modal from 'react-native-modal';
 import * as Animatable from 'react-native-animatable';
 import SplashScreen from 'react-native-splash-screen';
 import NotificationConfig from '../../Components/NotificationConfig';
@@ -54,6 +54,7 @@ import play from '../../Assets/Icons/play.png';
 import profile_placeholder from '../../Assets/Icons/dummy.png';
 import CustomButton from './Components/CustomButton';
 import LoginAlert from '../../Components/LoginAlert';
+import WallpaperManager, { TYPE } from "react-native-wallpaper-manage";
 
 
 import Fav from '../../Assets/Icons/fav.png';
@@ -65,10 +66,10 @@ const ic_notes = require('../../Assets/Icons/notes.png');
 const empty_notes = require('../../Assets/Icons/notes-empty.png');
 const empty_habits = require('../../Assets/Icons/habits-empty.png');
 
-import ic_gallery from '../../Assets/Icons/gallery.png';
-import ic_camera from '../../Assets/Icons/camera.png';
+import ic_lock from '../../Assets/Icons/ic_lock.png';
+import ic_home from '../../Assets/Icons/home.png';
+import ic_home_lock from '../../Assets/Icons/home-lock.png';
 import ic_cross from '../../Assets/Icons/cross.png';
-import ic_trash from '../../Assets/Icons/trash.png';
 
 const HomeScreen = (props) => {
     const { Token, downloadQuote, dashboardData, setDashBoardData } = useContext(Context);
@@ -201,23 +202,7 @@ const HomeScreen = (props) => {
         });
     };
 
-    const gotoTrackPlayer = (item) => {
-        props.navigation.navigate(screens.trackPlayer, {
-            item: item,
-            category: item?.category_id[0]?.name,
-            list: [item],
-            likeUnLikeFunc: likeUnLikeLocally,
-        });
-
-    };
-
-    const likeUnLikeLocally = async (id, val) => {
-        meditationOfTheDay.is_favourite = val;
-        setDashBoardData({
-            ...dashboardData,
-        })
-    };
-
+    
 
     const showImageModal = image => {
         setModalImage(image);
@@ -352,111 +337,169 @@ const HomeScreen = (props) => {
         }
     };
 
-      const wallpaperOptionsModal = () => {
+    const wallpaperOptionsModal = () => {
         return (
-          <Modal
-            isVisible={isModalVisible}
-            onBackButtonPress={() => setModalVisibility(false)}
-            onBackdropPress={() => setModalVisibility(false)}
-            useNativeDriverForBackdrop={true}
-            style={{ marginTop: 'auto', margin: 0 }}>
-            <View
-              style={{
-                backgroundColor: '#fff',
-                marginTop: 'auto',
-                marginBottom: Platform.OS == 'ios' ? 30 : 10,
-                marginHorizontal: 10,
-                borderRadius: 10,
-                padding: 20,
-              }}>
-    
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={{ flex: 1 }}>
-                  <Text
+            <Modal
+                isVisible={isModalVisible}
+                onBackButtonPress={() => setModalVisibility(false)}
+                onBackdropPress={() => setModalVisibility(false)}
+                useNativeDriverForBackdrop={true}
+                style={{
+                    flex: 1,
+                    justifyContent: 'flex-end'
+                }}>
+                <View
                     style={{
-                      fontSize: 18,
-                      fontFamily: font.bold,
-                      letterSpacing: 0.5,
+                        backgroundColor: '#fff',
+                        marginTop: 'auto',
+                        marginBottom: Platform.OS == 'ios' ? 30 : 10,
+                        borderRadius: 10,
+                        padding: 20,
                     }}>
-                    Select Image
-                  </Text>
-                </View>
-    
-                <Pressable
-                  onPress={() => setModalVisibility(false)}
-                  style={{ alignItems: 'center' }}>
-                  <View
-                    style={{
-                      backgroundColor: '#BDC3C744',
-                      height: 30,
-                      width: 30,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: 25,
-                    }}>
-                    <Image source={ic_cross} style={{ height: 10, width: 10 }} />
-                  </View>
-                </Pressable>
-              </View>
-    
-    
-              <View
-                style={{ marginTop: 25, flexDirection: 'row', alignItems: 'center' }}>
-                <Pressable onPress={() => {}} style={{ alignItems: 'center' }}>
-                  <View
-                    style={{
-                      backgroundColor: '#BDC3C744',
-                      height: 50,
-                      width: 50,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: 25,
-                    }}>
-                    <Image source={ic_camera} style={{ height: 20, width: 20 }} />
-                  </View>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontFamily: font.medium,
-                      letterSpacing: 0.5,
-                      marginTop: 5,
-                    }}>
-                    Camera
-                  </Text>
-                </Pressable>
-    
-                <Pressable
-                  onPress={() => {}}
-                  style={{ alignItems: 'center', marginLeft: 30 }}>
-                  <View
-                    style={{
-                      backgroundColor: '#BDC3C744',
-                      height: 50,
-                      width: 50,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRadius: 25,
-                    }}>
-                    <Image source={ic_gallery} style={{ height: 20, width: 20 }} />
-                  </View>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontFamily: font.medium,
-                      letterSpacing: 0.5,
-                      marginTop: 5,
-                    }}>
-                    Gallery
-                  </Text>
-                </Pressable>
-    
-              </View>
-    
-            </View>
-          </Modal>
-        );
-      };
 
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{ flex: 1 }}>
+                            <Text
+                                style={{
+                                    fontSize: 16,
+                                    fontFamily: font.bold,
+                                    letterSpacing: 0.5,
+                                }}>
+                                Set as wallpaper
+                            </Text>
+                        </View>
+
+                        <Pressable
+                            onPress={() => setModalVisibility(false)}
+                            style={{ alignItems: 'center' }}>
+                            <View
+                                style={{
+                                    backgroundColor: '#BDC3C744',
+                                    height: 30,
+                                    width: 30,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: 25,
+                                }}>
+                                <Image source={ic_cross} style={{ height: 10, width: 10 }} />
+                            </View>
+                        </Pressable>
+                    </View>
+
+                    <View
+                        style={{ marginTop: 20, }}>
+                        <Pressable onPress={setHomeScreenWallpaper} style={{ alignItems: 'center', flexDirection: 'row', }}>
+                            <View
+                                style={{
+                                    backgroundColor: '#BDC3C744',
+                                    height: 40,
+                                    width: 40,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: 20,
+                                }}>
+                                <Image source={ic_home} style={{ height: 19, width: 19 }} />
+                            </View>
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    fontFamily: font.medium,
+                                    letterSpacing: 0.5,
+                                    marginLeft: 10
+                                }}>
+                                Home screen
+                            </Text>
+                        </Pressable>
+
+                        <Pressable
+                            onPress={setLockScreenWallpaper}
+                            style={{ alignItems: 'center', flexDirection: 'row', marginTop: 10 }}>
+                            <View
+                                style={{
+                                    backgroundColor: '#BDC3C744',
+                                    height: 40,
+                                    width: 40,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: 20,
+                                }}>
+                                <Image source={ic_lock} style={{ height: 20, width: 20 }} />
+                            </View>
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    fontFamily: font.medium,
+                                    letterSpacing: 0.5,
+                                    marginLeft: 10
+                                }}>
+                                Lock screen
+                            </Text>
+                        </Pressable>
+
+
+                        <Pressable
+                            onPress={setHomeAndLockScreenWallpaper}
+                            style={{ alignItems: 'center', flexDirection: 'row', marginTop: 10 }}>
+                            <View
+                                style={{
+                                    backgroundColor: '#BDC3C744',
+                                    height: 40,
+                                    width: 40,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: 20,
+                                }}>
+                                <Image source={ic_home_lock} style={{ height: 23, width: 23 }} />
+                            </View>
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    fontFamily: font.medium,
+                                    letterSpacing: 0.5,
+                                    marginLeft: 10
+                                }}>
+                                Home & Lock screens
+                            </Text>
+                        </Pressable>
+
+
+                    </View>
+
+                </View>
+            </Modal>
+        );
+    };
+
+    const setHomeScreenWallpaper = async () => {
+        let image = quoteOfTheDay?.images?.large
+        WallpaperManager.setWallpaper(
+            fileURL + `${image}`,
+            TYPE.FLAG_SYSTEM
+        )
+        setModalVisibility(false)
+    };
+
+    const setLockScreenWallpaper = async () => {
+        let image = quoteOfTheDay?.images?.large
+        WallpaperManager.setWallpaper(
+            fileURL + `${image}`,
+            TYPE.FLAG_LOCK
+        )
+        setModalVisibility(false)
+    };
+
+    const setHomeAndLockScreenWallpaper = async () => {
+        let image = quoteOfTheDay?.images?.large
+        WallpaperManager.setWallpaper(
+            fileURL + `${image}`,
+            TYPE.FLAG_SYSTEM
+        )
+        WallpaperManager.setWallpaper(
+            fileURL + `${image}`,
+            TYPE.FLAG_LOCK
+        )
+        setModalVisibility(false)
+    };
     return (
         <SafeAreaView
             style={[
@@ -629,10 +672,7 @@ const HomeScreen = (props) => {
                         <Text style={home_styles.heading}>Meditation Of The Day </Text>
 
                         <View style={{ marginTop: 10, }}>
-                            <Pressable
-                                onPress={() => {
-                                    gotoTrackPlayer(meditationOfTheDay);
-                                }}
+                            <View
                                 style={{
                                     marginTop: 5,
                                     alignItems: 'center',
@@ -715,7 +755,7 @@ const HomeScreen = (props) => {
                                         </Text>
                                     </View>
                                 </View>
-                            </Pressable>
+                            </View>
                         </View>
 
                         <View style={{ alignItems: "flex-end", marginTop: 7, }}>
@@ -964,7 +1004,7 @@ const HomeScreen = (props) => {
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                               onPress={() => setModalVisibility(true)}
+                                onPress={() => setModalVisibility(true)}
                                 style={{
                                     flex: 1,
                                     alignItems: 'center',
@@ -986,12 +1026,17 @@ const HomeScreen = (props) => {
                 </Animatable.View>
 
             </ScrollView>
+
+
+            {isModalVisible && wallpaperOptionsModal()}
+
             <ImageZoomer
                 closeModal={hideImageModal}
                 visible={!!modalImage}
                 url={modalImage}
             />
-            {/* {wallpaperOptionsModal()} */}
+
+
         </SafeAreaView>
     )
 }

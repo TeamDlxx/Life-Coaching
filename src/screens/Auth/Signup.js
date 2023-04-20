@@ -184,11 +184,10 @@ const Signup = props => {
           code: idToken,
           login_by: 'Google',
         };
-
-        setisLoading(true);
         googleLoginApi(loginObj);
       }
     } catch (error) {
+      setisLoading(false);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         // user cancelled the login flow
       } else if (error.code === statusCodes.IN_PROGRESS) {
@@ -263,16 +262,10 @@ const Signup = props => {
           />
         </Pressable>
 
-        <View style={{ marginTop: 35 }}>
+        <View style={{ marginTop: 35 , paddingHorizontal: 20,}}>
           <View style={loginStyles.headerView}>
             <HeadingText>Sign Up</HeadingText>
           </View>
-          
-          <View
-            style={{
-              height: height * 0.73,
-              paddingHorizontal: 20,
-            }}>
 
             <View>
               <CustomSimpleTextInput
@@ -349,7 +342,10 @@ const Signup = props => {
               alignItems: "center",
               marginTop: 15,
             }}>
-              <Pressable onPress={signInWithGoogle}
+              <Pressable onPress={async () => {
+                setisLoading(true);
+                signInWithGoogle()
+              }}
                 style={loginStyles.buttonStyle}>
                 <Image source={require("../../Assets/Icons/google.png")} style={loginStyles.btnImageStyle} />
               </Pressable>
@@ -370,9 +366,8 @@ const Signup = props => {
 
             <View
               style={{
+                marginTop: 20,
                 alignItems: 'center',
-                flex: 1,
-                justifyContent: 'flex-end',
               }}>
               <Text style={{ color: '#313131', fontFamily: font.regular }}>
                 Already have an Account?{' '}
@@ -385,8 +380,7 @@ const Signup = props => {
             </View>
 
           </View>
-
-        </View>
+          
         <Loader
           enable={isLoading}
           style={{
