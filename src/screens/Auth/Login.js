@@ -469,10 +469,10 @@ const Login = props => {
                 <Image source={require("../../Assets/Icons/google.png")} style={loginStyles.btnImageStyle} />
               </Pressable>
 
-              <TouchableOpacity onPress={() => { signInWithApple() }}
+             { Platform.OS == 'ios' && <TouchableOpacity onPress={() => { signInWithApple() }}
                 style={loginStyles.buttonStyle}>
                 <Image source={require("../../Assets/Icons/apple.png")} style={loginStyles.btnImageStyle} />
-              </ TouchableOpacity>
+              </ TouchableOpacity>}
 
               {/* <Pressable
                 onPress={() => { }}

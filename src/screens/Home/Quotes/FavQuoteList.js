@@ -37,6 +37,9 @@ import { fileURL } from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
 
 import Clipboard from '@react-native-clipboard/clipboard';
+import Modal from 'react-native-modal';
+import WallpaperManager, { TYPE } from "react-native-wallpaper-manage";
+
 
 //ICONS
 
@@ -50,7 +53,16 @@ import ic_share from '../../../Assets/Icons/share.png';
 import ic_download from '../../../Assets/Icons/ic_download.png';
 import { font } from '../../../Utilities/font';
 import { screens } from '../../../Navigation/Screens';
+
+import ic_wallPaper from '../../../Assets/Icons/wallpapers.png';
+import ic_lock from '../../../Assets/Icons/ic_lock.png';
+import ic_home from '../../../Assets/Icons/home.png';
+import ic_home_lock from '../../../Assets/Icons/home-lock.png';
+import ic_cross from '../../../Assets/Icons/cross.png';
+
 const limit = 10;
+
+let selectedQuote;
 const FavQuoteList = props => {
   const { params } = props?.route;
   const { Token, downloadQuote, dashboardData, setDashBoardData } = useContext(Context);
@@ -59,6 +71,9 @@ const FavQuoteList = props => {
   const [modalImage, setModalImage] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [isSharing, setIsSharing] = useState(null);
+  const [isModalVisible, setModalVisibility] = useState(false);
+
+
   const [PGN, updatePGN] = useState({
     pageNumber: 0,
     isLoadingMore: false,
@@ -387,10 +402,193 @@ const FavQuoteList = props => {
               <ActivityIndicator color={Colors.placeHolder} size="small" />
             )}
           </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {setModalVisibility(true) 
+              selectedQuote = item
+            }}
+            style={{
+              flex: 1,
+              alignItems: 'center',
+              height: 50,
+              justifyContent: 'center',
+            }}>
+            <Image
+              source={ic_wallPaper}
+              style={{ height: 18.5, width: 18.5, tintColor: Colors.placeHolder }}
+            />
+          </TouchableOpacity>
         </View>
       </View>
     );
   };
+
+  const wallpaperOptionsModal = () => {
+    return (
+        <Modal
+            isVisible={isModalVisible}
+            onBackButtonPress={() => setModalVisibility(false)}
+            onBackdropPress={() => setModalVisibility(false)}
+            useNativeDriverForBackdrop={true}
+            style={{
+                flex: 1,
+                justifyContent: 'flex-end'
+            }}>
+            <View
+                style={{
+                    backgroundColor: '#fff',
+                    marginTop: 'auto',
+                    marginBottom: Platform.OS == 'ios' ? 30 : 10,
+                    borderRadius: 10,
+                    padding: 20,
+                }}>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{ flex: 1 }}>
+                        <Text
+                            style={{
+                                fontSize: 16,
+                                fontFamily: font.bold,
+                                letterSpacing: 0.5,
+                            }}>
+                            Set as wallpaper
+                        </Text>
+                    </View>
+
+                    <Pressable
+                        onPress={() => setModalVisibility(false)}
+                        style={{ alignItems: 'center' }}>
+                        <View
+                            style={{
+                                backgroundColor: '#BDC3C744',
+                                height: 30,
+                                width: 30,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: 25,
+                            }}>
+                            <Image source={ic_cross} style={{ height: 10, width: 10 }} />
+                        </View>
+                    </Pressable>
+                </View>
+
+                <View
+                    style={{ marginTop: 20, }}>
+                    <Pressable onPress={setHomeScreenWallpaper} style={{ alignItems: 'center', flexDirection: 'row', }}>
+                        <View
+                            style={{
+                                backgroundColor: '#BDC3C744',
+                                height: 40,
+                                width: 40,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: 20,
+                            }}>
+                            <Image source={ic_home} style={{ height: 19, width: 19 }} />
+                        </View>
+                        <Text
+                            style={{
+                                fontSize: 14,
+                                fontFamily: font.medium,
+                                letterSpacing: 0.5,
+                                marginLeft: 10
+                            }}>
+                            Home screen
+                        </Text>
+                    </Pressable>
+
+                    <Pressable
+                        onPress={setLockScreenWallpaper}
+                        style={{ alignItems: 'center', flexDirection: 'row', marginTop: 10 }}>
+                        <View
+                            style={{
+                                backgroundColor: '#BDC3C744',
+                                height: 40,
+                                width: 40,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: 20,
+                            }}>
+                            <Image source={ic_lock} style={{ height: 20, width: 20 }} />
+                        </View>
+                        <Text
+                            style={{
+                                fontSize: 14,
+                                fontFamily: font.medium,
+                                letterSpacing: 0.5,
+                                marginLeft: 10
+                            }}>
+                            Lock screen
+                        </Text>
+                    </Pressable>
+
+
+                    <Pressable
+                        onPress={setHomeAndLockScreenWallpaper}
+                        style={{ alignItems: 'center', flexDirection: 'row', marginTop: 10 }}>
+                        <View
+                            style={{
+                                backgroundColor: '#BDC3C744',
+                                height: 40,
+                                width: 40,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: 20,
+                            }}>
+                            <Image source={ic_home_lock} style={{ height: 23, width: 23 }} />
+                        </View>
+                        <Text
+                            style={{
+                                fontSize: 14,
+                                fontFamily: font.medium,
+                                letterSpacing: 0.5,
+                                marginLeft: 10
+                            }}>
+                            Home & Lock screens
+                        </Text>
+                    </Pressable>
+
+
+                </View>
+
+            </View>
+        </Modal>
+    );
+};
+
+const setHomeScreenWallpaper = async () => {
+    let image = selectedQuote?.images?.large
+    WallpaperManager.setWallpaper(
+        fileURL + `${image}`,
+        TYPE.FLAG_SYSTEM
+    )
+    await ToastAndroid.show('Wallpaper has been set', ToastAndroid.SHORT);
+    setModalVisibility(false)
+};
+
+const setLockScreenWallpaper = async () => {
+    let image = selectedQuote?.images?.large
+    WallpaperManager.setWallpaper(
+        fileURL + `${image}`,
+        TYPE.FLAG_LOCK
+    )
+    ToastAndroid.show('Wallpaper has been set', ToastAndroid.SHORT);
+    await setModalVisibility(false)
+};
+
+const setHomeAndLockScreenWallpaper = async () => {
+    let image = selectedQuote?.images?.large
+    WallpaperManager.setWallpaper(
+        fileURL + `${image}`,
+        TYPE.FLAG_SYSTEM
+    )
+    WallpaperManager.setWallpaper(
+        fileURL + `${image}`,
+        TYPE.FLAG_LOCK
+    )
+    ToastAndroid.show('Wallpaper has been set', ToastAndroid.SHORT);
+    await setModalVisibility(false)
+};
 
   return (
     <SafeAreaView style={mainStyles.MainView}>
@@ -426,6 +624,7 @@ const FavQuoteList = props => {
           />
         </View>
       </View>
+      {isModalVisible && wallpaperOptionsModal()}
       <ImageZoomer
         closeModal={hideImageModal}
         visible={!!modalImage}

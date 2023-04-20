@@ -262,125 +262,125 @@ const Signup = props => {
           />
         </Pressable>
 
-        <View style={{ marginTop: 35 , paddingHorizontal: 20,}}>
+        <View style={{ marginTop: 35, paddingHorizontal: 20, }}>
           <View style={loginStyles.headerView}>
             <HeadingText>Sign Up</HeadingText>
           </View>
 
-            <View>
-              <CustomSimpleTextInput
-                lable={'Name'}
-                placeholder={'Your Name'}
-                onChangeText={text => setName(text)}
-                value={name}
-                autoCapitalize={true}
-              />
-            </View>
+          <View>
+            <CustomSimpleTextInput
+              lable={'Name'}
+              placeholder={'Your Name'}
+              onChangeText={text => setName(text)}
+              value={name}
+              autoCapitalize={true}
+            />
+          </View>
 
-            <View style={{ marginTop: 20 }}>
-              <CustomSimpleTextInput
-                lable={'E-mail'}
-                placeholder={'Email address'}
-                onChangeText={text => setEmail(text)}
-                value={email}
-                type="email-address"
-              />
-            </View>
+          <View style={{ marginTop: 20 }}>
+            <CustomSimpleTextInput
+              lable={'E-mail'}
+              placeholder={'Email address'}
+              onChangeText={text => setEmail(text)}
+              value={email}
+              type="email-address"
+            />
+          </View>
 
-            <View style={{ marginTop: 20 }}>
-              <CustomPasswordTextInput
-                lable={'Password'}
-                placeholder={'Password'}
-                onChangeText={text => setPassword(text)}
-                value={password}
-              />
-            </View>
+          <View style={{ marginTop: 20 }}>
+            <CustomPasswordTextInput
+              lable={'Password'}
+              placeholder={'Password'}
+              onChangeText={text => setPassword(text)}
+              value={password}
+            />
+          </View>
 
-            {/* <View style={{marginVertical: 10, alignItems: 'flex-end'}}>
+          {/* <View style={{marginVertical: 10, alignItems: 'flex-end'}}>
               <Text style={{color: '#6C747E', fontFamily: font.medium}}>
                 Forgot Password?
               </Text>
             </View> */}
 
-            <View style={{ marginVertical: 20 }}>
-              <CustomButton onPress={() => SigUpBtn()} title={'Sign Up'} />
-            </View>
+          <View style={{ marginVertical: 20 }}>
+            <CustomButton onPress={() => SigUpBtn()} title={'Sign Up'} />
+          </View>
 
-            <View
-              style={{
-                alignItems: 'center',
-                justifyContent: 'flex-end',
-              }}>
-              <Text style={{ color: '#313131', fontFamily: font.regular }}>
-                Continue as{' '}
-                <Text
-                  onPress={() => GuestLogin()}
-                  style={{ color: Colors.primary }}>
-                  Guest
-                </Text>
-              </Text>
-            </View>
-
-            <View style={{
-              flexDirection: "row",
-              justifyContent: "space-evenly",
-              alignItems: "center",
-              marginTop: 40,
-              marginHorizontal: 20,
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'flex-end',
             }}>
-              <View style={{ backgroundColor: Colors.gray04, height: 1, flex: 1 }} />
-              <Text style={{ color: '#313131', fontFamily: font.regular, marginHorizontal: 10, }}>
-                Or continue with
+            <Text style={{ color: '#313131', fontFamily: font.regular }}>
+              Continue as{' '}
+              <Text
+                onPress={() => GuestLogin()}
+                style={{ color: Colors.primary }}>
+                Guest
               </Text>
-              <View style={{ backgroundColor: Colors.gray04, height: 1, flex: 1 }} />
-            </View>
+            </Text>
+          </View>
+
+          <View style={{
+            flexDirection: "row",
+            justifyContent: "space-evenly",
+            alignItems: "center",
+            marginTop: 40,
+            marginHorizontal: 20,
+          }}>
+            <View style={{ backgroundColor: Colors.gray04, height: 1, flex: 1 }} />
+            <Text style={{ color: '#313131', fontFamily: font.regular, marginHorizontal: 10, }}>
+              Or continue with
+            </Text>
+            <View style={{ backgroundColor: Colors.gray04, height: 1, flex: 1 }} />
+          </View>
 
 
-            <View style={{
-              flexDirection: "row",
-              justifyContent: "center",
-              alignItems: "center",
-              marginTop: 15,
-            }}>
-              <Pressable onPress={async () => {
-                setisLoading(true);
-                signInWithGoogle()
-              }}
-                style={loginStyles.buttonStyle}>
-                <Image source={require("../../Assets/Icons/google.png")} style={loginStyles.btnImageStyle} />
-              </Pressable>
+          <View style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 15,
+          }}>
+            <Pressable onPress={async () => {
+              setisLoading(true);
+              signInWithGoogle()
+            }}
+              style={loginStyles.buttonStyle}>
+              <Image source={require("../../Assets/Icons/google.png")} style={loginStyles.btnImageStyle} />
+            </Pressable>
 
-              <Pressable onPress={() => { }}
-                style={loginStyles.buttonStyle}>
-                <Image source={require("../../Assets/Icons/apple.png")} style={loginStyles.btnImageStyle} />
-              </Pressable>
+            {Platform.OS == 'ios' && <Pressable onPress={() => { }}
+              style={loginStyles.buttonStyle}>
+              <Image source={require("../../Assets/Icons/apple.png")} style={loginStyles.btnImageStyle} />
+            </Pressable>}
 
-              {/* <Pressable
+            {/* <Pressable
                 onPress={() => { }}
                 // onPress={sigFnInWithFacebook}
                 style={loginStyles.buttonStyle}>
                 <Image source={require("../../Assets/Icons/facebook.png")} style={loginStyles.btnImageStyle} />
               </Pressable> */}
 
-            </View>
-
-            <View
-              style={{
-                marginTop: 20,
-                alignItems: 'center',
-              }}>
-              <Text style={{ color: '#313131', fontFamily: font.regular }}>
-                Already have an Account?{' '}
-                <Text
-                  onPress={() => onLoginScreen()}
-                  style={{ color: colors.primary }}>
-                  Sign In
-                </Text>
-              </Text>
-            </View>
-
           </View>
-          
+
+          <View
+            style={{
+              marginTop: 20,
+              alignItems: 'center',
+            }}>
+            <Text style={{ color: '#313131', fontFamily: font.regular }}>
+              Already have an Account?{' '}
+              <Text
+                onPress={() => onLoginScreen()}
+                style={{ color: colors.primary }}>
+                Sign In
+              </Text>
+            </Text>
+          </View>
+
+        </View>
+
         <Loader
           enable={isLoading}
           style={{

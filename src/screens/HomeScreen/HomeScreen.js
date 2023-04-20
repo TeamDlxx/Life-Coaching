@@ -23,7 +23,9 @@ import SplashScreen from 'react-native-splash-screen';
 import NotificationConfig from '../../Components/NotificationConfig';
 import { screens } from '../../Navigation/Screens';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { mainStyles, FAB_style } from '../../Utilities/styles';
+import { mainStyles, _styleTrackPlayer, FAB_style } from '../../Utilities/styles';
+import TrackPlayer, { State } from 'react-native-track-player';
+import ProgressBar from '../../Components/ProgreeBar';
 import Colors from '../../Utilities/Colors';
 import { font } from '../../Utilities/font';
 import { fileURL, deepLinkQuote } from '../../Utilities/domains';
@@ -71,10 +73,21 @@ import ic_home from '../../Assets/Icons/home.png';
 import ic_home_lock from '../../Assets/Icons/home-lock.png';
 import ic_cross from '../../Assets/Icons/cross.png';
 
+import notification from '../../Assets/Icons/notification.png';
+import ic_notification from '../../Assets/Icons/ic_notification.png';
+
+import pauseTrack from '../../Assets/TrackPlayer/pauseTrack.png';
+import playTrack from '../../Assets/TrackPlayer/playTrack.png';
+
+let todayMeditation;
+
 const HomeScreen = (props) => {
     const { Token, downloadQuote, dashboardData, setDashBoardData } = useContext(Context);
+    const { params } = props?.route;
     const [loading, setisLoading] = useState(true);
     const [user, setUser] = useState(null);
+    const [playIcon, setPlayIcon] = useState(playTrack);
+
     const [modalImage, setModalImage] = useState(null);
     const [isSharing, setIsSharing] = useState(null);
     const [isModalVisible, setModalVisibility] = useState(false);
@@ -106,10 +119,41 @@ const HomeScreen = (props) => {
             if (Token) {
                 getUserDetail();
             }
+            if (todayMeditation != undefined) {
+                console.log(todayMeditation, "Today's Meditation......")
+                LoadtheTrack();
+            }
         });
         return unsubscribe;
-    }, [Token, props.navigation,]);
+    }, [Token, props.navigation, todayMeditation]);
 
+    useEffect(() => {
+        TrackPlayer.addEventListener('playback-state', async ({ state }) => {
+            console.log('state: ' + state);
+
+            if (state == 'playing' || state == 2) {
+                console.log("already playing....")
+                setPlayIcon(pauseTrack);
+            }
+            if (state == 'paused' || state == 3) {
+                console.log("pausd.......")
+                setPlayIcon(playTrack);
+            }
+            if (state == 'stopped' || state == 4) {
+                console.log("stopped........")
+                setPlayIcon(playTrack);
+            }
+        });
+
+        TrackPlayer.addEventListener('remote-play', async ({ state }) => {
+            console.log('state: ' + state);
+        });
+
+        analytics().logEvent(props?.route?.name);
+        return () => {
+            TrackPlayer.reset()
+        };
+    }, []);
 
     async function checkNotificationPermission() {
         const authorizationStatus = await messaging().requestPermission();
@@ -147,6 +191,8 @@ const HomeScreen = (props) => {
                     quoteOfTheDay: quote,
                     notes: note,
                 })
+                todayMeditation = res?.meditation_of_the_day;
+                LoadtheTrack()
                 setisLoading(false);
 
                 console.log(meditationOfTheDay, "Meditation of the Day......")
@@ -180,6 +226,8 @@ const HomeScreen = (props) => {
                     quoteOfTheDay: quote,
                     notes: note,
                 })
+                todayMeditation = res?.meditation_of_the_day;
+                LoadtheTrack()
                 setisLoading(false);
             } else {
                 showToast(res.message);
@@ -202,6 +250,73 @@ const HomeScreen = (props) => {
         });
     };
 
+    const resetTheTrack = async () => {
+        await TrackPlayer.seekTo(0);
+        if (repeat) {
+            await TrackPlayer.play();
+            setPlayIcon(pauseTrack);
+        } else {
+            await TrackPlayer.pause();
+            setPlayIcon(playTrack);
+        }
+    };
+
+    const moveTo = async val => {
+        TrackPlayer.seekTo(val);
+    };
+
+    const changeStatus = async () => {
+        console.log('changeStatus');
+        let duration = parseInt(await TrackPlayer.getDuration());
+        let position = parseInt(await TrackPlayer.getPosition());
+        let position1 = parseInt(await TrackPlayer.getPosition()) + 1;
+        let isPlaying = await TrackPlayer.getState();
+        console.log('isPlaying', isPlaying);
+
+        if (
+            (isPlaying != 2 || isPlaying != 'playing') &&
+            (duration == position1 || duration == position)
+        ) {
+            TrackPlayer.seekTo(0);
+            TrackPlayer.play();
+            setPlayIcon(pauseTrack);
+        } else {
+            if (playIcon == playTrack) {
+                TrackPlayer.play();
+                setPlayIcon(pauseTrack);
+                await analytics().logEvent(`PLAY_TRACK_EVENT`, {
+                    item_name: meditationOfTheDay?.name,
+                });
+            } else {
+                TrackPlayer.pause();
+                setPlayIcon(playTrack);
+            }
+        }
+
+    };
+
+    const LoadtheTrack = async () => {
+        await TrackPlayer.reset();
+        await TrackPlayer.add({
+            id: todayMeditation?._id,
+            url: params?.from == 'down' ? todayMeditation?.mp3 : fileURL + todayMeditation?.audio,
+            title: todayMeditation?.name,
+            artist: todayMeditation?.category_id[0]?.name,
+            album: '',
+            genre: '',
+            artwork:
+                params?.from == 'down'
+                    ? todayMeditation?.images?.small
+                    : fileURL + todayMeditation?.images?.small,
+            duration: Math.ceil(todayMeditation?.duration),
+        });
+        await TrackPlayer.pause();
+        setPlayIcon(playTrack);
+        await analytics().logEvent(`REPEAT_TRACK_EVENT`, {
+            item_name: todayMeditation?.name,
+        });
+
+    };
 
 
     const showImageModal = image => {
@@ -472,11 +587,14 @@ const HomeScreen = (props) => {
 
     const setHomeScreenWallpaper = async () => {
         let image = quoteOfTheDay?.images?.large
+        let URL = fileURL + `${image}`
+
         WallpaperManager.setWallpaper(
-            fileURL + `${image}`,
+            URL,
             TYPE.FLAG_SYSTEM
         )
-        setModalVisibility(false)
+        ToastAndroid.show('Wallpaper has been set', ToastAndroid.SHORT);
+        await setModalVisibility(false)
     };
 
     const setLockScreenWallpaper = async () => {
@@ -485,7 +603,8 @@ const HomeScreen = (props) => {
             fileURL + `${image}`,
             TYPE.FLAG_LOCK
         )
-        setModalVisibility(false)
+        ToastAndroid.show('Wallpaper has been set', ToastAndroid.SHORT);
+        await setModalVisibility(false)
     };
 
     const setHomeAndLockScreenWallpaper = async () => {
@@ -498,8 +617,10 @@ const HomeScreen = (props) => {
             fileURL + `${image}`,
             TYPE.FLAG_LOCK
         )
-        setModalVisibility(false)
+        ToastAndroid.show('Wallpaper has been set', ToastAndroid.SHORT);
+        await setModalVisibility(false)
     };
+
     return (
         <SafeAreaView
             style={[
@@ -537,22 +658,33 @@ const HomeScreen = (props) => {
                         style={{ height: 25.5, aspectRatio: 6 }}
                     />
                 </View>
-                {Token && <Pressable onPress={() => {
-                    props.navigation.navigate(screens.editProfile, {
-                        user: !!user ? user : null,
-                        isComingFrom: "dashBoard"
-                    });
-                }}>
-                    <CustomImage
-                        source={
-                            !!user && !!user.profile_image
-                                ? { uri: fileURL + user?.profile_image }
-                                : profile_placeholder
-                        }
-                        style={{ height: 40, width: 40 }}
-                        imageStyle={{ borderRadius: 40 / 2 }}
-                    />
-                </Pressable>}
+                <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+                    {/* <Pressable onPress={() => { }}>
+                        <CustomImage
+                            source={notification}
+                            style={{ height: 25.5, width: 25.5 }}
+                            imageStyle={{ borderRadius: 20 / 2 }}
+                        />
+                    </Pressable> */}
+                    {Token && <Pressable
+                        style={{ marginLeft: 0 }}
+                        onPress={() => {
+                            props.navigation.navigate(screens.editProfile, {
+                                user: !!user ? user : null,
+                                isComingFrom: "dashBoard"
+                            });
+                        }}>
+                        <CustomImage
+                            source={
+                                !!user && !!user.profile_image
+                                    ? { uri: fileURL + user?.profile_image }
+                                    : profile_placeholder
+                            }
+                            style={{ height: 40, width: 40 }}
+                            imageStyle={{ borderRadius: 40 / 2 }}
+                        />
+                    </Pressable>}
+                </View>
             </View>
 
             <ScrollView style={{ flex: 1, marginTop: 10 }}>
@@ -636,27 +768,7 @@ const HomeScreen = (props) => {
                                         paddingHorizontal: 30,
                                     }}>{"Start by creating a new habit to improve your daily routine!"}
                                     </Text>
-                                    {/* <View style={{ flex: 0.5, justifyContent: 'center' }}> */}
-                                    {/* <Pressable
-                                            onPress={() => { props.navigation.navigate(screens.habitTracker) }}
-                                            style={[
-                                                FAB_style.View,
-                                                {
-                                                    position: 'relative',
-                                                    marginTop: 35,
-                                                    right: 0,
-                                                    height: 40,
-                                                    width: 40,
-                                                    borderRadius: 40 / 2,
-                                                },
-                                            ]}>
-                                            <Image
-                                                source={require('../../Assets/Icons/plus.png')}
-                                                style={{ height: 10, width: 10, tintColor: Colors.white }}
-                                            />
-                                        // </Pressable> */}
-                                    {/* </View> */}
-                                    <Pressable onPress={props.onPress}
+                                    <Pressable onPress={() => props.navigation.navigate(screens.habitTracker)}
                                         style={{
                                             backgroundColor: Colors.primary,
                                             height: 33,
@@ -666,7 +778,7 @@ const HomeScreen = (props) => {
                                             paddingHorizontal: 10,
                                             marginTop: 15
                                         }}>
-                                        <Text style={{ color: "white", fontWeight: "bold", fontSize: 13, }}>Change My Habit{' '}</Text>
+                                        <Text style={{ color: "white", fontWeight: "bold", fontSize: 13, }}>Change My Habit{'   '}</Text>
                                     </Pressable>
                                 </View>
                             </>}
@@ -690,7 +802,8 @@ const HomeScreen = (props) => {
                                     flexDirection: 'row',
                                     marginHorizontal: 5,
                                 }}>
-                                <View
+                                <Pressable
+                                    onPress={changeStatus}
                                     style={{
                                         height: 70,
                                         width: 70,
@@ -717,12 +830,12 @@ const HomeScreen = (props) => {
                                             right: 5,
                                         }}>
                                         <Image
-                                            style={{ height: 12, width: 12, tintColor: Colors.primary }}
-                                            source={play}
+                                            style={{ height: 13.5, width: 13.5, tintColor: Colors.primary }}
+                                            source={playIcon}
                                         />
                                     </View>
 
-                                </View>
+                                </Pressable>
 
                                 <View style={{ marginLeft: 15, flex: 1 }}>
                                     <Text
@@ -750,39 +863,21 @@ const HomeScreen = (props) => {
                                         </Text>
                                     </View>
 
-                                    <View
-                                        style={{
-                                            marginTop: 3,
-                                            flexDirection: 'row',
-                                            alignItems: 'center',
-                                        }}>
-                                        <Text
-                                            style={{
-                                                fontFamily: font.medium,
-                                                color: Colors.gray12,
-                                                fontSize: 12,
-                                            }}>
-                                            {formatTime(meditationOfTheDay?.duration)}
-                                        </Text>
+                                    <View style={{ marginTop: 5, }}>
+                                        <ProgressBar
+                                            resetPlayer={resetTheTrack}
+                                            moveTo={val => {
+                                                moveTo(val);
+                                            }}
+                                            time={meditationOfTheDay?.duration}
+                                        />
                                     </View>
                                 </View>
                             </View>
                         </View>
 
-                        <View style={{ alignItems: "flex-end", marginTop: 7, }}>
+                        <View style={{ alignItems: "flex-end", marginTop: 10, }}>
                             <CustomButton onPress={() => props.navigation.navigate(screens.meditation)} />
-                            {/* <Pressable onPress={props.onPress}
-                                style={{
-                                    backgroundColor: Colors.primary,
-                                    height: 33,
-                                    borderRadius: 10,
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    paddingHorizontal: 10,
-                                    marginTop: 15
-                                }}>
-                                <Text style={{ color: "white", fontWeight: "bold", fontSize: 13, }}>Change My Habit{' '}</Text>
-                            </Pressable> */}
                         </View>
                     </View>
                 </Animatable.View>
@@ -878,7 +973,7 @@ const HomeScreen = (props) => {
                                     </Text>
 
                                     <View style={{ flex: 0.5, justifyContent: 'center' }}>
-                                        <Pressable onPress={props.onPress}
+                                        <Pressable onPress={() => props.navigation.navigate(screens.notesList)}
                                             style={{
                                                 backgroundColor: Colors.primary,
                                                 height: 33,
@@ -888,7 +983,7 @@ const HomeScreen = (props) => {
                                                 paddingHorizontal: 15,
                                                 marginTop: 15
                                             }}>
-                                            <Text style={{ color: "white", fontWeight: "bold", fontSize: 13, }}>Add Notes{' '}</Text>
+                                            <Text style={{ color: "white", fontWeight: "bold", fontSize: 13, }}>Add Notes{'  '}</Text>
                                         </Pressable>
                                     </View>
 
@@ -946,7 +1041,6 @@ const HomeScreen = (props) => {
                                 </Text>
                             </TouchableHighlight>
                         }
-
 
                         <View
                             style={{
@@ -1033,8 +1127,8 @@ const HomeScreen = (props) => {
                                     source={ic_wallPaper}
                                     style={{ height: 18.5, width: 18.5, tintColor: Colors.placeHolder }}
                                 />
-
                             </TouchableOpacity>
+
                         </View>
 
                         <View style={{ alignItems: "flex-end", marginTop: 10, }}>

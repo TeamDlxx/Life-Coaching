@@ -260,10 +260,10 @@ const TrackPlayerScreen = props => {
         setPlayIcon(pauseTrack);
       }
 
-      // if (state == 'paused' || state == 3) {
-      //   // setloading(false);
-      //   setPlayIcon(playTrack);
-      // }
+      if (state == 'paused' || state == 3) {
+        setloading(false);
+        setPlayIcon(playTrack);
+      }
       if (state == 'stopped' || state == 4) {
         setloading(false);
         setPlayIcon(playTrack);
