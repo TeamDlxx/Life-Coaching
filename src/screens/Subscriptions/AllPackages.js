@@ -413,7 +413,7 @@ const AllPackages = props => {
                     }}>
                     {item.duration}
                   </Text>
-                  {!!purchasedSKUs.find(x => x == item?.sku[0]) && (
+                  {!!purchasedSKUs.find(x => (x == item?.sku[0])) && (
                     <View style={{ marginLeft: 5 }}>
                       <Image
                         source={ic_filledTick}
