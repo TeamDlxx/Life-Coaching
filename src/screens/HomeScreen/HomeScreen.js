@@ -202,7 +202,7 @@ const HomeScreen = (props) => {
         });
     };
 
-    
+
 
     const showImageModal = image => {
         setModalImage(image);
@@ -616,14 +616,14 @@ const HomeScreen = (props) => {
                             :
                             <>
                                 <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }} >
-                                    <Image source={empty_habits} style={{ height: 130, width: 150 }} />
+                                    <Image source={empty_habits} style={{ height: 130, width: 130, resizeMode: "contain", marginTop: 20 }} />
                                     <Text
                                         style={{
                                             fontFamily: font.bold,
                                             fontSize: 15,
                                             includeFontPadding: false,
                                             color: Colors.black,
-                                            marginTop: -25,
+                                            marginTop: 15,
                                         }}>
                                         No Habits Yet
                                     </Text>
@@ -636,8 +636,8 @@ const HomeScreen = (props) => {
                                         paddingHorizontal: 30,
                                     }}>{"Start by creating a new habit to improve your daily routine!"}
                                     </Text>
-                                    <View style={{ flex: 0.5, justifyContent: 'center' }}>
-                                        <Pressable
+                                    {/* <View style={{ flex: 0.5, justifyContent: 'center' }}> */}
+                                    {/* <Pressable
                                             onPress={() => { props.navigation.navigate(screens.habitTracker) }}
                                             style={[
                                                 FAB_style.View,
@@ -654,9 +654,20 @@ const HomeScreen = (props) => {
                                                 source={require('../../Assets/Icons/plus.png')}
                                                 style={{ height: 10, width: 10, tintColor: Colors.white }}
                                             />
-                                        </Pressable>
-                                    </View>
-
+                                        // </Pressable> */}
+                                    {/* </View> */}
+                                    <Pressable onPress={props.onPress}
+                                        style={{
+                                            backgroundColor: Colors.primary,
+                                            height: 33,
+                                            borderRadius: 10,
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            paddingHorizontal: 10,
+                                            marginTop: 15
+                                        }}>
+                                        <Text style={{ color: "white", fontWeight: "bold", fontSize: 13, }}>Change My Habit{' '}</Text>
+                                    </Pressable>
                                 </View>
                             </>}
                     </View>
@@ -760,6 +771,18 @@ const HomeScreen = (props) => {
 
                         <View style={{ alignItems: "flex-end", marginTop: 7, }}>
                             <CustomButton onPress={() => props.navigation.navigate(screens.meditation)} />
+                            {/* <Pressable onPress={props.onPress}
+                                style={{
+                                    backgroundColor: Colors.primary,
+                                    height: 33,
+                                    borderRadius: 10,
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    paddingHorizontal: 10,
+                                    marginTop: 15
+                                }}>
+                                <Text style={{ color: "white", fontWeight: "bold", fontSize: 13, }}>Change My Habit{' '}</Text>
+                            </Pressable> */}
                         </View>
                     </View>
                 </Animatable.View>
@@ -771,7 +794,7 @@ const HomeScreen = (props) => {
                     delay={1 * 250}>
                     <View
                         style={home_styles.customCardView}>
-                        <Text style={home_styles.heading}>Note Of The Day </Text>
+                        <Text style={home_styles.heading}>Today's Notes </Text>
 
                         {Token && notes.length != 0 ?
                             <>
@@ -851,26 +874,21 @@ const HomeScreen = (props) => {
                                         textAlign: 'center',
                                         marginTop: 8,
                                         paddingHorizontal: 30,
-                                    }}>{"Start jotting down your thoughts and ideas to get organized!"}
+                                    }}>{"Start writing down your thoughts and ideas to get organized!"}
                                     </Text>
+
                                     <View style={{ flex: 0.5, justifyContent: 'center' }}>
-                                        <Pressable
-                                            onPress={() => props.navigation.navigate(screens.notesList)}
-                                            style={[
-                                                FAB_style.View,
-                                                {
-                                                    position: 'relative',
-                                                    marginTop: 35,
-                                                    right: 0,
-                                                    height: 40,
-                                                    width: 40,
-                                                    borderRadius: 40 / 2,
-                                                },
-                                            ]}>
-                                            <Image
-                                                source={require('../../Assets/Icons/plus.png')}
-                                                style={{ height: 10, width: 10, tintColor: Colors.white }}
-                                            />
+                                        <Pressable onPress={props.onPress}
+                                            style={{
+                                                backgroundColor: Colors.primary,
+                                                height: 33,
+                                                borderRadius: 10,
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                paddingHorizontal: 15,
+                                                marginTop: 15
+                                            }}>
+                                            <Text style={{ color: "white", fontWeight: "bold", fontSize: 13, }}>Add Notes{' '}</Text>
                                         </Pressable>
                                     </View>
 
@@ -1060,9 +1078,8 @@ const home_styles = StyleSheet.create({
         marginTop: 5,
         marginBottom: 10,
         borderRadius: 20,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
         marginHorizontal: 15,
+        padding: 22
     },
 
     statItemtext1: {
