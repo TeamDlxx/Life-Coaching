@@ -31,10 +31,11 @@ import { androidAppLink, deepLinkQuote, iosAppLink } from '../../Utilities/domai
 import analytics from '@react-native-firebase/analytics';
 import messaging from '@react-native-firebase/messaging';
 import * as RNIap from 'react-native-iap';
+import CustomBellIcon from '../../Components/CustomBellIcon';
 
 const Setting = props => {
   const [isLoading, setisLoading] = useState(false);
-  const { Token, setToken, setHabitList, adminURLsAndEmail,  CheckPurchases, purchasedSKUs } =
+  const { Token, setToken, setHabitList, adminURLsAndEmail, CheckPurchases, purchasedSKUs } =
     useContext(Context);
 
 
@@ -179,7 +180,7 @@ const Setting = props => {
           console.log(purchases, "purchases from store...")
           setisLoading(false)
 
-          if(purchases.length == 0){
+          if (purchases.length == 0) {
             Alert.alert("Nothing to restore.")
             return
           }
@@ -370,7 +371,17 @@ const Setting = props => {
         backgroundColor={Colors.background}
         barStyle={'dark-content'}
       />
-      <Header title="Settings" />
+      <Header title="Settings"
+        rightIconView={
+          <View style={{
+            marginRight: 20,
+          }}>
+            <CustomBellIcon
+              onPress={() => props.navigation.navigate(screens.notificationScreen)}
+            />
+          </View>
+        }
+      />
 
       <View style={{ flex: 1 }}>
         <View style={{ flex: 1 }}>

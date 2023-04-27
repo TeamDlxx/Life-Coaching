@@ -56,7 +56,7 @@ import play from '../../Assets/Icons/play.png';
 import profile_placeholder from '../../Assets/Icons/dummy.png';
 import CustomButton from './Components/CustomButton';
 import LoginAlert from '../../Components/LoginAlert';
-import WallpaperManager, { TYPE } from "react-native-wallpaper-manage";
+// import WallpaperManager, { TYPE } from "react-native-wallpaper-manage";
 
 
 import Fav from '../../Assets/Icons/fav.png';
@@ -73,11 +73,9 @@ import ic_home from '../../Assets/Icons/home.png';
 import ic_home_lock from '../../Assets/Icons/home-lock.png';
 import ic_cross from '../../Assets/Icons/cross.png';
 
-import notification from '../../Assets/Icons/notification.png';
-import ic_notification from '../../Assets/Icons/ic_notification.png';
-
 import pauseTrack from '../../Assets/TrackPlayer/pauseTrack.png';
 import playTrack from '../../Assets/TrackPlayer/playTrack.png';
+import CustomBellIcon from '../../Components/CustomBellIcon';
 
 let todayMeditation;
 
@@ -201,6 +199,7 @@ const HomeScreen = (props) => {
                 console.log(notes, "Notes of the Day......")
             } else {
                 showToast(res.message);
+                setisLoading(false);
             }
         }
     }
@@ -231,6 +230,7 @@ const HomeScreen = (props) => {
                 setisLoading(false);
             } else {
                 showToast(res.message);
+                setisLoading(false);
             }
         }
     }
@@ -659,15 +659,11 @@ const HomeScreen = (props) => {
                     />
                 </View>
                 <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
-                    {/* <Pressable onPress={() => { }}>
-                        <CustomImage
-                            source={notification}
-                            style={{ height: 25.5, width: 25.5 }}
-                            imageStyle={{ borderRadius: 20 / 2 }}
-                        />
-                    </Pressable> */}
+                    <CustomBellIcon 
+                    onPress = {()=> props.navigation.navigate(screens.notificationScreen)}
+                    />
                     {Token && <Pressable
-                        style={{ marginLeft: 0 }}
+                        style={{ marginLeft: 10 }}
                         onPress={() => {
                             props.navigation.navigate(screens.editProfile, {
                                 user: !!user ? user : null,
@@ -680,8 +676,8 @@ const HomeScreen = (props) => {
                                     ? { uri: fileURL + user?.profile_image }
                                     : profile_placeholder
                             }
-                            style={{ height: 40, width: 40 }}
-                            imageStyle={{ borderRadius: 40 / 2 }}
+                            style={{ height: 30, width: 30 }}
+                            imageStyle={{ borderRadius: 30 / 2 }}
                         />
                     </Pressable>}
                 </View>
@@ -1115,7 +1111,7 @@ const HomeScreen = (props) => {
                                 }
                             </TouchableOpacity>
 
-                            <TouchableOpacity
+                            {/* <TouchableOpacity
                                 onPress={() => setModalVisibility(true)}
                                 style={{
                                     flex: 1,
@@ -1127,7 +1123,7 @@ const HomeScreen = (props) => {
                                     source={ic_wallPaper}
                                     style={{ height: 18.5, width: 18.5, tintColor: Colors.placeHolder }}
                                 />
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
 
                         </View>
 
@@ -1140,7 +1136,7 @@ const HomeScreen = (props) => {
             </ScrollView>
 
 
-            {isModalVisible && wallpaperOptionsModal()}
+            {/* {isModalVisible && wallpaperOptionsModal()} */}
 
             <ImageZoomer
                 closeModal={hideImageModal}

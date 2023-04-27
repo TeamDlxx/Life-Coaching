@@ -25,6 +25,7 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import analytics from '@react-native-firebase/analytics';
 import showToast from '../../functions/showToast';
 import messaging from '@react-native-firebase/messaging';
+import CustomBellIcon from '../../Components/CustomBellIcon';
 
 const height = Dimensions.get('screen').width;
 
@@ -240,11 +241,20 @@ const Home = props => {
           justifyContent: 'center',
           marginLeft: 30,
           width: '100%',
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingRight: 50,
         }}>
-        <Image
-          resizeMode="contain"
-          source={require('../../Assets/app-icon/text.png')}
-          style={{ height: 25.5, aspectRatio: 6 }}
+        <View>
+          <Image
+            resizeMode="contain"
+            source={require('../../Assets/app-icon/text.png')}
+            style={{ height: 25.5, aspectRatio: 6 }}
+          />
+        </View>
+        <CustomBellIcon
+          onPress={() => props.navigation.navigate(screens.notificationScreen)}
         />
       </View>
 

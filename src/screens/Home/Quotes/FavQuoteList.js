@@ -38,7 +38,7 @@ import EmptyView from '../../../Components/EmptyView';
 
 import Clipboard from '@react-native-clipboard/clipboard';
 import Modal from 'react-native-modal';
-import WallpaperManager, { TYPE } from "react-native-wallpaper-manage";
+// import WallpaperManager, { TYPE } from "react-native-wallpaper-manage";
 
 
 //ICONS
@@ -403,7 +403,7 @@ const FavQuoteList = props => {
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => {setModalVisibility(true) 
               selectedQuote = item
             }}
@@ -417,7 +417,7 @@ const FavQuoteList = props => {
               source={ic_wallPaper}
               style={{ height: 18.5, width: 18.5, tintColor: Colors.placeHolder }}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
     );
@@ -624,7 +624,7 @@ const setHomeAndLockScreenWallpaper = async () => {
           />
         </View>
       </View>
-      {isModalVisible && wallpaperOptionsModal()}
+      {/* {isModalVisible && wallpaperOptionsModal()} */}
       <ImageZoomer
         closeModal={hideImageModal}
         visible={!!modalImage}

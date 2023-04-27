@@ -45,6 +45,10 @@ const ContextWrapper = props => {
     notes: [],
   })
 
+  const [count, setCount] = useState(1);
+  const notificationList = [];
+
+
   const checkPermissions = async () => {
     let granted;
 
@@ -552,6 +556,8 @@ const ContextWrapper = props => {
     setAllGratitudesList,
     dashboardData,
     setDashBoardData,
+    count, setCount,
+    notificationList,
   };
 
   return (
