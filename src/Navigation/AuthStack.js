@@ -83,6 +83,9 @@ import Reminders from '../screens/Settings/Reminders';
 // //? HomeScreen
 import HomeScreen from '../screens/HomeScreen/HomeScreen';
 
+// //? NotificationScreen
+import NotificationScreen from '../screens/Notifications/NotificationScreen';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -195,6 +198,9 @@ const AuthStack = () => {
 
         {/* HomeScreen */}
         <Stack.Screen name={screens.homeScreen} component={HomeScreen} />
+
+         {/* Notification */}
+         <Stack.Screen name={screens.notificationScreen} component={NotificationScreen} />
 
       </Stack.Navigator>
     );
