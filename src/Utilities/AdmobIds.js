@@ -6,16 +6,16 @@ import { TestIds } from 'react-native-google-mobile-ads';
 
 export const Admob_Ids = Platform.select({
   ios: {
-    // banner: TestIds.BANNER,
-    // rewarded: TestIds.GAM_REWARDED_INTERSTITIAL,
-    banner: 'ca-app-pub-1612661276193414/3522414246',
-    rewarded: 'ca-app-pub-1612661276193414/4699764541'
+    banner: TestIds.BANNER,
+    rewarded: TestIds.GAM_REWARDED_INTERSTITIAL,
+    // banner: 'ca-app-pub-2781622842125846/2905395511',
+    // rewarded: 'ca-app-pub-2781622842125846/7036212213'
   },
   android: {
-    // banner: TestIds.BANNER,
-    // rewarded: TestIds.REWARDED,
-    banner: 'ca-app-pub-1612661276193414/2813670522',
-    rewarded: 'ca-app-pub-1612661276193414/6078714849'
+    banner: TestIds.BANNER,
+    rewarded: TestIds.REWARDED,
+    // banner: 'ca-app-pub-2781622842125846/8157722198',
+    // rewarded: 'ca-app-pub-2781622842125846/9007769438'
   },
 
 });
