@@ -55,7 +55,7 @@
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-1612661276193414~6182069892"/>
+            android:value="ca-app-pub-2781622842125846~4604655842"/>
         <meta-data  android:name="com.dieam.reactnativepushnotification.notification_foreground"
             android:value="true"/>
         <!-- Change the resource name to your App's accent color - or any other color you want -->
