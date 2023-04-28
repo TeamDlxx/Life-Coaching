@@ -65,9 +65,10 @@ const Reminders = props => {
         if (isEnabled == true) {
             cancelGratitudeNotification("1")
             await AsyncStorage.setItem('@reminderValue', JSON.stringify(false))
-        } else {
-            showToast('Please select the reminder time', 'Alert')
         }
+        // else {
+        //     showToast('Please select the reminder time', 'Alert')
+        // }
     }
 
     const scheduleLocalNotification = async (time) => {
@@ -154,12 +155,11 @@ const Reminders = props => {
                                         reminder_styles.reminderCardTextHeader,
                                         { marginTop: 0 },
                                     ]}>
-                                    Set Time 
+                                    Set Time
                                 </Text>
                             </View>
                             <Text style={reminder_styles.reminderDescription}>
-                                You will recieve a daily reminder on the following
-                                time{' '}
+                                You will recieve a daily reminder on this time to add your gratitude{' '}
                             </Text>
 
                             <View >
@@ -168,15 +168,14 @@ const Reminders = props => {
                                         isEnabled == true ? setShowModal(!showModal)
                                             : showToast('Please turn on the reminder', 'Alert')
                                     }
-                                    style={[reminder_styles.timeButton , {borderColor: isEnabled == true ? Colors.primary : Colors.gray03,}]}>
-                                    <Text style={[reminder_styles.reminderTime , {color: isEnabled == true ? Colors.primary : Colors.gray04,}]}>
+                                    style={[reminder_styles.timeButton, { borderColor: isEnabled == true ? Colors.primary : Colors.gray03, }]}>
+                                    <Text style={[reminder_styles.reminderTime, { color: isEnabled == true ? Colors.primary : Colors.gray04, }]}>
                                         {moment(time).format('hh:mm A')}
                                     </Text>
                                 </Pressable>
                             </View>
                         </View>
                     </View>
-
 
                 </ScrollView>
 

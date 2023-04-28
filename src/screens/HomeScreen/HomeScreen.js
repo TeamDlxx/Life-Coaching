@@ -97,6 +97,9 @@ const HomeScreen = (props) => {
 
 
     useEffect(() => {
+        messaging().getToken().then((token) => {
+            console.log(token , "device token....")
+         });
         if (Token) {
             dashBoardApi();
         } else {
@@ -659,9 +662,9 @@ const HomeScreen = (props) => {
                     />
                 </View>
                 <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
-                    {/* <CustomBellIcon
+                    <CustomBellIcon
                         onPress={() => props.navigation.navigate(screens.notificationScreen)}
-                    /> */}
+                    />
                     {Token && <Pressable
                         style={{
                             borderColor: Colors.gray05,
@@ -909,10 +912,10 @@ const HomeScreen = (props) => {
                                                 isComingFrom: "dashBoard",
                                                 updateNote,
                                             })}
-                                            style={home_styles.note}>
+                                            style={[home_styles.note, {backgroundColor: notes[0].color.light, borderColor: notes[0].color.dark}]}>
                                             <View>
                                                 <Image
-                                                    source={ic_notes} style={{ height: 20, width: 20, tintColor: Colors.primary3 }}
+                                                    source={ic_notes} style={{ height: 20, width: 20, tintColor: notes[0].color.dark }}
                                                 />
                                             </View>
                                             <View
@@ -936,10 +939,10 @@ const HomeScreen = (props) => {
                                                 isComingFrom: "dashBoard",
                                                 updateNote,
                                             })}
-                                            style={home_styles.note}>
+                                            style={[home_styles.note,{backgroundColor: notes[1].color.light , borderColor: notes[1].color.dark}]}>
                                             <View>
                                                 <Image
-                                                    source={ic_notes} style={{ height: 20, width: 20, tintColor: Colors.primary3 }}
+                                                    source={ic_notes} style={{ height: 20, width: 20, tintColor: notes[1].color.dark }}
                                                 />
                                             </View>
                                             <View
@@ -1232,8 +1235,9 @@ const home_styles = StyleSheet.create({
         padding: 8,
         paddingLeft: 10,
         marginHorizontal: 5,
-        backgroundColor: Colors.lightPrimary2,
-        borderRadius: 10,
+        // backgroundColor: Colors.lightPrimary2,
+        borderWidth: 1,
+        borderRadius: 15,
         alignItems: 'center',
         flexDirection: 'row',
     },

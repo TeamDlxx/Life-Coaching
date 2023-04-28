@@ -11,9 +11,6 @@ import { Capability } from 'react-native-track-player';
 import messaging from '@react-native-firebase/messaging';
 import PushNotification, { Importance } from 'react-native-push-notification';
 
-// import Context from './src/Context';
-// import { useContext } from 'react';
-
 
 TrackPlayer.setupPlayer({
   waitForBuffer: true,
@@ -67,12 +64,9 @@ PushNotification.createChannel(
   created => console.log('Channel Created Successfully -->\n', created), // (optional) callback returns whether the channel was created, false means it already existed.
 );
 
+
 const onMessageReceived = async remoteMessage => {
   console.log(remoteMessage, 'onMessage...');
-
-  // const { badgeCount , setBadgeCount } = useContext(Context); 
-  // let count = badgeCount + 1
-  // setBadgeCount(count)
 
   await PushNotification.localNotification({
     channelId: '7007',

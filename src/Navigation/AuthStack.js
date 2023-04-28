@@ -86,12 +86,18 @@ import HomeScreen from '../screens/HomeScreen/HomeScreen';
 // //? NotificationScreen
 import NotificationScreen from '../screens/Notifications/NotificationScreen';
 
+import messaging from '@react-native-firebase/messaging';
+import PushNotification, { Importance } from 'react-native-push-notification';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+// import { useContext } from 'react';
+// import Context from './src/Context';
+
 
 const Stack = createNativeStackNavigator();
 
 const AuthStack = () => {
   const [whichScreen, setWhichScreen] = useState(undefined);
-  const { Token, setToken } = useContext(Context);
+  const { Token, setToken, setBadgeCount } = useContext(Context);
 
   const checkOBoarding = async () => {
     let seen = await AsyncStorage.multiGet([
@@ -120,6 +126,23 @@ const AuthStack = () => {
     }
   }, []);
 
+  const notificationBadgeCount = async () => {
+    let count = parseInt(await AsyncStorage.getItem('@badgeCount'))
+    count = count + 1;
+    console.log(count, "badge count...")
+
+    await AsyncStorage.setItem('@badgeCount', JSON.stringify(count));
+    if (count != null) {
+      setBadgeCount(count)
+    }
+  }
+
+  messaging().onMessage(notificationBadgeCount);
+
+  messaging().setBackgroundMessageHandler(async remoteMessage => {
+    console.log(remoteMessage, 'onMessagsetBackgroundMessageHandlereReceived...');
+  });
+
   if (whichScreen != undefined) {
     return (
       <Stack.Navigator
@@ -128,7 +151,7 @@ const AuthStack = () => {
           headerShown: false,
           orientation: 'portrait',
           animationEnabled: false,
-          animation : "none",
+          animation: "none",
         }}
         initialRouteName={whichScreen}>
         <Stack.Screen name={screens.Login} component={Login} />
@@ -201,8 +224,8 @@ const AuthStack = () => {
         {/* HomeScreen */}
         <Stack.Screen name={screens.homeScreen} component={HomeScreen} />
 
-         {/* Notification */}
-         <Stack.Screen name={screens.notificationScreen} component={NotificationScreen} />
+        {/* Notification */}
+        <Stack.Screen name={screens.notificationScreen} component={NotificationScreen} />
 
       </Stack.Navigator>
     );

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
     View,
     Text,
@@ -20,11 +20,14 @@ import showToast from "../../functions/showToast";
 import { fileURL } from "../../Utilities/domains";
 import { screens } from "../../Navigation/Screens";
 import invokeApi from '../../functions/invokeAPI';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Context from "../../Context";
 
 
 const NotificationScreen = (props) => {
     const win = Dimensions.get("window");
     const screen = Dimensions.get("screen");
+    const { setBadgeCount } = useContext(Context)
     const [isLoading, setisLoading] = useState(false);
     const [notificationList, setNotificationList] = useState([]);
 
@@ -46,6 +49,7 @@ const NotificationScreen = (props) => {
                 let list = res.notifications
                 await setNotificationList(list)
                 setisLoading(false);
+                clearNotificationBadge()
             } else {
                 showToast(res.message);
                 setisLoading(false);
@@ -53,20 +57,20 @@ const NotificationScreen = (props) => {
         }
     }
 
-    const checkReadStatus = async () => {
-       let list = [...notificationList]
+    const clearNotificationBadge = async () => {
+        let count = await AsyncStorage.setItem('@badgeCount', "0");
+        setBadgeCount(count)
     }
-
+    
     const renderNotificationList = ({ item, index }) => {
 
         return (
             <Pressable
-                onPress={() => {
-                    checkReadStatus()
+                onPress={() =>
                     props.navigation.navigate(screens.qouteList, {
                         _id: item._id,
                     })
-                }}
+                }
                 style={{
                     overflow: "hidden",
                     borderColor: Colors.gray02,

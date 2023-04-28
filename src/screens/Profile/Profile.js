@@ -143,15 +143,15 @@ const Profile = props => {
         barStyle={'dark-content'}
       />
       <Header title="Profile"
-        // rightIconView={
-        //   <View style={{
-        //     marginRight: 20,
-        //   }}>
-        //     <CustomBellIcon
-        //       onPress={() => props.navigation.navigate(screens.notificationScreen)}
-        //     />
-        //   </View>
-        // }
+        rightIconView={
+          <View style={{
+            marginRight: 20,
+          }}>
+            <CustomBellIcon
+              onPress={() => props.navigation.navigate(screens.notificationScreen)}
+            />
+          </View>
+        }
       />
       {/* {Token ? ( */}
       <View style={{ flex: 1 }}>

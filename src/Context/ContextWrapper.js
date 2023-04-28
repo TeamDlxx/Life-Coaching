@@ -47,10 +47,7 @@ const ContextWrapper = props => {
 
   const [notesList, setNotesList] = useState([]);
 
-
-  const [badgeCount, setBadgeCount] = useState(2);
-  const notificationList = [];
-
+  const [badgeCount, setBadgeCount] = useState(0);
 
   const checkPermissions = async () => {
     let granted;
@@ -523,11 +520,21 @@ const ContextWrapper = props => {
   }, [Token]);
 
   useEffect(() => {
+    getBadgeCount()
     api_getAdminURLAndEmail();
     return () => {
       setHabitList([]);
     };
-  }, []);
+  }, [badgeCount]);
+
+const getBadgeCount = async () => {
+    return await AsyncStorage.getItem('@badgeCount').then(val => {
+        if (val !== null) {
+            console.log(val, "BadgeCount ...")
+            setBadgeCount(val);
+        }
+    })
+}
 
   const object = {
     Token,
@@ -560,7 +567,6 @@ const ContextWrapper = props => {
     dashboardData,
     setDashBoardData,
     badgeCount, setBadgeCount,
-    notificationList,
     notesList, setNotesList
   };
 
