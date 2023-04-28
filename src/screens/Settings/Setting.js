@@ -372,15 +372,15 @@ const Setting = props => {
         barStyle={'dark-content'}
       />
       <Header title="Settings"
-        rightIconView={
-          <View style={{
-            marginRight: 20,
-          }}>
-            <CustomBellIcon
-              onPress={() => props.navigation.navigate(screens.notificationScreen)}
-            />
-          </View>
-        }
+        // rightIconView={
+        //   <View style={{
+        //     marginRight: 20,
+        //   }}>
+        //     <CustomBellIcon
+        //       onPress={() => props.navigation.navigate(screens.notificationScreen)}
+        //     />
+        //   </View>
+        // }
       />
 
       <View style={{ flex: 1 }}>

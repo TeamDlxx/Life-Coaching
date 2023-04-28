@@ -253,9 +253,9 @@ const Home = props => {
             style={{ height: 25.5, aspectRatio: 6 }}
           />
         </View>
-        <CustomBellIcon
+        {/* <CustomBellIcon
           onPress={() => props.navigation.navigate(screens.notificationScreen)}
-        />
+        /> */}
       </View>
 
       <View style={{ flex: 1 }}>

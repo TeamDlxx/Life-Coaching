@@ -659,9 +659,9 @@ const HomeScreen = (props) => {
                     />
                 </View>
                 <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
-                    <CustomBellIcon
+                    {/* <CustomBellIcon
                         onPress={() => props.navigation.navigate(screens.notificationScreen)}
-                    />
+                    /> */}
                     {Token && <Pressable
                         style={{
                             borderColor: Colors.gray05,
