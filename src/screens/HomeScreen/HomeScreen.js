@@ -266,7 +266,7 @@ const HomeScreen = (props) => {
     };
 
     const changeStatus = async () => {
-        console.log('changeStatus');
+        console.log('change-Status');
         let duration = parseInt(await TrackPlayer.getDuration());
         let position = parseInt(await TrackPlayer.getPosition());
         let position1 = parseInt(await TrackPlayer.getPosition()) + 1;
@@ -659,16 +659,27 @@ const HomeScreen = (props) => {
                     />
                 </View>
                 <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
-                    <CustomBellIcon 
-                    onPress = {()=> props.navigation.navigate(screens.notificationScreen)}
+                    <CustomBellIcon
+                        onPress={() => props.navigation.navigate(screens.notificationScreen)}
                     />
                     {Token && <Pressable
-                        style={{ marginLeft: 10 }}
+                        style={{
+                            borderColor: Colors.gray05,
+                            borderWidth: 1,
+                            height: 34,
+                            width: 34,
+                            borderRadius: 34 / 2,
+                            marginLeft: 10,
+                            alignSelf: 'center',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
                         onPress={() => {
-                            props.navigation.navigate(screens.editProfile, {
-                                user: !!user ? user : null,
-                                isComingFrom: "dashBoard"
-                            });
+                            props.navigation.navigate(screens.profile)
+                            // props.navigation.navigate(screens.editProfile, {
+                            //     user: !!user ? user : null,
+                            //     isComingFrom: "dashBoard"
+                            // });
                         }}>
                         <CustomImage
                             source={
@@ -738,7 +749,7 @@ const HomeScreen = (props) => {
 
                                 </View>
                                 <View style={{ alignItems: "flex-end", }}>
-                                    <CustomButton onPress={() => props.navigation.navigate(screens.habitTracker)} />
+                                    <CustomButton onPress={() => props.navigation.navigate(screens.allHabits)} />
                                 </View>
                             </>
                             :
@@ -862,9 +873,10 @@ const HomeScreen = (props) => {
                                     <View style={{ marginTop: 5, }}>
                                         <ProgressBar
                                             resetPlayer={resetTheTrack}
-                                            moveTo={val => {
-                                                moveTo(val);
-                                            }}
+                                            // moveTo={val => {
+                                            //     moveTo(val);
+                                            // }}
+                                            moveTo={moveTo}
                                             time={meditationOfTheDay?.duration}
                                         />
                                     </View>
@@ -885,7 +897,7 @@ const HomeScreen = (props) => {
                     delay={1 * 250}>
                     <View
                         style={home_styles.customCardView}>
-                        <Text style={home_styles.heading}>Today's Notes </Text>
+                        <Text style={home_styles.heading}>Recent Notes </Text>
 
                         {Token && notes.length != 0 ?
                             <>
@@ -894,6 +906,7 @@ const HomeScreen = (props) => {
                                         <Pressable
                                             onPress={() => props.navigation.navigate(screens.notesDetail, {
                                                 note: notes[0],
+                                                isComingFrom: "dashBoard",
                                                 updateNote,
                                             })}
                                             style={home_styles.note}>
@@ -917,7 +930,12 @@ const HomeScreen = (props) => {
                                         </Pressable>
                                     }
                                     {notes[1] &&
-                                        <View
+                                        <Pressable
+                                            onPress={() => props.navigation.navigate(screens.notesDetail, {
+                                                note: notes[1],
+                                                isComingFrom: "dashBoard",
+                                                updateNote,
+                                            })}
                                             style={home_styles.note}>
                                             <View>
                                                 <Image
@@ -936,7 +954,7 @@ const HomeScreen = (props) => {
                                                     {moment(notes[1]?.updatedAt).format('DD-MM-YYYY')}
                                                 </Text>
                                             </View>
-                                        </View>
+                                        </Pressable>
                                     }
                                 </View>
 
@@ -998,7 +1016,12 @@ const HomeScreen = (props) => {
                         style={home_styles.customCardView}>
                         <Text style={home_styles.heading}>Quote Of The Day </Text>
 
-                        <Pressable onPress={() => showImageModal(quoteOfTheDay?.images?.large)}>
+                        <Pressable
+                            onPress={() => props.navigation.navigate(screens.qouteList, {
+                                _id: quoteOfTheDay?._id,
+                            })}
+                        // onPress={() => showImageModal(quoteOfTheDay?.images?.large)}
+                        >
                             <View style={{
                                 marginTop: 12,
                                 overflow: "hidden",

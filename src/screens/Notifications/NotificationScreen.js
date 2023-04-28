@@ -57,7 +57,7 @@ const NotificationScreen = (props) => {
        let list = [...notificationList]
     }
 
-    const renderAllGratitudeList = ({ item, index }) => {
+    const renderNotificationList = ({ item, index }) => {
 
         return (
             <Pressable
@@ -150,7 +150,7 @@ const NotificationScreen = (props) => {
                         contentContainerStyle={{ paddingVertical: 10 }}
                         showsVerticalScrollIndicator={false}
                         data={notificationList}
-                        renderItem={renderAllGratitudeList}
+                        renderItem={renderNotificationList}
                         shouldBounceOnMount={true}
                         maxSwipeDistance={70}
                         keyExtractor={(item, index) => {

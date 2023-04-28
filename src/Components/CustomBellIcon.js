@@ -7,36 +7,38 @@ import { useContext } from 'react';
 import Context from '../Context';
 
 const CustomBellIcon = (props) => {
-    const { count } = useContext(Context);
+    const { badgeCount } = useContext(Context);
 
     return (
         <Pressable onPress={props.onPress}>
             <CustomImage
                 source={notification}
-                style={{ height: 26, width: 26 }}
-                imageStyle={{ borderRadius: 26 / 2 }}
+                style={{ height: 24, width: 24 }}
+                imageStyle={{ borderRadius: 24 / 2 }}
             />
-            <View
-                style={{
-                    height: 19.5,
-                    width: 19.5,
-                    borderRadius: 19 / 2,
-                    backgroundColor: "red",
-                    position: "absolute",
-                    top: -8,
-                    bottom: 0,
-                    left: 10.5,
-                    right: 0,
-                    alignItems: "center",
-                    justifyContent: "center"
-                }}>
-                <Text style={{
-                    color: Colors.white,
-                    fontSize: count > 99 ? 9.5 : 11,
-                    textAlign: "center",
-                    paddingLeft: count < 9 || count > 99 ? 0 : 2,
-                }}>{count > 99 ? "99+ " : count >= 10 ? count + " " : count}</Text>
-            </View>
+            {badgeCount != 0 &&
+                <View
+                    style={{
+                        height: 18,
+                        width: 18,
+                        borderRadius: 18 / 2,
+                        backgroundColor: "red",
+                        position: "absolute",
+                        top: -7,
+                        bottom: 0,
+                        left: 10,
+                        right: 0,
+                        alignItems: "center",
+                        justifyContent: "center"
+                    }}>
+                    <Text style={{
+                        color: Colors.white,
+                        fontSize: badgeCount > 99 ? 9 : 10,
+                        textAlign: "center",
+                        paddingLeft: badgeCount < 9 || badgeCount > 99 ? 0 : 1.8,
+                    }}>{badgeCount > 99 ? "99+ " : badgeCount >= 10 ? badgeCount + " " : badgeCount}</Text>
+                </View>
+            }
         </Pressable>
     )
 }

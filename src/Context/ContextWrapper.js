@@ -45,7 +45,10 @@ const ContextWrapper = props => {
     notes: [],
   })
 
-  const [count, setCount] = useState(1);
+  const [notesList, setNotesList] = useState([]);
+
+
+  const [badgeCount, setBadgeCount] = useState(2);
   const notificationList = [];
 
 
@@ -556,8 +559,9 @@ const ContextWrapper = props => {
     setAllGratitudesList,
     dashboardData,
     setDashBoardData,
-    count, setCount,
+    badgeCount, setBadgeCount,
     notificationList,
+    notesList, setNotesList
   };
 
   return (

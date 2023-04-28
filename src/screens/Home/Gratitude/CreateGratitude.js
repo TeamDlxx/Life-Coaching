@@ -509,8 +509,9 @@ const CreateGratitude = props => {
     };
 
     const handleTimeConfirm = async time => {
-        console.log(time)
+        console.log(time, "time...")
         hideTimePicker();
+        gratitudeDate = time;
         await updateGratitude({ date: time })
         await checkGratitudeExist(gratitudeDate)
     };

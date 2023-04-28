@@ -8,7 +8,7 @@ import {
   Pressable,
   RefreshControl,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState , useRef , useEffect} from 'react';
 import Header from '../../../Components/Header';
 import {mainStyles, chooseHabit_style} from '../../../Utilities/styles';
 import Colors from '../../../Utilities/Colors';
@@ -34,6 +34,9 @@ const ChooseHabit = props => {
   const [selectedhabits, setSelectedhabits] = useState(null);
   const [isLoading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [progressViewOffsetValue, setProgressViewOffsetValue] = useState(undefined);
+  const goBackEventWasHandled = useRef(false)
 
   const callAdminHabitsListAPI = () => {
     setisLoading(true);
@@ -78,6 +81,23 @@ const ChooseHabit = props => {
       setPreDefinedHabits([]);
     };
   }, []);
+
+  useEffect(() => {
+    // perform the navigation with the hidden refresh indicator
+    if (progressViewOffsetValue !== undefined) {
+      props.navigation.goBack()
+    }
+    const unsubscribe = props.navigation.addListener('beforeRemove', (event) => {
+      // Handle GO_BACK event only, because it fits my use case, please tweak it to fit yours
+      if (event.data.action.type === 'GO_BACK' && !goBackEventWasHandled.current) {
+        event.preventDefault()
+        goBackEventWasHandled.current = true
+        setProgressViewOffsetValue(-1000) // set to a ridiculous value to hide the refresh control
+      }
+    })
+    return unsubscribe
+  }, [props.navigation, progressViewOffsetValue])
+
 
   const renderItem = ({item, index}) => {
     return (
@@ -143,6 +163,7 @@ const ChooseHabit = props => {
                   tintColor={Colors.primary}
                   colors={[Colors.primary]}
                   progressBackgroundColor={Colors.white}
+                  progressViewOffset={progressViewOffsetValue}
                 />
               }
               contentContainerStyle={{paddingTop: 10, paddingBottom: 40}}

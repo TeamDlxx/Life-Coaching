@@ -80,7 +80,16 @@ const ForgotPassword = props => {
   });
 
   return (
-    <>
+    <View style={{ flex: 1, backgroundColor: 'transparent' }}>
+       <ImageBackground
+        resizeMode="stretch"
+        style={{
+          height: height, width: '100%',
+          backgroundColor: '#fff', position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0
+        }}
+        source={require('../../Assets/Images/loginBackgorund.png')}>
+      </ImageBackground>
       <StatusBar
         backgroundColor={'transparent'}
         barStyle={'dark-content'}
@@ -91,10 +100,10 @@ const ForgotPassword = props => {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps={'handled'}
         style={{}}>
-        <ImageBackground
+        {/* <ImageBackground
           resizeMode="stretch"
           style={{height: height, width: '100%', backgroundColor: '#fff'}}
-          source={require('../../Assets/Images/loginBackgorund.png')}>
+          source={require('../../Assets/Images/loginBackgorund.png')}> */}
           <View
             style={{
               marginTop:
@@ -145,9 +154,9 @@ const ForgotPassword = props => {
               marginTop: Platform.OS == 'android' ? 50 : 100,
             }}
           />
-        </ImageBackground>
+        {/* </ImageBackground> */}
       </KeyboardAwareScrollView>
-    </>
+    </View>
   );
 };
 

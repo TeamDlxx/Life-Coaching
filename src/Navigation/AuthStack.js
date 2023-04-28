@@ -127,6 +127,8 @@ const AuthStack = () => {
         screenOptions={{
           headerShown: false,
           orientation: 'portrait',
+          animationEnabled: false,
+          animation : "none",
         }}
         initialRouteName={whichScreen}>
         <Stack.Screen name={screens.Login} component={Login} />

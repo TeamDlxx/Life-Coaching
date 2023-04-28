@@ -117,14 +117,14 @@ const EditProfile = props => {
       'success',
     );
     AsyncStorage.setItem('@user', JSON.stringify(newData)).then(() => {
-      if (props?.route?.params?.isComingFrom == "dashBoard") {
-        props.navigation.pop(1)
-      }
-      else {
-        props.navigation.navigate(screens.profile, {
-          updated: true,
-        });
-      }
+      // if (props?.route?.params?.isComingFrom == "dashBoard") {
+      //   props.navigation.pop(1)
+      // }
+      // else {
+      props.navigation.navigate(screens.profile, {
+        updated: true,
+      });
+      // }
     });
   };
 
@@ -355,8 +355,18 @@ const EditProfile = props => {
             {(user?.imageURI != '' || user?.selectedImage != null) && (
               <Pressable
                 onPress={() => {
-                  setUser({ imageURI: '', selectedImage: null });
-                  setModalVisibility(false);
+                  Alert.alert(
+                    'Remove Image',
+                    'Are you sure you want to remove this image?',
+                    [{ text: 'No' }, {
+                      text: 'Yes', onPress: () => {
+                        setUser({ imageURI: '', selectedImage: null })
+                        setModalVisibility(false);
+                      }
+                    }],
+                  );
+                  // setUser({ imageURI: '', selectedImage: null });
+                  // setModalVisibility(false);
                 }}
                 style={{ alignItems: 'center', marginLeft: 30 }}>
                 <View
@@ -501,7 +511,7 @@ const EditProfile = props => {
           />
         </View>
         <View style={{ marginTop: 10, paddingHorizontal: 20 }}>
-          <CustomButton title="Save Changes" onPress={SaveChangesButton} />
+          <CustomButton title="Update " onPress={SaveChangesButton} />
         </View>
         <Loader enable={isLoading} />
       </View>

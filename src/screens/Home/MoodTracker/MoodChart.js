@@ -131,7 +131,6 @@ const MoodsJournal = props => {
       navigation: props.navigation,
     });
     if (res) {
-      setisLoading(false);
       setisRefreshing(false)
 
       if (res.code == 200) {
@@ -149,20 +148,27 @@ const MoodsJournal = props => {
         let isExist = res?.is_exist;
         setIsExist(isExist)
 
+        setisLoading(false);
 
-        if (selectedMoods.length == 0) {
-          let index = moods.findIndex(x => x.isSelected == true);
-          if (index != -1) {
-            addToSelectedMoods(moods[index].mood)
-          } else {
-            showToast('Please select a mood', 'Alert');
+        if (isExist == false && allMoods.length == 0) {
+          console.log('No Data Exist ....')
+        } else {
+
+          if (selectedMoods.length == 0) {
+            let index = moods.findIndex(x => x.isSelected == true);
+            if (index != -1) {
+              addToSelectedMoods(moods[index].mood)
+            } else {
+              showToast('Please select a mood', 'Alert');
+            }
           }
-        }
-        else {
-          graphData(selectedMoods)
+          else {
+            graphData(selectedMoods)
+          }
         }
       } else {
         showToast(res.message);
+        setisLoading(false);
       }
     }
   };

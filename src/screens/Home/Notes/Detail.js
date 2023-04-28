@@ -47,7 +47,7 @@ import {isIphoneX} from 'react-native-iphone-x-helper';
 const jsCode = `!function(){var e=function(e,n,t){if(n=n.replace(/^on/g,""),"addEventListener"in window)e.addEventListener(n,t,!1);else if("attachEvent"in window)e.attachEvent("on"+n,t);else{var o=e["on"+n];e["on"+n]=o?function(e){o(e),t(e)}:t}return e},n=document.querySelectorAll("a[href]");if(n)for(var t in n)n.hasOwnProperty(t)&&e(n[t],"onclick",function(e){new RegExp("^https?://"+location.host,"gi").test(this.href)||(e.preventDefault(),window.postMessage(JSON.stringify({external_url_open:this.href})))})}();`;
 const NoteDetail = props => {
   const {navigation} = props;
-  const {downloadAudioNote, Token} = useContext(Context);
+  const {downloadAudioNote, Token, notesList, setNotesList, dashboardData, setDashBoardData} = useContext(Context);
   const [note, setNote] = useState(props.route?.params?.note);
   const EditMenu = useRef();
   const ref_webView = useRef();
@@ -307,15 +307,53 @@ const NoteDetail = props => {
     if (res) {
       if (res.code == 200) {
         setisLoading(false);
-        navigation.navigate(screens.notesList, {
-          deleteId: NoteID,
-        });
+        if(props?.route?.params?.isComingFrom == "dashBoard"){
+          console.log("yes , isComingFrom from dashboard.....")
+          await deleteLocallyfromList(NoteID)
+          props.navigation.goBack();
+        } else {
+          navigation.navigate(screens.notesList, {
+            deleteId: NoteID,
+          });
+        }
+
       } else {
         setisLoading(false);
         showToast(res.message);
       }
     }
   };
+
+  const deleteLocallyfromList = async noteID => {
+    let arr = [...notesList];
+    let index = arr.findIndex(x => x._id === noteID);
+    if (index !== -1) {
+      arr.splice(index, 1);
+      await deleteDashBoardNotes(noteID, arr)
+      setNotesList(arr);
+    }
+  };
+
+  const deleteDashBoardNotes = async (id, arr) => {
+    let tempArr = [...dashboardData.notes]
+    let idx = tempArr.findIndex(x => x._id == id)
+    if (idx != -1) {
+      tempArr = []
+
+      if (arr[0] != undefined) {
+        tempArr.push(arr[0])
+      }
+      if (arr[1] != undefined) {
+        tempArr.push(arr[1])
+      }
+      console.log(tempArr, "new Arr......")
+    }
+    await setDashBoardData({
+      ...dashboardData,
+      notes: [...tempArr]
+    })
+  }
+  
 
   useEffect(() => {
     if (!!props.route.params?.editedNote) {

@@ -43,7 +43,7 @@ import { LoginManager } from "react-native-fbsdk";
 const height = Dimensions.get('screen').height;
 const Signup = props => {
   const { params } = props?.route;
-  const { setToken } = useContext(Context);
+  const { setToken, setDashBoardData } = useContext(Context);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -91,6 +91,7 @@ const Signup = props => {
             params: { loggedIn: true },
             merge: true,
           });
+          dashBoardApi(data?.token)
         } else {
           props.navigation.reset({
             index: 0,
@@ -104,6 +105,32 @@ const Signup = props => {
         showToast('Please Sign-in Again', 'Something went wrong');
       });
   };
+
+  const dashBoardApi = async (token) => {
+    let res = await invokeApi({
+      path: 'api/customer/app_dashboard',
+      method: 'GET',
+      headers: {
+        'x-sh-auth': token,
+      },
+      navigation: props.navigation,
+    });
+    if (res) {
+      if (res.code == 200) {
+        let meditation = res.meditation_of_the_day;
+        let quote = res.quote_of_day;
+        let habit = res.habit_stats;
+        let note = res.notes;
+
+        await setDashBoardData({
+          habitStats: habit,
+          meditationOfTheDay: meditation,
+          quoteOfTheDay: quote,
+          notes: note,
+        })
+      } else { }
+    }
+  }
 
   const SigUpBtn = () => {
     let t_name = name.trim();
@@ -224,20 +251,27 @@ const Signup = props => {
   }, []);
 
   return (
-    <KeyboardAwareScrollView
-      bounces={false}
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps={'handled'}
-      style={{}}>
+    <View style={{ flex: 1, backgroundColor: 'transparent' }}>
       <ImageBackground
         resizeMode="stretch"
-        style={{ height: height, width: '100%', backgroundColor: '#fff' }}
+        style={{
+          height: height, width: '100%',
+          backgroundColor: '#fff', position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0
+        }}
         source={require('../../Assets/Images/loginBackgorund.png')}>
-        <StatusBar
-          backgroundColor={'transparent'}
-          barStyle={'dark-content'}
-          translucent={true}
-        />
+      </ImageBackground>
+
+      <StatusBar
+        backgroundColor={'transparent'}
+        barStyle={'dark-content'}
+        translucent={true}
+      />
+      <KeyboardAwareScrollView
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps={'handled'}
+        style={{ flex: 1 }}>
         <Pressable
           onPress={() => props.navigation.goBack()}
           style={{
@@ -388,8 +422,9 @@ const Signup = props => {
             marginTop: Platform.OS == 'android' ? 50 : 100,
           }}
         />
-      </ImageBackground>
-    </KeyboardAwareScrollView>
+      </KeyboardAwareScrollView>
+    </View>
+
   );
 };
 

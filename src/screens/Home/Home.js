@@ -140,7 +140,7 @@ const Home = props => {
         useNativeDriver
         // entering={BounceInUp.delay(count * 250)}
         animation={'bounceInDown'}
-        delay={count * 250}
+        delay={count * 150}
         key={item.id}
         style={{
           // margin: 10,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -68,6 +68,9 @@ const HabitTracker = props => {
   });
   const [adError, setAdError] = useState(false);
   // console.log('isHabitPurchased', isHabitPurchased);
+
+  const [progressViewOffsetValue, setProgressViewOffsetValue] = useState(undefined);
+  const goBackEventWasHandled = useRef(false)
 
   const filterSelectedDayHabits = list => {
     return list.slice().filter(x => {
@@ -395,6 +398,21 @@ const HabitTracker = props => {
     analytics().logEvent(props?.route?.name);
   }, []);
 
+  useEffect(() => {
+    // perform the navigation with the hidden refresh indicator
+    if (progressViewOffsetValue !== undefined) {
+      props.navigation.goBack()
+    }
+    const unsubscribe = props.navigation.addListener('beforeRemove', (event) => {
+      // Handle GO_BACK event only, because it fits my use case, please tweak it to fit yours
+      if (event.data.action.type === 'GO_BACK' && !goBackEventWasHandled.current) {
+        event.preventDefault()
+        goBackEventWasHandled.current = true
+        setProgressViewOffsetValue(-1000) // set to a ridiculous value to hide the refresh control
+      }
+    })
+    return unsubscribe
+  }, [props.navigation, progressViewOffsetValue])
   //? Views
 
   const renderDays = ({ item, index }) => {
@@ -848,7 +866,8 @@ const HabitTracker = props => {
                   tintColor={Colors.primary}
                   colors={[Colors.primary]}
                   progressBackgroundColor={Colors.white}
-                  progressViewOffset={Platform.OS == 'android' ? -20 : 0}
+                  // progressViewOffset={Platform.OS == 'android' ? -20 : 0}
+                  progressViewOffset={progressViewOffsetValue}
                 />
               }
               listKey="main"

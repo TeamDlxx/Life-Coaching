@@ -49,7 +49,7 @@ const height = Dimensions.get('screen').height;
 const Login = props => {
   console.log('props', props);
   const { params } = props?.route;
-  const { setToken } = useContext(Context);
+  const { setToken, setDashBoardData } = useContext(Context);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setisLoading] = useState(false);
@@ -110,6 +110,7 @@ const Login = props => {
             params: { loggedIn: true },
             merge: true,
           });
+          dashBoardApi(data?.token)
         } else {
           props.navigation.reset({
             index: 0,
@@ -124,6 +125,32 @@ const Login = props => {
         showToast('Please Sign-in Agin', 'Something went wrong');
       });
   };
+
+  const dashBoardApi = async (token) => {
+    let res = await invokeApi({
+      path: 'api/customer/app_dashboard',
+      method: 'GET',
+      headers: {
+        'x-sh-auth': token,
+      },
+      navigation: props.navigation,
+    });
+    if (res) {
+      if (res.code == 200) {
+        let meditation = res.meditation_of_the_day;
+        let quote = res.quote_of_day;
+        let habit = res.habit_stats;
+        let note = res.notes;
+
+        await setDashBoardData({
+          habitStats: habit,
+          meditationOfTheDay: meditation,
+          quoteOfTheDay: quote,
+          notes: note,
+        })
+      } else { }
+    }
+  }
 
   const scheduleNotifications = list => {
     list.map((x, i) => {
@@ -350,20 +377,27 @@ const Login = props => {
 
 
   return (
-    <KeyboardAwareScrollView
-      bounces={false}
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps={'handled'}
-      style={{}}>
+    <View style={{ flex: 1, backgroundColor: 'transparent' }}>
       <ImageBackground
         resizeMode="stretch"
-        style={{ height: height, width: '100%', backgroundColor: '#fff' }}
+        style={{
+          height: height, width: '100%',
+          backgroundColor: '#fff', position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0
+        }}
         source={require('../../Assets/Images/loginBackgorund.png')}>
-        <StatusBar
-          backgroundColor={'transparent'}
-          barStyle={'dark-content'}
-          translucent={true}
-        />
+      </ImageBackground>
+      <StatusBar
+        backgroundColor={'transparent'}
+        barStyle={'dark-content'}
+        translucent={true}
+      />
+
+      <KeyboardAwareScrollView
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps={'handled'}
+        style={{ flex: 1 }}>
 
         <Pressable
           onPress={() => props.navigation.goBack()}
@@ -389,117 +423,117 @@ const Login = props => {
           />
         </Pressable>
 
-        <View style={{ marginTop: 35 , paddingHorizontal: 20,}}>
+        <View style={{ marginTop: 35, paddingHorizontal: 20, }}>
           <View style={loginStyles.headerView}>
             <HeadingText>Sign In</HeadingText>
           </View>
-          
-            <View>
-              <CustomSimpleTextInput
-                lable={'E-mail'}
-                placeholder={'Email address'}
-                onChangeText={text => setEmail(text)}
-                value={email}
-                type="email-address"
-              />
-            </View>
 
-            <View style={{ marginTop: 20 }}>
-              <CustomPasswordTextInput
-                lable={'Password'}
-                placeholder={'Password'}
-                onChangeText={text => setPassword(text)}
-                value={password}
-              />
-            </View>
+          <View>
+            <CustomSimpleTextInput
+              lable={'E-mail'}
+              placeholder={'Email address'}
+              onChangeText={text => setEmail(text)}
+              value={email}
+              type="email-address"
+            />
+          </View>
 
-            <TouchableOpacity
-              onPress={() => onForgotPasswordScreen()}
-              style={{ marginVertical: 10, alignItems: 'flex-end' }}>
-              <Text style={{ color: '#6C747E', fontFamily: font.medium }}>
-                Forgot Password?
-              </Text>
-            </TouchableOpacity>
+          <View style={{ marginTop: 20 }}>
+            <CustomPasswordTextInput
+              lable={'Password'}
+              placeholder={'Password'}
+              onChangeText={text => setPassword(text)}
+              value={password}
+            />
+          </View>
 
-            <View style={{ marginVertical: 20 }}>
-              <CustomButton onPress={btn_Login} title={'Sign In'} />
-            </View>
+          <TouchableOpacity
+            onPress={() => onForgotPasswordScreen()}
+            style={{ marginVertical: 10, alignItems: 'flex-end' }}>
+            <Text style={{ color: '#6C747E', fontFamily: font.medium }}>
+              Forgot Password?
+            </Text>
+          </TouchableOpacity>
 
-            <View
-              style={{
-                alignItems: 'center',
-                justifyContent: 'flex-end',
-              }}>
-              <Text style={{ color: '#313131', fontFamily: font.regular }}>
-                Continue as{' '}
-                <Text
-                  onPress={() => GuestLogin()}
-                  style={{ color: Colors.primary }}>
-                  Guest
-                </Text>
-              </Text>
-            </View>
+          <View style={{ marginVertical: 20 }}>
+            <CustomButton onPress={btn_Login} title={'Sign In'} />
+          </View>
 
-            <View style={{
-              flexDirection: "row",
-              justifyContent: "space-evenly",
-              alignItems: "center",
-              marginTop: 70,
-              marginHorizontal: 20,
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'flex-end',
             }}>
-              <View style={{ backgroundColor: Colors.gray04, height: 1, flex: 1 }} />
-              <Text style={{ color: '#313131', fontFamily: font.regular, marginHorizontal: 10, }}>
-                Or continue with
+            <Text style={{ color: '#313131', fontFamily: font.regular }}>
+              Continue as{' '}
+              <Text
+                onPress={() => GuestLogin()}
+                style={{ color: Colors.primary }}>
+                Guest
               </Text>
-              <View style={{ backgroundColor: Colors.gray04, height: 1, flex: 1 }} />
-            </View>
+            </Text>
+          </View>
+
+          <View style={{
+            flexDirection: "row",
+            justifyContent: "space-evenly",
+            alignItems: "center",
+            marginTop: 70,
+            marginHorizontal: 20,
+          }}>
+            <View style={{ backgroundColor: Colors.gray04, height: 1, flex: 1 }} />
+            <Text style={{ color: '#313131', fontFamily: font.regular, marginHorizontal: 10, }}>
+              Or continue with
+            </Text>
+            <View style={{ backgroundColor: Colors.gray04, height: 1, flex: 1 }} />
+          </View>
 
 
-            <View style={{
-              flexDirection: "row",
-              justifyContent: "center",
-              alignItems: "center",
-              marginTop: 20,
-            }}>
-              <Pressable onPress={async () => {
-                setisLoading(true);
-                signInWithGoogle()
-              }}
-                style={loginStyles.buttonStyle}>
-                <Image source={require("../../Assets/Icons/google.png")} style={loginStyles.btnImageStyle} />
-              </Pressable>
+          <View style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: 20,
+          }}>
+            <Pressable onPress={async () => {
+              setisLoading(true);
+              signInWithGoogle()
+            }}
+              style={loginStyles.buttonStyle}>
+              <Image source={require("../../Assets/Icons/google.png")} style={loginStyles.btnImageStyle} />
+            </Pressable>
 
-             { Platform.OS == 'ios' && <TouchableOpacity onPress={() => { signInWithApple() }}
-                style={loginStyles.buttonStyle}>
-                <Image source={require("../../Assets/Icons/apple.png")} style={loginStyles.btnImageStyle} />
-              </ TouchableOpacity>}
+            {Platform.OS == 'ios' && <TouchableOpacity onPress={() => { signInWithApple() }}
+              style={loginStyles.buttonStyle}>
+              <Image source={require("../../Assets/Icons/apple.png")} style={loginStyles.btnImageStyle} />
+            </ TouchableOpacity>}
 
-              {/* <Pressable
+            {/* <Pressable
                 onPress={() => { }}
                 // onPress={sigFnInWithFacebook}
                 style={loginStyles.buttonStyle}>
                 <Image source={require("../../Assets/Icons/facebook.png")} style={loginStyles.btnImageStyle} />
               </Pressable> */}
 
-            </View>
-
-
-            <View
-              style={{
-                marginTop: 30,
-                alignItems: 'center',
-              }}>
-              <Text style={{ color: '#313131', fontFamily: font.regular }}>
-                Don't have account?{' '}
-                <Text
-                  onPress={() => onSignUpScreen()}
-                  style={{ color: Colors.primary }}>
-                  Sign Up
-                </Text>
-              </Text>
-            </View>
           </View>
-       
+
+
+          <View
+            style={{
+              marginTop: 30,
+              alignItems: 'center',
+            }}>
+            <Text style={{ color: '#313131', fontFamily: font.regular }}>
+              Don't have account?{' '}
+              <Text
+                onPress={() => onSignUpScreen()}
+                style={{ color: Colors.primary }}>
+                Sign Up
+              </Text>
+            </Text>
+          </View>
+        </View>
+
         <Loader
           enable={isLoading}
           style={{
@@ -507,8 +541,9 @@ const Login = props => {
             marginTop: Platform.OS == 'android' ? 50 : 100,
           }}
         />
-      </ImageBackground>
-    </KeyboardAwareScrollView>
+
+      </KeyboardAwareScrollView>
+    </View>
   );
 };
 

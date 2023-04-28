@@ -192,8 +192,6 @@ const Profile = props => {
               </Pressable>
             }
 
-
-
             {Token &&
               <View style={{ marginTop: 10 }}>
                 <Text
@@ -206,9 +204,6 @@ const Profile = props => {
                 </Text>
               </View>
             }
-
-
-
 
             {Token &&
               <View
@@ -238,10 +233,6 @@ const Profile = props => {
                 </View>
               </View>
             }
-
-
-
-
 
           </View>
 
@@ -284,11 +275,7 @@ const Profile = props => {
                 return;
               }
 
-
-
-
               return (
-
 
                 <Pressable
                   key={x.id}
@@ -335,12 +322,6 @@ const Profile = props => {
                     />
                   </View>
                 </Pressable>
-
-
-
-
-
-
 
               );
             })}
@@ -516,7 +497,7 @@ const optionsList = [
 
   {
     id: 'sub',
-    name: 'Subscription',
+    name: 'Subscription Plans',
     icon: require('../../Assets/Icons/subscribe.png'),
     screen: screens.allPackages,
   },

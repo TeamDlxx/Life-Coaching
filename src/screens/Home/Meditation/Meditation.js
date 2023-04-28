@@ -67,31 +67,23 @@ const Meditation = props => {
   const [adError, setAdError] = useState(false);
   const [adLoaded, setAdLoaded] = useState(false);
   const [selectedTrackIndex, setSelectedTrackIndex] = useState(false);
-
+  const [progressViewOffsetValue, setProgressViewOffsetValue] = useState(undefined);
+  const goBackEventWasHandled = useRef(false)
 
   //? Navigation Functions
 
-
   //* UseEffect
-
-
 
   const rewardedAd = useRewardedAd(Admob_Ids.rewarded, {
     requestNonPersonalizedAdsOnly: true,
     contentUrl: 'https://reactnative.dev/',
   });
 
-
-
-
   useEffect(() => {
-
-
     setisLoading(true)
     call_categoryAPI();
 
     rewardedAdRef.current.load();
-
 
     const unsubscribeLoaded = rewardedAdRef.current.addAdEventListener(
       RewardedAdEventType.LOADED,
@@ -103,31 +95,27 @@ const Meditation = props => {
       },
     );
 
-
     const unsubscribeEarned = rewardedAdRef.current.addAdEventListener(
       RewardedAdEventType.EARNED_REWARD,
       (reward) => {
 
         console.log('User earned reward of ', reward);
-        console.log(category, trackIndex ,"item for category...")
-        
+        console.log(category, trackIndex, "item for category...")
+
         category.category_track[trackIndex].is_locked = false;
-        setSelectedCategory({...category});
+        setSelectedCategory({ ...category });
 
       },
     );
-
-
 
     const unsubscribenotEarned = rewardedAdRef.current.addAdEventListener(
       AdEventType.CLOSED,
       reward => {
-        console.log(reward, "Ad closed listner called....") 
+        console.log(reward, "Ad closed listner called....")
         rewardedAdRef.current.load();
 
       },
     );
-
 
     if (rewardedAd.isLoaded) {
       console.log("ad is loaded now")
@@ -136,18 +124,30 @@ const Meditation = props => {
     if (rewardedAd.error) {
       console.log("error in loading ad")
     }
-
-
-
     analytics().logEvent(props?.route?.name);
   }, []);
+
+  useEffect(() => {
+    // perform the navigation with the hidden refresh indicator
+    if (progressViewOffsetValue !== undefined) {
+      props.navigation.goBack()
+    }
+    const unsubscribe = props.navigation.addListener('beforeRemove', (event) => {
+      // Handle GO_BACK event only, because it fits my use case, please tweak it to fit yours
+      if (event.data.action.type === 'GO_BACK' && !goBackEventWasHandled.current) {
+        event.preventDefault()
+        goBackEventWasHandled.current = true
+        setProgressViewOffsetValue(-1000) // set to a ridiculous value to hide the refresh control
+      }
+    })
+    return unsubscribe
+  }, [props.navigation, progressViewOffsetValue])
 
 
   const updateTrackStatus = () => {
     console.log(selectedCategory, "item for category updateTrackStatus...")
 
   }
-
 
   const gotoTrackPlayer = (item, index) => {
 
@@ -232,8 +232,6 @@ const Meditation = props => {
   }
 
 
-
-
   const showAd = async () => {
 
 
@@ -253,7 +251,6 @@ const Meditation = props => {
     // }
 
   }
-
 
   const findCategoryName = id => {
     categoryList.find(x => x.categoryList);
@@ -405,7 +402,6 @@ const Meditation = props => {
       setIsLoadingMore(false);
     }
   };
-
 
 
   const likeUnLikeLocally = (id, val) => {
@@ -696,7 +692,8 @@ const Meditation = props => {
                 tintColor={Colors.primary}
                 colors={[Colors.primary]}
                 progressBackgroundColor={Colors.white}
-                progressViewOffset={-1}
+                // progressViewOffset={-1}
+                progressViewOffset={progressViewOffsetValue}
               />
             }
 

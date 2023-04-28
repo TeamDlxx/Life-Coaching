@@ -25,10 +25,24 @@ const Onboarding = props => {
 
   const onLandingScreen = () => {
     // navigation.navigate(screens.landing);
-    navigation.reset({
-      index: 0,
-      routes: [{name: screens.landing}],
-    });
+    // navigation.reset({
+    //   index: 0,
+    //   routes: [{name: screens.landing}],
+    // });
+    onGuestMode()
+  };
+
+  const onGuestMode = async () => {
+    try {
+      let res = await AsyncStorage.setItem('@guestMode', 'true');
+      navigation.reset({
+        index: 0,
+        routes: [{name: screens.bottomTabs}],
+      });
+      await AsyncStorage.setItem('@googleOrAppleLogin', "false")
+    } catch (e) {
+      showToast('Please try again', 'Something went wrong');
+    }
   };
 
   const OnboardingChecked = () => {

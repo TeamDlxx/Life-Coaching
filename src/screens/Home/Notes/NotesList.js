@@ -55,9 +55,9 @@ let selectedColors = [];
 
 const List = props => {
   const { navigation } = props;
-  const { Token, dashboardData, setDashBoardData } = useContext(Context);
+  const { Token, dashboardData, setDashBoardData, notesList, setNotesList } = useContext(Context);
   const searchTextRef = useRef();
-  const [list, setList] = useState([]);
+  // const [list, setList] = useState([]);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [isLoading, setisLoading] = useState(false);
   const [isLoadingMore, setisLoadingMore] = useState(false);
@@ -72,27 +72,31 @@ const List = props => {
   };
 
   React.useEffect(() => {
-    console.log(props.route, 'props.route');
-    if (!!props.route?.params?.filter) {
-      let { filter } = props.route.params;
-      startDate = filter?.date.start;
-      endDate = filter?.date.end;
-      selectedColors = filter?.selectedColors;
-      pageNumber = 0;
-      setisLoading(true);
-      api_listNotes({
-        search: searchText.trim(),
-        date_from: startDate,
-        date_to: endDate,
-        color: JSON.stringify(selectedColors.map(x => x.dark)),
-      });
-    }
+    if (Token) {
+      console.log(props.route, 'props.route');
+      if (!!props.route?.params?.filter) {
+        let { filter } = props.route.params;
+        startDate = filter?.date.start;
+        endDate = filter?.date.end;
+        selectedColors = filter?.selectedColors;
+        pageNumber = 0;
+        setisLoading(true);
+        api_listNotes({
+          search: searchText.trim(),
+          date_from: startDate,
+          date_to: endDate,
+          color: JSON.stringify(selectedColors.map(x => x.dark)),
+        });
+      }
 
-    if (!!props.route?.params?.deleteId) {
-      deleteLocallyfromList(props.route?.params?.deleteId);
-    }
-    if (!!props.route?.params?.addNew) {
-      setList(prev => [props.route?.params?.addNew, ...prev]);
+      if (!!props.route?.params?.deleteId) {
+        deleteLocallyfromList(props.route?.params?.deleteId);
+      }
+      if (!!props.route?.params?.addNew) {
+        setNotesList(prev => [props.route?.params?.addNew, ...prev]);
+      }
+    } else {
+      setNotesList([])
     }
   }, [props.route]);
 
@@ -148,7 +152,7 @@ const List = props => {
         //   arr.push({...element, plainDescription});
         // });
         // console.log('arr', arr);
-        setList(res.notes);
+        setNotesList(res.notes);
         pageNumber = 1;
         if (res.notes.length < res.count) {
           canLoadMore = true;
@@ -176,7 +180,7 @@ const List = props => {
     setisLoadingMore(false);
     if (res) {
       if (res.code == 200) {
-        let total = list.length + res.notes.length;
+        let total = notesList.length + res.notes.length;
         // let arr = [];
         // res.notes.forEach(async element => {
         //   let plainDescription = '';
@@ -185,7 +189,7 @@ const List = props => {
         //   }
         //   arr.push({...element, plainDescription});
         // });
-        setList([...list, ...res.notes]);
+        setNotesList([...notesList, ...res.notes]);
         pageNumber++;
         if (total < res.count) {
           canLoadMore = true;
@@ -221,12 +225,12 @@ const List = props => {
   };
 
   const deleteLocallyfromList = async noteID => {
-    let arr = [...list];
+    let arr = [...notesList];
     let index = arr.findIndex(x => x._id === noteID);
     if (index !== -1) {
       arr.splice(index, 1);
       await deleteDashBoardNotes(noteID, arr)
-      setList(arr);
+      setNotesList(arr);
     }
   };
 
@@ -266,17 +270,17 @@ const List = props => {
   }, []);
 
   const updateNote = item => {
-    let arr = [...list];
+    let arr = [...notesList];
     let index = arr.findIndex(x => x._id == item._id);
     if (index > -1) {
       arr.splice(index, 1, item);
-      setList(arr);
+      setNotesList(arr);
     }
   };
 
   const extractText = useMemo(i => {
-    if (!!list[i]?.description) {
-      return list[i]?.description.replace(/<\/?[^>]+(>|$)/g, '');
+    if (!!notesList[i]?.description) {
+      return notesList[i]?.description.replace(/<\/?[^>]+(>|$)/g, '');
     }
   }, []);
 
@@ -423,7 +427,7 @@ const List = props => {
         </Pressable>
       );
     },
-    [list],
+    [notesList],
   );
 
   const flatListEmptyComponent = () => {
@@ -574,7 +578,7 @@ const List = props => {
         <View style={{ flex: 1, paddingHorizontal: 5 }}>
           <SwipeableFlatList
             contentContainerStyle={[
-              list.length == 0 && {
+              notesList.length == 0 && {
                 flex: 1,
               },
               {
@@ -588,7 +592,7 @@ const List = props => {
             showsVerticalScrollIndicator={false}
             // shouldBounceOnMount={true}
             maxSwipeDistance={70}
-            data={list}
+            data={notesList}
             renderItem={flatListRenderItem}
             ListEmptyComponent={flatListEmptyComponent}
             renderQuickActions={({ item, index }) => {
@@ -651,7 +655,7 @@ const List = props => {
               )
             }
           />
-          {list.length != 0 && (
+          {notesList.length != 0 && (
             <Pressable
               onPress={onNoteEditorScreen}
               style={[FAB_style.View, { borderRadius: 50 / 2 }]}>
