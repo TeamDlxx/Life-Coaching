@@ -10,6 +10,7 @@ import { Capability } from 'react-native-track-player';
 
 import messaging from '@react-native-firebase/messaging';
 import PushNotification, { Importance } from 'react-native-push-notification';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 TrackPlayer.setupPlayer({
@@ -64,9 +65,16 @@ PushNotification.createChannel(
   created => console.log('Channel Created Successfully -->\n', created), // (optional) callback returns whether the channel was created, false means it already existed.
 );
 
+const notificationBadgeCount = async () => {
+  let count = parseInt(await AsyncStorage.getItem('@badgeCount'))
+  count = count + 1;
+  console.log(count, "badge count...")
+  await AsyncStorage.setItem('@badgeCount', JSON.stringify(count));
+}
 
 const onMessageReceived = async remoteMessage => {
   console.log(remoteMessage, 'onMessage...');
+  notificationBadgeCount()
 
   await PushNotification.localNotification({
     channelId: '7007',
@@ -86,6 +94,7 @@ messaging().onMessage(onMessageReceived);
 
 messaging().setBackgroundMessageHandler(async remoteMessage => {
   console.log(remoteMessage, 'onMessagsetBackgroundMessageHandlereReceived...');
+  notificationBadgeCount()
 });
 
 AppRegistry.registerComponent(appName, () => App);

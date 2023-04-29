@@ -12,6 +12,7 @@ import { Platform, PermissionsAndroid, DevSettings } from 'react-native';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import invokeApi from '../functions/invokeAPI';
 
+import messaging from '@react-native-firebase/messaging';
 
 // Icon
 
@@ -520,21 +521,39 @@ const ContextWrapper = props => {
   }, [Token]);
 
   useEffect(() => {
-    getBadgeCount()
+    getNotificationCount()
     api_getAdminURLAndEmail();
     return () => {
       setHabitList([]);
     };
-  }, [badgeCount]);
+  }, []);
 
-const getBadgeCount = async () => {
+  const getNotificationCount = async () => {
     return await AsyncStorage.getItem('@badgeCount').then(val => {
         if (val !== null) {
-            console.log(val, "BadgeCount ...")
+            console.log(val, "bell icon BadgeCount ...")
             setBadgeCount(val);
         }
     })
 }
+
+  const getBadgeCount = async () => {
+    console.log("notification count in context...")
+    let count = parseInt(await AsyncStorage.getItem('@badgeCount'))
+    count = count + 1;
+    console.log(count, "notification count in context...")
+    if (count != null) {
+      setBadgeCount(count)
+    }
+    await AsyncStorage.setItem('@badgeCount', JSON.stringify(count));
+  }
+
+  messaging().onMessage(getBadgeCount);
+
+  messaging().setBackgroundMessageHandler(async remoteMessage => {
+    console.log(remoteMessage, 'onMessagsetBackgroundMessageHandlereReceived...');
+    getBadgeCount()
+  });
 
   const object = {
     Token,

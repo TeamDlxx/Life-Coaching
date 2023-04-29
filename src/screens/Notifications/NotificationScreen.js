@@ -58,10 +58,10 @@ const NotificationScreen = (props) => {
     }
 
     const clearNotificationBadge = async () => {
-        let count = await AsyncStorage.setItem('@badgeCount', "0");
-        setBadgeCount(count)
+        await AsyncStorage.setItem('@badgeCount', "0");
+        setBadgeCount(0)
     }
-    
+
     const renderNotificationList = ({ item, index }) => {
 
         return (

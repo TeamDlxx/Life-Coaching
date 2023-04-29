@@ -1,26 +1,12 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 import { View, Pressable, Text } from "react-native";
 import CustomImage from "./CustomImage";
 import Colors from "../Utilities/Colors";
 import notification from '../Assets/Icons/notification.png';
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Context from "../Context";
 
 const CustomBellIcon = (props) => {
-    const { badgeCount, setBadgeCount } = useContext(Context)
-
-    useEffect(() => {
-        getBadgeCount()
-    }, [badgeCount])
-
-    const getBadgeCount = async () => {
-        return await AsyncStorage.getItem('@badgeCount').then(val => {
-            if (val !== null) {
-                console.log(val, "BadgeCount ...")
-                setBadgeCount(val);
-            }
-        })
-    }
+    const { badgeCount } = useContext(Context)
 
     return (
         <Pressable onPress={props.onPress}>
