@@ -35,6 +35,9 @@ import Modal from 'react-native-modal';
 import LoginAlert from '../../../Components/LoginAlert';
 import CustomButton from '../../../Components/CustomButton';
 
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import { Admob_Ids } from '../../../Utilities/AdmobIds';
+
 const screen = Dimensions.get('screen');
 const ic_Hplaceholder = require('../../../Assets/Icons/h_placeholder1.png');
 
@@ -51,6 +54,8 @@ const AllHabits = props => {
   const [refreshing, setRefreshing] = useState(false);
   const [currentWeek, setCurrentWeekDays] = useState([]);
   const [visibleAddHabitModal, setVisibleAddHabitModal] = useState(false);
+
+  const [adError, setAdError] = useState(false);
 
   const makeDaysArray = () => {
     let selectedWeekDays = [];
@@ -573,6 +578,29 @@ const AllHabits = props => {
       <View style={{ flex: 1 }}>
         <Loader enable={isLoading} />
         <View style={{ flex: 1 }}>
+
+        {sHabitList.length != 0 && adError == false && (
+            <View
+              style={{
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginVertical: 5,
+              }}>
+              <BannerAd
+                size={BannerAdSize.BANNER}
+                unitId={Admob_Ids.banner}
+                requestOptions={{
+                  requestNonPersonalizedAdsOnly: true,
+                }}
+                onAdFailedToLoad={err => {
+                  console.log(err, 'Banner Ad Error...');
+                  setAdError(true);
+                }}
+              />
+            </View>
+          )}
+
           <SwipeableFlatList
             contentContainerStyle={{ paddingVertical: 10 }}
             showsVerticalScrollIndicator={false}

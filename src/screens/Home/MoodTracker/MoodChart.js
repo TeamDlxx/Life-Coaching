@@ -29,6 +29,8 @@ import invokeApi from '../../../functions/invokeAPI';
 
 import { VictoryChart, VictoryTheme, VictoryLine, VictoryScatter, VictoryAxis } from "victory-native";
 
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import { Admob_Ids } from '../../../Utilities/AdmobIds';
 
 /// Emojis
 import Happy from "../../../Assets/emojy/smile.gif"
@@ -48,6 +50,7 @@ const MoodsJournal = props => {
   const { Token, } = useContext(Context);
   const [isLoading, setisLoading] = useState(false);
   const [isRefreshing, setisRefreshing] = useState(false);
+  const [adError, setAdError] = useState(false);
 
 
   const [currentWeek, setCurrentWeek] = useState({
@@ -609,6 +612,27 @@ const MoodsJournal = props => {
                 style={FAB_style.image}
               />
             </Pressable>
+
+            {adError == false && (
+              <View
+                style={{
+                  width: '100%',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <BannerAd
+                  size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+                  unitId={Admob_Ids.banner}
+                  requestOptions={{
+                    requestNonPersonalizedAdsOnly: true,
+                  }}
+                  onAdFailedToLoad={err => {
+                    console.log(err, 'Banner Ad Error...');
+                    setAdError(true);
+                  }}
+                />
+              </View>
+            )}
           </>
           : <Loader enable={isLoading} />
         }

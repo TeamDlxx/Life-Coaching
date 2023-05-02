@@ -24,7 +24,7 @@ import NotificationConfig from '../../Components/NotificationConfig';
 import { screens } from '../../Navigation/Screens';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { mainStyles, _styleTrackPlayer, FAB_style } from '../../Utilities/styles';
-import TrackPlayer, { State } from 'react-native-track-player';
+import TrackPlayer, { State, Event, usePlaybackState } from 'react-native-track-player';
 import ProgressBar from '../../Components/ProgreeBar';
 import Colors from '../../Utilities/Colors';
 import { font } from '../../Utilities/font';
@@ -77,6 +77,9 @@ import pauseTrack from '../../Assets/TrackPlayer/pauseTrack.png';
 import playTrack from '../../Assets/TrackPlayer/playTrack.png';
 import CustomBellIcon from '../../Components/CustomBellIcon';
 
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import { Admob_Ids } from '../../Utilities/AdmobIds';
+
 let todayMeditation;
 
 const HomeScreen = (props) => {
@@ -90,6 +93,8 @@ const HomeScreen = (props) => {
     const [isSharing, setIsSharing] = useState(null);
     const [isModalVisible, setModalVisibility] = useState(false);
 
+    const [adError, setAdError] = useState(false);
+
     let meditationOfTheDay = dashboardData.meditationOfTheDay;
     let quoteOfTheDay = dashboardData.quoteOfTheDay;
     let habitStats = dashboardData.habitStats;
@@ -97,9 +102,9 @@ const HomeScreen = (props) => {
 
 
     useEffect(() => {
-        messaging().getToken().then((token) => {
-            console.log(token , "device token....")
-         });
+        // messaging().getToken().then((token) => {
+        //     console.log(token , "device token....")
+        //  });
         if (Token) {
             dashBoardApi();
         } else {
@@ -120,34 +125,47 @@ const HomeScreen = (props) => {
             if (Token) {
                 getUserDetail();
             }
+
             if (todayMeditation != undefined) {
-                console.log(todayMeditation, "Today's Meditation......")
-                LoadtheTrack();
+                LoadtheTrackOnFocus();
             }
         });
-        return unsubscribe;
+        return () => {
+            unsubscribe;
+        }
     }, [Token, props.navigation, todayMeditation]);
 
+
     useEffect(() => {
+        console.log(State, "Track player state...")
+
         TrackPlayer.addEventListener('playback-state', async ({ state }) => {
-            console.log('state: ' + state);
+            console.log('playback-state: ' + state);
 
             if (state == 'playing' || state == 2) {
-                console.log("already playing....")
+                console.log("playing...")
                 setPlayIcon(pauseTrack);
             }
+
             if (state == 'paused' || state == 3) {
-                console.log("pausd.......")
+                console.log("paused...")
                 setPlayIcon(playTrack);
             }
+
             if (state == 'stopped' || state == 4) {
-                console.log("stopped........")
+                console.log("stopped...")
                 setPlayIcon(playTrack);
             }
         });
 
         TrackPlayer.addEventListener('remote-play', async ({ state }) => {
-            console.log('state: ' + state);
+            console.log('remote-play-state: ' + state);
+            setPlayIcon(pauseTrack);
+        });
+
+        TrackPlayer.addEventListener('remote-pause', () => {
+            console.log('RemotePause');
+            setPlayIcon(playTrack);
         });
 
         analytics().logEvent(props?.route?.name);
@@ -155,6 +173,7 @@ const HomeScreen = (props) => {
             TrackPlayer.reset()
         };
     }, []);
+
 
     async function checkNotificationPermission() {
         const authorizationStatus = await messaging().requestPermission();
@@ -319,6 +338,30 @@ const HomeScreen = (props) => {
             item_name: todayMeditation?.name,
         });
 
+    };
+
+    const LoadtheTrackOnFocus = async () => {
+        await TrackPlayer.add({
+            id: todayMeditation?._id,
+            url: params?.from == 'down' ? todayMeditation?.mp3 : fileURL + todayMeditation?.audio,
+            title: todayMeditation?.name,
+            artist: todayMeditation?.category_id[0]?.name,
+            album: '',
+            genre: '',
+            artwork:
+                params?.from == 'down'
+                    ? todayMeditation?.images?.small
+                    : fileURL + todayMeditation?.images?.small,
+            duration: Math.ceil(todayMeditation?.duration),
+        });
+
+        if (await TrackPlayer.getState() == State.Playing) {
+            TrackPlayer.pause();
+            setPlayIcon(playIcon)
+        }
+        else if (await TrackPlayer.getState() == State.Paused) {
+            TrackPlayer.play();
+        }
     };
 
 
@@ -795,6 +838,27 @@ const HomeScreen = (props) => {
                     </View>
                 </Animatable.View>
 
+                {adError == false && (
+                    <View
+                        style={{
+                            width: '100%',
+                            alignItems: 'center',
+                            marginBottom: 5,
+                            justifyContent: 'center',
+                        }}>
+                        <BannerAd
+                            size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+                            unitId={Admob_Ids.banner}
+                            requestOptions={{
+                                requestNonPersonalizedAdsOnly: true,
+                            }}
+                            onAdFailedToLoad={err => {
+                                console.log(err, 'Banner Ad Error...');
+                                setAdError(true);
+                            }}
+                        />
+                    </View>
+                )}
 
                 <Animatable.View
                     useNativeDriver
@@ -912,7 +976,7 @@ const HomeScreen = (props) => {
                                                 isComingFrom: "dashBoard",
                                                 updateNote,
                                             })}
-                                            style={[home_styles.note, {backgroundColor: notes[0].color.light, borderColor: notes[0].color.dark}]}>
+                                            style={[home_styles.note, { backgroundColor: notes[0].color.light, borderColor: notes[0].color.dark }]}>
                                             <View>
                                                 <Image
                                                     source={ic_notes} style={{ height: 20, width: 20, tintColor: notes[0].color.dark }}
@@ -939,7 +1003,7 @@ const HomeScreen = (props) => {
                                                 isComingFrom: "dashBoard",
                                                 updateNote,
                                             })}
-                                            style={[home_styles.note,{backgroundColor: notes[1].color.light , borderColor: notes[1].color.dark}]}>
+                                            style={[home_styles.note, { backgroundColor: notes[1].color.light, borderColor: notes[1].color.dark }]}>
                                             <View>
                                                 <Image
                                                     source={ic_notes} style={{ height: 20, width: 20, tintColor: notes[1].color.dark }}

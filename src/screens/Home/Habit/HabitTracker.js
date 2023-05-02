@@ -662,12 +662,9 @@ const HabitTracker = props => {
           <View
             style={{
               width: '100%',
-              height: 100,
               alignItems: 'center',
-              paddingVertical: 15,
-              // backgroundColor:'pink',
               justifyContent: 'center',
-              marginTop: -15,
+              marginBottom: 15,
             }}>
             <BannerAd
               size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}

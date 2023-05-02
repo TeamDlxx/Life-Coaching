@@ -30,6 +30,8 @@ import invokeApi from '../../../functions/invokeAPI';
 import analytics from '@react-native-firebase/analytics';
 import LoginAlert from '../../../Components/LoginAlert';
 
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import { Admob_Ids } from '../../../Utilities/AdmobIds';
 const screen_size = Dimensions.get('window');
 //icons
 
@@ -54,6 +56,7 @@ let endDate = '';
 let selectedColors = [];
 
 const List = props => {
+
   const { navigation } = props;
   const { Token, dashboardData, setDashBoardData, notesList, setNotesList } = useContext(Context);
   const searchTextRef = useRef();
@@ -62,6 +65,8 @@ const List = props => {
   const [isLoading, setisLoading] = useState(false);
   const [isLoadingMore, setisLoadingMore] = useState(false);
   const [searchText, setSearchText] = useState('');
+
+  const [adError, setAdError] = useState(false);
 
   const onNoteEditorScreen = () => {
     if (Token) {
@@ -664,6 +669,27 @@ const List = props => {
                 style={FAB_style.image}
               />
             </Pressable>
+          )}
+
+          {notesList.length != 0 && adError == false && (
+            <View
+              style={{
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <BannerAd
+                size={BannerAdSize.BANNER}
+                unitId={Admob_Ids.banner}
+                requestOptions={{
+                  requestNonPersonalizedAdsOnly: true,
+                }}
+                onAdFailedToLoad={err => {
+                  console.log(err, 'Banner Ad Error...');
+                  setAdError(true);
+                }}
+              />
+            </View>
           )}
         </View>
         <Loader enable={isLoading} />

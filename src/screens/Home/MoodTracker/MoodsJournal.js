@@ -19,9 +19,6 @@ import { screens } from '../../../Navigation/Screens';
 import LoginAlert from '../../../Components/LoginAlert';
 import analytics from '@react-native-firebase/analytics';
 
-import { BannerAd, BannerAdSize, useRewardedAd } from 'react-native-google-mobile-ads';
-import { Admob_Ids } from '../../../Utilities/AdmobIds';
-
 // For API's calling
 import { useContext } from 'react';
 import Context from '../../../Context';
@@ -37,9 +34,6 @@ const MoodsJournal = props => {
   const daysFlatList = React.useRef();
   const [daysList, setDays] = useState([]);
   const [today, setToday] = useState(moment().format('YYYY-MM-DD'));
-
-  const [adError, setAdError] = useState(false);
-
 
   useEffect(() => {
     daysInWeek();
@@ -232,30 +226,7 @@ const MoodsJournal = props => {
           {/* <View style={{ backgroundColor: Colors.lightPrimary, height: 1, width: "100%", marginTop: 10 }} /> */}
 
         </View>
-        {/* {adError == false && (
-          <View
-            style={{
-              width: '100%',
-              height: 100,
-              alignItems: 'center',
-              paddingVertical: 15,
-              // backgroundColor:'pink',
-              justifyContent: 'center',
-              marginTop: -15,
-            }}>
-            <BannerAd
-              size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-              unitId={Admob_Ids.banner}
-              requestOptions={{
-                requestNonPersonalizedAdsOnly: true,
-              }}
-              onAdFailedToLoad={err => {
-                console.log(err, 'Banner Ad Error...');
-                setAdError(true);
-              }}
-            />
-          </View>
-        )} */}
+
       </>
     );
   };

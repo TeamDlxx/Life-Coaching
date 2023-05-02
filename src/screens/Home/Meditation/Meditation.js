@@ -50,7 +50,7 @@ const rewarded = RewardedAd.createForAdRequest(Admob_Ids.rewarded, {
 
 
 const Meditation = props => {
-  const adRewardedId = TestIds.GAM_REWARDED_INTERSTITIAL;
+  const adRewardedId = Admob_Ids.rewarded;
 
   const rewardedAdRef = useRef(RewardedAd.createForAdRequest(adRewardedId));
 
@@ -727,12 +727,9 @@ const Meditation = props => {
           <View
             style={{
               width: '100%',
-              // height: 100,
               alignItems: 'center',
               paddingVertical: 5,
-              // backgroundColor:'pink',
               justifyContent: 'center',
-              marginBottom: -15,
             }}>
             <BannerAd
               size={BannerAdSize.BANNER}

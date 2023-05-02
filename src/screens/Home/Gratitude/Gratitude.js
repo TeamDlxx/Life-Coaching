@@ -25,6 +25,9 @@ import EmptyView from '../../../Components/EmptyView';
 import invokeApi from '../../../functions/invokeAPI';
 import Loader from '../../../Components/Loader';
 
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import { Admob_Ids } from '../../../Utilities/AdmobIds';
+
 
 
 const Gratitude = props => {
@@ -34,6 +37,8 @@ const Gratitude = props => {
   const daysFlatList = React.useRef();
   const [today, setToday] = useState(moment().format('YYYY-MM-DD'));
   const [isLoading, setisLoading] = useState(false);
+
+  const [adError, setAdError] = useState(false);
 
 
   useEffect(() => {
@@ -386,6 +391,26 @@ const Gratitude = props => {
                 style={FAB_style.image}
               />
             </Pressable>
+            {adError == false && (
+            <View
+              style={{
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <BannerAd
+                size={BannerAdSize.BANNER}
+                unitId={Admob_Ids.banner}
+                requestOptions={{
+                  requestNonPersonalizedAdsOnly: true,
+                }}
+                onAdFailedToLoad={err => {
+                  console.log(err, 'Banner Ad Error...');
+                  setAdError(true);
+                }}
+              />
+            </View>
+          )}
           </> : <Loader enable={isLoading} />
         }
 
