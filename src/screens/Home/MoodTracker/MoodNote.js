@@ -48,6 +48,7 @@ const MoodNote = props => {
                 'Unsaved Changes',
                 'Are you sure you want to discard changes?',
                 [{ text: 'No' }, { text: 'Yes', onPress: () => props.navigation.goBack() }],
+                {cancelable: true},
             );
         }
         else if (oldData == undefined && (note.title != '' ||
@@ -56,6 +57,7 @@ const MoodNote = props => {
                 'Unsaved Changes',
                 'Are you sure you want to discard changes?',
                 [{ text: 'No' }, { text: 'Yes', onPress: () => props.navigation.goBack() }],
+                {cancelable: true},
             );
         }
         else {

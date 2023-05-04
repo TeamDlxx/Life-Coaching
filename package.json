@@ -46,7 +46,7 @@
     "react-native-app-intro-slider": "^4.0.4",
     "react-native-audio-recorder-player": "^3.5.1",
     "react-native-autoheight-webview": "^1.6.5",
-    "react-native-blob-util": "^0.16.4",
+    "react-native-blob-util": "^0.17.3",
     "react-native-calendars": "^1.1289.0",
     "react-native-chart-kit": "^6.12.0",
     "react-native-collapsible": "^1.6.0",

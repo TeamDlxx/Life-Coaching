@@ -42,6 +42,7 @@ import Colors from '../../Utilities/Colors';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import { LoginButton, AccessToken } from 'react-native-fbsdk';
 import { LoginManager } from "react-native-fbsdk";
+import SplashScreen from 'react-native-splash-screen';
 
 
 
@@ -54,6 +55,11 @@ const Login = props => {
   const [password, setPassword] = useState('');
   const [isLoading, setisLoading] = useState(false);
 
+
+  React.useEffect(() => {
+    console.log('props', props);
+    SplashScreen.hide();
+  }, []);
   const onSignUpScreen = () => {
     props.navigation.navigate(screens.signup, {
       from: params?.from,
@@ -398,30 +404,30 @@ const Login = props => {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps={'handled'}
         style={{ flex: 1 }}>
-
-        <Pressable
-          onPress={() => props.navigation.goBack()}
-          style={{
-            height: 40,
-            width: 40,
-            borderRadius: 25,
-            marginTop:
-              Platform.OS == 'android'
-                ? 50
-                : isIphoneX()
+        {props?.route?.params?.logout == false &&
+          <Pressable
+            onPress={() => props.navigation.goBack()}
+            style={{
+              height: 40,
+              width: 40,
+              borderRadius: 25,
+              marginTop:
+                Platform.OS == 'android'
                   ? 50
-                  : 50 - getStatusBarHeight(),
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'absolute',
-            left: 10,
-            zIndex: 999,
-          }}>
-          <Image
-            source={require('../../Assets/Icons/back.png')}
-            style={{ height: 25, width: 25, tintColor: Colors.black }}
-          />
-        </Pressable>
+                  : isIphoneX()
+                    ? 50
+                    : 50 - getStatusBarHeight(),
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'absolute',
+              left: 10,
+              zIndex: 999,
+            }}>
+            <Image
+              source={require('../../Assets/Icons/back.png')}
+              style={{ height: 25, width: 25, tintColor: Colors.black }}
+            />
+          </Pressable>}
 
         <View style={{ marginTop: 35, paddingHorizontal: 20, }}>
           <View style={loginStyles.headerView}>
@@ -521,6 +527,7 @@ const Login = props => {
           <View
             style={{
               marginTop: 30,
+              marginBottom: 10,
               alignItems: 'center',
             }}>
             <Text style={{ color: '#313131', fontFamily: font.regular }}>

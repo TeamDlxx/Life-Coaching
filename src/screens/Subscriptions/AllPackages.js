@@ -233,28 +233,28 @@ const AllPackages = props => {
         switch (purchase.productId) {
 
           case 'lifetime.purchase':
-            Alert.alert("All in one lifetime purchase successfully restored.")
+            Alert.alert("All in one lifetime purchase successfully restored.",'',[{text:"Ok"}],{ cancelable: true })
             await CheckPurchases()
             break
 
           case 'all_in_one.monthly.subscription':
-            Alert.alert("All in one monthly subscription successfully restored.")
+            Alert.alert("All in one monthly subscription successfully restored.",'',[{text:"Ok"}],{ cancelable: true })
             await CheckPurchases()
             break
 
           case 'habits.monthly.subscription':
-            Alert.alert("Habit tracker monthly subscription successfully restored.")
+            Alert.alert("Habit tracker monthly subscription successfully restored.",'',[{text:"Ok"}],{ cancelable: true })
             await CheckPurchases()
             break
 
           case 'meditation.monthly.subscription':
-            Alert.alert("Meditations  monthly subscription successfully restored.")
+            Alert.alert("Meditations  monthly subscription successfully restored.",'',[{text:"Ok"}],{ cancelable: true })
             await CheckPurchases()
             break
 
           default:
-            Alert.alert("Nothing to restore!");
-            break
+            ("Nothing to restore!",'',[{text:"Ok"}],{ cancelable: true });
+            breakF
 
         }
 
@@ -499,7 +499,7 @@ const AllPackages = props => {
         {(!loading || pkgList.length != 0) && (
           <>
             <View style={{ flex: 1 }}>
-              <View>
+              <View style={{flex:1}}>
                 <FlatList
                   keyExtractor={(item, index) => {
                     return item._id;
@@ -509,12 +509,15 @@ const AllPackages = props => {
                   renderItem={pkgView}
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={{ paddingBottom: 20 }}
+                  ListFooterComponent={ <TouchableOpacity onPress={restorePurchase} style={{ alignSelf: "center" , marginTop: 20, justifyContent:"flex-end"}}>
+                  <Text style={{ textDecorationLine: "underline", fontFamily: "Pangram-Medium" }}>Restore Purchase</Text>
+                </TouchableOpacity>}
                 />
               </View>
 
-              <TouchableOpacity onPress={restorePurchase} style={{ alignSelf: "center" }}>
+              {/* <TouchableOpacity onPress={restorePurchase} style={{ alignSelf: "center" , marginBottom: 10}}>
                 <Text style={{ textDecorationLine: "underline", fontFamily: "Pangram-Medium" }}>Restore Purchase</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
             </View>
 

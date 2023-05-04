@@ -28,7 +28,7 @@ export default function Landing({navigation}, props) {
   }, []);
 
   const onLoginScreen = () => {
-    navigation.navigate(screens.Login);
+    navigation.navigate(screens.Login, {logout: false});
   };
 
   const onGuestMode = async () => {

@@ -50,7 +50,7 @@ const Signup = props => {
   const [isLoading, setisLoading] = useState(false);
 
   const onLoginScreen = () => {
-    props.navigation.navigate(screens.Login);
+    props.navigation.navigate(screens.Login, { logout: false });
   };
 
   const GuestLogin = async () => {

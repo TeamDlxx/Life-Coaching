@@ -16,6 +16,7 @@ import {
     Platform,
     ToastAndroid,
     ActivityIndicator,
+    ImageBackground,
 } from 'react-native';
 import Modal from 'react-native-modal';
 import * as Animatable from 'react-native-animatable';
@@ -24,7 +25,7 @@ import NotificationConfig from '../../Components/NotificationConfig';
 import { screens } from '../../Navigation/Screens';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { mainStyles, _styleTrackPlayer, FAB_style } from '../../Utilities/styles';
-import TrackPlayer, { State, Event, usePlaybackState } from 'react-native-track-player';
+import TrackPlayer, { State } from 'react-native-track-player';
 import ProgressBar from '../../Components/ProgreeBar';
 import Colors from '../../Utilities/Colors';
 import { font } from '../../Utilities/font';
@@ -80,11 +81,16 @@ import CustomBellIcon from '../../Components/CustomBellIcon';
 import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 import { Admob_Ids } from '../../Utilities/AdmobIds';
 
+import ReactNativeBlobUtil, { ReactNativeBlobUtilFile } from 'react-native-blob-util';
+import Loader from '../../Components/Loader';
+
+
 let todayMeditation;
 
 const HomeScreen = (props) => {
     const { Token, downloadQuote, dashboardData, setDashBoardData } = useContext(Context);
     const { params } = props?.route;
+    const { navigation } = props;
     const [loading, setisLoading] = useState(true);
     const [user, setUser] = useState(null);
     const [playIcon, setPlayIcon] = useState(playTrack);
@@ -110,6 +116,7 @@ const HomeScreen = (props) => {
         } else {
             guestDashBoardApi();
         }
+        cleanCache();
         checkNotificationPermission();
         NotificationConfig(props);
         analytics().logEvent(props?.route?.name);
@@ -174,6 +181,16 @@ const HomeScreen = (props) => {
         };
     }, []);
 
+    const cleanCache = () => {
+        const cacheclean = ReactNativeBlobUtil.fs.dirs.CacheDir
+        ReactNativeBlobUtil.fs.unlink(cacheclean)
+            .then(resp => {
+                // console.log(resp,'ReactNativeBlobUtil then')
+            })
+            .catch(err => {
+                // console.log(err,'ReactNativeBlobUtil err')
+            });
+    }
 
     async function checkNotificationPermission() {
         const authorizationStatus = await messaging().requestPermission();
@@ -800,28 +817,37 @@ const HomeScreen = (props) => {
                             </>
                             :
                             <>
-                                <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }} >
-                                    <Image source={empty_habits} style={{ height: 130, width: 130, resizeMode: "contain", marginTop: 20 }} />
-                                    <Text
-                                        style={{
-                                            fontFamily: font.bold,
-                                            fontSize: 15,
-                                            includeFontPadding: false,
-                                            color: Colors.black,
-                                            marginTop: 15,
-                                        }}>
-                                        No Habits Yet
-                                    </Text>
-                                    <Text style={{
-                                        fontFamily: font.medium,
-                                        color: Colors.text,
-                                        fontSize: 13,
-                                        textAlign: 'center',
-                                        marginTop: 8,
-                                        paddingHorizontal: 30,
-                                    }}>{"Start by creating a new habit to improve your daily routine!"}
-                                    </Text>
-                                    <Pressable onPress={() => props.navigation.navigate(screens.habitTracker)}
+                                <View style={{
+                                    marginTop: 12,
+                                    flexDirection: 'row'
+                                }}>
+                                    <View>
+                                        <Image source={empty_habits} style={{ height: 80, width: 80, resizeMode: "contain", }} />
+                                    </View>
+
+                                    <View style={{ marginLeft: 10, flex: 1, marginTop: 3 }}>
+                                        <Text
+                                            style={{
+                                                fontFamily: font.bold,
+                                                fontSize: 15,
+                                                includeFontPadding: false,
+                                                color: Colors.black,
+                                            }}>
+                                            No Habits Yet
+                                        </Text>
+                                        <Text style={{
+                                            fontFamily: font.medium,
+                                            color: Colors.text,
+                                            fontSize: 13,
+                                            marginTop: 5,
+                                        }}>{"Start by creating a new habit to improve your daily routine!"}
+                                        </Text>
+                                    </View>
+                                </View>
+                                <Pressable
+                                    style={{ alignItems: "flex-end" }}
+                                    onPress={() => props.navigation.navigate(screens.habitTracker)}>
+                                    <View
                                         style={{
                                             backgroundColor: Colors.primary,
                                             height: 33,
@@ -829,11 +855,10 @@ const HomeScreen = (props) => {
                                             alignItems: "center",
                                             justifyContent: "center",
                                             paddingHorizontal: 10,
-                                            marginTop: 15
                                         }}>
                                         <Text style={{ color: "white", fontWeight: "bold", fontSize: 13, }}>Change My Habit{'   '}</Text>
-                                    </Pressable>
-                                </View>
+                                    </View>
+                                </Pressable>
                             </>}
                     </View>
                 </Animatable.View>
@@ -847,7 +872,7 @@ const HomeScreen = (props) => {
                             justifyContent: 'center',
                         }}>
                         <BannerAd
-                            size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+                            size={BannerAdSize.BANNER}
                             unitId={Admob_Ids.banner}
                             requestOptions={{
                                 requestNonPersonalizedAdsOnly: true,
@@ -864,80 +889,79 @@ const HomeScreen = (props) => {
                     useNativeDriver
                     animation={'bounceInDown'}
                     delay={2 * 250}>
-                    <View
-                        style={home_styles.customCardView}>
-                        <Text style={home_styles.heading}>Meditation Of The Day </Text>
 
-                        <View style={{ marginTop: 10, }}>
-                            <View
-                                style={{
-                                    marginTop: 5,
-                                    alignItems: 'center',
-                                    flexDirection: 'row',
-                                    marginHorizontal: 5,
-                                }}>
-                                <Pressable
-                                    onPress={changeStatus}
+
+                    <CustomImage
+                        source={{ uri: fileURL + meditationOfTheDay?.images?.medium }}
+                        style={[home_styles.customCardView, { height: 300, justifyContent: 'flex-end' }]}
+                        indicatorProps={{
+                            size: 30,
+                            color: Colors.primary,
+                        }}
+                    >
+                        <View style={{
+                            borderRadius: 15,
+                            padding: 8,
+                            overflow: "hidden"
+                        }}>
+                            <View style={{
+                                position: "absolute",
+                                right: 0, left: 0, top: 0, bottom: 0,
+                                backgroundColor: "white", opacity: 0.65
+                            }}></View>
+
+                            <Text style={home_styles.heading}>Meditation Of The Day </Text>
+
+                            <View style={{ marginTop: 8, marginLeft: 6, }}>
+                                <Text
                                     style={{
-                                        height: 70,
-                                        width: 70,
-                                        borderRadius: 10,
-                                        overflow: 'hidden',
-                                        borderWidth: 1,
-                                        borderColor: Colors.gray02,
+                                        fontFamily: font.bold,
+                                        fontSize: 14,
+                                        includeFontPadding: false,
+                                        color: Colors.black,
                                     }}>
-                                    <CustomImage
-                                        source={{ uri: fileURL + meditationOfTheDay?.images?.medium }}
-                                        style={{ height: 70, width: 70 }}
-                                        indicatorProps={{ color: Colors.primary }}
-                                    />
-                                    <View
+                                    {meditationOfTheDay?.name}
+                                </Text>
+
+                                <View
+                                    style={{
+                                        marginTop: 3,
+                                    }}>
+                                    <Text
                                         style={{
-                                            position: 'absolute',
-                                            height: 20,
-                                            width: 20,
+                                            fontFamily: font.medium,
+                                            color: Colors.black,
+                                            fontSize: 12,
+                                        }}>
+                                        {meditationOfTheDay?.description}
+                                    </Text>
+                                </View>
+
+                                <View style={{
+                                    marginTop: 10,
+                                    flexDirection: "row",
+                                    justifyContent: "space-evenly",
+                                    alignItems: "center"
+                                }}>
+                                    <Pressable
+                                        onPress={changeStatus}
+                                        style={{
+                                            height: 30,
+                                            width: 30,
                                             backgroundColor: Colors.white,
                                             justifyContent: 'center',
                                             alignItems: 'center',
-                                            borderRadius: 999,
-                                            bottom: 5,
-                                            right: 5,
+                                            borderRadius: 30 / 2,
+
                                         }}>
                                         <Image
-                                            style={{ height: 13.5, width: 13.5, tintColor: Colors.primary }}
+                                            style={{ height: 15, width: 15, tintColor: Colors.primary }}
                                             source={playIcon}
                                         />
-                                    </View>
+                                    </Pressable>
 
-                                </Pressable>
 
-                                <View style={{ marginLeft: 15, flex: 1 }}>
-                                    <Text
-                                        style={{
-                                            fontFamily: font.bold,
-                                            fontSize: 14,
-                                            includeFontPadding: false,
-                                            color: Colors.black,
-                                        }}>
-                                        {meditationOfTheDay?.name}
-                                    </Text>
-
-                                    <View
-                                        style={{
-                                            marginTop: 3,
-                                        }}>
-                                        <Text
-                                            numberOfLines={2}
-                                            style={{
-                                                fontFamily: font.medium,
-                                                color: Colors.text,
-                                                fontSize: 12,
-                                            }}>
-                                            {meditationOfTheDay?.description}
-                                        </Text>
-                                    </View>
-
-                                    <View style={{ marginTop: 5, }}>
+                                    <View style={{ flex: 1, marginLeft: 8, }}>
                                         <ProgressBar
                                             resetPlayer={resetTheTrack}
                                             // moveTo={val => {
@@ -945,16 +969,19 @@ const HomeScreen = (props) => {
                                             // }}
                                             moveTo={moveTo}
                                             time={meditationOfTheDay?.duration}
+                                            txtStyle={{ color: Colors.black }}
                                         />
                                     </View>
                                 </View>
-                            </View>
-                        </View>
 
-                        <View style={{ alignItems: "flex-end", marginTop: 10, }}>
-                            <CustomButton onPress={() => props.navigation.navigate(screens.meditation)} />
+                                <View style={{ alignItems: "flex-end", marginTop: 8, }}>
+                                    <CustomButton txtStyle={{ color: "black" }} onPress={() => props.navigation.navigate(screens.meditation)} />
+                                </View>
+                            </View>
+
+
                         </View>
-                    </View>
+                    </CustomImage>
                 </Animatable.View>
 
 
@@ -971,7 +998,7 @@ const HomeScreen = (props) => {
                                 <View style={{ marginTop: 10, }}>
                                     {notes[0] &&
                                         <Pressable
-                                            onPress={() => props.navigation.navigate(screens.notesDetail, {
+                                            onPress={() => navigation.navigate(screens.notesDetail, {
                                                 note: notes[0],
                                                 isComingFrom: "dashBoard",
                                                 updateNote,
@@ -998,7 +1025,7 @@ const HomeScreen = (props) => {
                                     }
                                     {notes[1] &&
                                         <Pressable
-                                            onPress={() => props.navigation.navigate(screens.notesDetail, {
+                                            onPress={() => navigation.navigate(screens.notesDetail, {
                                                 note: notes[1],
                                                 isComingFrom: "dashBoard",
                                                 updateNote,
@@ -1031,44 +1058,49 @@ const HomeScreen = (props) => {
                             </>
                             :
                             <>
-                                <View style={{ justifyContent: "center", alignItems: "center", flex: 1, marginTop: 20, }} >
-                                    <Image source={empty_notes} style={{ height: 80, width: 80 }} />
-                                    <Text
-                                        style={{
-                                            fontFamily: font.bold,
-                                            fontSize: 15,
-                                            includeFontPadding: false,
-                                            color: Colors.black,
-                                            marginTop: 10,
-                                        }}>
-                                        No Notes Yet
-                                    </Text>
-                                    <Text style={{
-                                        fontFamily: font.medium,
-                                        color: Colors.text,
-                                        fontSize: 13,
-                                        textAlign: 'center',
-                                        marginTop: 8,
-                                        paddingHorizontal: 30,
-                                    }}>{"Start writing down your thoughts and ideas to get organized!"}
-                                    </Text>
+                                <View style={{
+                                    marginTop: 13,
+                                    flexDirection: 'row',
 
-                                    <View style={{ flex: 0.5, justifyContent: 'center' }}>
-                                        <Pressable onPress={() => props.navigation.navigate(screens.notesList)}
-                                            style={{
-                                                backgroundColor: Colors.primary,
-                                                height: 33,
-                                                borderRadius: 10,
-                                                alignItems: "center",
-                                                justifyContent: "center",
-                                                paddingHorizontal: 15,
-                                                marginTop: 15
-                                            }}>
-                                            <Text style={{ color: "white", fontWeight: "bold", fontSize: 13, }}>Add Notes{'  '}</Text>
-                                        </Pressable>
+                                }} >
+                                    <View>
+                                        <Image source={empty_notes} style={{ height: 80, width: 80, }} />
                                     </View>
 
+                                    <View style={{ marginLeft: 12, flex: 1, marginTop: 3 }}>
+                                        <Text
+                                            style={{
+                                                fontFamily: font.bold,
+                                                fontSize: 15,
+                                                includeFontPadding: false,
+                                                color: Colors.black,
+                                            }}>
+                                            No Notes Yet
+                                        </Text>
+                                        <Text style={{
+                                            fontFamily: font.medium,
+                                            color: Colors.text,
+                                            fontSize: 13,
+                                            marginTop: 5,
+                                        }}>{"Start writing down your thoughts and ideas to get organized!"}
+                                        </Text>
+                                    </View>
                                 </View>
+
+                                <Pressable style={{ alignItems: "flex-end" }}
+                                    onPress={() => props.navigation.navigate(screens.notesList)}>
+                                    <View
+                                        style={{
+                                            backgroundColor: Colors.primary,
+                                            height: 33,
+                                            borderRadius: 10,
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            paddingHorizontal: 10,
+                                        }}>
+                                        <Text style={{ color: "white", fontWeight: "bold", fontSize: 13, }}>Add Notes{'  '}</Text>
+                                    </View>
+                                </Pressable>
                             </>
                         }
                     </View>
@@ -1083,30 +1115,23 @@ const HomeScreen = (props) => {
                         style={home_styles.customCardView}>
                         <Text style={home_styles.heading}>Quote Of The Day </Text>
 
-                        <Pressable
-                            onPress={() => props.navigation.navigate(screens.qouteList, {
-                                _id: quoteOfTheDay?._id,
-                            })}
-                        // onPress={() => showImageModal(quoteOfTheDay?.images?.large)}
-                        >
-                            <View style={{
-                                marginTop: 12,
-                                overflow: "hidden",
-                                borderRadius: 12, borderColor: Colors.gray02,
-                                borderWidth: 1,
-                            }}>
-                                <CustomImage
-                                    source={{ uri: fileURL + quoteOfTheDay?.images?.large }}
-                                    style={{
-                                        width: '100%',
-                                        aspectRatio:
-                                            !!quoteOfTheDay?.image_height != 0
-                                                ? quoteOfTheDay?.image_width / quoteOfTheDay?.image_height
-                                                : 1,
-                                    }}
-                                />
-                            </View>
-                        </Pressable>
+                        <View style={{
+                            marginTop: 12,
+                            overflow: "hidden",
+                            borderRadius: 12, borderColor: Colors.gray02,
+                            borderWidth: 1,
+                        }}>
+                            <CustomImage
+                                source={{ uri: fileURL + quoteOfTheDay?.images?.large }}
+                                style={{
+                                    width: '100%',
+                                    aspectRatio:
+                                        !!quoteOfTheDay?.image_height != 0
+                                            ? quoteOfTheDay?.image_width / quoteOfTheDay?.image_height
+                                            : 1,
+                                }}
+                            />
+                        </View>
 
                         {!!quoteOfTheDay?.description &&
                             <TouchableHighlight
@@ -1235,7 +1260,7 @@ const HomeScreen = (props) => {
             />
 
 
-        </SafeAreaView>
+        </SafeAreaView >
     )
 }
 export default HomeScreen;
@@ -1259,7 +1284,7 @@ const home_styles = StyleSheet.create({
         marginBottom: 10,
         borderRadius: 20,
         marginHorizontal: 15,
-        padding: 22
+        padding: 15
     },
 
     statItemtext1: {
@@ -1300,7 +1325,7 @@ const home_styles = StyleSheet.create({
         paddingLeft: 10,
         marginHorizontal: 5,
         // backgroundColor: Colors.lightPrimary2,
-        borderWidth: 1,
+        borderWidth: 0.5,
         borderRadius: 15,
         alignItems: 'center',
         flexDirection: 'row',

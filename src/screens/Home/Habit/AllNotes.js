@@ -13,15 +13,15 @@ import {
   RefreshControl,
   FlatList,
 } from 'react-native';
-import React, {useEffect, useState, useRef} from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Header from '../../../Components/Header';
-import Colors, {Bcolors} from '../../../Utilities/Colors';
-import {mainStyles, createHabit_styles} from '../../../Utilities/styles';
-import {CustomMultilineTextInput} from '../../../Components/CustomTextInput';
+import Colors, { Bcolors } from '../../../Utilities/Colors';
+import { mainStyles, createHabit_styles } from '../../../Utilities/styles';
+import { CustomMultilineTextInput } from '../../../Components/CustomTextInput';
 import CustomButton from '../../../Components/CustomButton';
-import {font} from '../../../Utilities/font';
-import {screens} from '../../../Navigation/Screens';
-import {Menu, MenuItem, MenuDivider} from 'react-native-material-menu';
+import { font } from '../../../Utilities/font';
+import { screens } from '../../../Navigation/Screens';
+import { Menu, MenuItem, MenuDivider } from 'react-native-material-menu';
 import moment from 'moment';
 import LinearGradient from 'react-native-linear-gradient';
 import Modal from 'react-native-modal';
@@ -29,20 +29,20 @@ import CustomImage from '../../../Components/CustomImage';
 import analytics from '@react-native-firebase/analytics';
 
 // For API's calling
-import {useContext} from 'react';
+import { useContext } from 'react';
 import Context from '../../../Context';
 import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
-import {fileURL} from '../../../Utilities/domains';
+import { fileURL } from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
 import Toast from 'react-native-toast-message';
 
 const screen = Dimensions.get('screen');
 
 const AllNotes = props => {
-  const {Token, habitList, setHabitList} = useContext(Context);
-  const {params} = props.route;
+  const { Token, habitList, setHabitList } = useContext(Context);
+  const { params } = props.route;
   const MenuRef = useRef([]);
   const [isLoading, setisLoading] = useState(false);
   const [habit, setHabitDetail] = useState(null);
@@ -53,7 +53,7 @@ const AllNotes = props => {
     update: false,
   });
 
-  const updateNote = updation => setNote({...note, ...updation});
+  const updateNote = updation => setNote({ ...note, ...updation });
 
   const sorttheListbyDate = list => {
     return list.slice().sort(function (a, b) {
@@ -75,7 +75,9 @@ const AllNotes = props => {
         text: 'Yes',
         onPress: () => api_editNote(obj),
       },
-    ]);
+    ],
+      { cancelable: true },
+    );
   };
 
   const editNote = async (i, item) => {
@@ -95,12 +97,12 @@ const AllNotes = props => {
     return (
       <Modal
         isVisible={note.modalVisible}
-        onBackButtonPress={() => updateNote({modalVisible: false})}
-        onBackdropPress={() => updateNote({modalVisible: false})}
+        onBackButtonPress={() => updateNote({ modalVisible: false })}
+        onBackdropPress={() => updateNote({ modalVisible: false })}
         useNativeDriverForBackdrop={true}
         avoidKeyboard={true}
         hideModalContentWhileAnimating={true}
-        style={{marginHorizontal: 5}}>
+        style={{ marginHorizontal: 5 }}>
         <View
           style={{
             marginTop: 'auto',
@@ -123,11 +125,11 @@ const AllNotes = props => {
               justifyContent: 'center',
             }}>
             <Image
-              style={{height: 70, width: 70}}
+              style={{ height: 70, width: 70 }}
               source={require('../../../Assets/Icons/check.png')}
             />
           </View>
-          <View style={{marginTop: 10}}>
+          <View style={{ marginTop: 10 }}>
             <CustomMultilineTextInput
               lable={note.update == false ? 'Add Note' : 'Edit Note'}
               subLabel={'(Optional)'}
@@ -135,10 +137,10 @@ const AllNotes = props => {
               lableBold
               lableColor={Colors.black}
               value={note.text}
-              onChangeText={text => updateNote({text: text})}
+              onChangeText={text => updateNote({ text: text })}
             />
           </View>
-          <View style={{marginTop: 20}}>
+          <View style={{ marginTop: 20 }}>
             <CustomButton
               height={50}
               onPress={note.update == false ? markCompeleted : btn_saveChnages}
@@ -152,14 +154,14 @@ const AllNotes = props => {
   };
 
   const markCompeleted = () => {
-    let {item} = note;
+    let { item } = note;
     let obj_addNote = {
       note_text: note.text.trim(),
       date: moment(note.item).toISOString(),
     };
     api_addNote(item._id, obj_addNote);
     setisLoading(true);
-    setNote({modalVisible: false, text: '', item: null});
+    setNote({ modalVisible: false, text: '', item: null });
   };
 
   const btn_saveChnages = () => {
@@ -171,7 +173,7 @@ const AllNotes = props => {
     api_editNote(obj);
     setisLoading(true);
     setTimeout(() => {
-      updateNote({text: '', modalVisible: false, item: null});
+      updateNote({ text: '', modalVisible: false, item: null });
     }, 50);
   };
 
@@ -226,17 +228,17 @@ const AllNotes = props => {
         backgroundColor={Colors.background}
       />
       <Header navigation={props.navigation} title={'All Notes'} />
-      <View style={{flex: 1, paddingHorizontal: 10}}>
+      <View style={{ flex: 1, paddingHorizontal: 10 }}>
         {habit != null && (
-          <View style={{flex: 1}}>
+          <View style={{ flex: 1 }}>
             <FlatList
               data={!!habit ? habit.notes.filter(x => x.note_text != '') : []}
-              renderItem={({item, index}) => {
+              renderItem={({ item, index }) => {
                 return (
                   <LinearGradient
                     key={item._id}
-                    start={{x: 0, y: 0}}
-                    end={{x: 1, y: 1}}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
                     locations={[0.0, 0.99]}
                     colors={['#FCE29F', '#FCE29F55']}
                     style={{
@@ -244,8 +246,8 @@ const AllNotes = props => {
                       borderRadius: 10,
                       padding: 10,
                     }}>
-                    <View style={{flexDirection: 'row'}}>
-                      <View style={{flex: 1}}>
+                    <View style={{ flexDirection: 'row' }}>
+                      <View style={{ flex: 1 }}>
                         <Text
                           style={{
                             fontFamily: font.medium,
@@ -284,7 +286,7 @@ const AllNotes = props => {
                           </Pressable>
                         }>
                         <MenuItem onPress={() => editNote(index, item)}>
-                          <Text style={{fontFamily: font.bold}}>Edit</Text>
+                          <Text style={{ fontFamily: font.bold }}>Edit</Text>
                         </MenuItem>
                         <MenuDivider />
                         <MenuItem
@@ -299,7 +301,7 @@ const AllNotes = props => {
                             );
                             MenuRef.current[index].hide();
                           }}>
-                          <Text style={{fontFamily: font.bold}}>Delete</Text>
+                          <Text style={{ fontFamily: font.bold }}>Delete</Text>
                         </MenuItem>
                       </Menu>
                     </View>

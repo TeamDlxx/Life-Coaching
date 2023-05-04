@@ -168,6 +168,7 @@ const GratitudeDetail = props => {
                             [{ text: 'No' }, {
                                 text: 'Yes', onPress: () => api_deleteGratitude()
                             }],
+                            {cancelable: true},
                         );
                     }}>
                     <Text style={{ fontFamily: font.bold }}>Delete</Text>

@@ -48,7 +48,8 @@ export default function NotificationConfig(props) {
           routes: [
             {name: screens.bottomTabs},
             {
-              name: screens.qouteList,
+              // name: screens.qouteList,
+              name: screens.quoteDetail,
               params: {
                 _id: data._id,
               },

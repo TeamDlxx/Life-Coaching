@@ -335,7 +335,7 @@ const HabitDetail = props => {
         text: 'Yes',
         onPress: () => api_editNote(obj),
       },
-    ]);
+    ],{cancelable: true},);
   };
 
   const api_removeNote = async note_id => {
@@ -569,6 +569,7 @@ const HabitDetail = props => {
               'Delete Habit',
               'Are you sure you want to delete this Habit',
               [{ text: 'No' }, { text: 'Yes', onPress: () => api_deleteHabit() }],
+              {cancelable: true},
             );
           }}>
           <Text style={{ fontFamily: font.bold }}>Delete</Text>

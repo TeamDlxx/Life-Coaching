@@ -155,6 +155,7 @@ const AllHabits = props => {
               },
             },
           ],
+          {cancelable: true},
         );
       }
     } else {
@@ -579,7 +580,7 @@ const AllHabits = props => {
         <Loader enable={isLoading} />
         <View style={{ flex: 1 }}>
 
-        {sHabitList.length != 0 && adError == false && (
+        {adError == false && (
             <View
               style={{
                 width: '100%',
@@ -588,7 +589,7 @@ const AllHabits = props => {
                 marginVertical: 5,
               }}>
               <BannerAd
-                size={BannerAdSize.BANNER}
+                size={BannerAdSize.LARGE_BANNER}
                 unitId={Admob_Ids.banner}
                 requestOptions={{
                   requestNonPersonalizedAdsOnly: true,
@@ -625,6 +626,7 @@ const AllHabits = props => {
                         { text: 'No' },
                         { text: 'Yes', onPress: () => api_deleteHabit(item._id) },
                       ],
+                      {cancelable: true},
                     )
                   }
                   style={allHabit_styles.hiddenView}>

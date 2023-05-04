@@ -223,6 +223,7 @@ const NotesDetail = props => {
           onPress: () => api_removeNote(),
         },
       ],
+      {cancelable: true},
     );
   };
 

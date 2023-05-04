@@ -126,6 +126,7 @@ const HabitTracker = props => {
               },
             },
           ],
+          {cancelable: true},
         );
       }
     } else {
@@ -667,7 +668,7 @@ const HabitTracker = props => {
               marginBottom: 15,
             }}>
             <BannerAd
-              size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+              size={BannerAdSize.BANNER}
               unitId={Admob_Ids.banner}
               requestOptions={{
                 requestNonPersonalizedAdsOnly: true,

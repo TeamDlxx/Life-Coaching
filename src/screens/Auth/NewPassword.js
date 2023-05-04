@@ -78,7 +78,7 @@ const NewPassword = props => {
     }
   };
   const onLoginScreen = () => {
-    props.navigation.navigate(screens.Login);
+    props.navigation.navigate(screens.Login,{logout: true});
   };
 
   useEffect(() => {

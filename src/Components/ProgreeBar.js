@@ -37,9 +37,10 @@ const TrackSlider = props => {
       <Slider
         style={styles.slider}
         value={position}
+        
         thumbTintColor={Colors.primary}
         minimumTrackTintColor={Colors.primary}
-        maximumTrackTintColor={Colors.lightPrimary}
+        maximumTrackTintColor={Colors.black}
         minimumValue={0}
         thumbStyle={{
           width: 15,
@@ -66,11 +67,11 @@ const TrackSlider = props => {
       />
       <View style={{width: '100%', flexDirection: 'row'}}>
         <View style={{flex: 1}}>
-          <Text style={styles.position}>{formatTime(position)}</Text>
+          <Text style={[styles.position, props.txtStyle,]}>{formatTime(position)}</Text>
         </View>
 
         <View style={{flex: 1, alignItems: 'flex-end'}}>
-          <Text style={styles.duration}>{formatTime(duration)}</Text>
+          <Text style={[styles.duration, props.txtStyle, ]}>{formatTime(duration)}</Text>
         </View>
       </View>
     </View>
