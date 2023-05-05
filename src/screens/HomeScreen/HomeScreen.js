@@ -903,7 +903,7 @@ const HomeScreen = (props) => {
                             borderRadius: 15,
                             padding: 8,
                             overflow: "hidden",
-                            paddingTop:15
+                            paddingTop: 15
                         }}>
                             <View style={{
                                 position: "absolute",
@@ -953,7 +953,7 @@ const HomeScreen = (props) => {
                                             justifyContent: 'center',
                                             alignItems: 'center',
                                             borderRadius: 30 / 2,
-                                            marginTop:5
+                                            marginTop: Platform.OS == "ios" ? 5 : 0
 
                                         }}>
                                         <Image
