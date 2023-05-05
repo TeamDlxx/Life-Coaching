@@ -38,9 +38,8 @@ const Setting = props => {
   const { Token, setToken, setHabitList, adminURLsAndEmail, CheckPurchases, purchasedSKUs } =
     useContext(Context);
 
-
-
   console.log('adminURLsAndEmail', useContext(Context));
+
   const logout = async () => {
     try {
       let res = await AsyncStorage.multiRemove(['@token', '@user']);
@@ -51,7 +50,8 @@ const Setting = props => {
         index: 0,
         routes: [
           {
-            name: screens.landing,
+            // name: screens.landing,
+            name: screens.Login,
             params: {
               logout: true,
             },
@@ -64,7 +64,7 @@ const Setting = props => {
         index: 0,
         routes: [
           {
-            name: screens.landing,
+            name: screens.Login,
             params: {
               logout: true,
             },
@@ -181,7 +181,7 @@ const Setting = props => {
           setisLoading(false)
 
           if (purchases.length == 0) {
-            Alert.alert("Nothing to restore.")
+            Alert.alert("Nothing to restore.", '',[{text:"Ok"}],{ cancelable: true })
             return
           }
 
@@ -190,27 +190,27 @@ const Setting = props => {
             switch (purchase.productId) {
 
               case 'lifetime.purchase':
-                Alert.alert("All in one lifetime purchase successfully restored.")
+                Alert.alert("All in one lifetime purchase successfully restored.",'',[{text:"Ok"}],{ cancelable: true })
                 await CheckPurchases()
                 break
 
               case 'all_in_one.monthly.subscription':
-                Alert.alert("All in one monthly subscription successfully restored.")
+                Alert.alert("All in one monthly subscription successfully restored.",'',[{text:"Ok"}],{ cancelable: true })
                 await CheckPurchases()
                 break
 
               case 'habits.monthly.subscription':
-                Alert.alert("Habit tracker monthly subscription successfully restored.")
+                Alert.alert("Habit tracker monthly subscription successfully restored.",'',[{text:"Ok"}],{ cancelable: true })
                 await CheckPurchases()
                 break
 
               case 'meditation.monthly.subscription':
-                Alert.alert("Meditations  monthly subscription successfully restored.")
+                Alert.alert("Meditations  monthly subscription successfully restored.",'',[{text:"Ok"}],{ cancelable: true })
                 await CheckPurchases()
                 break
 
               default:
-                Alert.alert("Nothing to restore!");
+                Alert.alert("Nothing to restore!",'',[{text:"Ok"}],{ cancelable: true });
                 break
 
             }
@@ -237,6 +237,7 @@ const Setting = props => {
           'Delete Account',
           'Are you sure you want to delete your account?',
           [{ text: 'No' }, { text: 'Yes', onPress: () => api_deleteAccount() }],
+          { cancelable: true }
         );
 
         break;
@@ -245,7 +246,7 @@ const Setting = props => {
         Alert.alert('Logout', 'Are you sure you want to logout?', [
           { text: 'No' },
           { text: 'Yes', onPress: () => api_LogOut() },
-        ]);
+        ],{ cancelable: true });
 
         break;
 

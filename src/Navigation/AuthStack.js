@@ -6,6 +6,9 @@ import Colors from '../Utilities/Colors';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import ReactNativeBlobUtil, { ReactNativeBlobUtilFile } from 'react-native-blob-util';
+
 //Screens
 
 import Login from '../screens/Auth/Login';
@@ -50,6 +53,8 @@ import MoodDetail from '../screens/Home/MoodTracker/MoodDetail';
 // //? Quotes
 import List from '../screens/Home/Quotes/List';
 import FavQuoteList from '../screens/Home/Quotes/FavQuoteList';
+import QuoteDetail from '../screens/Home/Quotes/QuoteDetail';
+
 
 // //? Meditation
 import Meditation from '../screens/Home/Meditation/Meditation';
@@ -107,7 +112,8 @@ const AuthStack = () => {
       } else if (seen[2][1] != null && seen[2][1] == 'true') {
         setWhichScreen(screens.bottomTabs);
       } else {
-        setWhichScreen(screens.landing);
+        setWhichScreen(screens.Login);
+        // setWhichScreen(screens.landing);
       }
     } else {
       setWhichScreen(screens.onboarding);
@@ -118,7 +124,19 @@ const AuthStack = () => {
     if (whichScreen == undefined) {
       checkOBoarding();
     }
+    cleanCache()
   }, []);
+
+  const cleanCache = () => {
+    const cacheclean = ReactNativeBlobUtil.fs.dirs.CacheDir
+    ReactNativeBlobUtil.fs.unlink(cacheclean)
+      .then(resp => {
+        // console.log(resp,'ReactNativeBlobUtil then')
+      })
+      .catch(err => {
+        // console.log(err,'ReactNativeBlobUtil err')
+      });
+  }
 
   if (whichScreen != undefined) {
     return (
@@ -128,10 +146,10 @@ const AuthStack = () => {
           headerShown: false,
           orientation: 'portrait',
           animationEnabled: false,
-          animation : "none",
+          animation: "none",
         }}
         initialRouteName={whichScreen}>
-        <Stack.Screen name={screens.Login} component={Login} />
+        <Stack.Screen name={screens.Login} component={Login} initialParams={{ logout: true }} />
         <Stack.Screen name={screens.signup} component={Signup} />
         <Stack.Screen name={screens.onboarding} component={Onboarding} />
         <Stack.Screen name={screens.landing} component={Landing} />
@@ -170,6 +188,8 @@ const AuthStack = () => {
         {/* Quotes */}
         <Stack.Screen name={screens.qouteList} component={List} />
         <Stack.Screen name={screens.favQuoteList} component={FavQuoteList} />
+        <Stack.Screen name={screens.quoteDetail} component={QuoteDetail} />
+
 
         {/* Meditation*/}
         <Stack.Screen name={screens.meditation} component={Meditation} />
@@ -201,8 +221,8 @@ const AuthStack = () => {
         {/* HomeScreen */}
         <Stack.Screen name={screens.homeScreen} component={HomeScreen} />
 
-         {/* Notification */}
-         <Stack.Screen name={screens.notificationScreen} component={NotificationScreen} />
+        {/* Notification */}
+        <Stack.Screen name={screens.notificationScreen} component={NotificationScreen} />
 
       </Stack.Navigator>
     );

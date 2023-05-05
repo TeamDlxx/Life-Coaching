@@ -74,10 +74,11 @@ const LoginAlert = (navigation, screenName) =>
           },
         },
       ],
-      {cancelable: false},
+      {cancelable: true},
     );
   }).then(() => {
     navigation.navigate(screens.Login, {
+      logout: false,
       from: screenName,
     });
   });

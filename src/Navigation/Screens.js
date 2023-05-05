@@ -6,12 +6,17 @@ export const screens = {
   otp: 'OTP_SCREEN',
   forgotPassword: 'FORGOT_PASSWORD_SCREEN',
   newPassword: 'NEW_PASSWORD_SCREEN',
+
+
   home: 'HOME_SCREEN',
   settings: 'SETTINGS_SCREEN',
+
   profile: 'PROFILE_SCREEN',
   editProfile: 'EDIT_PROFILE_SCREEN',
   changePassword: 'CHANGE_PASSWORD_SCREEN',
   bottomTabs: 'BOTTOM_TABS_SCREEN',
+
+  /// habit Tracker
   habitTracker: 'HABIT_TRACKER_SCREEN',
   chooseHabit: 'CHOOSE_HABIT_SCREEN',
   createHabit: 'CREATE_HABIT_SCREEN',
@@ -21,12 +26,17 @@ export const screens = {
   NotesDetail: 'NOTE_DETAIL_SCREEN',
   AllNotes: 'ALL_NOTES_SCREEN',
 
-
+  /// Meditation
   meditation: 'MEDITATION_SCREEN',
   trackPlayer: 'TRACK_PLAYER_SCREEN',
   favTracks: 'FAVOURITE_TRACKS_SCREEN',
+
+  /// Quotes
   qouteList: 'QUOTE_LIST_SCREEN',
   favQuoteList: 'FAVOURITE_QUOTE_LIST_SCREEN',
+  quoteDetail: 'QUOTE_DETAIL',
+
+
   timeTable: 'TIME_TABLE_SCREEN',
   addTask: 'ADD_TASK_SCREEN',
   taskDetail: 'TASK_DETAIL_SCREEN',
@@ -59,8 +69,8 @@ export const screens = {
   reminder: "REMINDER_SCREEN",
 
   //HomeScreen
-  homeScreen : 'HOME',
+  homeScreen: 'HOME',
 
   //Notification
-  notificationScreen : 'NOTIFICATION_SCREEN',
+  notificationScreen: 'NOTIFICATION_SCREEN',
 };

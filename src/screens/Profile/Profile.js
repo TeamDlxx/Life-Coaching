@@ -283,6 +283,7 @@ const Profile = props => {
                     if (!!x.screen) {
                       props.navigation.navigate(x.screen, {
                         user: x.screen == screens.editProfile ? user : null,
+                        logout: x.screen == screens.Login ? false : null,
                       });
                     }
                   }}

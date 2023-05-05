@@ -12,7 +12,12 @@ const CustomButton = (props) => {
                 alignItems: "center",
                 justifyContent: "center",
             }}>
-            <Text style={{ color: Colors.primary, fontWeight: "bold" , fontSize: 13,textDecorationLine:"underline"}}>View All{' '}</Text>
+            <Text style={{ color: Colors.primary, 
+                fontWeight: "bold" , fontSize: 13,
+                textDecorationLine:"underline",
+                ...props.txtStyle
+                
+                }}>View All{' '}</Text>
          </Pressable>
     )
 }

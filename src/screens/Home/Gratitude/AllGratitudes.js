@@ -259,6 +259,7 @@ const AllGratitudes = props => {
                                                 { text: 'No' },
                                                 { text: 'Yes', onPress: () => api_deleteGratitude(item._id) },
                                             ],
+                                            {cancelable: true},
                                         )
                                     }
                                     style={allGratitudes_styles.hiddenView}>

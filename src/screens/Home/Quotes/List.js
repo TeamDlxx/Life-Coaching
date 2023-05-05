@@ -59,6 +59,8 @@ import ic_home from '../../../Assets/Icons/home.png';
 import ic_home_lock from '../../../Assets/Icons/home-lock.png';
 import ic_cross from '../../../Assets/Icons/cross.png';
 
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import { Admob_Ids } from '../../../Utilities/AdmobIds';
 
 const limit = 10;
 const win = Dimensions.get('window');
@@ -74,6 +76,7 @@ const List = props => {
   const [loading, setisLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isModalVisible, setModalVisibility] = useState(false);
+  const [adError, setAdError] = useState(false);
 
 
   const [PGN, updatePGN] = useState({
@@ -273,26 +276,27 @@ const List = props => {
     });
     if (res) {
       if (res.code == 200) {
-        favQuotesOfTheDay(val)
+        favQuotesOfTheDay(val, id)
       } else {
-        favQuotesOfTheDay(!val)
+        favQuotesOfTheDay(!val, id)
         showToast(res.message);
         toggleLike(!val, id);
       }
     }
   };
 
-  const favQuotesOfTheDay = async (val) => {
+  const favQuotesOfTheDay = async (val, id) => {
     let newObj = dashboardData.quoteOfTheDay;
-    newObj.is_favourite_by_me = val;
+    if (id == newObj._id) {
+      newObj.is_favourite_by_me = val;
 
-    if (newObj.is_favourite_by_me) {
-      newObj.favourite = newObj.favourite + 1;
-    } else {
-      newObj.favourite = newObj.favourite - 1;
+      if (newObj.is_favourite_by_me) {
+        newObj.favourite = newObj.favourite + 1;
+      } else {
+        newObj.favourite = newObj.favourite - 1;
+      }
     }
     dashboardData.quoteOfTheDay = newObj;
-
     await setDashBoardData({
       ...dashboardData,
     })
@@ -342,121 +346,122 @@ const List = props => {
 
   const flatItemView = ({ item, index }) => {
     return (
-      <View
-        style={{
-          margin: 10,
-          borderRadius: 15,
-          overflow: 'hidden',
-          borderColor: Colors.gray02,
-          borderWidth: 1,
-          backgroundColor: Colors.white,
-        }}>
-        <Pressable onPress={() => showImageModal(item?.images?.large)}>
-          <CustomImage
-            source={{ uri: fileURL + item?.images?.large }}
-            style={{
-              width: '100%',
-              aspectRatio:
-                item?.image_height != 0
-                  ? item?.image_width / item?.image_height
-                  : 1,
-            }}
-          />
-        </Pressable>
-        {!!item?.description && (
-          <TouchableHighlight
-            disabled={Platform.OS == 'ios'}
-            onLongPress={() => copyText(item?.description.trim())}
-            delayLongPress={500}
-            underlayColor={Colors.gray01}
-            style={{}}>
-            <Text
-              selectable={Platform.OS == 'ios' ? true : false}
-              style={{
-                fontSize: 14,
-                fontFamily: font.regular,
-                paddingHorizontal: 5,
-                paddingVertical: 10,
-              }}>
-              {item?.description.trim()}
-            </Text>
-          </TouchableHighlight>
-        )}
+      <>
         <View
           style={{
-            flexDirection: 'row',
-            backgroundColor: '#FFF',
+            margin: 10,
+            borderRadius: 15,
+            overflow: 'hidden',
+            borderColor: Colors.gray02,
+            borderWidth: 1,
+            backgroundColor: Colors.white,
           }}>
-          <TouchableOpacity
-            onPress={() => favUnFavFunction(item, index)}
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              height: 50,
-              justifyContent: 'center',
-              flexDirection: 'row',
-            }}>
-            <Image
-              source={item?.is_favourite_by_me ? Fav : notFav}
+          <Pressable onPress={() => showImageModal(item?.images?.large)}>
+            <CustomImage
+              source={{ uri: fileURL + item?.images?.large }}
               style={{
-                height: 20,
-                width: 20,
-                tintColor: item?.is_favourite_by_me
-                  ? Colors.primary
-                  : Colors.placeHolder,
+                width: '100%',
+                aspectRatio:
+                  item?.image_height != 0
+                    ? item?.image_width / item?.image_height
+                    : 1,
               }}
             />
-            <Text
+          </Pressable>
+          {!!item?.description && (
+            <TouchableHighlight
+              disabled={Platform.OS == 'ios'}
+              onLongPress={() => copyText(item?.description.trim())}
+              delayLongPress={500}
+              underlayColor={Colors.gray01}
+              style={{}}>
+              <Text
+                selectable={Platform.OS == 'ios' ? true : false}
+                style={{
+                  fontSize: 14,
+                  fontFamily: font.regular,
+                  paddingHorizontal: 5,
+                  paddingVertical: 10,
+                }}>
+                {item?.description.trim()}
+              </Text>
+            </TouchableHighlight>
+          )}
+          <View
+            style={{
+              flexDirection: 'row',
+              backgroundColor: '#FFF',
+            }}>
+            <TouchableOpacity
+              onPress={() => favUnFavFunction(item, index)}
               style={{
-                marginLeft: 5,
-                fontFamily: font.medium,
-                color: Colors.placeHolder,
-                letterSpacing: 1,
-                includeFontPadding: false,
+                flex: 1,
+                alignItems: 'center',
+                height: 50,
+                justifyContent: 'center',
+                flexDirection: 'row',
               }}>
-              {kFormatter(item?.favourite)}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => download(item)}
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              height: 50,
-              justifyContent: 'center',
-            }}>
-            {/* {!checkQuoteDownloading(item._id) ? ( */}
-            <Image
-              source={ic_download}
-              style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
-            />
-            {/* ) : (
-              <ActivityIndicator color={Colors.placeHolder} size="small" />
-            )} */}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            disabled={isSharing != null}
-            onPress={async () => {
-              await shareQuote(item);
-            }}
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              height: 50,
-              justifyContent: 'center',
-            }}>
-            {isSharing != item._id ? (
               <Image
-                source={ic_share}
+                source={item?.is_favourite_by_me ? Fav : notFav}
+                style={{
+                  height: 20,
+                  width: 20,
+                  tintColor: item?.is_favourite_by_me
+                    ? Colors.primary
+                    : Colors.placeHolder,
+                }}
+              />
+              <Text
+                style={{
+                  marginLeft: 5,
+                  fontFamily: font.medium,
+                  color: Colors.placeHolder,
+                  letterSpacing: 1,
+                  includeFontPadding: false,
+                }}>
+                {kFormatter(item?.favourite)}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => download(item)}
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                height: 50,
+                justifyContent: 'center',
+              }}>
+              {/* {!checkQuoteDownloading(item._id) ? ( */}
+              <Image
+                source={ic_download}
                 style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
               />
-            ) : (
+              {/* ) : (
               <ActivityIndicator color={Colors.placeHolder} size="small" />
-            )}
-          </TouchableOpacity>
-          {/* 
+            )} */}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              disabled={isSharing != null}
+              onPress={async () => {
+                await shareQuote(item);
+              }}
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                height: 50,
+                justifyContent: 'center',
+              }}>
+              {isSharing != item._id ? (
+                <Image
+                  source={ic_share}
+                  style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
+                />
+              ) : (
+                <ActivityIndicator color={Colors.placeHolder} size="small" />
+              )}
+            </TouchableOpacity>
+            {/* 
           <TouchableOpacity
             onPress={() => {setModalVisibility(true) 
               selectedQuote = item
@@ -472,8 +477,31 @@ const List = props => {
               style={{ height: 18.5, width: 18.5, tintColor: Colors.placeHolder }}
             />
           </TouchableOpacity> */}
+          </View>
         </View>
-      </View>
+
+        {(index + 1) % 3 === 0 && adError == false && (
+          <View
+            style={{
+              width: '100%',
+              alignItems: 'center',
+              marginBottom: 5,
+              justifyContent: 'center',
+            }}>
+            <BannerAd
+              size={BannerAdSize.MEDIUM_RECTANGLE}
+              unitId={Admob_Ids.banner}
+              requestOptions={{
+                requestNonPersonalizedAdsOnly: true,
+              }}
+              onAdFailedToLoad={err => {
+                console.log(err, 'Banner Ad Error...');
+                setAdError(true);
+              }}
+            />
+          </View>
+        )}
+      </>
     );
   };
 

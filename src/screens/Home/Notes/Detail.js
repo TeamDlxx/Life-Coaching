@@ -13,22 +13,24 @@ import {
   Linking,
   Platform,
 } from 'react-native';
-import React, {useEffect, useState, useRef, useContext} from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
-import {mainStyles} from '../../../Utilities/styles';
-import {font} from '../../../Utilities/font';
-import {screens} from '../../../Navigation/Screens';
+import { mainStyles } from '../../../Utilities/styles';
+import { font } from '../../../Utilities/font';
+import { screens } from '../../../Navigation/Screens';
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 
 import Slider from '@react-native-community/slider';
-import {useWindowDimensions} from 'react-native';
+import { useWindowDimensions } from 'react-native';
 import AutoHeightWebView from 'react-native-autoheight-webview';
-import {Menu, MenuItem, MenuDivider} from 'react-native-material-menu';
+import { Menu, MenuItem, MenuDivider } from 'react-native-material-menu';
 import ImageZoomer from '../../../Components/ImageZoomer';
 import Context from '../../../Context';
 import analytics from '@react-native-firebase/analytics';
 // fro API calling
+import RenderHtml from 'react-native-render-html';
+
 
 import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
@@ -40,14 +42,14 @@ const ic_play = require('../../../Assets/TrackPlayer/playTrack.png');
 const ic_pause = require('../../../Assets/TrackPlayer/pauseTrack.png');
 import ic_download from '../../../Assets/Icons/download.png';
 import CustomImage from '../../../Components/CustomImage';
-import {baseURL, fileURL} from '../../../Utilities/domains';
+import { baseURL, fileURL } from '../../../Utilities/domains';
 import moment from 'moment';
-import {isIphoneX} from 'react-native-iphone-x-helper';
+import { isIphoneX } from 'react-native-iphone-x-helper';
 
 const jsCode = `!function(){var e=function(e,n,t){if(n=n.replace(/^on/g,""),"addEventListener"in window)e.addEventListener(n,t,!1);else if("attachEvent"in window)e.attachEvent("on"+n,t);else{var o=e["on"+n];e["on"+n]=o?function(e){o(e),t(e)}:t}return e},n=document.querySelectorAll("a[href]");if(n)for(var t in n)n.hasOwnProperty(t)&&e(n[t],"onclick",function(e){new RegExp("^https?://"+location.host,"gi").test(this.href)||(e.preventDefault(),window.postMessage(JSON.stringify({external_url_open:this.href})))})}();`;
 const NoteDetail = props => {
-  const {navigation} = props;
-  const {downloadAudioNote, Token, notesList, setNotesList, dashboardData, setDashBoardData} = useContext(Context);
+  const { navigation } = props;
+  const { downloadAudioNote, Token, notesList, setNotesList, dashboardData, setDashBoardData } = useContext(Context);
   const [note, setNote] = useState(props.route?.params?.note);
   const EditMenu = useRef();
   const ref_webView = useRef();
@@ -61,7 +63,7 @@ const NoteDetail = props => {
     curTime: '00:00',
   });
 
-  const {width} = useWindowDimensions();
+  const { width } = useWindowDimensions();
 
   const dropDownMenu = () => {
     return (
@@ -84,7 +86,7 @@ const NoteDetail = props => {
             }}>
             <Image
               source={require('../../../Assets/Icons/threeDots.png')}
-              style={{height: 15, width: 15, tintColor: Colors.black}}
+              style={{ height: 15, width: 15, tintColor: Colors.black }}
             />
           </TouchableHighlight>
         }>
@@ -99,7 +101,7 @@ const NoteDetail = props => {
               updateNote: props.route.params?.updateNote,
             });
           }}>
-          <Text style={{fontFamily: font.bold}}>Edit</Text>
+          <Text style={{ fontFamily: font.bold }}>Edit</Text>
         </MenuItem>
 
         <MenuDivider />
@@ -111,7 +113,7 @@ const NoteDetail = props => {
               'Delete Note',
               'Are you sure you want to delete this Note',
               [
-                {text: 'No'},
+                { text: 'No' },
                 {
                   text: 'Yes',
                   onPress: () => {
@@ -122,9 +124,10 @@ const NoteDetail = props => {
                   },
                 },
               ],
+              { cancelable: true },
             );
           }}>
-          <Text style={{fontFamily: font.bold}}>Delete</Text>
+          <Text style={{ fontFamily: font.bold }}>Delete</Text>
         </MenuItem>
       </Menu>
     );
@@ -307,7 +310,7 @@ const NoteDetail = props => {
     if (res) {
       if (res.code == 200) {
         setisLoading(false);
-        if(props?.route?.params?.isComingFrom == "dashBoard"){
+        if (props?.route?.params?.isComingFrom == "dashBoard") {
           console.log("yes , isComingFrom from dashboard.....")
           await deleteLocallyfromList(NoteID)
           props.navigation.goBack();
@@ -353,7 +356,7 @@ const NoteDetail = props => {
       notes: [...tempArr]
     })
   }
-  
+
 
   useEffect(() => {
     if (!!props.route.params?.editedNote) {
@@ -371,10 +374,7 @@ const NoteDetail = props => {
       download();
     }
     return () => {
-      // console.log("return",playerStatus)
-      // if (playerStatus == 'playing') {
       onStopPlay();
-      // }
     };
   }, [note?.audio]);
 
@@ -382,9 +382,19 @@ const NoteDetail = props => {
     analytics().logEvent(props?.route?.name);
   }, []);
 
+
+  const renderersProps = {
+    a: {
+      onPress(event, url, htmlAttribs, target) {
+        Linking.openURL(url);
+      }
+    }
+  }
+
+
   const flatListHeader = () => {
     return (
-      <View style={{marginBottom: 30}}>
+      <View style={{ marginBottom: 30 }}>
         <View
           style={{
             paddingHorizontal: 20,
@@ -402,69 +412,21 @@ const NoteDetail = props => {
           </Text>
         </View>
         {!!note?.description && (
-          <View style={{marginTop: 10, alignItems: 'center'}}>
-            <AutoHeightWebView
-              ref={ref => (webview = ref)}
-              onShouldStartLoadWithRequest={req => {
-                console.log(req);
-                let {url} = req;
-                if (
-                  url.includes('www') &&
-                  (url.includes('com') ||
-                    url.includes('org') ||
-                    url.includes('co')) &&
-                  !url.includes('@')
-                ) {
-                  console.log('if...');
-                  webview.stopLoading();
-                  if (!url.includes('http')) {
-                    console.log("includes('http')");
-                    Linking.openURL('http://' + url);
-                  } else {
-                    console.log('wit hhtp');
-                    Linking.openURL(url);
-                  }
-                } else if (url.includes('.com' && url.includes('@'))) {
-                  console.log('if...', webview);
-                  webview.stopLoading();
-                  Linking.openURL('mailto:' + url);
-                }
-                return false;
-              }}
-              originWhitelist={['*']}
-              // javaScriptEnabled={true}
-              // injectedJavaScript={`
-              //   (function () {
-              //     window.onclick = function(e) {
-              //       e.preventDefault();
-              //       window.postMessage(e.target.href);
-              //       e.stopPropagation()
-              //     }
-              //   }());
-              // `}
-              onMessage={args => console.log(args, 'On message')}
-              overScrollMode="never"
-              style={{
-                width: Dimensions.get('window').width - 40,
-                minHeight: 1,
-                opacity: 0.99,
-                // marginTop: 35,
-                // backgroundColor: 'red',
-              }}
-              source={{html: note?.description}}
-              onSizeUpdated={res => {
-                console.log('res', res);
-              }}
-              // scalesPageToFit={true}
-              viewportContent={'width=device-width, user-scalable=no'}
-              customStyle={`
-                    * {
-                      font-family: 'Verdana', sans-serif;
-                      font-size: 14px;
-                    }
-         
-                   `}
-            />
+          <View style={{ marginTop: 10, alignItems: 'center' }}>
+
+            <View style={{ padding: 20, }}>
+              <RenderHtml
+                contentWidth={width}
+                style={{ fontSize: 14 }}
+                source={{ html: note?.description }}
+                renderersProps={renderersProps}
+
+              />
+            </View>
+
+
+
+
           </View>
         )}
         {!!note.audio && (
@@ -534,9 +496,9 @@ const NoteDetail = props => {
                   flexDirection: 'row',
                   alignItems: 'center',
                 }}>
-                <View style={{flex: 1, marginHorizontal: 15}}>
+                <View style={{ flex: 1, marginHorizontal: 15 }}>
                   <Slider
-                    style={{transform: [{scaleY: 2}]}}
+                    style={{ transform: [{ scaleY: 2 }] }}
                     value={playerTime.curTimeInSeconds}
                     thumbTintColor={'transparent'}
                     // thumbImage={undefined}
@@ -584,7 +546,7 @@ const NoteDetail = props => {
         barStyle={'dark-content'}
         backgroundColor={note?.color.light}
       />
-      <View style={{flex: 1}}>
+      <View style={{ flex: 1 }}>
         <Header
           titleAlignLeft
           navigation={navigation}
@@ -594,7 +556,6 @@ const NoteDetail = props => {
         {!!note && (
           <View
             style={{
-              // marginTop: 20,
               flex: 1,
             }}>
             <FlatList
@@ -602,7 +563,7 @@ const NoteDetail = props => {
               numColumns={3}
               data={note?.images}
               showsVerticalScrollIndicator={false}
-              renderItem={({item, index}) => {
+              renderItem={({ item, index }) => {
                 console.log('note?.images', item);
                 return (
                   <Pressable
@@ -612,11 +573,10 @@ const NoteDetail = props => {
                       aspectRatio: 1,
                       backgroundColor: note?.color.light,
                       margin: 1,
-                      // borderRadius: 10,
                       overflow: 'hidden',
                     }}>
                     <CustomImage
-                      source={{uri: fileURL + item?.medium}}
+                      source={{ uri: fileURL + item?.medium }}
                       style={{
                         height: '100%',
                         width: '100%',
@@ -626,7 +586,7 @@ const NoteDetail = props => {
                           // borderRadius: 20,
                         }
                       }
-                      indicatorProps={{color: Colors.primary}}
+                      indicatorProps={{ color: Colors.primary }}
                     />
                   </Pressable>
                 );
@@ -643,20 +603,17 @@ const NoteDetail = props => {
               textAlign: 'center',
               color: Colors.placeHolder,
             }}>{`Last updated at ${moment(note?.updatedAt).format(
-            'DD-MM-YYYY hh:mm A',
-          )}`}</Text>
+              'DD-MM-YYYY hh:mm A',
+            )}`}</Text>
         </View>
         <ImageZoomer
           closeModal={hideImageModal}
           visible={!!modalImage}
           url={modalImage}
           color={note?.color.light}
-          // noUrl
+        // noUrl
         />
-        <Loader
-          enable={isLoading}
-          // style={{flex: 1, backgroundColor: note.color.light}}
-        />
+        <Loader enable={isLoading} />
       </View>
     </SafeAreaView>
   );

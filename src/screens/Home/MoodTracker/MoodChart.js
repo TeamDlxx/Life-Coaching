@@ -162,7 +162,7 @@ const MoodsJournal = props => {
             if (index != -1) {
               addToSelectedMoods(moods[index].mood)
             } else {
-              showToast('Please select a mood', 'Alert');
+              showToast('Choose a mood to track your emotions.', 'Alert');
             }
           }
           else {
@@ -612,8 +612,13 @@ const MoodsJournal = props => {
                 style={FAB_style.image}
               />
             </Pressable>
+          </>
+          : <Loader enable={isLoading} />
+        }
 
-            {adError == false && (
+      </View>
+      <Loader style={{ bottom: win.height / 3, }} enable={isRefreshing} />
+      {adError == false && (
               <View
                 style={{
                   width: '100%',
@@ -621,7 +626,7 @@ const MoodsJournal = props => {
                   justifyContent: 'center',
                 }}>
                 <BannerAd
-                  size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+                  size={BannerAdSize.BANNER}
                   unitId={Admob_Ids.banner}
                   requestOptions={{
                     requestNonPersonalizedAdsOnly: true,
@@ -633,12 +638,6 @@ const MoodsJournal = props => {
                 />
               </View>
             )}
-          </>
-          : <Loader enable={isLoading} />
-        }
-
-      </View>
-      <Loader style={{ bottom: win.height / 3, }} enable={isRefreshing} />
     </SafeAreaView>
   );
 };

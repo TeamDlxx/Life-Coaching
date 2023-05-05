@@ -450,6 +450,7 @@ const CreateHabit = props => {
         'Unsaved Changes',
         'Are you sure you want to discard changes?',
         [{ text: 'No' }, { text: 'Yes', onPress: () => props.navigation.goBack() }],
+        {cancelable: true},
       );
     } else {
       props.navigation.goBack();

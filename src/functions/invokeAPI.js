@@ -57,7 +57,8 @@ export default async function invokeApi({
             index: 0,
             routes: [
               {
-                name: screens.landing,
+                // name: screens.landing,
+                name: screens.Login,
                 params: {
                   logout: true,
                 },
@@ -69,7 +70,7 @@ export default async function invokeApi({
             index: 0,
             routes: [
               {
-                name: screens.landing,
+                name: screens.Login,
                 params: {
                   logout: true,
                 },

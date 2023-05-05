@@ -198,6 +198,7 @@ const MoodDetail = props => {
                             [{ text: 'No' }, {
                                 text: 'Yes', onPress: () => api_deleteMood()
                             }],
+                            {cancelable: true},
                         );
                     }}>
                     <Text style={{ fontFamily: font.bold }}>Delete</Text>

@@ -45,7 +45,7 @@ export default function BottomTabs() {
         component={HomeScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <View style={focused ? _styles.selectedTabView : _styles.TabView}>
+            <View style={focused ? [_styles.selectedTabView, { marginLeft: 10, }] : _styles.TabView}>
               <Image
                 resizeMode="contain"
                 source={homeIcon}
@@ -96,13 +96,13 @@ export default function BottomTabs() {
         component={Setting}
         options={{
           tabBarIcon: ({ focused }) => (
-            <View style={focused ? _styles.selectedTabView : _styles.TabView}>
+            <View style={focused ? [_styles.selectedTabView, { marginRight: 12, paddingHorizontal: 11, }] : _styles.TabView}>
               <Image
                 resizeMode="contain"
                 source={settingsIcon}
                 style={focused ? _styles.selectedIcon : _styles.Icon}
               />
-              {focused && <Text style={_styles.selectedText}>Settings</Text>}
+              {focused && <Text style={[_styles.selectedText, { fontSize: 12.5, marginLeft: 5, }]}>Settings</Text>}
             </View>
           ),
         }}
@@ -121,7 +121,6 @@ const _styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   selectedTabView: {
-    marginLeft: 1,
     paddingVertical: 9,
     paddingHorizontal: 13,
     borderRadius: 30,
@@ -148,7 +147,7 @@ const _styles = StyleSheet.create({
   selectedText: {
     color: Colors.primary,
     fontSize: 13,
-    marginLeft: 10,
+    marginLeft: 7,
     fontFamily: font.medium,
   },
 });

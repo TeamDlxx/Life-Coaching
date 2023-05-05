@@ -258,6 +258,7 @@ const AllMoodJournals = props => {
                                                 { text: 'No' },
                                                 { text: 'Yes', onPress: () => api_deleteMood(item._id) },
                                             ],
+                                            {cancelable: true},
                                         )
                                     }
                                     style={allMoodJournals_styles.hiddenView}>

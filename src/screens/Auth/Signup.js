@@ -50,7 +50,7 @@ const Signup = props => {
   const [isLoading, setisLoading] = useState(false);
 
   const onLoginScreen = () => {
-    props.navigation.navigate(screens.Login);
+    props.navigation.navigate(screens.Login, { logout: false });
   };
 
   const GuestLogin = async () => {
@@ -197,11 +197,6 @@ const Signup = props => {
 
   const signInWithGoogle = async () => {
     try {
-      await GoogleSignin.configure({
-        offlineAccess: true,
-        webClientId: "943544818199-rl7j7rbngtg07d17ehktlonq40ldmki6.apps.googleusercontent.com"
-      });
-      await GoogleSignin.signOut();
       let hasPlayServices = await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       if (hasPlayServices) {
         const userInfo = await GoogleSignin.signIn();
@@ -246,7 +241,17 @@ const Signup = props => {
     }
   }
 
+  const GoogleSignUpConfiguration = async () => {
+    await GoogleSignin.configure({
+      offlineAccess: true,
+      webClientId: "943544818199-rl7j7rbngtg07d17ehktlonq40ldmki6.apps.googleusercontent.com"
+    });
+    await GoogleSignin.signOut();
+
+  }
+  
   React.useEffect(() => {
+    GoogleSignUpConfiguration();
     analytics().logEvent(props?.route?.name);
   }, []);
 

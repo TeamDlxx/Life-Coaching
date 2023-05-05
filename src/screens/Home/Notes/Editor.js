@@ -830,7 +830,7 @@ const Editor = props => {
           setNotes({ images: [...temp] });
         },
       },
-    ]);
+    ],{cancelable: true},);
   };
 
   const ColorPickerModal = () => {
@@ -1066,7 +1066,7 @@ const Editor = props => {
           onStopPlay();
         },
       },
-    ]);
+    ],{cancelable: true},);
   };
 
   // Add in Remove Array
@@ -1151,13 +1151,13 @@ const Editor = props => {
     if (res) {
       if (res.code == 200) {
         await analytics().logEvent('NOTE_CREATED_BY_USER_EVENT');
-          navigation.navigate({
-            name: screens.notesList,
-            params: {
-              addNew: res.Note,
-            },
-            merge: false,
-          });
+        navigation.navigate({
+          name: screens.notesList,
+          params: {
+            addNew: res.Note,
+          },
+          merge: false,
+        });
         let tempObj = [...dashboardData.notes]
         tempObj[1] = tempObj[0]
         tempObj[0] = res.Note,
@@ -1201,9 +1201,7 @@ const Editor = props => {
     let tempArr = [...dashboardData.notes]
     let idx = tempArr.findIndex(x => x._id == note._id)
     if (idx != -1) {
-      tempArr[idx].title = note.title;
-      tempArr[idx].updatedAt = note.updatedAt;
-      console.log(note.title, "Updated Title...")
+      tempArr[idx] = note;
     }
     await setDashBoardData({
       ...dashboardData,

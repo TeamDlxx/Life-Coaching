@@ -10,6 +10,7 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Keyboard,
 } from 'react-native';
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Header from '../../../Components/Header';
@@ -65,6 +66,7 @@ const List = props => {
   const [isLoading, setisLoading] = useState(false);
   const [isLoadingMore, setisLoadingMore] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
   const [adError, setAdError] = useState(false);
 
@@ -104,6 +106,15 @@ const List = props => {
       setNotesList([])
     }
   }, [props.route]);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => { setKeyboardVisible(true) });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => { setKeyboardVisible(false) });
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   const searchFromAPI = text => {
     setSearchText(text);
@@ -314,7 +325,7 @@ const List = props => {
               alignItems: 'center',
               paddingVertical: 15,
               borderRadius: 20,
-              borderWidth: 1,
+              borderWidth: 0.5,
               borderColor: item?.color?.dark,
               flexDirection: 'row',
               paddingHorizontal: 30,
@@ -449,6 +460,7 @@ const List = props => {
           <Image
             source={il_emptyNotes}
             style={{
+              marginTop: 30,
               width: screen_size.width * 0.65,
               height: screen_size.width * 0.65,
             }}
@@ -457,7 +469,7 @@ const List = props => {
             style={{
               fontFamily: font.xbold,
               fontSize: 42,
-              marginTop: 30,
+              marginTop: 20,
             }}>
             No Notes
           </Text>
@@ -465,7 +477,7 @@ const List = props => {
             style={{
               fontFamily: font.bold,
               fontSize: 16,
-              marginTop: 20,
+              marginTop: 15,
               color: Colors.placeHolder,
               width: '80%',
               textAlign: 'center',
@@ -477,14 +489,14 @@ const List = props => {
             startDate == '' &&
             endDate == '' &&
             selectedColors.length == 0 && (
-              <View style={{ flex: 0.5, justifyContent: 'center' }}>
+              <View style={{ justifyContent: 'center' }}>
                 <Pressable
                   onPress={onNoteEditorScreen}
                   style={[
                     FAB_style.View,
                     {
                       position: 'relative',
-                      marginTop: 30,
+                      marginTop: 50,
                       right: 0,
                       height: 71,
                       width: 71,
@@ -543,6 +555,7 @@ const List = props => {
       />
 
       <View style={{ flex: 1, backgroundColor: Colors.white }}>
+
         <Collapsible collapsed={!isSearchVisible}>
           <View
             style={{
@@ -580,6 +593,7 @@ const List = props => {
             </Pressable>
           </View>
         </Collapsible>
+
         <View style={{ flex: 1, paddingHorizontal: 5 }}>
           <SwipeableFlatList
             contentContainerStyle={[
@@ -612,6 +626,7 @@ const List = props => {
                         { text: 'No' },
                         { text: 'Yes', onPress: () => api_deleteNote(item._id) },
                       ],
+                      { cancelable: true },
                     )
                   }
                   style={{
@@ -660,7 +675,7 @@ const List = props => {
               )
             }
           />
-          {notesList.length != 0 && (
+          {notesList.length != 0 && isKeyboardVisible == false && (
             <Pressable
               onPress={onNoteEditorScreen}
               style={[FAB_style.View, { borderRadius: 50 / 2 }]}>
@@ -670,29 +685,30 @@ const List = props => {
               />
             </Pressable>
           )}
-
-          {notesList.length != 0 && adError == false && (
-            <View
-              style={{
-                width: '100%',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              <BannerAd
-                size={BannerAdSize.BANNER}
-                unitId={Admob_Ids.banner}
-                requestOptions={{
-                  requestNonPersonalizedAdsOnly: true,
-                }}
-                onAdFailedToLoad={err => {
-                  console.log(err, 'Banner Ad Error...');
-                  setAdError(true);
-                }}
-              />
-            </View>
-          )}
         </View>
+
         <Loader enable={isLoading} />
+
+        {adError == false && isKeyboardVisible == false && (
+          <View
+            style={{
+              width: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <BannerAd
+              size={BannerAdSize.BANNER}
+              unitId={Admob_Ids.banner}
+              requestOptions={{
+                requestNonPersonalizedAdsOnly: true,
+              }}
+              onAdFailedToLoad={err => {
+                console.log(err, 'Banner Ad Error...');
+                setAdError(true);
+              }}
+            />
+          </View>
+        )}
 
         {/* {filterModal()} */}
       </View>

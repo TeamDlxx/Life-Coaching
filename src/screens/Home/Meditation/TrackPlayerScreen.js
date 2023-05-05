@@ -118,6 +118,7 @@ const TrackPlayerScreen = props => {
               },
             },
           ],
+          {cancelable: true},
         );
       }
     } else {

@@ -296,7 +296,7 @@ const Gratitude = props => {
         )}
       />
       <View style={mainStyles.innerView}>
-       
+
         {isLoading == false ? gratitudesList.length == 0 && gratitudeExist == false ?
           <View
             style={{
@@ -391,30 +391,30 @@ const Gratitude = props => {
                 style={FAB_style.image}
               />
             </Pressable>
-            {adError == false && (
-            <View
-              style={{
-                width: '100%',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              <BannerAd
-                size={BannerAdSize.BANNER}
-                unitId={Admob_Ids.banner}
-                requestOptions={{
-                  requestNonPersonalizedAdsOnly: true,
-                }}
-                onAdFailedToLoad={err => {
-                  console.log(err, 'Banner Ad Error...');
-                  setAdError(true);
-                }}
-              />
-            </View>
-          )}
           </> : <Loader enable={isLoading} />
         }
 
       </View>
+      {adError == false && (
+        <View
+          style={{
+            width: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <BannerAd
+            size={BannerAdSize.BANNER}
+            unitId={Admob_Ids.banner}
+            requestOptions={{
+              requestNonPersonalizedAdsOnly: true,
+            }}
+            onAdFailedToLoad={err => {
+              console.log(err, 'Banner Ad Error...');
+              setAdError(true);
+            }}
+          />
+        </View>
+      )}
     </SafeAreaView>
   );
 };

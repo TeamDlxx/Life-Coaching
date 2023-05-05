@@ -358,14 +358,17 @@ const EditProfile = props => {
                   Alert.alert(
                     'Remove Image',
                     'Are you sure you want to remove this image?',
-                    [{ text: 'No' }, {
+                    [{ text: 'No', onPress: () => { setModalVisibility(false); } }, {
                       text: 'Yes', onPress: () => {
                         setUser({ imageURI: '', selectedImage: null })
                         setModalVisibility(false);
                       }
                     }],
+                    {
+                      cancelable: true, onDismiss: () => { setModalVisibility(false) }
+                    },
                   );
-                  // setUser({ imageURI: '', selectedImage: null });
+                  // setUser({imageURI: '', selectedImage: null });
                   // setModalVisibility(false);
                 }}
                 style={{ alignItems: 'center', marginLeft: 30 }}>
@@ -393,7 +396,7 @@ const EditProfile = props => {
             )}
           </View>
         </View>
-      </Modal>
+      </Modal >
     );
   };
 
@@ -407,6 +410,7 @@ const EditProfile = props => {
         'Unsaved Changes',
         'Are you sure you want to discard changes?',
         [{ text: 'No' }, { text: 'Yes', onPress: () => props.navigation.goBack() }],
+        { cancelable: true },
       );
     } else {
       props.navigation.goBack();

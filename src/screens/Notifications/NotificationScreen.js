@@ -67,8 +67,9 @@ const NotificationScreen = (props) => {
         return (
             <Pressable
                 onPress={() =>
-                    props.navigation.navigate(screens.qouteList, {
+                    props.navigation.navigate(screens.quoteDetail, {
                         _id: item._id,
+                        // _id: `643fc0c1e71e7d41d08a41ab`
                     })
                 }
                 style={{
