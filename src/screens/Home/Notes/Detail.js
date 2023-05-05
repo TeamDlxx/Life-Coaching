@@ -29,6 +29,8 @@ import ImageZoomer from '../../../Components/ImageZoomer';
 import Context from '../../../Context';
 import analytics from '@react-native-firebase/analytics';
 // fro API calling
+import RenderHtml from 'react-native-render-html';
+
 
 import showToast from '../../../functions/showToast';
 import Loader from '../../../Components/Loader';
@@ -372,16 +374,23 @@ const NoteDetail = props => {
       download();
     }
     return () => {
-      // console.log("return",playerStatus)
-      // if (playerStatus == 'playing') {
       onStopPlay();
-      // }
     };
   }, [note?.audio]);
 
   useEffect(() => {
     analytics().logEvent(props?.route?.name);
   }, []);
+
+
+  const renderersProps = {
+    a: {
+      onPress(event, url, htmlAttribs, target) {
+        Linking.openURL(url);
+      }
+    }
+  }
+
 
   const flatListHeader = () => {
     return (
@@ -405,68 +414,19 @@ const NoteDetail = props => {
         {!!note?.description && (
           <View style={{ marginTop: 10, alignItems: 'center' }}>
 
-            <AutoHeightWebView
-              ref={ref => (webview = ref)}
-              onShouldStartLoadWithRequest={req => {
-                console.log(req);
-                let { url } = req;
-                if (
-                  url.includes('www') &&
-                  (url.includes('com') ||
-                    url.includes('org') ||
-                    url.includes('co')) &&
-                  !url.includes('@')
-                ) {
-                  console.log('if...');
-                  webview.stopLoading();
-                  if (!url.includes('http')) {
-                    console.log("includes('http')");
-                    Linking.openURL('http://' + url);
-                  } else {
-                    console.log('wit hhtp');
-                    Linking.openURL(url);
-                  }
-                } else if (url.includes('.com' && url.includes('@'))) {
-                  console.log('if...', webview);
-                  webview.stopLoading();
-                  Linking.openURL('mailto:' + url);
-                }
-                return false;
-              }}
-              originWhitelist={['*']}
-              // javaScriptEnabled={true}
-              // injectedJavaScript={`
-              //   (function () {
-              //     window.onclick = function(e) {
-              //       e.preventDefault();
-              //       window.postMessage(e.target.href);
-              //       e.stopPropagation()
-              //     }
-              //   }());
-              // `}
-              onMessage={args => console.log(args, 'On message')}
-              overScrollMode="never"
-              style={{
-                width: Dimensions.get('window').width - 40,
-                minHeight: 1,
-                opacity: 0.99,
-                // marginTop: 35,
-                // backgroundColor: 'red',
-              }}
-              source={{ html: note?.description }}
-              onSizeUpdated={res => {
-                console.log('res', res);
-              }}
-              // scalesPageToFit={true}
-              viewportContent={'width=device-width, user-scalable=no'}
-              customStyle={`
-                    * {
-                      font-family: 'Verdana', sans-serif;
-                      font-size: 14px;
-                    }
-         
-                   `}
-            />
+            <View style={{ padding: 20, }}>
+              <RenderHtml
+                contentWidth={width}
+                style={{ fontSize: 14 }}
+                source={{ html: note?.description }}
+                renderersProps={renderersProps}
+
+              />
+            </View>
+
+
+
+
           </View>
         )}
         {!!note.audio && (
@@ -596,7 +556,6 @@ const NoteDetail = props => {
         {!!note && (
           <View
             style={{
-              // marginTop: 20,
               flex: 1,
             }}>
             <FlatList
@@ -614,7 +573,6 @@ const NoteDetail = props => {
                       aspectRatio: 1,
                       backgroundColor: note?.color.light,
                       margin: 1,
-                      // borderRadius: 10,
                       overflow: 'hidden',
                     }}>
                     <CustomImage
@@ -655,10 +613,7 @@ const NoteDetail = props => {
           color={note?.color.light}
         // noUrl
         />
-        <Loader
-          enable={isLoading}
-        // style={{flex: 1, backgroundColor: note.color.light}}
-        />
+        <Loader enable={isLoading} />
       </View>
     </SafeAreaView>
   );

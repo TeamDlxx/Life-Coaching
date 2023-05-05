@@ -281,19 +281,21 @@ const Login = props => {
   };
 
   useEffect(() => {
+    googleSigninConfiguration()
     checkNotificationPermission();
     analytics().logEvent(props?.route?.name);
   }, []);
 
-
+  const googleSigninConfiguration = async () => {
+    await GoogleSignin.configure({
+      offlineAccess: true,
+      webClientId: "943544818199-rl7j7rbngtg07d17ehktlonq40ldmki6.apps.googleusercontent.com"
+    });
+    await GoogleSignin.signOut();
+  }
 
   const signInWithGoogle = async () => {
     try {
-      await GoogleSignin.configure({
-        offlineAccess: true,
-        webClientId: "943544818199-rl7j7rbngtg07d17ehktlonq40ldmki6.apps.googleusercontent.com"
-      });
-      await GoogleSignin.signOut();
       let hasPlayServices = await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
       if (hasPlayServices) {
         const userInfo = await GoogleSignin.signIn();
