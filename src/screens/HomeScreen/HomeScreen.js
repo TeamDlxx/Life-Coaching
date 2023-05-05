@@ -144,17 +144,17 @@ const HomeScreen = (props) => {
 
             if (state == 'playing' || state == 2) {
                 console.log("playing...")
-                setPlayIcon(pauseTrack);
+                // setPlayIcon(pauseTrack);
             }
 
             if (state == 'paused' || state == 3) {
                 console.log("paused...")
-                setPlayIcon(playTrack);
+                // setPlayIcon(playTrack);
             }
 
             if (state == 'stopped' || state == 4) {
                 console.log("stopped...")
-                setPlayIcon(playTrack);
+                // setPlayIcon(playTrack);
             }
         });
 
