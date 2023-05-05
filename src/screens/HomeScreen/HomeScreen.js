@@ -757,7 +757,7 @@ const HomeScreen = (props) => {
                 </View>
             </View>
 
-            <ScrollView style={{ flex: 1, marginTop: 10 }}>
+            <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1, marginTop: 10 }}>
 
                 <Animatable.View
                     useNativeDriver
