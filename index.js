@@ -14,7 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 TrackPlayer.setupPlayer({
-  waitForBuffer: true,
+  waitForBuffer: false,
 }).then(() => {
   TrackPlayer.updateOptions({
     stoppingAppPausesPlayback: true,

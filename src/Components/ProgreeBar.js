@@ -40,7 +40,7 @@ const TrackSlider = props => {
         
         thumbTintColor={Colors.primary}
         minimumTrackTintColor={Colors.primary}
-        maximumTrackTintColor={Colors.black}
+        maximumTrackTintColor={"gray"}
         minimumValue={0}
         thumbStyle={{
           width: 15,
@@ -74,6 +74,8 @@ const TrackSlider = props => {
           <Text style={[styles.duration, props.txtStyle, ]}>{formatTime(duration)}</Text>
         </View>
       </View>
+
+
     </View>
   );
 };
@@ -82,7 +84,7 @@ const styles = StyleSheet.create({
   container: {
     // flexDirection:"row",
     alignItems: 'center',
-    justifyContent: 'space-evenly',
+    justifyContent: 'flex-start',
     // backgroundColor: 'pink',
     // width:"%",
   },

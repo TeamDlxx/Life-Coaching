@@ -151,17 +151,17 @@ const HomeScreen = (props) => {
 
             if (state == 'playing' || state == 2) {
                 console.log("playing...")
-                setPlayIcon(pauseTrack);
+                // setPlayIcon(pauseTrack);
             }
 
             if (state == 'paused' || state == 3) {
                 console.log("paused...")
-                setPlayIcon(playTrack);
+                // setPlayIcon(playTrack);
             }
 
             if (state == 'stopped' || state == 4) {
                 console.log("stopped...")
-                setPlayIcon(playTrack);
+                // setPlayIcon(playTrack);
             }
         });
 
@@ -893,7 +893,7 @@ const HomeScreen = (props) => {
 
                     <CustomImage
                         source={{ uri: fileURL + meditationOfTheDay?.images?.medium }}
-                        style={[home_styles.customCardView, { height: 300, justifyContent: 'flex-end' }]}
+                        style={[home_styles.customCardView, { height: 310, justifyContent: 'flex-end' }]}
                         indicatorProps={{
                             size: 30,
                             color: Colors.primary,
@@ -902,7 +902,8 @@ const HomeScreen = (props) => {
                         <View style={{
                             borderRadius: 15,
                             padding: 8,
-                            overflow: "hidden"
+                            overflow: "hidden",
+                            paddingTop:15
                         }}>
                             <View style={{
                                 position: "absolute",
@@ -941,7 +942,7 @@ const HomeScreen = (props) => {
                                     marginTop: 10,
                                     flexDirection: "row",
                                     justifyContent: "space-evenly",
-                                    alignItems: "center"
+                                    alignItems: "flex-start"
                                 }}>
                                     <Pressable
                                         onPress={changeStatus}
@@ -952,6 +953,7 @@ const HomeScreen = (props) => {
                                             justifyContent: 'center',
                                             alignItems: 'center',
                                             borderRadius: 30 / 2,
+                                            marginTop:5
 
                                         }}>
                                         <Image
