@@ -2,7 +2,7 @@
  * @format
  */
 
-import { AppRegistry } from 'react-native';
+import { AppRegistry, Platform } from 'react-native';
 import App from './App';
 import { name as appName } from './app.json';
 import TrackPlayer from 'react-native-track-player';
@@ -68,7 +68,9 @@ PushNotification.createChannel(
 const notificationBadgeCount = async (data) => {
   if(data.type == 'quotes'){
     let count = parseInt(await AsyncStorage.getItem('@badgeCount'))
-    if(count != null){
+
+    console.log(typeof(count)  , "hfdjhfjdhfjdjfhdjjfhhjfjdh")
+    if(count != null && count > 0){
       count = count + 1;
       console.log(count, "total badge count...")
       await AsyncStorage.setItem('@badgeCount', JSON.stringify(count));
@@ -83,19 +85,27 @@ const onMessageReceived = async remoteMessage => {
 
   notificationBadgeCount(remoteMessage.data)
 
-  // await PushNotification.localNotification({
-  //   channelId: '7007',
-  //   channelName: 'BetterMe',
-  //   title: remoteMessage.notification.title,
-  //   message: !!remoteMessage?.notification?.body
-  //     ? remoteMessage?.notification?.body
-  //     : "Tap to read today's quote",
-  //   picture: remoteMessage?.notification?.android?.imageUrl,
-  //   userInfo: remoteMessage.data,
-  //   messageId: remoteMessage.messageId,
-  //   smallIcon: 'ic_stat_name',
-  // });
 
+
+  if(Platform.OS == "ios"){
+    
+await PushNotification.localNotification({
+    channelId: '7007',
+    channelName: 'BetterMe',
+    title: remoteMessage.notification.title,
+    message: !!remoteMessage?.notification?.body
+      ? remoteMessage?.notification?.body
+      : "Tap to read today's quote",
+    picture: remoteMessage?.notification?.android?.imageUrl,
+    userInfo: remoteMessage.data,
+    messageId: remoteMessage.messageId,
+    smallIcon: 'ic_stat_name',
+  });
+
+
+  }
+  
+  
 
 };
 
