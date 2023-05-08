@@ -274,6 +274,9 @@ const CreateGratitude = props => {
 
 
     const api_createGratitude = async fdata => {
+
+
+        console.log(fdata, "data going in api...")
         setisLoading(true);
 
         let res = await invokeApi({
@@ -331,7 +334,7 @@ const CreateGratitude = props => {
     };
 
     const api_editGratitude = async fdata => {
-        console.log(fdata)
+        console.log(fdata, "data while updating gratitude")
         setisLoading(true);
         let res = await invokeApi({
             // path: 'api/gratitude/edit_gratitude/' + params.item?._id,
@@ -378,6 +381,9 @@ const CreateGratitude = props => {
     };
 
     const addImage = async (img) => {
+
+
+        console.log(img, "image from image picker for ios....")
         let tempArr = [];
         if (img) {
             let arr = [];
@@ -393,7 +399,8 @@ const CreateGratitude = props => {
                 } else if (Platform.OS == 'ios') {
                     objImage = {
                         uri: img[i].path,
-                        name: img[i].filename,
+                        // name: img[i].filename,
+                        name: img[i].path.substring(img[i].path.lastIndexOf('/') + 1, img[i].path.length),
                         type: img[i].mime,
                     };
                 };
@@ -650,7 +657,7 @@ const CreateGratitude = props => {
                                             <View style={styles.textFieldView}>
                                                 <TextInput
                                                     editable={true}
-                                                    style={{ paddingHorizontal: 20, fontFamily: font.regular , alignItems: "center" , height: "100%"}}
+                                                    style={{ paddingHorizontal: 20, fontFamily: font.regular, alignItems: "center", height: "100%" }}
                                                     autoCorrect={false}
                                                     autoCapitalize={'sentences'}
                                                     selectTextOnFocus={false}
@@ -703,6 +710,7 @@ const CreateGratitude = props => {
                     </Pressable>
 
                     <View style={{ marginTop: 20 }}>
+
                         <View style={{ marginBottom: 10 }}>
                             <Text
                                 style={{
@@ -734,7 +742,8 @@ const CreateGratitude = props => {
                             }}>
                             <TextInput
                                 editable={false}
-                                style={{ flex: 1, paddingHorizontal: 20, fontFamily: font.regular, color: oldGratitude ? Colors.disable : Colors.black , height: "100%"}}
+                                pointerEvents='none'
+                                style={{ flex: 1, paddingHorizontal: 20, fontFamily: font.regular, color: oldGratitude ? Colors.disable : Colors.black, height: "100%" }}
                                 value={moment(Gratitude.date).format('ddd, MMMM DD YYYY , hh:mm a')}
                             />
                             <View
