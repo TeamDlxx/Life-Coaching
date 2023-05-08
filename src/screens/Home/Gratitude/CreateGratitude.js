@@ -11,6 +11,7 @@ import {
     TextInput,
     Keyboard,
     StyleSheet,
+    Platform,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import React, { useState } from 'react';
@@ -57,6 +58,8 @@ const CreateGratitude = props => {
     const oldGratitude = params?.item;
     const [id, setId] = useState(params?.item?._id);
     const [isValueChange, setChange] = useState(false);
+
+
     const [Gratitude, setGratitude] = useState({
         titlesList: oldGratitude ? oldGratitude.title : [],
         description: oldGratitude ? oldGratitude.description : '',
@@ -66,7 +69,20 @@ const CreateGratitude = props => {
         date: oldGratitude ? moment(oldGratitude.date).toDate() : moment().toDate(),
     });
 
-    const updateGratitude = updation => setGratitude({ ...Gratitude, ...updation });
+    const updateGratitude = (updation) => {
+
+        console.log("update gratitude called", updation)
+        console.log("gratitude gratitude called", Gratitude)
+
+        let newGratitude = { ...Gratitude, ...updation };
+
+        try {
+            setGratitude(newGratitude);
+        }
+        catch (e) {
+            console.log(e, "error in update gratitude")
+        }
+    }
 
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
     const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
@@ -88,7 +104,7 @@ const CreateGratitude = props => {
                     'Unsaved Changes',
                     'Are you sure you want to discard changes?',
                     [{ text: 'No' }, { text: 'Yes', onPress: () => props.navigation.goBack() }],
-                    {cancelable: true},
+                    { cancelable: true },
                 );
             }
             else {
@@ -102,7 +118,7 @@ const CreateGratitude = props => {
                     'Unsaved Changes',
                     'Are you sure you want to discard changes?',
                     [{ text: 'No' }, { text: 'Yes', onPress: () => props.navigation.goBack() }],
-                    {cancelable: true},
+                    { cancelable: true },
                 );
             } else {
                 props.navigation.goBack();
@@ -126,7 +142,7 @@ const CreateGratitude = props => {
                     'Unsaved Changes',
                     'Are you sure you want to discard changes?',
                     [{ text: 'No' }, { text: 'Yes', onPress: () => props.navigation.goBack() }],
-                    {cancelable: true},
+                    { cancelable: true },
                 );
             }
             else {
@@ -504,11 +520,22 @@ const CreateGratitude = props => {
     };
 
     const handleDateConfirm = async date => {
-        console.log(date)
-        hideDatePicker();
-        gratitudeDate = date;
-        await updateGratitude({ date: date })
-        await setTimePickerVisibility(true)
+
+        try {
+            console.log(date)
+            hideDatePicker();
+            gratitudeDate = date;
+            await updateGratitude({ date: date })
+            await setTimePickerVisibility(true)
+            if (Platform.OS == "ios") {
+                await checkGratitudeExist(date)
+
+            }
+        }
+        catch (e) {
+            console.log(e)
+        }
+
     };
 
     const handleTimeConfirm = async time => {
@@ -619,7 +646,7 @@ const CreateGratitude = props => {
                                             <View style={styles.textFieldView}>
                                                 <TextInput
                                                     editable={true}
-                                                    style={{ paddingHorizontal: 20, fontFamily: font.regular }}
+                                                    style={{ paddingHorizontal: 20, fontFamily: font.regular}}
                                                     autoCorrect={false}
                                                     autoCapitalize={'sentences'}
                                                     selectTextOnFocus={false}
@@ -789,25 +816,31 @@ const CreateGratitude = props => {
 
                 <DateTimePickerModal
                     isVisible={isDatePickerVisible}
-                    mode="date"
+                    mode={Platform.OS == "ios" ? "datetime" : "date"}
                     date={Gratitude.date}
+                    // date={new Date()}
                     onChange={date => updateGratitude({ date: date })}
                     value={handleDateConfirm}
+                    // value={new Date()}
                     onConfirm={handleDateConfirm}
                     onCancel={hideDatePicker}
                     maximumDate={moment().toDate()}
                 />
-                <DateTimePickerModal
-                    isVisible={isTimePickerVisible}
-                    mode="time"
-                    locale="en_GB"
-                    is24Hour={false}
-                    date={Gratitude.date}
-                    onChange={date => updateGratitude({ date: date })}
-                    value={handleTimeConfirm}
-                    onConfirm={handleTimeConfirm}
-                    onCancel={hideTimePicker}
-                />
+
+                {Platform.OS == "android" &&
+                    <DateTimePickerModal
+                        isVisible={isTimePickerVisible}
+                        mode="time"
+                        locale="en_GB"
+                        is24Hour={false}
+                        date={Gratitude.date}
+                        onChange={date => updateGratitude({ date: date })}
+                        value={handleTimeConfirm}
+                        onConfirm={handleTimeConfirm}
+                        onCancel={hideTimePicker}
+                    />
+                }
+
             </View>
             <ImageZoomer
                 closeModal={hideImageModal}

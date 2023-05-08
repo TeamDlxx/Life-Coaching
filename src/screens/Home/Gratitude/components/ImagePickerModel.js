@@ -34,6 +34,7 @@ const ImagePickerModel = props => {
         multiple : true,
         cropperStatusBarColor: Colors.background,
         cropperToolbarColor: Colors.background,
+        maxFiles : 15
       })
         .then(image => {
           console.log('Image', image);

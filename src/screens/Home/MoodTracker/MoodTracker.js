@@ -10,6 +10,7 @@ import {
   Alert,
   TextInput,
   Keyboard,
+  Platform,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import React, { useEffect, useState, } from 'react';
@@ -140,7 +141,7 @@ const MoodTracker = props => {
         'Unsaved Changes',
         'Are you sure you want to discard changes?',
         [{ text: 'No' }, { text: 'Yes', onPress: () => props.navigation.goBack() }],
-        {cancelable: true},
+        { cancelable: true },
       );
     }
     else if (oldMood == undefined && (moodData.mood != '' ||
@@ -150,7 +151,7 @@ const MoodTracker = props => {
         'Unsaved Changes',
         'Are you sure you want to discard changes?',
         [{ text: 'No' }, { text: 'Yes', onPress: () => props.navigation.goBack() }],
-        {cancelable: true},
+        { cancelable: true },
       );
     }
     else {
@@ -627,7 +628,7 @@ const MoodTracker = props => {
         </KeyboardAwareScrollView>
         <DateTimePickerModal
           isVisible={isDatePickerVisible}
-          mode="date"
+          mode={Platform.OS == "android" ? "date" : "datetime"}
           date={moodData.date}
           onChange={date => updateMoodData({ date: date })}
           value={handleDateConfirm}
@@ -635,17 +636,21 @@ const MoodTracker = props => {
           onCancel={hideDatePicker}
           maximumDate={moment().toDate()}
         />
-        <DateTimePickerModal
-          isVisible={isTimePickerVisible}
-          mode="time"
-          locale="en_GB"
-          is24Hour={false}
-          date={moodData.date}
-          onChange={date => updateMoodData({ date: date })}
-          value={handleTimeConfirm}
-          onConfirm={handleTimeConfirm}
-          onCancel={hideTimePicker}
-        />
+
+        {Platform.OS == "android" &&
+          <DateTimePickerModal
+            isVisible={isTimePickerVisible}
+            mode="time"
+            locale="en_GB"
+            is24Hour={false}
+            date={moodData.date}
+            onChange={date => updateMoodData({ date: date })}
+            value={handleTimeConfirm}
+            onConfirm={handleTimeConfirm}
+            onCancel={hideTimePicker}
+          />
+        }
+
       </View>
     </SafeAreaView>
   );
