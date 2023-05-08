@@ -1,12 +1,12 @@
 import PushNotificationIOS from '@react-native-community/push-notification-ios';
 import PushNotification from 'react-native-push-notification';
-import {screens} from '../Navigation/Screens';
+import { screens } from '../Navigation/Screens';
 
 export default function NotificationConfig(props) {
   console.log('NotificationConfig Props', props);
   PushNotification.configure({
     // (optional) Called when Token is generated (iOS and Android)
-    onRegister: function (token) {},
+    onRegister: function (token) { },
 
     // (required) Called when a remote is received or opened, or local notification is opened
     onNotification: function (notification) {
@@ -39,14 +39,14 @@ export default function NotificationConfig(props) {
   });
 
   const NotificationAction = notification => {
-    let {data} = notification;
+    let { data } = notification;
     console.log(data, 'notificationId');
     switch (data.type) {
       case 'quotes':
         props.navigation.reset({
           index: 0,
           routes: [
-            {name: screens.bottomTabs},
+            { name: screens.bottomTabs },
             {
               // name: screens.qouteList,
               name: screens.quoteDetail,
@@ -63,9 +63,9 @@ export default function NotificationConfig(props) {
         props.navigation.reset({
           index: 0,
           routes: [
-            {name: screens.bottomTabs},
-            {name: screens.habitTracker},
-            {name: screens.habitDetail, params: {id: data._id}},
+            { name: screens.bottomTabs },
+            { name: screens.habitTracker },
+            { name: screens.habitDetail, params: { id: data._id } },
           ],
         });
 
@@ -80,19 +80,19 @@ export default function NotificationConfig(props) {
                 screen: screens.profile,
               },
             },
-            {name: screens.dowloadedTracks, params: {id: data._id}},
+            { name: screens.dowloadedTracks, params: { id: data._id } },
           ],
         });
         break;
-        case 'gratitude':
-          props.navigation.reset({
-            index: 0,
-            routes: [
-              {name: screens.bottomTabs, },
-              {name: screens.gratitude, params: {id: data._id}},
-            ],
-          });
-          break;
+      case 'gratitude':
+        props.navigation.reset({
+          index: 0,
+          routes: [
+            { name: screens.bottomTabs, },
+            { name: screens.gratitude, params: { id: data._id } },
+          ],
+        });
+        break;
     }
   };
 }

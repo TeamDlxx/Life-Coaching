@@ -65,36 +65,45 @@ PushNotification.createChannel(
   created => console.log('Channel Created Successfully -->\n', created), // (optional) callback returns whether the channel was created, false means it already existed.
 );
 
-const notificationBadgeCount = async () => {
-  let count = parseInt(await AsyncStorage.getItem('@badgeCount'))
-  count = count + 1;
-  console.log(count, "badge count...")
-  await AsyncStorage.setItem('@badgeCount', JSON.stringify(count));
+const notificationBadgeCount = async (data) => {
+  if(data.type == 'quotes'){
+    let count = parseInt(await AsyncStorage.getItem('@badgeCount'))
+    if(count != null){
+      count = count + 1;
+      console.log(count, "total badge count...")
+      await AsyncStorage.setItem('@badgeCount', JSON.stringify(count));
+    } else {
+      await AsyncStorage.setItem('@badgeCount', "1");
+    }
+  }
 }
 
 const onMessageReceived = async remoteMessage => {
-  console.log(remoteMessage, 'onMessage...');
-  notificationBadgeCount()
+  console.log(remoteMessage, 'onMessage... foreground');
 
-  await PushNotification.localNotification({
-    channelId: '7007',
-    channelName: 'BetterMe',
-    title: remoteMessage.notification.title,
-    message: !!remoteMessage?.notification?.body
-      ? remoteMessage?.notification?.body
-      : "Tap to read today's quote",
-    picture: remoteMessage?.notification?.android?.imageUrl,
-    userInfo: remoteMessage.data,
-    messageId: remoteMessage.messageId,
-    smallIcon: 'ic_stat_name',
-  });
+  notificationBadgeCount(remoteMessage.data)
+
+  // await PushNotification.localNotification({
+  //   channelId: '7007',
+  //   channelName: 'BetterMe',
+  //   title: remoteMessage.notification.title,
+  //   message: !!remoteMessage?.notification?.body
+  //     ? remoteMessage?.notification?.body
+  //     : "Tap to read today's quote",
+  //   picture: remoteMessage?.notification?.android?.imageUrl,
+  //   userInfo: remoteMessage.data,
+  //   messageId: remoteMessage.messageId,
+  //   smallIcon: 'ic_stat_name',
+  // });
+
+
 };
 
 messaging().onMessage(onMessageReceived);
 
 messaging().setBackgroundMessageHandler(async remoteMessage => {
   console.log(remoteMessage, 'onMessagsetBackgroundMessageHandlereReceived...');
-  notificationBadgeCount()
+  notificationBadgeCount(remoteMessage.data)
 });
 
 AppRegistry.registerComponent(appName, () => App);

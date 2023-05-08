@@ -530,29 +530,38 @@ const ContextWrapper = props => {
 
   const getNotificationCount = async () => {
     return await AsyncStorage.getItem('@badgeCount').then(val => {
-        if (val !== null) {
-            console.log(val, "bell icon BadgeCount ...")
-            setBadgeCount(val);
-        }
+      if (val !== null) {
+        console.log(val, "bell icon BadgeCount ...")
+        setBadgeCount(val);
+      }
     })
-}
-
-  const getBadgeCount = async () => {
-    console.log("notification count in context...")
-    let count = parseInt(await AsyncStorage.getItem('@badgeCount'))
-    count = count + 1;
-    console.log(count, "notification count in context...")
-    if (count != null) {
-      setBadgeCount(count)
-    }
-    await AsyncStorage.setItem('@badgeCount', JSON.stringify(count));
   }
 
-  messaging().onMessage(getBadgeCount);
+  const getBadgeCount = async (data) => {
+    if (data.type == "quotes") {
+      console.log("notification in context...")
+      let count = parseInt(await AsyncStorage.getItem('@badgeCount'))
+      if (count != null) {
+        count = count + 1;
+        setBadgeCount(count)
+        await AsyncStorage.setItem('@badgeCount', JSON.stringify(count));
+      } else {
+        setBadgeCount(1)
+        await AsyncStorage.setItem('@badgeCount', '1');
+      }
+    }
+  }
+
+  const onMessageReceived = async remoteMessage => {
+    console.log(remoteMessage, 'message recieve ...');
+    getBadgeCount(remoteMessage.data)
+  }
+
+  messaging().onMessage(onMessageReceived);
 
   messaging().setBackgroundMessageHandler(async remoteMessage => {
-    console.log(remoteMessage, 'onMessagsetBackgroundMessageHandlereReceived...');
-    getBadgeCount()
+    console.log(remoteMessage, 'onMessage Background state...');
+    getBadgeCount(remoteMessage.data)
   });
 
   const object = {

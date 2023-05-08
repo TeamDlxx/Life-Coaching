@@ -46,7 +46,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 let user = {};
 const QuoteDetail = (props) => {
     const { params } = props.route;
-    const { Token, downloadQuote, dashboardData, setDashBoardData } = useContext(Context)
+    const { Token, downloadQuote, dashboardData, setDashBoardData ,setBadgeCount} = useContext(Context)
     const win = Dimensions.get("window");
     const [modalImage, setModalImage] = useState(null);
     const [isLoading, setisLoading] = useState(false);
@@ -97,6 +97,7 @@ const QuoteDetail = (props) => {
         }
 
         if (res) {
+            clearNotificationBadge()
             setisLoading(false);
             if (res.code == 200) {
                 console.log('response', res);
@@ -106,6 +107,11 @@ const QuoteDetail = (props) => {
             }
         }
     };
+
+    const clearNotificationBadge = async () => {
+        await AsyncStorage.setItem('@badgeCount', "0");
+        setBadgeCount(0)
+    }
 
     const showImageModal = async (image) => {
         await setModalImage(image);

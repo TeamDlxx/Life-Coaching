@@ -22,8 +22,8 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
 
-    <!--    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />-->
-    <!--    <uses-permission android:name="${applicationId}.permission.C2D_MESSAGE" />-->
+        <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+        <uses-permission android:name="${applicationId}.permission.C2D_MESSAGE" />
     <!--    Features -->
     <uses-feature android:name="android.hardware.camera.front" android:required="false" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />

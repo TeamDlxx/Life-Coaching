@@ -94,9 +94,10 @@ const Profile = props => {
   const ShowImageModal = link => {
     if (!!link) {
       setModalImage(link);
-    } else {
-      showToast('Image not available', 'Alert');
-    }
+    } 
+    // else {
+    //   showToast('Image not available', 'Alert');
+    // }
   };
 
   const appendZero = val => {
