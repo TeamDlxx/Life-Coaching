@@ -48,7 +48,7 @@ const NewPassword = props => {
     } else if (checkSpace(t_password)) {
       showToast('Password should not have white spaces', 'Alert');
     } else if (t_password.length < 6) {
-      showToast('Password length must be minimim 6 letters', 'Alert');
+      showToast('Password length must be minimum 6 letters', 'Alert');
     } else if (t_password != t_newPassword) {
       showToast('Passwords are not matched', 'Alert');
     } else {

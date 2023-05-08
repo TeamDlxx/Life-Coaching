@@ -43,7 +43,6 @@ const Reminders = props => {
     const getReminderTime = async () => {
         return await AsyncStorage.getItem('@reminderTime').then(val => {
             if (val !== null) {
-                console.log(val, "Reminder Time ...")
                 setTime(moment(val).toISOString());
             }
         })
@@ -52,7 +51,6 @@ const Reminders = props => {
     const getReminderValue = async () => {
         return await AsyncStorage.getItem('@reminderValue').then(val => {
             if (val !== null) {
-                console.log(val, "Reminder Value ...")
                 setIsEnabled(JSON.parse(val));
             }
         })
@@ -60,8 +58,6 @@ const Reminders = props => {
 
     const switchFunction = async () => {
         await setIsEnabled(!isEnabled)
-        console.log(isEnabled, "switch value....")
-
         if (isEnabled == true) {
             cancelGratitudeNotification("1")
             await AsyncStorage.setItem('@reminderValue', JSON.stringify(false))
@@ -90,7 +86,6 @@ const Reminders = props => {
             'Gratitude Reminder',
             'success',
         );
-        console.log(" Notification scheduled on ......", time)
     }
 
     const cancelGratitudeNotification = async id => {
@@ -98,7 +93,6 @@ const Reminders = props => {
             list.map(x => {
                 if (x.data._id == id) {
                     PushNotification.cancelLocalNotification(x.id);
-                    console.log("Notification cancelled ......")
                 }
             });
         });
@@ -190,7 +184,6 @@ const Reminders = props => {
                 date={moment(time).toDate()}
                 is24Hour={false}
                 onConfirm={async (val) => {
-                    console.log(val, "value .... ")
                     await setShowModal(false)
                     await setTime(moment(val).toISOString())
 
@@ -200,7 +193,6 @@ const Reminders = props => {
                     ]
 
                     await AsyncStorage.multiSet(asyncData);
-                    console.log(asyncData, "async data....")
 
                     await cancelGratitudeNotification("1")
                     scheduleLocalNotification(val)

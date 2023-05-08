@@ -335,12 +335,6 @@ const Signup = props => {
             />
           </View>
 
-          {/* <View style={{marginVertical: 10, alignItems: 'flex-end'}}>
-              <Text style={{color: '#6C747E', fontFamily: font.medium}}>
-                Forgot Password?
-              </Text>
-            </View> */}
-
           <View style={{ marginVertical: 20 }}>
             <CustomButton onPress={() => SigUpBtn()} title={'Sign Up'} />
           </View>
@@ -407,6 +401,7 @@ const Signup = props => {
             style={{
               marginTop: 20,
               alignItems: 'center',
+              marginBottom: 10,
             }}>
             <Text style={{ color: '#313131', fontFamily: font.regular }}>
               Already have an Account?{' '}

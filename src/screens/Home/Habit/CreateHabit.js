@@ -723,7 +723,7 @@ const CreateHabit = props => {
                   </Text>
                 </View>
                 <Text style={createHabit_styles.timeButtonText1}>
-                  You will recieve a reminder on specified days on the following
+                  You will receive a reminder on specified days on the following
                   time{' '}
                 </Text>
                 <Pressable

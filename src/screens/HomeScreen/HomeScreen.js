@@ -108,9 +108,6 @@ const HomeScreen = (props) => {
 
 
     useEffect(() => {
-        // messaging().getToken().then((token) => {
-        //     console.log(token , "device token....")
-        //  });
         if (Token) {
             dashBoardApi();
         } else {
@@ -151,7 +148,7 @@ const HomeScreen = (props) => {
 
             if (state == 'playing' || state == 2) {
                 console.log("playing...")
-                // setPlayIcon(pauseTrack);
+                setPlayIcon(pauseTrack);
             }
 
             if (state == 'paused' || state == 3) {
@@ -161,7 +158,7 @@ const HomeScreen = (props) => {
 
             if (state == 'stopped' || state == 4) {
                 console.log("stopped...")
-                // setPlayIcon(playTrack);
+                setPlayIcon(playTrack);
             }
         });
 
@@ -232,6 +229,7 @@ const HomeScreen = (props) => {
                 LoadtheTrack()
                 setisLoading(false);
 
+                AsyncStorage.setItem("@notes" , JSON.stringify(note))
                 console.log(meditationOfTheDay, "Meditation of the Day......")
                 console.log(quoteOfTheDay, "Quote of the Day......")
                 console.log(habitStats, "Habit Stats of the Day......")
@@ -878,7 +876,6 @@ const HomeScreen = (props) => {
                                 requestNonPersonalizedAdsOnly: true,
                             }}
                             onAdFailedToLoad={err => {
-                                console.log(err, 'Banner Ad Error...');
                                 setAdError(true);
                             }}
                         />
@@ -942,7 +939,7 @@ const HomeScreen = (props) => {
                                     marginTop: 10,
                                     flexDirection: "row",
                                     justifyContent: "space-evenly",
-                                    alignItems: "flex-start"
+                                    alignItems: "center"
                                 }}>
                                     <Pressable
                                         onPress={changeStatus}
@@ -1138,8 +1135,8 @@ const HomeScreen = (props) => {
                         {!!quoteOfTheDay?.description &&
                             <TouchableHighlight
                                 disabled={Platform.OS == 'ios'}
-                                onLongPress={() => copyText(quoteOfTheDay?.description.trim())}
-                                delayLongPress={500}
+                                onPress={() => copyText(quoteOfTheDay?.description.trim())}
+                                // delayLongPress={500}
                                 underlayColor={Colors.gray01}
                                 style={{}}>
                                 <Text

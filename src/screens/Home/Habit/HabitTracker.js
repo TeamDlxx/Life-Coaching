@@ -846,7 +846,6 @@ const HabitTracker = props => {
       <Header
         navigation={props.navigation}
         title={'Habit Tracker'}
-        titleAlignLeft
         // rightIcon={require('../../../Assets/Icons/stats.png')}
         // rightIcononPress={() => props.navigation.navigate(screens.habitStats)}
         rightIcon={require('../../../Assets/Icons/list.png')}

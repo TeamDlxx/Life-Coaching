@@ -88,7 +88,7 @@ const CreateGratitude = props => {
                     'Unsaved Changes',
                     'Are you sure you want to discard changes?',
                     [{ text: 'No' }, { text: 'Yes', onPress: () => props.navigation.goBack() }],
-                    {cancelable: true},
+                    { cancelable: true },
                 );
             }
             else {
@@ -102,7 +102,7 @@ const CreateGratitude = props => {
                     'Unsaved Changes',
                     'Are you sure you want to discard changes?',
                     [{ text: 'No' }, { text: 'Yes', onPress: () => props.navigation.goBack() }],
-                    {cancelable: true},
+                    { cancelable: true },
                 );
             } else {
                 props.navigation.goBack();
@@ -126,7 +126,7 @@ const CreateGratitude = props => {
                     'Unsaved Changes',
                     'Are you sure you want to discard changes?',
                     [{ text: 'No' }, { text: 'Yes', onPress: () => props.navigation.goBack() }],
-                    {cancelable: true},
+                    { cancelable: true },
                 );
             }
             else {
@@ -150,6 +150,10 @@ const CreateGratitude = props => {
     );
 
     useEffect(() => {
+        if (gratitudesList.length == 0) {
+            gratitudeDate = "";
+            isGratitudeExist = false;
+        }
         const unsubscribe = props.navigation.addListener('focus', () => {
 
             tempObj = {
@@ -619,7 +623,7 @@ const CreateGratitude = props => {
                                             <View style={styles.textFieldView}>
                                                 <TextInput
                                                     editable={true}
-                                                    style={{ paddingHorizontal: 20, fontFamily: font.regular }}
+                                                    style={{ paddingHorizontal: 20, fontFamily: font.regular , alignItems: "center" , height: "100%"}}
                                                     autoCorrect={false}
                                                     autoCapitalize={'sentences'}
                                                     selectTextOnFocus={false}
@@ -703,7 +707,7 @@ const CreateGratitude = props => {
                             }}>
                             <TextInput
                                 editable={false}
-                                style={{ flex: 1, paddingHorizontal: 20, fontFamily: font.regular, color: oldGratitude ? Colors.disable : Colors.black }}
+                                style={{ flex: 1, paddingHorizontal: 20, fontFamily: font.regular, color: oldGratitude ? Colors.disable : Colors.black , height: "100%"}}
                                 value={moment(Gratitude.date).format('ddd, MMMM DD YYYY , hh:mm a')}
                             />
                             <View

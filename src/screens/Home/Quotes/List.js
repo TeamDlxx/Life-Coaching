@@ -371,8 +371,8 @@ const List = props => {
           {!!item?.description && (
             <TouchableHighlight
               disabled={Platform.OS == 'ios'}
-              onLongPress={() => copyText(item?.description.trim())}
-              delayLongPress={500}
+              onPress={() => copyText(item?.description.trim())}
+              // delayLongPress={500}
               underlayColor={Colors.gray01}
               style={{}}>
               <Text
@@ -681,7 +681,6 @@ const List = props => {
       />
 
       <Header
-        titleAlignLeft
         rightIcon={favList}
         rightIcononPress={onFavList}
         rightIconStyle={{ height: 25, width: 25 }}
