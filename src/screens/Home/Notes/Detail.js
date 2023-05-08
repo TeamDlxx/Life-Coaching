@@ -45,8 +45,11 @@ import CustomImage from '../../../Components/CustomImage';
 import { baseURL, fileURL } from '../../../Utilities/domains';
 import moment from 'moment';
 import { isIphoneX } from 'react-native-iphone-x-helper';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const jsCode = `!function(){var e=function(e,n,t){if(n=n.replace(/^on/g,""),"addEventListener"in window)e.addEventListener(n,t,!1);else if("attachEvent"in window)e.attachEvent("on"+n,t);else{var o=e["on"+n];e["on"+n]=o?function(e){o(e),t(e)}:t}return e},n=document.querySelectorAll("a[href]");if(n)for(var t in n)n.hasOwnProperty(t)&&e(n[t],"onclick",function(e){new RegExp("^https?://"+location.host,"gi").test(this.href)||(e.preventDefault(),window.postMessage(JSON.stringify({external_url_open:this.href})))})}();`;
+
+let noteArr = []
 const NoteDetail = props => {
   const { navigation } = props;
   const { downloadAudioNote, Token, notesList, setNotesList, dashboardData, setDashBoardData } = useContext(Context);
@@ -296,6 +299,8 @@ const NoteDetail = props => {
     }
   };
 
+  console.log(props)
+
   const api_deleteNote = async NoteID => {
     setisLoading(true);
     let res = await invokeApi({
@@ -312,6 +317,7 @@ const NoteDetail = props => {
         setisLoading(false);
         if (props?.route?.params?.isComingFrom == "dashBoard") {
           console.log("yes , isComingFrom from dashboard.....")
+          let arr = [...notesList];
           await deleteLocallyfromList(NoteID)
           props.navigation.goBack();
         } else {
@@ -335,10 +341,18 @@ const NoteDetail = props => {
       await deleteDashBoardNotes(noteID, arr)
       setNotesList(arr);
     }
+
   };
 
   const deleteDashBoardNotes = async (id, arr) => {
-    let tempArr = [...dashboardData.notes]
+    let tempArr = [...dashboardData.notes];
+    console.log(tempArr, "jasdnajbdhj")
+    if (tempArr.length != 0) {
+      console.log('yess....hbhxbh')
+      tempArr = [...dashboardData.notes]
+    } else {
+      tempArr = await AsyncStorage.getItem('@notes')
+    }
     let idx = tempArr.findIndex(x => x._id == id)
     if (idx != -1) {
       tempArr = []
@@ -351,11 +365,31 @@ const NoteDetail = props => {
       }
       console.log(tempArr, "new Arr......")
     }
+
     await setDashBoardData({
       ...dashboardData,
       notes: [...tempArr]
     })
   }
+
+
+  const allNotesApi = async body => {
+    let res = await invokeApi({
+      path: `api/note/get_notes?page=0&limit=${10}`,
+      method: 'POST',
+      postData: body,
+      headers: {
+        'x-sh-auth': Token,
+      },
+      navigation: props.navigation,
+    });
+    if (res) {
+      if (res.code == 200) {
+        setNotesList(res.notes)
+      } else {
+      }
+    }
+  };
 
 
   useEffect(() => {
@@ -370,6 +404,14 @@ const NoteDetail = props => {
   }, [props.route]);
 
   useEffect(() => {
+    if (props?.route?.params?.isComingFrom == "dashBoard") {
+      allNotesApi({
+        search: '',
+        date_from: '',
+        date_to: '',
+        color: JSON.stringify([]),
+      })
+    }
     if (!!note?.audio) {
       download();
     }
@@ -412,13 +454,12 @@ const NoteDetail = props => {
           </Text>
         </View>
         {!!note?.description && (
-          <View style={{ marginTop: 10, alignItems: 'center' }}>
-
+          <View style={{ marginTop: 10, }}>
             <View style={{ padding: 20, }}>
               <RenderHtml
                 contentWidth={width}
                 style={{ fontSize: 14 }}
-                source={{ html: note?.description }}
+                source={{ html: note?.description + "  " }}
                 renderersProps={renderersProps}
 
               />
@@ -548,7 +589,6 @@ const NoteDetail = props => {
       />
       <View style={{ flex: 1 }}>
         <Header
-          titleAlignLeft
           navigation={navigation}
           title={'Note'}
           menu={dropDownMenu}

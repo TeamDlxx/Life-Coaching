@@ -54,6 +54,7 @@ const QuoteDetail = (props) => {
     const [quote, setQuoteDetail] = useState(null);
 
     useEffect(() => {
+        console.log(params._id)
         callQuoteDetailApi()
         return () => { };
     }, []);
@@ -295,8 +296,8 @@ const QuoteDetail = (props) => {
                         {!!quote?.description &&
                             <TouchableHighlight
                                 disabled={Platform.OS == 'ios'}
-                                onLongPress={() => copyText(quote?.description.trim())}
-                                delayLongPress={500}
+                                onPress={() => copyText(quote?.description.trim())}
+                                // delayLongPress={500}
                                 underlayColor={Colors.gray01}
                                 style={{}}>
                                 <Text

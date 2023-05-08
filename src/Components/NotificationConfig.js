@@ -51,7 +51,7 @@ export default function NotificationConfig(props) {
               // name: screens.qouteList,
               name: screens.quoteDetail,
               params: {
-                _id: data._id,
+                _id: data.action_id,
               },
             },
           ],

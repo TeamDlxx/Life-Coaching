@@ -317,8 +317,8 @@ const FavQuoteList = props => {
         {!!item?.description && (
           <TouchableHighlight
             disabled={Platform.OS == 'ios'}
-            onLongPress={() => copyText(item?.description.trim())}
-            delayLongPress={500}
+            onPress={() => copyText(item?.description.trim())}
+            // delayLongPress={500}
             underlayColor={Colors.gray01}
             style={{}}>
             <Text
@@ -598,7 +598,6 @@ const FavQuoteList = props => {
         backgroundColor={!!modalImage ? Colors.black : Colors.background}
       />
       <Header
-        titleAlignLeft
         navigation={props.navigation}
         title={'Favourite Quotes'}
       />

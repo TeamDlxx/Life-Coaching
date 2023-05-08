@@ -162,7 +162,7 @@ const MoodsJournal = props => {
             if (index != -1) {
               addToSelectedMoods(moods[index].mood)
             } else {
-              showToast('Choose a mood to track your emotions.', 'Alert');
+              showToast('Please select a mood to track the history.', 'Alert');
             }
           }
           else {
@@ -445,16 +445,33 @@ const MoodsJournal = props => {
           </View>
           :
           <>
-            <View style={{ flex: 1 }}>
-              <View
-                style={{
-                  marginTop: 35,
-                  backgroundColor: 'white',
-                  paddingBottom: 0,
-                  borderRadius: 20,
-                }}>
+            <ScrollView showsVerticalScrollIndicator={false}>
 
-                <View style={{ marginTop: 15, marginBottom: 0, marginLeft: 70 }}>
+              <View style={{
+                flex: 1,
+                marginTop: 15,
+                backgroundColor: 'white',
+                borderRadius: 20,
+                borderWidth: 0.8,
+                borderColor: Colors.gray02,
+                paddingVertical: 13,
+                paddingHorizontal: 10,
+              }}>
+
+                <Text style={{
+                  fontFamily: font.regular,
+                  textAlign: 'center',
+                  fontSize: 13.5,
+                  color:Colors.black,
+                }}>
+                  Choose the Emoji below that best describes your mood to see the mood history. {' '}
+                </Text>
+
+                <View style={{
+                  marginTop: 15,
+                  justifyContent:"center",
+                  alignItems:"center"
+                }}>
                   <FlatList
                     showsHorizontalScrollIndicator={false}
                     horizontal
@@ -466,9 +483,17 @@ const MoodsJournal = props => {
                   />
                 </View>
 
-                <View style={{ top: -10 }}>
+
+              </View>
+
+              <View
+                style={{
+                  marginTop: 15,
+                  backgroundColor: 'white',
+                  borderRadius: 20,
+                }}>
                   <VictoryChart
-                    height={300}
+                    height={280}
                     width={Dimensions.get("window").width * 0.95}
                     maxDomain={{ y: 10 }}
                     minDomain={{ y: 0 }}
@@ -527,9 +552,7 @@ const MoodsJournal = props => {
                       data={chartData.angry} x="day" y="intensity" />
                     <VictoryScatter style={{ data: { fill: "#8DA47E" } }} size={5} data={chartData.angry} x="day" y="intensity" />
 
-
                   </VictoryChart>
-                </View>
 
               </View>
 
@@ -537,7 +560,7 @@ const MoodsJournal = props => {
                 <Pressable
                   onPress={onPressPreviousBtn}
                   style={{
-                    height: 50,
+                    height: 45,
                     flex: 1.5,
                     backgroundColor: "white",
                     borderWidth: 1,
@@ -553,7 +576,7 @@ const MoodsJournal = props => {
                 </Pressable>
 
                 <View style={{
-                  height: 50,
+                  height: 45,
                   flex: 7,
                   backgroundColor: "white",
                   borderWidth: 1,
@@ -570,7 +593,7 @@ const MoodsJournal = props => {
                 <Pressable
                   onPress={onPressNextBtn}
                   style={{
-                    height: 50,
+                    height: 45,
                     flex: 1.5,
                     backgroundColor: "white",
                     borderWidth: 1,
@@ -593,10 +616,10 @@ const MoodsJournal = props => {
                 style={{
                   backgroundColor: Colors.primary,
                   borderRadius: 10,
-                  height: 50,
+                  height: 45,
                   alignItems: "center",
                   justifyContent: "center",
-                  marginTop: 20
+                  marginTop: 15
                 }}>
                 <Text style={{
                   color: "white",
@@ -605,7 +628,7 @@ const MoodsJournal = props => {
                 }}>{"Your Mood Journal >"}</Text>
               </Pressable>
 
-            </View>
+            </ScrollView>
             <Pressable style={FAB_style.View} onPress={btn_add}>
               <Image
                 source={require('../../../Assets/Icons/plus.png')}
@@ -617,27 +640,27 @@ const MoodsJournal = props => {
         }
 
       </View>
-      <Loader style={{ bottom: win.height / 3, }} enable={isRefreshing} />
+      <Loader enable={isRefreshing} />
       {adError == false && (
-              <View
-                style={{
-                  width: '100%',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                <BannerAd
-                  size={BannerAdSize.BANNER}
-                  unitId={Admob_Ids.banner}
-                  requestOptions={{
-                    requestNonPersonalizedAdsOnly: true,
-                  }}
-                  onAdFailedToLoad={err => {
-                    console.log(err, 'Banner Ad Error...');
-                    setAdError(true);
-                  }}
-                />
-              </View>
-            )}
+        <View
+          style={{
+            width: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <BannerAd
+            size={BannerAdSize.BANNER}
+            unitId={Admob_Ids.banner}
+            requestOptions={{
+              requestNonPersonalizedAdsOnly: true,
+            }}
+            onAdFailedToLoad={err => {
+              console.log(err, 'Banner Ad Error...');
+              setAdError(true);
+            }}
+          />
+        </View>
+      )}
     </SafeAreaView>
   );
 };

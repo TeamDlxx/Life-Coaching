@@ -45,7 +45,6 @@ const NotificationScreen = (props) => {
         });
         if (res) {
             if (res.code == 200) {
-                console.log(res, "response...")
                 let list = res.notifications
                 await setNotificationList(list)
                 setisLoading(false);
@@ -68,8 +67,7 @@ const NotificationScreen = (props) => {
             <Pressable
                 onPress={() =>
                     props.navigation.navigate(screens.quoteDetail, {
-                        _id: item._id,
-                        // _id: `643fc0c1e71e7d41d08a41ab`
+                        _id: item.action_id,
                     })
                 }
                 style={{
@@ -119,7 +117,7 @@ const NotificationScreen = (props) => {
                         </Text>
                     </View>
 
-                    <Text
+                    {item.description && <Text
                         style={{
                             marginTop: 5,
                             fontFamily: font.medium,
@@ -128,7 +126,7 @@ const NotificationScreen = (props) => {
                             lineHeight: 18,
                         }}>
                         {item.description}
-                    </Text>
+                    </Text>}
 
                 </View>
             </Pressable>

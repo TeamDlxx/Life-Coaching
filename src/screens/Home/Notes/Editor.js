@@ -830,7 +830,7 @@ const Editor = props => {
           setNotes({ images: [...temp] });
         },
       },
-    ],{cancelable: true},);
+    ], { cancelable: true },);
   };
 
   const ColorPickerModal = () => {
@@ -1066,7 +1066,7 @@ const Editor = props => {
           onStopPlay();
         },
       },
-    ],{cancelable: true},);
+    ], { cancelable: true },);
   };
 
   // Add in Remove Array
@@ -1256,7 +1256,6 @@ const Editor = props => {
         backgroundColor={notes.colors.light}
       />
       <Header
-        // backgroundColor={notes.colors.dark}
         titleAlignLeft
         navigation={navigation}
         title={edit ? 'Edit Note' : 'Add Note'}
@@ -1269,8 +1268,6 @@ const Editor = props => {
               height: 30,
               width: 60,
               justifyContent: 'center',
-              // paddingHorizontal: 10,
-              // paddingVertical: 5,
               backgroundColor: Colors.white,
               borderRadius: 20,
               marginRight: 10,
@@ -1287,29 +1284,10 @@ const Editor = props => {
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-              {/* <View
-                style={{
-                  height: '50%',
-                  width: '50%',
-                  backgroundColor: notes.colors.light,
-                  borderRadius: 999,
-                }}
-              /> */}
             </View>
             <View
               style={{
-                // transform: [{rotateZ: '90deg'}],
                 marginLeft: 5,
-                // marginRight:-15
-                // marginLeft:-5,
-                // position: 'absolute',
-                // bottom: -5,
-                // left: -5,
-                // bottom: 0,
-                // right: 0,
-                // left: 0,
-                // top: 0,
-                // zIndex: 2,
               }}>
               <Image
                 source={require('../../../Assets/Icons/down-arrow.png')}
@@ -1328,8 +1306,6 @@ const Editor = props => {
               height: 30,
               width: 70,
               justifyContent: 'center',
-              // paddingHorizontal: 10,
-              // paddingVertical: 5,
               backgroundColor: Colors.white,
               borderRadius: 20,
               marginRight: 10,
@@ -1348,18 +1324,9 @@ const Editor = props => {
             </View>
           </Pressable>
         }
-        // rightIcon2View={
-        //   <Pressable
-        //     onPress={() => setBackgroundColorModalVisiblity(prev => !prev)}>
-        //     <Image
-        //       source={require('../../../Assets/Icons/color-wheel.png')}
-        //       style={{height: 25, width: 25}}
-        //     />
-        //   </Pressable>
-        // }
-        // rightIcon2={ic_colorPicker}
         rightIcon2onPress={() => { }}
       />
+
       <View style={{ flex: 1 }}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -1393,27 +1360,7 @@ const Editor = props => {
                   autoFocus={true}
                 />
               </View>
-              {/* <Pressable
-                style={{
-                  flex: 1,
-                  position: 'absolute',
-                  zIndex: -1,
-                  backgroundColor: 'pink',
-                  top: 0,
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                }}
-                onPress={() => {
-                  console.log(RichText?.current._focus);
-                  if (RichText?.current._focus == false) {
-                    console.log('==>true');
-                    RichText?.current?.focusContentEditor();
-                    RichText?.current?.setContentHTML(notes.note);
-                    setIsFocused(true);
-                  }
-                }}
-              /> */}
+
               <ScrollView
                 scrollEventThrottle={20}
                 ref={scrollRef}
@@ -1430,8 +1377,6 @@ const Editor = props => {
                       ref={RichText}
                       style={{
                         borderRadius: 10,
-                        // borderBottomColor: Colors.gray02,
-                        // borderBottomWidth: 1,
                       }}
                       onCursorPosition={scrollY => {
                         scrollRef?.current.scrollTo({
@@ -1447,34 +1392,22 @@ const Editor = props => {
                       initialContentHTML={notes.note}
                       editorStyle={{
                         backgroundColor: notes.colors.light,
-                        // backgroundColor: 'pink',
                         contentCSSText:
                           ' * {font-family: "Verdana", sans-serif;}',
                       }}
                       onInput={res => {
                         console.log(res, 'onInput');
                       }}
-                      // setContentHTML={'<div><p><p/><div>'}
-                      // setDisplayZoomControls={true}
-                      // initialContentHTML={'<div><p>' + notes.note + '</p></div>'}
-                      // useContainer={false}
                       pasteAsPlainText={true}
                       placeholder={"What's in your mind"}
                       onChange={text => {
                         setNotes({ note: text });
-
-                        // scrollRef?.current.scrollToEnd({
-                        //   animated: true,
-                        // });
                       }}
                       onPaste={() => {
                         console.log('onPaste');
-                        // setTimeout(() => {
-                        // setNotes({note: notes.note + '<div><br/></div>'});
                         scrollRef?.current.scrollToEnd({
                           animated: true,
                         });
-                        //   // }, 200);
                       }}
                       // setBuiltInZoomControls={true}
                       androidLayerType="hardware"
@@ -1872,28 +1805,21 @@ const Editor = props => {
                   </View>
                 </View>
               </ScrollView>
-              {/* </Pressable> */}
+
             </View>
 
-            <View
+            {isFocused && <View
               style={{ paddingBottom: 10, marginHorizontal: 20 }}
-            // collapsed={!isFocused}
             >
               <RichToolbar
                 editor={RichText}
                 onInsertLink={() => openDialogue()}
-                // getEditor={() => RichText}
                 actions={[
                   actions.keyboard,
                   ['images'],
                   ['audio'],
-
                   actions.undo,
                   actions.redo,
-                  // actions.heading1,
-                  // actions.heading2,
-                  // actions.heading3,
-                  // actions.setParagraph,
                   actions.foreColor,
                   actions.setBold,
                   actions.setItalic,
@@ -1902,7 +1828,6 @@ const Editor = props => {
                   actions.removeFormat,
                   actions.insertBulletsList,
                   actions.insertOrderedList,
-                  // actions.setTextColor
                 ]}
                 style={{
                   backgroundColor: Colors.white,
@@ -2006,14 +1931,16 @@ const Editor = props => {
                 }}
                 selectedIconTint={Colors.primary}
               />
-            </View>
+            </View>}
           </>
         </KeyboardAvoidingView>
+
         {ColorPickerModal()}
         {ImagePickerOptionsModal()}
         {AudioRecoderModal()}
         {backgroundColorModal()}
         {LinkDialog()}
+
         <ImageZoomer
           closeModal={hideImageModal}
           visible={!!modalImage}

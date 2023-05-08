@@ -525,7 +525,7 @@ const List = props => {
       <StatusBar barStyle={'dark-content'} backgroundColor={Colors.white} />
       <Header
         navigation={navigation}
-        titleAlignLeft
+        // titleAlignLeft
         title={'Notes'}
         rightIcon2={ic_filter}
         rightIcon={ic_search}
