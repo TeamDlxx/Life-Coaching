@@ -37,13 +37,13 @@ const ChangePassword = props => {
     if (t_oldPassword == '') {
       showToast('Please enter old password', 'Alert');
     } else if (t_oldPassword.length < 6) {
-      showToast('Password length must be minimim 6 letters', 'Alert');
+      showToast('Password length must be minimum 6 letters', 'Alert');
     } else if (t_new == '') {
       showToast('Please enter new password');
     } else if (checkSpace(t_new)) {
       showToast('Password should not have white spaces', 'Alert');
     } else if (t_new.length < 6) {
-      showToast('Password length must be minimim 6 letters', 'Alert');
+      showToast('Password length must be minimum 6 letters', 'Alert');
     } else if (t_confirm == '') {
       showToast('Please confirm your password', 'Alert');
     } else if (t_confirm != t_new) {

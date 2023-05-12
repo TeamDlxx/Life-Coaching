@@ -35,7 +35,7 @@ import ImageZoomer from '../../../Components/ImageZoomer';
 
 const GratitudeDetail = props => {
 
-    const { Token, gratitudesList, setGratitudesList, } = useContext(Context);
+    const { Token, gratitudesList, setGratitudesList, allGratitudesList, setAllGratitudesList } = useContext(Context);
     const { params } = props.route;
     const win = Dimensions.get("window");
     const [modalImage, setModalImage] = useState(null);
@@ -105,12 +105,19 @@ const GratitudeDetail = props => {
         }
     };
 
-    const removeFromGlobalGratitudeList = id => {
+    const removeFromGlobalGratitudeList = async (id) => {
         let newArray = [...gratitudesList];
         let index = newArray.findIndex(x => x._id == id);
         if (index != -1) {
             newArray.splice(index, 1);
             setGratitudesList(newArray);
+        }
+
+        let newGlobalArray = [...allGratitudesList];
+        let newIdx = newGlobalArray.findIndex(x => x._id == id);
+        if (newIdx != -1) {
+            newGlobalArray.splice(newIdx, 1);
+            await setAllGratitudesList(newGlobalArray);
         }
     };
 

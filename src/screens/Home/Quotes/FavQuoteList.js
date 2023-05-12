@@ -65,7 +65,7 @@ const limit = 10;
 let selectedQuote;
 const FavQuoteList = props => {
   const { params } = props?.route;
-  const { Token, downloadQuote, dashboardData, setDashBoardData } = useContext(Context);
+  const { Token, isDownloading, downloadQuote, dashboardData, setDashBoardData } = useContext(Context);
   const [QuoteList, setQuoteList] = useState([]);
   const [loading, setisLoading] = useState(false);
   const [modalImage, setModalImage] = useState(null);
@@ -378,10 +378,14 @@ const FavQuoteList = props => {
               height: 50,
               justifyContent: 'center',
             }}>
-            <Image
-              source={ic_download}
-              style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
-            />
+            {isDownloading ?
+              <ActivityIndicator color={Colors.placeHolder} size="small" />
+              :
+              <Image
+                source={ic_download}
+                style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
+              />
+            }
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -630,6 +634,7 @@ const FavQuoteList = props => {
         visible={!!modalImage}
         url={modalImage}
       />
+
     </SafeAreaView>
   );
 };

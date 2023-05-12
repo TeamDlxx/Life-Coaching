@@ -118,7 +118,7 @@ const TrackPlayerScreen = props => {
               },
             },
           ],
-          {cancelable: true},
+          { cancelable: true },
         );
       }
     } else {
@@ -224,6 +224,7 @@ const TrackPlayerScreen = props => {
         item_name: trackItem.name,
       });
     }
+    await AsyncStorage.setItem("@resetTrack", "true")
   };
 
   const checkNextAndPreviosAvailable = (id, type) => {
@@ -258,7 +259,7 @@ const TrackPlayerScreen = props => {
 
       if (state == 'playing' || state == 2) {
         setloading(false);
-        // setPlayIcon(pauseTrack);
+        setPlayIcon(pauseTrack);
       }
 
       if (state == 'paused' || state == 3) {
@@ -267,7 +268,7 @@ const TrackPlayerScreen = props => {
       }
       if (state == 'stopped' || state == 4) {
         setloading(false);
-        // setPlayIcon(playTrack);
+        setPlayIcon(playTrack);
       }
     });
 

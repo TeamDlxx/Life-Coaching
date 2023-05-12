@@ -21,6 +21,7 @@ const ContextWrapper = props => {
   const [adminURLsAndEmail, setAdminURLsAndEmail] = useState(null);
   const [habitList, setHabitList] = useState([]);
   const [progress, setProgress] = useState([]);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [quotesDownloading, setQuotesDownloading] = useState([]);
   const [progressAudioNote, setProgressAudioNote] = useState([]);
   const [purchases, setPurchases] = useState({
@@ -50,23 +51,25 @@ const ContextWrapper = props => {
 
   const [badgeCount, setBadgeCount] = useState(0);
 
+
   const checkPermissions = async () => {
     let granted;
 
     if (Platform.OS == 'android') {
-      granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-        // {
-        //   title: 'Storage Permissions',
-        //   message: 'App needs access to access your storage ',
-        //   buttonNeutral: 'Ask Me Later',
-        //   buttonNegative: 'Cancel',
-        //   buttonPositive: 'OK',
-        // },
-      );
+      const OsVer = Platform.constants['Release'];
+      console.log(OsVer, "OS Version")
+      if (OsVer >= 13) {
+        granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES);
+      } else {
+        granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
+      }
+
       if (granted == 'granted') {
         return true;
       } else {
+        console.log('denied...')
         showToast(
           'Please allow storage permission from settings',
           'Permission denied',
@@ -308,6 +311,7 @@ const ContextWrapper = props => {
     if (!granted) {
       return;
     }
+    setIsDownloading(true)
     let imgUrl = fileURL + image;
     let ext = imgUrl.split('.').pop();
     let imageName = '/image-' + moment().valueOf();
@@ -359,6 +363,7 @@ const ContextWrapper = props => {
           } catch (e) {
             console.log(e, 'camera roll failed');
           }
+          setIsDownloading(false)
           showToast(
             'Quote has been saved to your storage',
             'Quote Downloaded',
@@ -367,19 +372,20 @@ const ContextWrapper = props => {
         })
         .catch(e => {
           console.log('download failed', e);
-
+          setIsDownloading(false)
           showToast('Quote downloading failed', 'Something went wrong');
         });
     } else {
       try {
         CameraRoll.save(imgUrl);
-
+        setIsDownloading(false)
         showToast(
           'Quote has been saved to your storage',
           'Quote Downloaded',
           'success',
         );
       } catch (e) {
+        setIsDownloading(false)
         showToast('Quote downloading failed', 'Something went wrong');
       }
     }
@@ -530,7 +536,7 @@ const ContextWrapper = props => {
 
   const getNotificationCount = async () => {
     return await AsyncStorage.getItem('@badgeCount').then(val => {
-      if (val !== null) {
+      if (val !== null && val > 0) {
         console.log(val, "bell icon BadgeCount ...")
         setBadgeCount(val);
       }
@@ -541,7 +547,7 @@ const ContextWrapper = props => {
     if (data.type == "quotes") {
       console.log("notification in context...")
       let count = parseInt(await AsyncStorage.getItem('@badgeCount'))
-      if (count != null) {
+      if (count != null && count > 0) {
         count = count + 1;
         setBadgeCount(count)
         await AsyncStorage.setItem('@badgeCount', JSON.stringify(count));
@@ -573,6 +579,7 @@ const ContextWrapper = props => {
     deleteTrack,
     setHabitList,
     completed,
+    isDownloading,
     downloadQuote,
     isMeditationPurchased: purchases?.meditation,
     isHabitPurchased: purchases?.habit,

@@ -8,7 +8,7 @@ import {
     Alert,
     ActivityIndicator,
 } from 'react-native';
-import React, { useState, useEffect ,useCallback} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
 import { mainStyles, allGratitudes_styles } from '../../../Utilities/styles';
@@ -34,7 +34,7 @@ let canLoadMore = false;
 
 const AllGratitudes = props => {
     const { params } = props.route;
-    const { Token, gratitudesList, setGratitudesList, setGratitudeExist, allGratitudesList } = useContext(Context);
+    const { Token, gratitudesList, setGratitudesList, setGratitudeExist, allGratitudesList, setAllGratitudesList } = useContext(Context);
     const [isLoading, setisLoading] = useState(false);
     const [allGratitudes, setAllGratitudes] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -53,7 +53,7 @@ const AllGratitudes = props => {
 
     const btn_add = () => {
         if (Token) {
-            props.navigation.navigate(screens.addGratitude , { allGratitudes: allGratitudesList });
+            props.navigation.navigate(screens.addGratitude, { allGratitudes: allGratitudesList });
         } else {
             LoginAlert(props.navigation, props.route?.name);
         }
@@ -73,8 +73,8 @@ const AllGratitudes = props => {
 
     const callAllGratitudesListApi = () => {
         allGratitudesListApi({
-            start_date:'',
-            end_date:'',
+            start_date: '',
+            end_date: '',
         });
     };
 
@@ -190,6 +190,14 @@ const AllGratitudes = props => {
 
         if (gratitudesList.length == 0) {
             setGratitudeExist(false)
+            setGratitudesList([])
+        }
+
+        let newGlobalArray = [...allGratitudesList];
+        let newIdx = newGlobalArray.findIndex(x => x._id == id);
+        if (newIdx != -1) {
+            newGlobalArray.splice(newIdx, 1);
+            await setAllGratitudesList(newGlobalArray);
         }
     };
 
@@ -259,7 +267,7 @@ const AllGratitudes = props => {
                                                 { text: 'No' },
                                                 { text: 'Yes', onPress: () => api_deleteGratitude(item._id) },
                                             ],
-                                            {cancelable: true},
+                                            { cancelable: true },
                                         )
                                     }
                                     style={allGratitudes_styles.hiddenView}>
@@ -303,7 +311,7 @@ const AllGratitudes = props => {
                     <View>
                         <GratitudeFilterModel
                             visible={isModalVisible}
-                            filterGratitudeApi = {allGratitudesListApi}
+                            filterGratitudeApi={allGratitudesListApi}
                             filter={updateData}
                             previousFilterData={filterObj}
                             onCancel={toggleModal}
