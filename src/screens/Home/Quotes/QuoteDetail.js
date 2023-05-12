@@ -46,7 +46,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 let user = {};
 const QuoteDetail = (props) => {
     const { params } = props.route;
-    const { Token, downloadQuote, dashboardData, setDashBoardData ,setBadgeCount} = useContext(Context)
+    const { Token, isDownloading, downloadQuote, dashboardData, setDashBoardData, setBadgeCount } = useContext(Context)
     const win = Dimensions.get("window");
     const [modalImage, setModalImage] = useState(null);
     const [isLoading, setisLoading] = useState(false);
@@ -76,7 +76,7 @@ const QuoteDetail = (props) => {
 
     const quoteDetailApi = async () => {
         let res;
-        if (Token) {
+        if (Token && user?.user_id?._id) {
             res = await invokeApi({
                 path: 'api/quotes/quotes_detail_for_app/' + params?._id,
                 method: 'POST',
@@ -363,10 +363,14 @@ const QuoteDetail = (props) => {
                                     height: 50,
                                     justifyContent: 'center',
                                 }}>
-                                <Image
-                                    source={ic_download}
-                                    style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
-                                />
+                                {isDownloading ?
+                                    <ActivityIndicator color={Colors.placeHolder} size="small" />
+                                    :
+                                    <Image
+                                        source={ic_download}
+                                        style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
+                                    />
+                                }
                             </TouchableOpacity>
 
                             <TouchableOpacity

@@ -153,7 +153,7 @@ const Reminders = props => {
                                 </Text>
                             </View>
                             <Text style={reminder_styles.reminderDescription}>
-                                You will recieve a daily reminder on this time to add your gratitude{' '}
+                                You will receive a daily reminder on this time to add your gratitude{' '}
                             </Text>
 
                             <View >

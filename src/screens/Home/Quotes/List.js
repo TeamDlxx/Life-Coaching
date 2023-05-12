@@ -69,7 +69,7 @@ let selectedQuote;
 let firstTime = true;
 const List = props => {
   const flatListRef = useRef();
-  const { Token, downloadQuote, downloading, dashboardData, setDashBoardData } = useContext(Context);
+  const { Token, isDownloading, downloadQuote, downloading, dashboardData, setDashBoardData } = useContext(Context);
   const [QuoteList, setQuoteList] = useState([]);
   const [modalImage, setModalImage] = useState(null);
   const [isSharing, setIsSharing] = useState(null);
@@ -310,7 +310,7 @@ const List = props => {
     setModalImage(null);
   };
 
-  const isDownloading = id => {
+  const isDownloadingQuote = id => {
     return !!downloading.find(x => x == id);
   };
   const scrollToQuote = () => {
@@ -432,10 +432,14 @@ const List = props => {
                 justifyContent: 'center',
               }}>
               {/* {!checkQuoteDownloading(item._id) ? ( */}
-              <Image
-                source={ic_download}
-                style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
-              />
+              {isDownloading ?
+                <ActivityIndicator color={Colors.placeHolder} size="small" />
+                :
+                <Image
+                  source={ic_download}
+                  style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
+                />
+              }
               {/* ) : (
               <ActivityIndicator color={Colors.placeHolder} size="small" />
             )} */}
@@ -725,6 +729,7 @@ const List = props => {
         visible={!!modalImage}
         url={modalImage}
       />
+
     </SafeAreaView>
   );
 };

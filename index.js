@@ -66,11 +66,9 @@ PushNotification.createChannel(
 );
 
 const notificationBadgeCount = async (data) => {
-  if(data.type == 'quotes'){
+  if (data.type == 'quotes') {
     let count = parseInt(await AsyncStorage.getItem('@badgeCount'))
-
-    console.log(typeof(count)  , "hfdjhfjdhfjdjfhdjjfhhjfjdh")
-    if(count != null && count > 0){
+    if (count != null && count > 0) {
       count = count + 1;
       console.log(count, "total badge count...")
       await AsyncStorage.setItem('@badgeCount', JSON.stringify(count));
@@ -85,29 +83,26 @@ const onMessageReceived = async remoteMessage => {
 
   notificationBadgeCount(remoteMessage.data)
 
-
-
-  if(Platform.OS == "ios"){
-    
-await PushNotification.localNotification({
-    channelId: '7007',
-    channelName: 'BetterMe',
-    title: remoteMessage.notification.title,
-    message: !!remoteMessage?.notification?.body
-      ? remoteMessage?.notification?.body
-      : "Tap to read today's quote",
-    picture: remoteMessage?.notification?.android?.imageUrl,
-    userInfo: remoteMessage.data,
-    messageId: remoteMessage.messageId,
-    smallIcon: 'ic_stat_name',
-  });
-
-
+  if (Platform.OS == "ios") {
+    await PushNotification.localNotification({
+      channelId: '7007',
+      channelName: 'BetterMe',
+      title: remoteMessage.notification.title,
+      message: !!remoteMessage?.notification?.body
+        ? remoteMessage?.notification?.body
+        : "Tap to read today's quote",
+      picture: remoteMessage?.notification?.android?.imageUrl,
+      userInfo: remoteMessage.data,
+      messageId: remoteMessage.messageId,
+      smallIcon: 'ic_stat_name',
+    });
   }
-  
-  
+
+
 
 };
+
+messaging().subscribeToTopic('admin_notification')
 
 messaging().onMessage(onMessageReceived);
 

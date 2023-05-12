@@ -17,6 +17,7 @@ import {
     ToastAndroid,
     ActivityIndicator,
     ImageBackground,
+    PermissionsAndroid,
 } from 'react-native';
 import Modal from 'react-native-modal';
 import * as Animatable from 'react-native-animatable';
@@ -88,7 +89,7 @@ import Loader from '../../Components/Loader';
 let todayMeditation;
 
 const HomeScreen = (props) => {
-    const { Token, downloadQuote, dashboardData, setDashBoardData } = useContext(Context);
+    const { Token, isDownloading, downloadQuote, dashboardData, setDashBoardData, resetTrack, setResetTrack } = useContext(Context);
     const { params } = props?.route;
     const { navigation } = props;
     const [loading, setisLoading] = useState(true);
@@ -120,6 +121,7 @@ const HomeScreen = (props) => {
         setTimeout(() => {
             SplashScreen.hide();
         }, 500);
+        notificationPermissions()
         return () => {
         };
     }, []);
@@ -131,7 +133,7 @@ const HomeScreen = (props) => {
             }
 
             if (todayMeditation != undefined) {
-                LoadtheTrackOnFocus();
+                LoadtheTrackOnFocus()
             }
         });
         return () => {
@@ -139,6 +141,18 @@ const HomeScreen = (props) => {
         }
     }, [Token, props.navigation, todayMeditation]);
 
+
+    const LoadtheTrackOnFocus = async () => {
+        try {
+            await AsyncStorage.getItem('@resetTrack').then(val => {
+                if (val != null && val == "true") {
+                    LoadtheTrack()
+                }
+            });
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     useEffect(() => {
         console.log(State, "Track player state...")
@@ -201,6 +215,22 @@ const HomeScreen = (props) => {
         } else { }
     }
 
+    const notificationPermissions = async () => {
+        let granted;
+        if (Platform.OS == 'android') {
+            granted = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+            );
+            if (granted == 'granted') {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return true;
+        }
+    };
+
     const dashBoardApi = async () => {
         let res = await invokeApi({
             path: 'api/customer/app_dashboard',
@@ -229,7 +259,7 @@ const HomeScreen = (props) => {
                 LoadtheTrack()
                 setisLoading(false);
 
-                AsyncStorage.setItem("@notes" , JSON.stringify(note))
+                AsyncStorage.setItem("@notes", JSON.stringify(note))
                 console.log(meditationOfTheDay, "Meditation of the Day......")
                 console.log(quoteOfTheDay, "Quote of the Day......")
                 console.log(habitStats, "Habit Stats of the Day......")
@@ -317,6 +347,7 @@ const HomeScreen = (props) => {
             TrackPlayer.seekTo(0);
             TrackPlayer.play();
             setPlayIcon(pauseTrack);
+
         } else {
             if (playIcon == playTrack) {
                 TrackPlayer.play();
@@ -324,6 +355,7 @@ const HomeScreen = (props) => {
                 await analytics().logEvent(`PLAY_TRACK_EVENT`, {
                     item_name: meditationOfTheDay?.name,
                 });
+
             } else {
                 TrackPlayer.pause();
                 setPlayIcon(playTrack);
@@ -352,33 +384,8 @@ const HomeScreen = (props) => {
         await analytics().logEvent(`REPEAT_TRACK_EVENT`, {
             item_name: todayMeditation?.name,
         });
-
+        await AsyncStorage.setItem("@resetTrack", "false")
     };
-
-    const LoadtheTrackOnFocus = async () => {
-        await TrackPlayer.add({
-            id: todayMeditation?._id,
-            url: params?.from == 'down' ? todayMeditation?.mp3 : fileURL + todayMeditation?.audio,
-            title: todayMeditation?.name,
-            artist: todayMeditation?.category_id[0]?.name,
-            album: '',
-            genre: '',
-            artwork:
-                params?.from == 'down'
-                    ? todayMeditation?.images?.small
-                    : fileURL + todayMeditation?.images?.small,
-            duration: Math.ceil(todayMeditation?.duration),
-        });
-
-        if (await TrackPlayer.getState() == State.Playing) {
-            TrackPlayer.pause();
-            setPlayIcon(playIcon)
-        }
-        else if (await TrackPlayer.getState() == State.Paused) {
-            TrackPlayer.play();
-        }
-    };
-
 
     const showImageModal = image => {
         setModalImage(image);
@@ -1196,10 +1203,15 @@ const HomeScreen = (props) => {
                                     height: 50,
                                     justifyContent: 'center',
                                 }}>
-                                <Image
-                                    source={ic_download}
-                                    style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
-                                />
+
+                                {isDownloading ?
+                                    <ActivityIndicator color={Colors.placeHolder} size="small" />
+                                    :
+                                    <Image
+                                        source={ic_download}
+                                        style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
+                                    />
+                                }
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -1257,7 +1269,6 @@ const HomeScreen = (props) => {
                 visible={!!modalImage}
                 url={modalImage}
             />
-
 
         </SafeAreaView >
     )

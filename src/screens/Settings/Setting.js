@@ -181,7 +181,8 @@ const Setting = props => {
           setisLoading(false)
 
           if (purchases.length == 0) {
-            Alert.alert("Nothing to restore.", '',[{text:"Ok"}],{ cancelable: true })
+            showToast('Nothing to restore!', 'Alert');
+            // Alert.alert("Nothing to restore.", '',[{text:"Ok"}],{ cancelable: true })
             return
           }
 
