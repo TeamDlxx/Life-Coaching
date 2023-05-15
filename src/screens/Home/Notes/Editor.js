@@ -305,14 +305,11 @@ const Editor = props => {
 
         if (OsVer >= 13) {
           const grants = await PermissionsAndroid.requestMultiple([
-            PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
             PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
           ]);
 
           console.log('write external stroage', grants);
           if (
-            grants['android.permission.WRITE_EXTERNAL_STORAGE'] ===
-            PermissionsAndroid.RESULTS.GRANTED &&
             grants['android.permission.RECORD_AUDIO'] ===
             PermissionsAndroid.RESULTS.GRANTED
           ) {

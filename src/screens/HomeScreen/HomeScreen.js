@@ -218,6 +218,10 @@ const HomeScreen = (props) => {
     const notificationPermissions = async () => {
         let granted;
         if (Platform.OS == 'android') {
+            const OsVer = Platform.constants['Release'];
+            console.log(OsVer, "OS Version")
+    
+            if (OsVer >= 13) {
             granted = await PermissionsAndroid.request(
                 PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
             );
@@ -226,6 +230,7 @@ const HomeScreen = (props) => {
             } else {
                 return false;
             }
+        }
         } else {
             return true;
         }
