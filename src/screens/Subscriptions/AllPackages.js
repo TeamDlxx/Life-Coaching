@@ -35,10 +35,17 @@ let purchaseErrorSubscription = null;
 
 const itemsPurchase = Platform.select({
   ios: [
-    'habits.monthly.subscription',
-    'meditation.monthly.subscription',
-    'all_in_one.monthly.subscription',
-    'lifetime.purchase',
+    // 'habits.monthly.subscription',
+    // 'meditation.monthly.subscription',
+    // 'all_in_one.monthly.subscription',
+    // 'lifetime.purchase',
+
+
+
+    'habittracker.monthly',
+    'meditation.monthly',
+    'allinone.monthly',
+    'betterme.lifetime',
   ],
   android: [
     'habits.monthly.subscription',
@@ -230,33 +237,70 @@ const AllPackages = props => {
 
 
       purchases.forEach(async (purchase) => {
-        switch (purchase.productId) {
 
-          case 'lifetime.purchase':
-            Alert.alert("All in one lifetime purchase successfully restored.",'',[{text:"Ok"}],{ cancelable: true })
-            await CheckPurchases()
-            break
 
-          case 'all_in_one.monthly.subscription':
-            Alert.alert("All in one monthly subscription successfully restored.",'',[{text:"Ok"}],{ cancelable: true })
-            await CheckPurchases()
-            break
+        if (Platform.OS == "ios") {
+          purchases.forEach(async (purchase) => {
+            switch (purchase.productId) {
+              case 'betterme.lifetime':
+                Alert.alert("All in one lifetime purchase successfully restored.", '', [{ text: "Ok" }], { cancelable: true })
+                await CheckPurchases()
+                break
 
-          case 'habits.monthly.subscription':
-            Alert.alert("Habit tracker monthly subscription successfully restored.",'',[{text:"Ok"}],{ cancelable: true })
-            await CheckPurchases()
-            break
+              case 'allinone.monthly':
+                Alert.alert("All in one monthly subscription successfully restored.", '', [{ text: "Ok" }], { cancelable: true })
+                await CheckPurchases()
+                break
 
-          case 'meditation.monthly.subscription':
-            Alert.alert("Meditations  monthly subscription successfully restored.",'',[{text:"Ok"}],{ cancelable: true })
-            await CheckPurchases()
-            break
+              case 'habittracker.monthly':
+                Alert.alert("Habit tracker monthly subscription successfully restored.", '', [{ text: "Ok" }], { cancelable: true })
+                await CheckPurchases()
+                break
 
-          default:
-            ("Nothing to restore!",'',[{text:"Ok"}],{ cancelable: true });
-            breakF
+              case 'meditation.monthly':
+                Alert.alert("Meditations  monthly subscription successfully restored.", '', [{ text: "Ok" }], { cancelable: true })
+                await CheckPurchases()
+                break
+
+              default:
+                ("Nothing to restore!", '', [{ text: "Ok" }], { cancelable: true });
+                break
+            }
+
+          })
+        }
+        else {
+          switch (purchase.productId) {
+
+            case 'lifetime.purchase':
+              Alert.alert("All in one lifetime purchase successfully restored.", '', [{ text: "Ok" }], { cancelable: true })
+              await CheckPurchases()
+              break
+
+            case 'all_in_one.monthly.subscription':
+              Alert.alert("All in one monthly subscription successfully restored.", '', [{ text: "Ok" }], { cancelable: true })
+              await CheckPurchases()
+              break
+
+            case 'habits.monthly.subscription':
+              Alert.alert("Habit tracker monthly subscription successfully restored.", '', [{ text: "Ok" }], { cancelable: true })
+              await CheckPurchases()
+              break
+
+            case 'meditation.monthly.subscription':
+              Alert.alert("Meditations  monthly subscription successfully restored.", '', [{ text: "Ok" }], { cancelable: true })
+              await CheckPurchases()
+              break
+
+            default:
+              ("Nothing to restore!", '', [{ text: "Ok" }], { cancelable: true });
+              breakF
+
+          }
 
         }
+
+
 
       })
 
@@ -499,7 +543,7 @@ const AllPackages = props => {
         {(!loading || pkgList.length != 0) && (
           <>
             <View style={{ flex: 1 }}>
-              <View style={{flex:1}}>
+              <View style={{ flex: 1 }}>
                 <FlatList
                   keyExtractor={(item, index) => {
                     return item._id;
@@ -509,9 +553,9 @@ const AllPackages = props => {
                   renderItem={pkgView}
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={{ paddingBottom: 20 }}
-                  ListFooterComponent={ <TouchableOpacity onPress={restorePurchase} style={{ alignSelf: "center" , marginTop: 20, justifyContent:"flex-end"}}>
-                  <Text style={{ textDecorationLine: "underline", fontFamily: "Pangram-Medium" }}>Restore Purchase</Text>
-                </TouchableOpacity>}
+                  ListFooterComponent={<TouchableOpacity onPress={restorePurchase} style={{ alignSelf: "center", marginTop: 20, justifyContent: "flex-end" }}>
+                    <Text style={{ textDecorationLine: "underline", fontFamily: "Pangram-Medium" }}>Restore Purchase</Text>
+                  </TouchableOpacity>}
                 />
               </View>
 
@@ -596,7 +640,7 @@ const packages = [
     price: 2.99,
     type: 'star',
     duration: 'monthly',
-    sku: ['habits.monthly.subscription'],
+    sku: Platform.OS == "ios" ? ['habittracker.monthly'] : ['habits.monthly.subscription'],
     isSubscription: true,
   },
   {
@@ -611,7 +655,7 @@ const packages = [
     price: 2.99,
     type: 'star',
     duration: 'monthly',
-    sku: ['meditation.monthly.subscription'],
+    sku: Platform.OS == "ios" ? ['meditation.monthly'] : ['meditation.monthly.subscription'],
     isSubscription: true,
   },
   {
@@ -629,7 +673,7 @@ const packages = [
     price: 4.99,
     type: 'diamond',
     duration: 'monthly',
-    sku: ['all_in_one.monthly.subscription'],
+    sku: Platform.OS == "ios" ? ['allinone.monthly'] : ['all_in_one.monthly.subscription'],
     isSubscription: true,
   },
   {
@@ -647,7 +691,7 @@ const packages = [
     price: 44.99,
     type: 'crown',
     duration: 'lifetime',
-    sku: ['lifetime.purchase'],
+    sku: Platform.OS == "ios" ? ['betterme.lifetime'] : ['lifetime.purchase'],
     isSubscription: false,
   },
 ];
