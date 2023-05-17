@@ -67,6 +67,10 @@ import { isIphoneX } from 'react-native-iphone-x-helper';
 import { fileURL } from '../../../Utilities/domains';
 import { not } from 'expect';
 const screen = Dimensions.get('screen');
+
+import { RESULTS, request, PERMISSIONS } from 'react-native-permissions';
+
+
 const Editor = props => {
   const oldnote1 = props?.route?.params?.note;
   const { navigation } = props;
@@ -347,19 +351,27 @@ const Editor = props => {
         console.warn(err);
         return false;
       }
+    } else {
+      const granted = await request(PERMISSIONS.IOS.MICROPHONE);
+      if (granted == RESULTS.GRANTED) {
+        console.log('The permission is granted');
+        return true
+      } else {
+        return false
+      }
     }
   };
   //? Audio modal
 
   const onMicPress = async () => {
-    let granted = true;
-    if (Platform.OS == 'android') {
+    let granted;
+    // if (Platform.OS == 'android') {
       granted = await checkPermissionsAndroid();
-    }
+    // }
     if (granted) {
       setRecorder({ isAudioModalVisible: true });
     } else {
-      showToast('Please grant permission', 'Permission denied');
+      showToast('Please grant permission from settings first.', 'Permission denied');
     }
   };
 

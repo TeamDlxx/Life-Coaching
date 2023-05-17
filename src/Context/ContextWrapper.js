@@ -11,6 +11,7 @@ import * as RNIap from 'react-native-iap';
 import { Platform, PermissionsAndroid, DevSettings } from 'react-native';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import invokeApi from '../functions/invokeAPI';
+import { RESULTS, request, PERMISSIONS } from 'react-native-permissions';
 
 import messaging from '@react-native-firebase/messaging';
 
@@ -68,31 +69,19 @@ const ContextWrapper = props => {
 
       if (granted == 'granted') {
         return true;
-      } else {
+      } else if(granted == 'denied'){
         console.log('denied...')
-        showToast(
-          'Please allow storage permission from settings',
-          'Permission denied',
-        );
         return false;
       }
     } else {
-      return true;
+      granted = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
+      if (granted == RESULTS.GRANTED) {
+        console.log('The permission is granted');
+        return true
+      } else {
+        return false
+      }
     }
-    // const granted = await PermissionsAndroid.request(
-    //   PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-    //   {
-    //     title: 'Storage Permission Required',
-    //     message: 'App needs access to your storage to download Photos',
-    //   },
-    // );
-    // if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-    //   // Once user grant the permission start downloading
-    //   return true;
-    // } else {
-    //   showToast('Storage Permission Not Granted', 'Alert');
-    //   return false;
-    // }
   };
 
   const findProgress = item => {
@@ -309,6 +298,10 @@ const ContextWrapper = props => {
   const downloadQuote = async (image, id) => {
     let granted = await checkPermissions();
     if (!granted) {
+      showToast(
+        'Please allow permission from settings first.',
+        'Permission denied',
+      );
       return;
     }
     setIsDownloading(true)

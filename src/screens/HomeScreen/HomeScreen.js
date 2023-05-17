@@ -89,7 +89,7 @@ import Loader from '../../Components/Loader';
 let todayMeditation;
 
 const HomeScreen = (props) => {
-    const { Token, isDownloading, downloadQuote, dashboardData, setDashBoardData, resetTrack, setResetTrack } = useContext(Context);
+    const { Token, isDownloading, downloadQuote, dashboardData, setDashBoardData} = useContext(Context);
     const { params } = props?.route;
     const { navigation } = props;
     const [loading, setisLoading] = useState(true);
@@ -715,8 +715,8 @@ const HomeScreen = (props) => {
                     flexDirection: "row",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    marginLeft: 15,
-                    paddingRight: 35,
+                    marginLeft: 20,
+                    paddingRight: 40,
                 }}>
                 {/* <View style={{}}>
                     <Text >Welcome back,{'   '}</Text>
@@ -1298,7 +1298,7 @@ const home_styles = StyleSheet.create({
         marginTop: 5,
         marginBottom: 10,
         borderRadius: 20,
-        marginHorizontal: 15,
+        marginHorizontal: 20,
         padding: 15
     },
 

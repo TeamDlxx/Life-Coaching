@@ -70,6 +70,8 @@
 	<string></string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>need to record audio</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Better.me would like to save photos from the app to your gallery</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Better.me needs access to your gallery so that you are able to choose a profile photo for your account using your gallery.</string>
 	<key>SKAdNetworkItems</key>

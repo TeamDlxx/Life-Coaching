@@ -239,12 +239,12 @@ const Home = props => {
         style={{
           height: 50,
           justifyContent: 'center',
-          marginLeft: 30,
+          marginLeft: 20,
           width: '100%',
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          paddingRight: 50,
+          paddingRight: 40,
         }}>
         <View>
           <Image
