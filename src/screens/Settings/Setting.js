@@ -162,14 +162,17 @@ const Setting = props => {
         break;
 
       case 'rate_us':
-        // let url = 'market://details?id=com.coachingoflife.app';
-        // try {
-        //   await Linking.openURL(url);
-        // } catch (e) {
-        //   console.log('Link Open Error', e);
-        // }
-        inAppRating();
-        // RN_InAppReview();
+        if (Platform.OS == 'android') {
+          // let url = 'market://details?id=com.coachingoflife.app';
+          let url = 'https://play.google.com/store/apps/details?id=com.coachingoflife.app&pli=1';
+          try {
+            await Linking.openURL(url);
+          } catch (e) {
+            console.log('Link Open Error', e);
+          }
+        } else {
+          inAppRating();
+        }
         break;
 
       case 'restore_purchase':
@@ -194,27 +197,27 @@ const Setting = props => {
             switch (purchase.productId) {
 
               case 'lifetime.purchase':
-                Alert.alert("All in one lifetime purchase successfully restored.",'',[{text:"Ok"}],{ cancelable: true })
+                Alert.alert("All in one lifetime purchase successfully restored.", '', [{ text: "Ok" }], { cancelable: true })
                 await CheckPurchases()
                 break
 
               case 'all_in_one.monthly.subscription':
-                Alert.alert("All in one monthly subscription successfully restored.",'',[{text:"Ok"}],{ cancelable: true })
+                Alert.alert("All in one monthly subscription successfully restored.", '', [{ text: "Ok" }], { cancelable: true })
                 await CheckPurchases()
                 break
 
               case 'habits.monthly.subscription':
-                Alert.alert("Habit tracker monthly subscription successfully restored.",'',[{text:"Ok"}],{ cancelable: true })
+                Alert.alert("Habit tracker monthly subscription successfully restored.", '', [{ text: "Ok" }], { cancelable: true })
                 await CheckPurchases()
                 break
 
               case 'meditation.monthly.subscription':
-                Alert.alert("Meditations  monthly subscription successfully restored.",'',[{text:"Ok"}],{ cancelable: true })
+                Alert.alert("Meditations  monthly subscription successfully restored.", '', [{ text: "Ok" }], { cancelable: true })
                 await CheckPurchases()
                 break
 
               default:
-                Alert.alert("Nothing to restore!",'',[{text:"Ok"}],{ cancelable: true });
+                Alert.alert("Nothing to restore!", '', [{ text: "Ok" }], { cancelable: true });
                 break
 
             }
@@ -250,7 +253,7 @@ const Setting = props => {
         Alert.alert('Logout', 'Are you sure you want to logout?', [
           { text: 'No' },
           { text: 'Yes', onPress: () => api_LogOut() },
-        ],{ cancelable: true });
+        ], { cancelable: true });
 
         break;
 
@@ -269,17 +272,17 @@ const Setting = props => {
       openAppStoreIfInAppFails: false,
       fallbackPlatformURL: 'https://play.google.com/store/apps/details?id=com.coachingoflife.app&pli=1' // Replace with a fallback URL
     };
-  
+
     try {
       Rate.rate(options, success => {
-      if (success) {
-        console.log("Successfully rated...")
-        // User successfully rated the app
-      }
-    });
-  }catch (e) {
-    console.log('Link Open Error', e);
-  }
+        if (success) {
+          console.log("Successfully rated...")
+          // User successfully rated the app
+        }
+      });
+    } catch (e) {
+      console.log('Link Open Error', e);
+    }
   };
 
 

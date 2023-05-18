@@ -273,14 +273,7 @@ android {
 }
 
 dependencies {
-
-    implementation(project(':react-native-rate')) {
-        exclude group: 'com.google.android.play', module: 'core'
-        exclude group: 'com.google.android.play', module: 'core-common'
-        exclude group: 'com.google.android.play', module: 'review'
-    }
-
-
+    
     implementation fileTree(dir: "libs", include: ["*.jar"])
 
     //noinspection GradleDynamicVersion
