@@ -32,6 +32,8 @@ import analytics from '@react-native-firebase/analytics';
 import messaging from '@react-native-firebase/messaging';
 import * as RNIap from 'react-native-iap';
 import CustomBellIcon from '../../Components/CustomBellIcon';
+import Rate, { AndroidMarket } from 'react-native-rate';
+
 
 const Setting = props => {
   const [isLoading, setisLoading] = useState(false);
@@ -160,13 +162,14 @@ const Setting = props => {
         break;
 
       case 'rate_us':
-        let url = 'market://details?id=com.coachingoflife.app';
-        try {
-          await Linking.openURL(url);
-        } catch (e) {
-          console.log('Link Open Error', e);
-        }
-        // FN_InAppReview();
+        // let url = 'market://details?id=com.coachingoflife.app';
+        // try {
+        //   await Linking.openURL(url);
+        // } catch (e) {
+        //   console.log('Link Open Error', e);
+        // }
+        inAppRating();
+        // RN_InAppReview();
         break;
 
       case 'restore_purchase':
@@ -256,6 +259,28 @@ const Setting = props => {
         break;
     }
   }
+
+  const inAppRating = async () => {
+    const options = {
+      AppleAppID: '1643130857', // Replace with your App Store ID
+      GooglePackageName: 'com.coachingoflife.app', // Replace with your Android package name
+      preferredAndroidMarket: AndroidMarket.Google,
+      preferInApp: true,
+      openAppStoreIfInAppFails: false,
+      fallbackPlatformURL: 'https://play.google.com/store/apps/details?id=com.coachingoflife.app&pli=1' // Replace with a fallback URL
+    };
+  
+    try {
+      Rate.rate(options, success => {
+      if (success) {
+        console.log("Successfully rated...")
+        // User successfully rated the app
+      }
+    });
+  }catch (e) {
+    console.log('Link Open Error', e);
+  }
+  };
 
 
   const fn_report = async () => {
