@@ -1,5 +1,8 @@
 // ? Live
-export const baseURL = 'https://bettermeapi.dynamitelifestyle.com/';
+// export const baseURL = 'https://bettermeapi.dynamitelifestyle.com/';
+
+// dev URL
+export const baseURL = 'https://bettermeapidev.dynamitelifestyle.com/';
 
 //todo Local
 // export const baseURL = 'http://192.168.1.210:1300/';

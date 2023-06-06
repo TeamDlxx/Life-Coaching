@@ -19,6 +19,7 @@ const ListItem = props => {
                     justifyContent: 'center',
                     borderRadius: 20,
                     borderWidth: 0.8,
+                    borderColor: Colors.gray02,
                     height: 60,
                     width: win.width / 5.7,
                     overflow: 'hidden',
@@ -32,8 +33,21 @@ const ListItem = props => {
                         <Text style={{ fontSize: 18, color: Colors.black }}>+{mainIdx} </Text>
                     </ImageBackground>
                     :
-                    <Image source={{ uri: fileURL + item?.small }} style={{ height: 60, width: win.width / 5.8 }} />
-                    // <Image source={{ uri: item }} style={{ height: 60, width: win.width / 5.8 }} />
+                    <CustomImage
+                        source={{ uri: fileURL + item.large }}
+                        style={{
+                            flex: 1,
+                            height: 60, width: win.width / 5.8
+                        }}
+                        imageStyle={{
+                            borderRadius: 20,
+                        }}
+                        indicatorProps={{
+                            color: Colors.primary,
+                        }}
+                    />
+                
+                    // <Image source={{ uri: fileURL + item?.small }} style={{ height: 60, width: win.width / 5.8 }} />
                 }
             </View>
 

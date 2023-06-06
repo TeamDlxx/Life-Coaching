@@ -9,26 +9,33 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
+  StyleSheet,
+  Switch,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import Colors from '../../../Utilities/Colors';
-import TrackPlayer, { State } from 'react-native-track-player';
+import TrackPlayer, {
+  State,
+  RepeatMode,
+  Event,
+  useTrackPlayerEvents,
+} from 'react-native-track-player';
 import ProgressBar from '../../../Components/ProgreeBar';
-import { _styleTrackPlayer } from '../../../Utilities/styles';
+import {_styleTrackPlayer} from '../../../Utilities/styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LoginAlert from '../../../Components/LoginAlert';
 import analytics from '@react-native-firebase/analytics';
-import { screens } from '../../../Navigation/Screens';
+import {screens} from '../../../Navigation/Screens';
 
-import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
-import { Admob_Ids } from '../../../Utilities/AdmobIds';
+import {BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
+import {Admob_Ids} from '../../../Utilities/AdmobIds';
 
 // For API's calling
-import { useContext } from 'react';
+import {useContext} from 'react';
 import Context from '../../../Context';
 import showToast from '../../../functions/showToast';
 import invokeApi from '../../../functions/invokeAPI';
-import { fileURL } from '../../../Utilities/domains';
+import {fileURL} from '../../../Utilities/domains';
 //Icons
 
 import favIcon from '../../../Assets/TrackPlayer/favIcon.png';
@@ -42,15 +49,26 @@ import ic_download from '../../../Assets/Icons/download.png';
 
 import ic_share from '../../../Assets/TrackPlayer/share.png';
 import ic_tick from '../../../Assets/Icons/tick.png';
-import { duration } from 'moment';
-import { font } from '../../../Utilities/font';
+import {duration} from 'moment';
+import {font} from '../../../Utilities/font';
 import ic_lock from '../../../Assets/Icons/locked.png';
+
+import CountDown from 'react-native-countdown-component';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+
 const TrackPlayerScreen = props => {
-  console.log(State, 'State...');
-  const { navigation } = props;
-  const { params } = props?.route;
-  const { Token, downloadTrack, progress, deleteTrack, isMeditationPurchased } =
-    useContext(Context);
+  // console.log(State, 'State...');
+  const {navigation} = props;
+  const {params} = props?.route;
+  const {
+    Token,
+    downloadTrack,
+    progress,
+    deleteTrack,
+    isMeditationPurchased,
+    categoryList,
+    setCategoryList,
+  } = useContext(Context);
   const [tracksList, setTrackList] = useState(params?.list);
   const [trackItem, setTrackItem] = useState(params?.item);
   const [playIcon, setPlayIcon] = useState(pauseTrack);
@@ -61,7 +79,23 @@ const TrackPlayerScreen = props => {
   const [downloaded, setDownloaded] = useState(null);
   const [adError, setAdError] = useState(false);
 
-  console.log('tracks', TrackPlayer);
+  const [isEnabled, setIsEnabled] = useState(false);
+  const [time, setTime] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [countDownId, setCountDownId] = useState(undefined);
+
+  const switchFunction = async () => {
+    await setIsEnabled(!isEnabled);
+
+    console.log(isEnabled, 'is enable...');
+    if (isEnabled == false) {
+      setShowModal(true);
+    } else {
+      setTime(null);
+    }
+  };
+
+  // console.log('tracks', TrackPlayer);
   const moveTo = async val => {
     TrackPlayer.seekTo(val);
     let isPlaying = await TrackPlayer.getState();
@@ -102,7 +136,7 @@ const TrackPlayerScreen = props => {
           'Remove Track',
           'Are you sure you want to remove this track from your downloads',
           [
-            { text: 'No' },
+            {text: 'No'},
             {
               text: 'Yes',
               onPress: async () => {
@@ -118,7 +152,7 @@ const TrackPlayerScreen = props => {
               },
             },
           ],
-          { cancelable: true },
+          {cancelable: true},
         );
       }
     } else {
@@ -168,16 +202,14 @@ const TrackPlayerScreen = props => {
       });
   };
 
-  const changeTrack = action => {
+  const changeTrack = async action => {
     let curIndex = tracksList.findIndex(x => x._id == trackItem._id);
     if (curIndex > -1) {
       let newIndex = curIndex + action;
       if (tracksList[newIndex]) {
+        setloading(true);
         setTrackItem(tracksList[newIndex]);
         setIsfav(tracksList[newIndex]?.is_favourite);
-        // if (trackItem.is_locked == true && isMeditationPurchased == false)) {
-        setloading(true);
-        // }
       }
     }
   };
@@ -205,6 +237,8 @@ const TrackPlayerScreen = props => {
       artist:
         params?.from == 'fav' || params?.category == 'all'
           ? trackItem?.category_id[0]?._id?.name
+          : params?.isComingFrom == 'playlist'
+          ? trackItem?.category_names[0][0]
           : params?.category,
       album: '',
       genre: '',
@@ -224,7 +258,50 @@ const TrackPlayerScreen = props => {
         item_name: trackItem.name,
       });
     }
-    await AsyncStorage.setItem("@resetTrack", "true")
+    await AsyncStorage.setItem('@resetTrack', 'true');
+  };
+
+  const LoadthePlaylist = async () => {
+    await TrackPlayer.reset();
+    for (let i = 0; i < tracksList.length; i++) {
+      let obj = {
+        id: tracksList[i]._id,
+        url:
+          params?.from == 'down'
+            ? tracksList[i]?.mp3
+            : fileURL + tracksList[i]?.audio,
+        title: tracksList[i]?.name,
+        artist:
+          params?.from == 'fav' || params?.category == 'all'
+            ? tracksList[i]?.category_id[0]?._id?.name
+            : params?.isComingFrom == 'playlist'
+            ? tracksList[i]?.category_names[0][0]
+            : params?.category,
+        album: '',
+        genre: '',
+        artwork:
+          params?.from == 'down'
+            ? tracksList[i]?.images?.small
+            : fileURL + tracksList[i]?.images?.small,
+        duration: Math.ceil(tracksList[i]?.duration),
+      };
+      await TrackPlayer.add([obj]);
+    }
+    if (trackItem?.is_locked == true && isMeditationPurchased == false) {
+      await TrackPlayer.skipToNext();
+    } else {
+      const tracks = await TrackPlayer.getQueue();
+      let selectedIndex = tracks.findIndex(item => item.id == trackItem._id);
+      TrackPlayer.skip(selectedIndex);
+      await TrackPlayer.play();
+      await analytics().logEvent(`REPEAT_TRACK_EVENT`, {
+        item_name: trackItem.name,
+      });
+    }
+
+    await TrackPlayer.setRepeatMode(RepeatMode.Queue);
+
+    await AsyncStorage.setItem('@resetTrack', 'true');
   };
 
   const checkNextAndPreviosAvailable = (id, type) => {
@@ -249,12 +326,16 @@ const TrackPlayerScreen = props => {
   };
 
   useEffect(() => {
-    LoadtheTrack();
+    if (params?.isComingFrom == 'playlist') {
+      LoadthePlaylist();
+    } else {
+      LoadtheTrack();
+    }
     isDownloaded();
   }, [trackItem]);
 
   useEffect(() => {
-    TrackPlayer.addEventListener('playback-state', async ({ state }) => {
+    TrackPlayer.addEventListener('playback-state', async ({state}) => {
       console.log('state: ' + state);
 
       if (state == 'playing' || state == 2) {
@@ -272,7 +353,7 @@ const TrackPlayerScreen = props => {
       }
     });
 
-    TrackPlayer.addEventListener('remote-play', async ({ state }) => {
+    TrackPlayer.addEventListener('remote-play', async ({state}) => {
       console.log('state: ' + state);
     });
 
@@ -282,6 +363,36 @@ const TrackPlayerScreen = props => {
       TrackPlayer.reset();
     };
   }, []);
+
+  useTrackPlayerEvents([Event.PlaybackTrackChanged], async event => {
+    if (params.isComingFrom == 'playlist') {
+      if(event.type == State.nextTrack && event.nextTrack != null) {
+        const track = await TrackPlayer.getTrack(event.nextTrack);
+        const {title} = track || {};
+       console.log(track, "track...")
+        // setTrackInfo();
+      }
+      return
+      if (event.type === Event.PlaybackTrackChanged && event.nextTrack != null) {
+        const track = await TrackPlayer.getTrack(event.nextTrack);
+        const {title} = track || {};
+       console.log(track, "track...")
+    }
+    }
+  });
+
+  async function setTrackInfo() {
+    const track = await TrackPlayer.getCurrentTrack();
+    if(track != null){
+      const info = await TrackPlayer.getTrack(track);
+      let idx = tracksList.findIndex(x=> x._id == info.id)
+          if(idx > -1){
+            console.log(info, 'ttttt');
+            setTrackItem(tracksList[idx])
+          } 
+    }
+    
+  }
 
   const changeStatus = async () => {
     console.log('changeStatus');
@@ -349,6 +460,19 @@ const TrackPlayerScreen = props => {
       newArray.splice(index, 1, obj);
       setTrackList([...newArray]);
     }
+
+    let list = [...categoryList];
+    list.map(obj => {
+      let index = obj?.category_track.findIndex(x => x._id == id);
+      if (index > -1) {
+        let newObj = {
+          ...obj.category_track[index],
+          is_favourite: val,
+        };
+        obj?.category_track.splice(index, 1, newObj);
+      }
+    });
+    setCategoryList(list);
   };
 
   const BTN_LIKE = async (val, id) => {
@@ -408,6 +532,27 @@ const TrackPlayerScreen = props => {
     }
   };
 
+  const onFinish = async () => {
+    if (time) {
+      await setIsEnabled(!isEnabled);
+      TrackPlayer.pause();
+      setPlayIcon(playTrack);
+    }
+  };
+
+  const onConfirm = async val => {
+    let totalSec = (val.getMinutes() + val.getHours() * 60) * 60;
+    await setTime(totalSec);
+    await setShowModal(false);
+  };
+
+  useEffect(() => {
+    // Generate new id based on unix timestamp (string)
+    const id = new Date().getTime().toString();
+    // Set id to state
+    setCountDownId(id);
+  }, [time]);
+
   //? Main render View............
   return (
     <View style={_styleTrackPlayer.rootView}>
@@ -435,7 +580,7 @@ const TrackPlayerScreen = props => {
             backgroundColor={'transparent'}
             translucent={true}
           />
-          <SafeAreaView style={{ flex: 1 }}>
+          <SafeAreaView style={{flex: 1}}>
             <View
               style={{
                 marginTop:
@@ -451,16 +596,16 @@ const TrackPlayerScreen = props => {
                   source={require('../../../Assets/Icons/back.png')}
                 />
               </Pressable>
-              <View style={{ flexDirection: 'row', marginRight: 10 }}>
+              <View style={{flexDirection: 'row', marginRight: 10}}>
                 <Pressable
                   disabled={downloading()}
                   onPress={downloadTheTrack}
                   style={[
                     _styleTrackPlayer.backButtonView,
                     !!downloaded &&
-                    !!Token && {
-                      paddingHorizontal: 5,
-                    },
+                      !!Token && {
+                        paddingHorizontal: 5,
+                      },
                   ]}>
                   {downloading() ? (
                     <ActivityIndicator color={Colors.black} size="small" />
@@ -469,17 +614,17 @@ const TrackPlayerScreen = props => {
                       style={[
                         _styleTrackPlayer.backButton2Icon,
                         !!downloaded &&
-                        !!Token && {
-                          height: 20,
-                          width: 20,
-                        },
+                          !!Token && {
+                            height: 20,
+                            width: 20,
+                          },
                       ]}
                       source={!!downloaded && !!Token ? ic_tick : ic_download}
                     />
                   )}
                   {!!downloaded && !!Token && (
                     <Text
-                      style={{ fontFamily: font.medium, marginHorizontal: 5 }}>
+                      style={{fontFamily: font.medium, marginHorizontal: 5}}>
                       Downloaded
                     </Text>
                   )}
@@ -496,7 +641,7 @@ const TrackPlayerScreen = props => {
                   zIndex: -1,
                 }}>
                 <Image
-                  style={{ height: 100, width: 100, tintColor: Colors.gray05 }}
+                  style={{height: 100, width: 100, tintColor: Colors.gray05}}
                   source={require('../../../Assets/Icons/ic_music.png')}
                 />
               </View>
@@ -528,9 +673,12 @@ const TrackPlayerScreen = props => {
               </Pressable>
             )}
           </View>
+
           <Text style={_styleTrackPlayer.trackCategory}>
             {params?.from == 'fav' || params?.category == 'all'
               ? trackItem?.category_id[0]?._id?.name
+              : params?.isComingFrom == 'playlist'
+              ? trackItem?.category_names[0][0]
               : params?.category}
           </Text>
 
@@ -545,7 +693,60 @@ const TrackPlayerScreen = props => {
           <Text numberOfLines={4} style={_styleTrackPlayer.trackDescription}>
             {trackItem.description}
           </Text>
+          {params?.isComingFrom == 'playlist' && (
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginTop: 10,
+              }}>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text
+                  style={{
+                    color: Colors.gray12,
+                    fontFamily: font.medium,
+                    fontSize: 14,
+                    letterSpacing: 0.5,
+                    marginRight: 10,
+                  }}>
+                  Sleep Timer:
+                </Text>
+                <CountDown
+                  until={time}
+                  id={countDownId}
+                  showSeparator
+                  separatorStyle={{color: Colors.primary}}
+                  timeToShow={['M', 'S']}
+                  timeLabels={{m: null, s: null}}
+                  digitStyle={{
+                    backgroundColor: Colors.gray01,
+                    width: 'auto',
+                    height: 'auto',
+                    padding: 5,
+                  }}
+                  digitTxtStyle={{
+                    color: Colors.primary,
+                    fontSize: 16,
+                    fontFamily: font.medium,
+                  }}
+                  onFinish={onFinish}
+                />
+              </View>
+              <View>
+                <Switch
+                  value={isEnabled}
+                  onValueChange={switchFunction}
+                  trackColor={{true: Colors.primary}}
+                  thumbColor={
+                    Platform.OS == 'android' ? Colors.gray01 : Colors.white
+                  }
+                />
+              </View>
+            </View>
+          )}
         </View>
+
         <View style={_styleTrackPlayer.controlView}>
           <ProgressBar
             resetPlayer={resetTheTrack}
@@ -562,7 +763,7 @@ const TrackPlayerScreen = props => {
               <Image
                 style={[
                   _styleTrackPlayer.previosAndNextButtonIcon,
-                  { tintColor: repeat ? Colors.primary : Colors.gray05 },
+                  {tintColor: repeat ? Colors.primary : Colors.gray05},
                 ]}
                 source={ic_repeat}
               />
@@ -588,13 +789,13 @@ const TrackPlayerScreen = props => {
                   trackItem?.is_locked == true && isMeditationPurchased == false
                     ? false
                     : loading
-                      ? true
-                      : false
+                    ? true
+                    : false
                 }
                 onPress={changeStatus}
                 style={_styleTrackPlayer.playPauseButtonInnerView}>
                 {trackItem?.is_locked == true &&
-                  isMeditationPurchased == false ? (
+                isMeditationPurchased == false ? (
                   <Image
                     style={_styleTrackPlayer.playPauseLockedButtonIcon}
                     source={ic_lock}
@@ -655,6 +856,21 @@ const TrackPlayerScreen = props => {
           </View>
         )}
       </View>
+
+      <DateTimePickerModal
+        accentColor={Colors.primary}
+        buttonTextColorIOS={Colors.primary}
+        isVisible={showModal}
+        mode="time"
+        display="spinner"
+        locale="en_GB"
+        date={new Date(new Date().setHours(0, 0, 0, 0))}
+        is24Hour={true}
+        onConfirm={async val => {
+          onConfirm(val);
+        }}
+        onCancel={async () => await setShowModal(false)}
+      />
     </View>
   );
 };

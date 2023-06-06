@@ -47,6 +47,7 @@ import SplashScreen from 'react-native-splash-screen';
 
 
 const height = Dimensions.get('screen').height;
+let FCM_Token = '';
 const Login = props => {
   console.log('props', props);
   const { params } = props?.route;
@@ -65,6 +66,18 @@ const Login = props => {
       from: params?.from,
     });
   };
+
+  useEffect(() => {
+    const unsubscribe = props.navigation.addListener('focus', () => {
+      messaging().getToken().then((token) => {
+        FCM_Token = token;
+        console.log(token, "fcm token....")
+      });
+    });
+    return () => {
+        unsubscribe;
+    }
+}, [props.navigation]);
 
   const onForgotPasswordScreen = () => {
     props.navigation.navigate(screens.forgotPassword);
@@ -238,6 +251,7 @@ const Login = props => {
       let obj_Login = {
         email: t_email,
         password: t_password,
+        fcm_token: FCM_Token,
         type: 1,
       };
       setisLoading(true);
@@ -305,6 +319,7 @@ const Login = props => {
         let loginObj = {
           code: idToken,
           login_by: 'Google',
+          fcm_token: FCM_Token,
         };
         socialLoginApi(loginObj);
       }
@@ -350,6 +365,7 @@ const Login = props => {
       let loginObj = {
         code: appleAuthRequestResponse.identityToken,
         login_by: 'Apple',
+        fcm_token: FCM_Token,
       };
       setisLoading(true);
       socialLoginApi(loginObj);

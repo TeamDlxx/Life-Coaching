@@ -10,7 +10,6 @@ import {
   ImageBackground,
   Pressable,
   ActivityIndicator,
-  TouchableOpacity,
   PermissionsAndroid,
   Platform,
   ToastAndroid,
@@ -58,44 +57,152 @@ import ic_lock from '../../../Assets/Icons/ic_lock.png';
 import ic_home from '../../../Assets/Icons/home.png';
 import ic_home_lock from '../../../Assets/Icons/home-lock.png';
 import ic_cross from '../../../Assets/Icons/cross.png';
+import ic_default from '../../../Assets/Icons/all.png';
 
 import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 import { Admob_Ids } from '../../../Utilities/AdmobIds';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
 const limit = 10;
+let pageNumber = 0;
+let canLoadMore = false;
+
 const win = Dimensions.get('window');
 let selectedQuote;
-
 let firstTime = true;
+
+let user = {};
+
 const List = props => {
   const flatListRef = useRef();
-  const { Token, isDownloading, downloadQuote, downloading, dashboardData, setDashBoardData } = useContext(Context);
+  const { Token, downloadQuote, downloading, checkPermissions, dashboardData, setDashBoardData } = useContext(Context);
   const [QuoteList, setQuoteList] = useState([]);
   const [modalImage, setModalImage] = useState(null);
   const [isSharing, setIsSharing] = useState(null);
   const [loading, setisLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [isLoadingMore, setisLoadingMore] = useState(false);
   const [isModalVisible, setModalVisibility] = useState(false);
   const [adError, setAdError] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(null);
+
+  const [categoryList, setCategoryList] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
 
-  const [PGN, updatePGN] = useState({
-    pageNumber: 0,
-    isLoadingMore: false,
-    canLoadMore: false,
-  });
-  const { pageNumber, isLoadingMore, canLoadMore } = PGN;
-  const setPGN = val => updatePGN({ ...PGN, ...val });
+  // const [PGN, updatePGN] = useState({
+  //   pageNumber: 0,
+  //   isLoadingMore: false,
+  //   canLoadMore: false,
+  // });
+  // const { pageNumber, isLoadingMore, canLoadMore } = PGN;
+  // const setPGN = val => updatePGN({ ...PGN, ...val });
 
   const onFavList = () => {
     if (Token) {
       props.navigation.navigate(screens.favQuoteList, {
         toggleBackScreenLike: toggleLike,
+        downloadBackScreenQuote: downloadCounts,
+        shareBackScreenQuote: countShareQuote,
       });
     } else {
       LoginAlert(props.navigation, props.route?.name);
     }
   };
+
+  const quoteCatagoriesApi = async () => {
+    let res = await invokeApi({
+      path: 'api/quote_category/get_active_quote_categories',
+      method: 'POST',
+      postData: {
+        'user_id': (Token && user?.user_id?._id) ? user?.user_id?._id : '',
+        'token': 'ARHDVBSSGYXIURY5OUU5'
+      },
+      navigation: props.navigation,
+    });
+
+    if (res) {
+      setisLoading(false);
+      if (res.code == 200) {
+        handleResponse(res)
+        console.log(res, "res")
+      } else {
+        showToast(res.message)
+      }
+    }
+  };
+
+  const loadMoreQuotesApi = async () => {
+    console.log(selectedCategory?._id)
+    let scategory = selectedCategory;
+    if (
+      scategory?.count > scategory?.quotes.length &&
+      isLoadingMore == false
+    ) {
+      setisLoadingMore(true);
+      let res = await invokeApi({
+        path: 'api' + selectedCategory?.load_more_url,
+        method: 'POST',
+        postData: {
+          'user_id': (Token && user?.user_id?._id) ? user?.user_id?._id : '',
+          'category_id': selectedCategory?._id,
+          'token': 'ARHDVBSSGYXIURY5OUU5'
+        },
+        navigation: props.navigation,
+      });
+
+      if (res) {
+        if (res.code == 200) {
+          console.log('yess...')
+          setSelectedCategory({
+            ...selectedCategory,
+            quotes: [
+              ...selectedCategory?.quotes,
+              ...res?.quotes,
+            ],
+            load_more_url: res?.load_more,
+            count: res?.count,
+          });
+
+          let newArray = [...categoryList];
+          let index = newArray.findIndex(
+            x => x._id == selectedCategory?._id,
+          );
+          if (index != -1) {
+            let newObj = {
+              ...newArray[index],
+              quotes: [
+                ...newArray[index]?.quotes,
+                ...res?.quotes,
+              ],
+              load_more_url: res?.load_more,
+            };
+            newArray.splice(index, 1, newObj);
+            setCategoryList([...newArray]);
+          }
+        }
+      } else {
+        showToast(res.message);
+      }
+      setisLoadingMore(false);
+    }
+  };
+
+
+  const handleResponse = async (res) => {
+    await setCategoryList(res?.quote_category);
+    if (selectedCategory == null) {
+      setSelectedCategory(res?.quote_category[0]);
+    } else {
+      let obj = res?.quote_category.find(x => x._id == selectedCategory._id);
+      if (!!obj) {
+        setSelectedCategory(obj);
+      }
+    }
+
+  };
+
 
   const shareQuote = async item => {
     setIsSharing(item._id);
@@ -118,6 +225,7 @@ const List = props => {
       console.log('objShare', objShare);
       await Share.open(objShare)
         .then(async res => {
+          shareQuoteApi(item._id);
           await analytics().logEvent('QUOTE_SHARE_EVENT');
           console.log('res', res);
         })
@@ -129,6 +237,49 @@ const List = props => {
       setIsSharing(null);
     }
   };
+
+  const shareQuoteApi = async (id) => {
+    let res = await invokeApi({
+      path: 'api/quotes/increament_quote_share/' + id,
+      method: 'PUT',
+      navigation: props.navigation,
+    });
+    if (res) {
+      if (res.code == 200) {
+        await countShareQuote(id)
+        shareQuoteOfTheDay(id)
+      }
+      else {
+        showToast(res.message);
+      }
+    }
+
+  }
+  const countShareQuote = async (id) => {
+    let newArray = [...selectedCategory.quotes];
+    let index = newArray.findIndex(x => x._id == id);
+    if (index > -1) {
+      let newObj = newArray[index];
+      newObj.share = newObj.share + 1;
+      newArray.splice(index, 1, newObj);
+      await setSelectedCategory({
+        ...selectedCategory,
+        quotes: [...newArray]
+      });
+      // await setQuoteList([...newArray]);
+    }
+  }
+
+  const shareQuoteOfTheDay = async (id) => {
+    let newObj = dashboardData.quoteOfTheDay;
+    if (id == newObj._id) {
+      newObj.share = newObj.share + 1;
+    }
+    dashboardData.quoteOfTheDay = newObj;
+    await setDashBoardData({
+      ...dashboardData,
+    })
+  }
 
   const GetBase64 = async url => {
     return await axios
@@ -153,8 +304,8 @@ const List = props => {
     }
   };
 
-  const toggleLike = (val, id) => {
-    let newArray = [...QuoteList];
+  const toggleLike = async (val, id) => {
+    let newArray = [...selectedCategory.quotes];
     let index = newArray.findIndex(x => x._id == id);
     if (index > -1) {
       let newObj = newArray[index];
@@ -165,19 +316,79 @@ const List = props => {
         newObj.favourite = newObj.favourite - 1;
       }
       newArray.splice(index, 1, newObj);
-      setQuoteList([...newArray]);
+      await setSelectedCategory({
+        ...selectedCategory,
+        quotes: [...newArray]
+      });
+      // setQuoteList([...newArray]);
     }
   };
 
   const download = item => {
+    setIsDownloading(item._id);
     debounceDownload(item);
   };
 
   const debounceDownload = debounnce(async item => {
     console.log('download');
-    await downloadQuote(item?.images?.large, item?._id);
+    let granted = await checkPermissions();
+    if (!granted) {
+      setIsDownloading(null);
+      showToast(
+        'Please allow permission from settings first.',
+        'Permission denied',
+      );
+      return;
+    }
+    let res = await invokeApi({
+      path: 'api/quotes/increament_quote_downloads/' + item?._id,
+      method: 'PUT',
+      navigation: props.navigation,
+    });
+    if (res) {
+      if (res.code == 200) {
+        await downloadQuote(item?.images?.large, item?._id);
+        downloadQuoteOfTheDay(item?._id)
+        setTimeout(() => {
+          downloadCounts(item?._id)
+          setIsDownloading(null)
+        }, 500);
+      }
+      else {
+        setIsDownloading(null)
+        showToast(res.message);
+      }
+    }
     await analytics().logEvent('QUOTE_DOWLOAD_EVENT');
   }, 500);
+
+
+  const downloadCounts = async (id) => {
+    let newArray = [...selectedCategory.quotes];
+    let index = newArray.findIndex(x => x._id == id);
+    if (index > -1) {
+      let newObj = newArray[index];
+      newObj.downloads = newObj.downloads + 1;
+      newArray.splice(index, 1, newObj);
+      await setSelectedCategory({
+        ...selectedCategory,
+        quotes: [...newArray]
+      });
+      // await setQuoteList([...newArray]);
+    }
+  };
+
+  const downloadQuoteOfTheDay = async (id) => {
+    let newObj = dashboardData.quoteOfTheDay;
+    if (id == newObj._id) {
+      newObj.downloads = newObj.downloads + 1;
+    }
+    dashboardData.quoteOfTheDay = newObj;
+    await setDashBoardData({
+      ...dashboardData,
+    })
+  }
+
 
   const copyText = async text => {
     try {
@@ -189,15 +400,28 @@ const List = props => {
   };
   //todo API's
 
-  const call_quoteListAPI = () => {
+
+  const getUserID = async () => {
+    await AsyncStorage.getItem('@user').then(val => {
+      if (val != null) {
+        user = JSON.parse(val)
+        console.log(user, "User...")
+      }
+    });
+  };
+
+  const call_quoteListAPI = async () => {
+    await getUserID();
     setisLoading(true);
-    api_quoteList();
+    quoteCatagoriesApi()
+    // api_quoteList();
   };
 
   const refresh_quoteListAPI = () => {
-    setRefreshing(true);
+    setisLoadingMore(true);
     api_quoteList();
   };
+
 
   const api_quoteList = async () => {
     let res;
@@ -236,30 +460,38 @@ const List = props => {
         //   );
         // });
 
-        let count = QuoteList?.length;
         // console.log('newArray', newArray);
-        setQuoteList([...res?.quotes, ...QuoteList]);
+
+        await setQuoteList([...QuoteList, ...res?.quotes]);
+
+        let count = QuoteList?.length;
         count = count + res?.quotes.length;
         // console.log('count', count);
-        setPGN({
-          pageNumber: pageNumber + 1,
-          canLoadMore: count < res?.count ? true : false,
-        });
+
+        pageNumber = pageNumber + 1;
+        canLoadMore = count < res?.count ? true : false;
+        // setPGN({
+        //   pageNumber: pageNumber + 1,
+        //   canLoadMore: count < res?.count ? true : false,
+        // });
       } else {
         showToast(res.message);
       }
     }
     setisLoading(false);
-    setRefreshing(false);
-    setPGN({ isLoadingMore: false });
+    setisLoadingMore(false);
+    // setPGN({ isLoadingMore: false });
   };
 
   const onEndReached = () => {
     console.log('onEndReached');
-    if (canLoadMore) {
-      setPGN({ isLoadingMore: true, canLoadMore: false });
-      api_quoteList();
-    }
+    loadMoreQuotesApi();
+    // if (canLoadMore) {
+    //   setisLoadingMore(true)
+    //   canLoadMore = false;
+    //   // setPGN({ isLoadingMore: true, canLoadMore: false });
+    //   api_quoteList();
+    // }
   };
 
   const api_favOrUnfavQuote = async (val, id) => {
@@ -344,6 +576,82 @@ const List = props => {
     };
   }, []);
 
+
+  // BackButton Handler 
+  const onBackPress = () => {
+    pageNumber = 0;
+    canLoadMore = false;
+    props.navigation.goBack();
+  };
+
+  const flatListHeader = () => {
+    return (
+      <View style={{ backgroundColor: Colors.background }}>
+        <FlatList
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 15 }}
+          showsHorizontalScrollIndicator={false}
+          data={categoryList}
+          horizontal={true}
+          renderItem={renderCategories}
+        />
+      </View>
+    );
+  };
+
+  const renderCategories = ({ item, index }) => {
+    return (
+      <View>
+        <Pressable
+          onPress={async () => {
+            console.log(item, "item...")
+            await setSelectedCategory(item)
+            console.log(selectedCategory, "item for category...")
+          }}
+          style={{
+            margin: 6,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 20,
+            borderColor: Colors.gray07,
+            borderWidth: 0.8,
+            backgroundColor:
+              item?._id == selectedCategory?._id
+                ? Colors.lightPrimary1
+                : Colors.white,
+            paddingHorizontal: 15,
+            height: 60,
+            width: 60,
+          }}>
+          <View>
+            <CustomImage
+              style={
+                item._id == selectedCategory?._id
+                  ? { width: 30, height: 30, tintColor: Colors.primary }
+                  : { width: 30, height: 30 }
+              }
+              source={
+                item?._id == 'all'
+                  ? ic_default
+                  : { uri: fileURL + item?.images?.small }
+              }
+              indicatorProps={{ color: Colors.primary }}
+            />
+          </View>
+        </Pressable>
+        <Text
+          style={{
+            fontFamily: font.medium,
+            color: Colors.black,
+            textAlign: 'center',
+            fontSize: 12,
+            textTransform: item?._id == 'all' ? 'capitalize' : 'none',
+          }}>
+          {item.name}
+        </Text>
+      </View>
+    );
+  };
+
   const flatItemView = ({ item, index }) => {
     return (
       <>
@@ -392,7 +700,7 @@ const List = props => {
               flexDirection: 'row',
               backgroundColor: '#FFF',
             }}>
-            <TouchableOpacity
+            <Pressable
               onPress={() => favUnFavFunction(item, index)}
               style={{
                 flex: 1,
@@ -421,31 +729,43 @@ const List = props => {
                 }}>
                 {kFormatter(item?.favourite)}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
 
-            <TouchableOpacity
+            <Pressable
+              disabled={isDownloading != null}
               onPress={() => download(item)}
               style={{
                 flex: 1,
                 alignItems: 'center',
                 height: 50,
                 justifyContent: 'center',
+                flexDirection: 'row',
               }}>
               {/* {!checkQuoteDownloading(item._id) ? ( */}
-              {isDownloading ?
-                <ActivityIndicator color={Colors.placeHolder} size="small" />
-                :
+              {isDownloading != item._id ?
                 <Image
                   source={ic_download}
                   style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
                 />
+                :
+                <ActivityIndicator color={Colors.placeHolder} size="small" />
               }
+              <Text
+                style={{
+                  marginLeft: 5,
+                  fontFamily: font.medium,
+                  color: Colors.placeHolder,
+                  letterSpacing: 1,
+                  includeFontPadding: false,
+                }}>
+                {kFormatter(item?.downloads)}
+              </Text>
               {/* ) : (
               <ActivityIndicator color={Colors.placeHolder} size="small" />
             )} */}
-            </TouchableOpacity>
+            </Pressable>
 
-            <TouchableOpacity
+            <Pressable
               disabled={isSharing != null}
               onPress={async () => {
                 await shareQuote(item);
@@ -455,6 +775,7 @@ const List = props => {
                 alignItems: 'center',
                 height: 50,
                 justifyContent: 'center',
+                flexDirection: 'row'
               }}>
               {isSharing != item._id ? (
                 <Image
@@ -464,9 +785,19 @@ const List = props => {
               ) : (
                 <ActivityIndicator color={Colors.placeHolder} size="small" />
               )}
-            </TouchableOpacity>
+              <Text
+                style={{
+                  marginLeft: 5,
+                  fontFamily: font.medium,
+                  color: Colors.placeHolder,
+                  letterSpacing: 1,
+                  includeFontPadding: false,
+                }}>
+                {kFormatter(item?.share)}
+              </Text>
+            </Pressable>
             {/* 
-          <TouchableOpacity
+          <Pressable
             onPress={() => {setModalVisibility(true) 
               selectedQuote = item
             }}
@@ -480,7 +811,7 @@ const List = props => {
               source={ic_wallPaper}
               style={{ height: 18.5, width: 18.5, tintColor: Colors.placeHolder }}
             />
-          </TouchableOpacity> */}
+          </Pressable> */}
           </View>
         </View>
 
@@ -689,14 +1020,18 @@ const List = props => {
         rightIcononPress={onFavList}
         rightIconStyle={{ height: 25, width: 25 }}
         navigation={props.navigation}
+        onBackPress={onBackPress}
         title={'Quotes'}
       />
-      <View style={{ flex: 1 }}>
+      <View style={mainStyles.innerView}>
         <Loader enable={loading} />
         <View style={{ flex: 1 }}>
           <FlatList
             ref={flatListRef}
-            contentContainerStyle={{ marginTop: 10, paddingBottom: 10 }}
+            stickyHeaderIndices={[0]}
+            stickyHeaderHiddenOnScroll={true}
+            ListHeaderComponent={flatListHeader()}
+            contentContainerStyle={{ paddingVertical: 10, paddingBottom: 30 }}
             showsVerticalScrollIndicator={false}
             keyExtractor={(item, index) => {
               return index.toString();
@@ -709,7 +1044,12 @@ const List = props => {
                 console.log(e, 'scroll error');
               }
             }}
-            data={QuoteList}
+            data={
+              !!selectedCategory?.quotes
+                ? selectedCategory?.quotes
+                : []
+            }
+            // data={QuoteList}
             renderItem={flatItemView}
             onEndReached={onEndReached}
             ListEmptyComponent={

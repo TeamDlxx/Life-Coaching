@@ -60,6 +60,9 @@ import QuoteDetail from '../screens/Home/Quotes/QuoteDetail';
 import Meditation from '../screens/Home/Meditation/Meditation';
 import TrackPlayerScreen from '../screens/Home/Meditation/TrackPlayerScreen';
 import FavouriteTracks from '../screens/Home/Meditation/FavouriteTracks';
+import PlaylistScreen from '../screens/Home/Meditation/PlaylistScreen';
+import AddPlaylistTrackScreen from '../screens/Home/Meditation/AddPlaylistTrackScreen';
+import PlaylistDetailScreen from '../screens/Home/Meditation/PlaylistDetailScreen';
 
 // //? TimeTable
 import TimeTable from '../screens/Home/TimeTable/TimeTable';
@@ -93,6 +96,7 @@ import NotificationScreen from '../screens/Notifications/NotificationScreen';
 
 import invokeApi from '../functions/invokeAPI';
 import messaging from '@react-native-firebase/messaging';
+
 
 
 const Stack = createNativeStackNavigator();
@@ -217,6 +221,9 @@ if (whichScreen != undefined) {
       {/* Meditation*/}
       <Stack.Screen name={screens.meditation} component={Meditation} />
       <Stack.Screen name={screens.trackPlayer} component={TrackPlayerScreen} />
+      <Stack.Screen name={screens.playlists} component={PlaylistScreen} />
+      <Stack.Screen name={screens.addPlaylistTracks} component={AddPlaylistTrackScreen} />
+      <Stack.Screen name={screens.playlistsDetails} component={PlaylistDetailScreen} />
 
       {/* Notes */}
       <Stack.Screen name={screens.notesList} component={NotesList} />

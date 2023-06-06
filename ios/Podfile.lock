@@ -493,8 +493,6 @@ PODS:
     - React
   - react-native-image-picker (4.10.0):
     - React-Core
-  - react-native-in-app-review (4.2.1):
-    - React-Core
   - react-native-render-html (6.3.4):
     - React-Core
   - react-native-safe-area-context (4.3.4):
@@ -723,7 +721,6 @@ DEPENDENCIES:
   - "react-native-cameraroll (from `../node_modules/@react-native-camera-roll/camera-roll`)"
   - react-native-fbsdk (from `../node_modules/react-native-fbsdk`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
-  - react-native-in-app-review (from `../node_modules/react-native-in-app-review`)
   - react-native-render-html (from `../node_modules/react-native-render-html`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
@@ -876,8 +873,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-fbsdk"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
-  react-native-in-app-review:
-    :path: "../node_modules/react-native-in-app-review"
   react-native-render-html:
     :path: "../node_modules/react-native-render-html"
   react-native-safe-area-context:
@@ -1035,7 +1030,6 @@ SPEC CHECKSUMS:
   react-native-cameraroll: a40b082318eb1ecd0336a2f29d9f74b7f2c8cae8
   react-native-fbsdk: 8e92c7a334fd8d9c2b5d8b8fcd7ae2c314161099
   react-native-image-picker: 4bc9ed38c8be255b515d8c88babbaf74973f91a8
-  react-native-in-app-review: a073f67c5f3392af6ea7fb383217cdb1aa2aa726
   react-native-render-html: 984dfe2294163d04bf5fe25d7c9f122e60e05ebe
   react-native-safe-area-context: dfe5aa13bee37a0c7e8059d14f72ffc076d120e9
   react-native-slider: d3ae4270cf8a8cc45a69912db0cc42b151560d5a

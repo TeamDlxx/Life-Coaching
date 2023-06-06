@@ -6317,7 +6317,7 @@ prompts@^2.0.1, prompts@^2.4.0:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
-prop-types@*, prop-types@^15.5.10, prop-types@^15.5.7, prop-types@^15.6.0, prop-types@^15.6.2, prop-types@^15.7.2, prop-types@^15.8.0, prop-types@^15.8.1:
+prop-types@*, prop-types@^15.5.10, prop-types@^15.5.7, prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.2, prop-types@^15.7.2, prop-types@^15.8.0, prop-types@^15.8.1:
   version "15.8.1"
   resolved "https://registry.npmjs.org/prop-types/-/prop-types-15.8.1.tgz"
   integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
@@ -6488,6 +6488,15 @@ react-native-confirmation-code-field@^7.3.1:
   version "7.3.1"
   resolved "https://registry.npmjs.org/react-native-confirmation-code-field/-/react-native-confirmation-code-field-7.3.1.tgz"
   integrity sha512-5vI6BclB31e4vTYg0HmV/Vy9zI5MQZfHr1EN3kYzvaZq4GMIsyr6lrSmnQW1TtWR7Z8oURrhCpwo+JsWXxCoug==
+
+react-native-countdown-component@^2.7.1:
+  version "2.7.1"
+  resolved "https://registry.yarnpkg.com/react-native-countdown-component/-/react-native-countdown-component-2.7.1.tgz#d1e1278d792b0bb6b1bf58972e8a3ad758926a86"
+  integrity sha512-H7D/YvMjY1hCJf9xFrNh5CsIwkcel/Suno2gYR6ulWwoa2xnUgmltFWoMyEIODsUy7lIK1KCPm+Zn26QajbRaw==
+  dependencies:
+    lodash "^4.17.13"
+    prop-types "^15.5.8"
+    sprintf-js "^1.1.1"
 
 react-native-device-info@^10.3.0:
   version "10.3.0"
@@ -6712,6 +6721,11 @@ react-native-swipeable-list@^0.1.2:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/react-native-swipeable-list/-/react-native-swipeable-list-0.1.2.tgz#829b89fb08e978c47383395d315f102be855e7da"
   integrity sha512-FDeFLByUep3m3xuwS/ZkktxL7Xzg90XnKoo+KLTF04jiddyVZQMnXTHG8O4pyiEtg/swcBlT6XUktV+/KTVNXQ==
+
+react-native-timeago@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/react-native-timeago/-/react-native-timeago-0.5.0.tgz#1b08057e3473dbb5b6720ee5cde4e544a7c250f0"
+  integrity sha512-GYrV36FK8ttkl7BIAdh77OlYLYGIKLGNviJqzPUtKaO8ANEtI8ph7UkSTRv9oMKfvDnA5VKV9hVX7GtYoAztRg==
 
 react-native-toast-message@^2.1.5:
   version "2.1.5"
@@ -7428,6 +7442,11 @@ split-string@^3.0.1, split-string@^3.0.2:
   integrity sha512-NzNVhJDYpwceVVii8/Hu6DKfD2G+NrQHlS/V/qgv763EYudVwEcMQNxd2lh+0VrUByXN/oJkl5grOhYWvQUYiw==
   dependencies:
     extend-shallow "^3.0.0"
+
+sprintf-js@^1.1.1:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.1.2.tgz#da1765262bf8c0f571749f2ad6c26300207ae673"
+  integrity sha512-VE0SOVEHCk7Qc8ulkWw3ntAzXuqf7S2lvwQaDLRnUeIEaKNQJzV6BwmLKhOqT61aGhfUMrXeaBk+oDGCzvhcug==
 
 sprintf-js@~1.0.2:
   version "1.0.3"

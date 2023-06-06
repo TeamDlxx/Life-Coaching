@@ -1,7 +1,7 @@
-import {View, Text, TextInput, Pressable, Image, ScrollView} from 'react-native';
+import { View, Text, TextInput, Pressable, Image, ScrollView } from 'react-native';
 import React from 'react';
 import colors from '../Utilities/Colors';
-import {font} from '../Utilities/font';
+import { font } from '../Utilities/font';
 import Colors from '../Utilities/Colors';
 
 const height = 55;
@@ -14,20 +14,21 @@ const closedEyeIcon = require('../Assets/Icons/closedEye.png');
 export function CustomSimpleTextInput(props) {
   return (
     <View>
-      <View style={{marginBottom: 10}}>
+      <View style={{ marginBottom: 10 }}>
         <Text
           style={{
             marginLeft: 5,
             color: !!props.lableColor ? props.lableColor : '#454545',
             fontFamily: !!props.lableBold ? font.bold : font.regular,
             letterSpacing: 0.5,
+            fontSize: !!props.labelFontSize ? props.labelFontSize : 14,
           }}>
           {props.lable}
         </Text>
       </View>
       <View
         style={{
-          height: height,
+          height: props.height ? props.height : height,
           backgroundColor: '#fff',
           borderRadius: 15,
           overflow: 'hidden',
@@ -35,8 +36,9 @@ export function CustomSimpleTextInput(props) {
           borderColor: Colors.gray02,
         }}>
         <TextInput
+          maxLength={props?.maxLength ? props?.maxLength : undefined}
           editable={props?.editable}
-          style={{flex: 1, paddingHorizontal: 20, fontFamily: font.regular}}
+          style={{ flex: 1, paddingHorizontal: 20, fontFamily: font.regular }}
           placeholderTextColor={colors.placeHolder}
           placeholder={props.placeholder}
           autoCorrect={false}
@@ -55,7 +57,7 @@ export function CustomSimpleTextInput(props) {
 export function CustomMultilineTextInput(props) {
   return (
     <View>
-      <View style={{marginBottom: 10}}>
+      <View style={{ marginBottom: 10 }}>
         <Text
           style={{
             marginLeft: 5,
@@ -113,7 +115,7 @@ export function CustomMultilineTextInput(props) {
 export function CustomTouchableTextInput(props) {
   return (
     <View>
-      <View style={{marginBottom: 10}}>
+      <View style={{ marginBottom: 10 }}>
         <Text
           style={[
             {
@@ -122,7 +124,7 @@ export function CustomTouchableTextInput(props) {
               fontFamily: !!props.lableBold ? font.bold : font.regular,
               letterSpacing: 0.5,
             },
-            {...props?.lableStyle},
+            { ...props?.lableStyle },
           ]}>
           {props.lable}
         </Text>
@@ -139,7 +141,7 @@ export function CustomTouchableTextInput(props) {
           justifyContent: 'center',
           alignItems: 'center',
         }}>
-        <Text style={{paddingHorizontal: 20, fontFamily: font.regular}}>
+        <Text style={{ paddingHorizontal: 20, fontFamily: font.regular }}>
           {props.value}
         </Text>
       </Pressable>
@@ -151,7 +153,7 @@ export function CustomPasswordTextInput(props) {
   const [Visible, setVisible] = React.useState(false);
   return (
     <View>
-      <View style={{marginBottom: 10}}>
+      <View style={{ marginBottom: 10 }}>
         <Text
           style={{
             color: '#454545',
@@ -171,9 +173,9 @@ export function CustomPasswordTextInput(props) {
           borderWidth: 1,
           borderColor: Colors.gray02,
         }}>
-        <View style={{flex: 1}}>
+        <View style={{ flex: 1 }}>
           <TextInput
-            style={{flex: 1, paddingHorizontal: 20, fontFamily: font.regular}}
+            style={{ flex: 1, paddingHorizontal: 20, fontFamily: font.regular }}
             placeholderTextColor={colors.placeHolder}
             placeholder={props.placeholder}
             value={props.value}
@@ -186,7 +188,7 @@ export function CustomPasswordTextInput(props) {
           />
         </View>
         <Pressable
-          style={{width: 40, justifyContent: 'center', alignItems: 'center'}}
+          style={{ width: 40, justifyContent: 'center', alignItems: 'center' }}
           onPress={() => setVisible(!Visible)}>
           <Image
             source={!!Visible ? openEyeIcon : closedEyeIcon}

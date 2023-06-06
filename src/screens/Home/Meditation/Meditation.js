@@ -14,7 +14,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import CustomImage from '../../../Components/CustomImage';
 import Header from '../../../Components/Header';
 import Colors from '../../../Utilities/Colors';
-import { mainStyles } from '../../../Utilities/styles';
+import { mainStyles, FAB_style } from '../../../Utilities/styles';
 import { font } from '../../../Utilities/font';
 import { screens } from '../../../Navigation/Screens';
 import formatTime from '../../../functions/formatTime';
@@ -31,8 +31,10 @@ import Loader from '../../../Components/Loader';
 import invokeApi from '../../../functions/invokeAPI';
 import { fileURL } from '../../../Utilities/domains';
 import EmptyView from '../../../Components/EmptyView';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 //Icons
+import playlist from '../../../Assets/TrackPlayer/playlist.png';
 import play from '../../../Assets/Icons/play.png';
 import favList from '../../../Assets/Icons/favList.png';
 import ic_default from '../../../Assets/Icons/all.png';
@@ -47,6 +49,7 @@ const rewarded = RewardedAd.createForAdRequest(Admob_Ids.rewarded, {
 });
 
 
+let user = {};
 
 
 const Meditation = props => {
@@ -54,14 +57,11 @@ const Meditation = props => {
 
   const rewardedAdRef = useRef(RewardedAd.createForAdRequest(adRewardedId));
 
-
-
-
-  const { Token, isMeditationPurchased } = useContext(Context);
+  const { Token, isMeditationPurchased ,categoryList, setCategoryList} = useContext(Context);
   const [isLoading, setisLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [categoryList, setCategoryList] = useState([]);
+  // const [categoryList, setCategoryList] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [alertVisibility, setAlertVisibility] = useState(false);
   const [adError, setAdError] = useState(false);
@@ -271,22 +271,34 @@ const Meditation = props => {
     setAlertVisibility(false);
   }
 
-  const call_categoryAPI = () => {
+  const getUserID = async () => {
+    await AsyncStorage.getItem('@user').then(val => {
+      if (val != null) {
+        user = JSON.parse(val)
+        console.log(user, "User...")
+      }
+    });
+  };
+
+  const call_categoryAPI = async () => {
+    await getUserID();
     setisLoading(true);
-    if (Token) {
-      api_CategoryWithTracksList();
-    } else {
-      api_GuestCategoryWithTracksList();
-    }
+    getAllActiveTracks();
+    // if (Token) {
+    //   api_CategoryWithTracksList();
+    // } else {
+    //   api_GuestCategoryWithTracksList();
+    // }
   };
 
   const refresh_categoryAPI = () => {
     setRefreshing(true);
-    if (Token) {
-      api_CategoryWithTracksList();
-    } else {
-      api_GuestCategoryWithTracksList();
-    }
+    getAllActiveTracks();
+    // if (Token) {
+    //   api_CategoryWithTracksList();
+    // } else {
+    //   api_GuestCategoryWithTracksList();
+    // }
   };
 
   const api_GuestCategoryWithTracksList = async () => {
@@ -298,7 +310,7 @@ const Meditation = props => {
     setisLoading(false);
     setRefreshing(false);
     handleResponse(res);
-  };
+  }; 
 
   const api_CategoryWithTracksList = async () => {
     let res = await invokeApi({
@@ -313,6 +325,21 @@ const Meditation = props => {
     setRefreshing(false);
     handleResponse(res);
   };
+
+  const getAllActiveTracks = async  () => {
+    let res = await invokeApi({
+      path: 'api/category/get_active_categories',
+      method: 'POST',
+      postData: {
+        'user_id': (Token && user?.user_id?._id) ? user?.user_id?._id : '',
+        'token' : 'ARHDVBSSGYXIURY5OUU5'
+      },
+      navigation: props.navigation,
+    });
+    setisLoading(false);
+    setRefreshing(false);
+    handleResponse(res);
+  }
 
   const handleResponse = res => {
     if (res) {
@@ -350,22 +377,32 @@ const Meditation = props => {
     ) {
       setIsLoadingMore(true);
       let res;
-      if (Token) {
-        res = await invokeApi({
-          path: 'api' + selectedCategory?.load_more_url,
-          method: 'GET',
-          headers: {
-            'x-sh-auth': Token,
-          },
-          navigation: props.navigation,
-        });
-      } else {
-        res = await invokeApi({
-          path: 'api' + selectedCategory?.load_more_url,
-          method: 'GET',
-          navigation: props.navigation,
-        });
-      }
+      // if (Token) {
+      //   res = await invokeApi({
+      //     path: 'api' + selectedCategory?.load_more_url,
+      //     method: 'GET',
+      //     headers: {
+      //       'x-sh-auth': Token,
+      //     },
+      //     navigation: props.navigation,
+      //   });
+      // } else {
+      //   res = await invokeApi({
+      //     path: 'api' + selectedCategory?.load_more_url,
+      //     method: 'GET',
+      //     navigation: props.navigation,
+      //   });
+      // }
+
+       res = await invokeApi({
+        path: 'api' + selectedCategory?.load_more_url,
+        method: 'POST',
+        postData: {
+          'user_id': (Token && user?.user_id?._id) ? user?.user_id?._id : '',
+          'token' : 'ARHDVBSSGYXIURY5OUU5'
+        },
+        navigation: props.navigation,
+      });
 
       if (res) {
         if (res.code == 200) {
@@ -491,31 +528,32 @@ const Meditation = props => {
   const renderTrackList = ({ item, index }) => {
     return (
       <>
-        <Pressable
-          onPress={() => {
-            gotoTrackPlayer(item, index);
-          }}
-          style={{
-            marginTop: 15,
-            alignItems: 'center',
-            flexDirection: 'row',
-            marginHorizontal: 20,
-          }}>
-          <View
+          <Pressable
+            onPress={() => {
+              gotoTrackPlayer(item, index);
+            }}
             style={{
-              height: 70,
-              width: 70,
-              borderRadius: 10,
-              overflow: 'hidden',
-              borderWidth: 1,
-              borderColor: Colors.gray02,
+              flex: 1,
+              marginTop: 15,
+              alignItems: 'center',
+              flexDirection: 'row',
+              marginHorizontal: 20,
             }}>
-            <CustomImage
-              source={{ uri: fileURL + item?.images?.small }}
-              style={{ height: 70, width: 70 }}
-              indicatorProps={{ color: Colors.primary }}
-            />
-            {/* {chooseScreenOnPurchasesAndLockedTrack(item.is_locked) ? (
+            <View
+              style={{
+                height: 70,
+                width: 70,
+                borderRadius: 10,
+                overflow: 'hidden',
+                borderWidth: 1,
+                borderColor: Colors.gray02,
+              }}>
+              <CustomImage
+                source={{ uri: fileURL + item?.images?.small }}
+                style={{ height: 70, width: 70 }}
+                indicatorProps={{ color: Colors.primary }}
+              />
+              {/* {chooseScreenOnPurchasesAndLockedTrack(item.is_locked) ? (
             <View
               style={{
                 position: 'absolute',
@@ -547,85 +585,86 @@ const Meditation = props => {
               </View>
             </View>
           ) : ( */}
-            <View
-              style={{
-                position: 'absolute',
-                height: 20,
-                width: 20,
-                backgroundColor: Colors.white,
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderRadius: 999,
-                bottom: 5,
-                right: 5,
-              }}>
-              <Image
-                style={{ height: 12, width: 12, tintColor: Colors.primary }}
-                source={play}
-              />
-            </View>
-            {/* )} */}
-          </View>
-          <View style={{ marginLeft: 15, flex: 1 }}>
-            <Text
-              style={{
-                fontFamily: font.bold,
-                fontSize: 14,
-                includeFontPadding: false,
-                color: Colors.black,
-              }}>
-              {item?.name}
-            </Text>
-
-            <View
-              style={{
-                marginTop: 3,
-              }}>
-              <Text
-                numberOfLines={2}
+              <View
                 style={{
-                  fontFamily: font.medium,
-                  color: Colors.text,
-                  fontSize: 12,
+                  position: 'absolute',
+                  height: 20,
+                  width: 20,
+                  backgroundColor: Colors.white,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderRadius: 999,
+                  bottom: 5,
+                  right: 5,
                 }}>
-                {item.description}
-              </Text>
+                <Image
+                  style={{ height: 12, width: 12, tintColor: Colors.primary }}
+                  source={play}
+                />
+              </View>
+              {/* )} */}
             </View>
-
-            <View
-              style={{
-                marginTop: 3,
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}>
+            <View style={{ marginLeft: 15, flex: 1 }}>
               <Text
                 style={{
-                  fontFamily: font.medium,
-                  color: Colors.gray12,
-                  fontSize: 12,
+                  fontFamily: font.bold,
+                  fontSize: 14,
+                  includeFontPadding: false,
+                  color: Colors.black,
                 }}>
-                {formatTime(item.duration)}
+                {item?.name}
               </Text>
-              <View style={{ marginLeft: 5 }}>
-                {chooseScreenOnPurchasesAndLockedTrack(item.is_locked) && (
-                  <View
-                    style={{
-                      backgroundColor: Colors.primary,
-                      padding: 3,
-                      borderRadius: 999,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}>
-                    <Image
-                      source={ic_lock}
-                      style={{ height: 10, width: 10, tintColor: Colors.white }}
-                    />
-                  </View>
-                )}
+
+              <View
+                style={{
+                  marginTop: 3,
+                }}>
+                <Text
+                  numberOfLines={2}
+                  style={{
+                    fontFamily: font.medium,
+                    color: Colors.text,
+                    fontSize: 12,
+                  }}>
+                  {item.description}
+                </Text>
+              </View>
+
+              <View
+                style={{
+                  marginTop: 3,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}>
+                <Text
+                  style={{
+                    fontFamily: font.medium,
+                    color: Colors.gray12,
+                    fontSize: 12,
+                  }}>
+                  {formatTime(item.duration)}
+                </Text>
+                <View style={{ marginLeft: 5 }}>
+                  {chooseScreenOnPurchasesAndLockedTrack(item.is_locked) && (
+                    <View
+                      style={{
+                        backgroundColor: Colors.primary,
+                        padding: 3,
+                        borderRadius: 999,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                      <Image
+                        source={ic_lock}
+                        style={{ height: 10, width: 10, tintColor: Colors.white }}
+                      />
+                    </View>
+                  )}
+                </View>
               </View>
             </View>
-          </View>
-        </Pressable>
+          </Pressable>       
+
 
         {((index + 1) % 8 === 0 || index == 0) && isMeditationPurchased == false && adError == false && (
           <View
@@ -676,6 +715,16 @@ const Meditation = props => {
     }
   };
 
+  const goToPlaylistScreen = async () => {
+    if (Token) {
+      props.navigation.navigate(screens.playlists)
+    } else {
+      LoginAlert(props.navigation, props.route?.name);
+    }
+  };
+
+
+
   return (
 
     <SafeAreaView style={mainStyles.MainView}>
@@ -690,6 +739,9 @@ const Meditation = props => {
         rightIcon={favList}
         rightIconStyle={{ height: 25, width: 25 }}
         rightIcononPress={onFavList}
+        rightIcon2={playlist}
+        rightIcon2onPress={goToPlaylistScreen}
+
       />
       <View style={mainStyles.innerView}>
 
@@ -745,18 +797,16 @@ const Meditation = props => {
         </View>
 
         <View>
-
           <CustomAlert
             visible={alertVisibility}
             backdropPressed={backdropPressed}
             buyOfferScreen={buyOfferScreen}
             showAd={showAd}
           />
-
         </View>
+
+      
       </View>
-
-
       <Loader enable={isLoading} />
 
     </SafeAreaView>

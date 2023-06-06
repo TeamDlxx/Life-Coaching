@@ -9,7 +9,6 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  TouchableOpacity,
   Alert,
   PermissionsAndroid,
   ScrollView,
@@ -323,7 +322,7 @@ const Editor = props => {
             console.log('All required permissions not granted');
             return false;
           }
-         } else {
+        } else {
           const grants = await PermissionsAndroid.requestMultiple([
             PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
             PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
@@ -366,7 +365,7 @@ const Editor = props => {
   const onMicPress = async () => {
     let granted;
     // if (Platform.OS == 'android') {
-      granted = await checkPermissionsAndroid();
+    granted = await checkPermissionsAndroid();
     // }
     if (granted) {
       setRecorder({ isAudioModalVisible: true });
@@ -862,7 +861,7 @@ const Editor = props => {
           setNotes({ images: [...temp] });
         },
       },
-    ], { cancelable: true },);
+    ], { cancelable: true });
   };
 
   const ColorPickerModal = () => {
@@ -1098,7 +1097,7 @@ const Editor = props => {
           onStopPlay();
         },
       },
-    ], { cancelable: true },);
+    ], { cancelable: true });
   };
 
   // Add in Remove Array
@@ -1413,13 +1412,10 @@ const Editor = props => {
                       onCursorPosition={scrollY => {
                         scrollRef?.current.scrollTo({
                           y: scrollY - 30,
-                          duration: 100,
                           animated: true,
                         });
                       }}
-                      onContentSizeChange={res => {
-                        console.log('res', res);
-                      }}
+                      onContentSizeChange={res => { }}
                       initialHeight={150}
                       initialContentHTML={notes.note}
                       editorStyle={{
@@ -1427,16 +1423,13 @@ const Editor = props => {
                         contentCSSText:
                           ' * {font-family: "Verdana", sans-serif;}',
                       }}
-                      onInput={res => {
-                        console.log(res, 'onInput');
-                      }}
+                      onInput={res => { }}
                       pasteAsPlainText={true}
                       placeholder={"What's in your mind"}
                       onChange={text => {
                         setNotes({ note: text });
                       }}
                       onPaste={() => {
-                        console.log('onPaste');
                         scrollRef?.current.scrollToEnd({
                           animated: true,
                         });
@@ -1448,7 +1441,6 @@ const Editor = props => {
                         setIsFocused(false);
                       }}
                       onFocus={() => {
-                        console.log('focused');
                         setIsFocused(true);
                       }}
                     />
@@ -1868,7 +1860,7 @@ const Editor = props => {
                 iconTint={Colors.placeHolder}
                 iconMap={{
                   images: ({ tintColor }) => (
-                    <TouchableOpacity
+                    <Pressable
                       onPress={() => setModalVisibility(true)}
                       style={{
                         width: '100%',
@@ -1885,10 +1877,10 @@ const Editor = props => {
                           tintColor: Colors.placeHolder,
                         }}
                       />
-                    </TouchableOpacity>
+                    </Pressable>
                   ),
                   [actions.foreColor]: ({ tintColor }) => (
-                    <TouchableOpacity
+                    <Pressable
                       style={{
                         width: '100%',
                         height: '100%',
@@ -1904,11 +1896,11 @@ const Editor = props => {
                           tintColor: Colors.placeHolder,
                         }}
                       />
-                    </TouchableOpacity>
+                    </Pressable>
                   ),
 
                   audio: ({ tintColor }) => (
-                    <TouchableOpacity
+                    <Pressable
                       onPress={onMicPress}
                       style={{
                         width: '100%',
@@ -1925,7 +1917,7 @@ const Editor = props => {
                           tintColor: Colors.placeHolder,
                         }}
                       />
-                    </TouchableOpacity>
+                    </Pressable>
                   ),
                   [actions.heading1]: ({ tintColor }) => (
                     <Text style={{ color: tintColor, fontWeight: '700' }}>

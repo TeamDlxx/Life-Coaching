@@ -5,14 +5,13 @@ import {
     Text,
     SafeAreaView,
     StatusBar,
-    FlatList,
+    Linking,
     StyleSheet,
     Dimensions,
     Pressable,
     Image,
     ScrollView,
     TouchableHighlight,
-    TouchableOpacity,
     Platform,
     ToastAndroid,
     ActivityIndicator,
@@ -84,22 +83,25 @@ import { Admob_Ids } from '../../Utilities/AdmobIds';
 
 import ReactNativeBlobUtil, { ReactNativeBlobUtilFile } from 'react-native-blob-util';
 import Loader from '../../Components/Loader';
+import VersionCheck from 'react-native-version-check';
+import DeviceInfo from 'react-native-device-info';
 
 
 let todayMeditation;
+let isVersionCheckCancel = 1;
 
 const HomeScreen = (props) => {
-    const { Token, isDownloading, downloadQuote, dashboardData, setDashBoardData} = useContext(Context);
+    const { Token, downloadQuote, checkPermissions, dashboardData, setDashBoardData } = useContext(Context);
     const { params } = props?.route;
     const { navigation } = props;
     const [loading, setisLoading] = useState(true);
     const [user, setUser] = useState(null);
     const [playIcon, setPlayIcon] = useState(playTrack);
-
     const [modalImage, setModalImage] = useState(null);
     const [isSharing, setIsSharing] = useState(null);
     const [isModalVisible, setModalVisibility] = useState(false);
-
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [checkUpdate, setCheckUpdate] = useState(false);
     const [adError, setAdError] = useState(false);
 
     let meditationOfTheDay = dashboardData.meditationOfTheDay;
@@ -121,6 +123,12 @@ const HomeScreen = (props) => {
         setTimeout(() => {
             SplashScreen.hide();
         }, 500);
+
+        setTimeout(() => {
+            if (isVersionCheckCancel == 1) {
+                checkAppUpdateAvailable();
+            }
+        }, 1200);
         notificationPermissions()
         return () => {
         };
@@ -192,6 +200,20 @@ const HomeScreen = (props) => {
         };
     }, []);
 
+    const checkAppUpdateAvailable = () => {
+        VersionCheck.getLatestVersion({
+            provider: Platform.OS == 'android' ? 'playStore' : 'appStore'
+        })
+            .then(latestVersion => {
+                if (latestVersion != DeviceInfo.getVersion()) {
+                    setCheckUpdate(true);
+                    isVersionCheckCancel = isVersionCheckCancel + 1;
+                }
+                console.log(latestVersion);    // 0.1.2
+            });
+
+    }
+
     const cleanCache = () => {
         const cacheclean = ReactNativeBlobUtil.fs.dirs.CacheDir
         ReactNativeBlobUtil.fs.unlink(cacheclean)
@@ -220,17 +242,17 @@ const HomeScreen = (props) => {
         if (Platform.OS == 'android') {
             const OsVer = Platform.constants['Release'];
             console.log(OsVer, "OS Version")
-    
+
             if (OsVer >= 13) {
-            granted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-            );
-            if (granted == 'granted') {
-                return true;
-            } else {
-                return false;
+                granted = await PermissionsAndroid.request(
+                    PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+                );
+                if (granted == 'granted') {
+                    return true;
+                } else {
+                    return false;
+                }
             }
-        }
         } else {
             return true;
         }
@@ -465,9 +487,45 @@ const HomeScreen = (props) => {
 
     const debounceDownload = debounnce(async item => {
         console.log('download');
-        await downloadQuote(item?.images?.large, item?._id);
+        let granted = await checkPermissions();
+        if (!granted) {
+            showToast(
+                'Please allow permission from settings first.',
+                'Permission denied',
+            );
+            return;
+        }
+        setIsDownloading(true)
+        let res = await invokeApi({
+            path: 'api/quotes/increament_quote_downloads/' + item?._id,
+            method: 'PUT',
+            navigation: props.navigation,
+        });
+        if (res) {
+            if (res.code == 200) {
+                await downloadQuote(item?.images?.large, item?._id);
+                setTimeout(() => {
+                    setIsDownloading(false)
+                    downloadCounts()
+                }, 500)
+
+            }
+            else {
+                setIsDownloading(false)
+                showToast(res.message);
+            }
+        }
         await analytics().logEvent('QUOTE_DOWLOAD_EVENT');
     }, 500);
+
+    const downloadCounts = () => {
+        let newObj = quoteOfTheDay;
+        newObj.downloads = newObj.downloads + 1;
+        setDashBoardData({
+            ...dashboardData,
+        })
+    };
+
 
     const shareQuote = async item => {
         setIsSharing(item._id);
@@ -490,6 +548,7 @@ const HomeScreen = (props) => {
             console.log('objShare', objShare);
             await Share.open(objShare)
                 .then(async res => {
+                    shareQuoteApi(item._id);
                     await analytics().logEvent('QUOTE_SHARE_EVENT');
                     console.log('res', res);
                 })
@@ -501,6 +560,35 @@ const HomeScreen = (props) => {
             setIsSharing(null);
         }
     };
+
+    const shareQuoteApi = async (id) => {
+        let res = await invokeApi({
+            path: 'api/quotes/increament_quote_share/' + id,
+            method: 'PUT',
+            navigation: props.navigation,
+        });
+        if (res) {
+            if (res.code == 200) {
+                if (!!params?.shareBackScreenQuote) {
+                    params?.countShareQuote();
+                }
+                shareQuoteOfTheDay(id)
+            }
+            else {
+                showToast(res.message);
+            }
+        }
+
+    }
+
+    const shareQuoteOfTheDay = async () => {
+        let newObj = dashboardData.quoteOfTheDay;
+        newObj.share = newObj.share + 1;
+        dashboardData.quoteOfTheDay = newObj;
+        await setDashBoardData({
+            ...dashboardData,
+        })
+    }
 
     const GetBase64 = async url => {
         return await axios
@@ -694,6 +782,18 @@ const HomeScreen = (props) => {
         await setModalVisibility(false)
     };
 
+    const updateApp = async () => {
+        let url;
+        url = Platform.OS == "android" ? 'https://play.google.com/store/apps/details?id=com.coachingoflife.app&pli=1'
+            : "https://apps.apple.com/pk/app/better-me-relax-meditation/id1643130857"
+        try {
+            await Linking.openURL(url);
+        } catch (e) {
+            console.log('Link Open Error', e);
+        }
+        await setCheckUpdate(false);
+    }
+
     return (
         <SafeAreaView
             style={[
@@ -856,7 +956,7 @@ const HomeScreen = (props) => {
                                 </View>
                                 <Pressable
                                     style={{ alignItems: "flex-end" }}
-                                    onPress={() => props.navigation.navigate(screens.habitTracker)}>
+                                    onPress={() => props.navigation.navigate(screens.allHabits)}>
                                     <View
                                         style={{
                                             backgroundColor: Colors.primary,
@@ -1169,7 +1269,7 @@ const HomeScreen = (props) => {
                                 flexDirection: 'row',
                                 backgroundColor: '#FFF',
                             }}>
-                            <TouchableOpacity
+                            <Pressable
                                 onPress={() => favUnFavFunction(quoteOfTheDay)}
                                 style={{
                                     flex: 1,
@@ -1198,15 +1298,16 @@ const HomeScreen = (props) => {
                                     }}>
                                     {kFormatter(quoteOfTheDay?.favourite)}
                                 </Text>
-                            </TouchableOpacity>
+                            </Pressable>
 
-                            <TouchableOpacity
+                            <Pressable
                                 onPress={() => download(quoteOfTheDay)}
                                 style={{
                                     flex: 1,
                                     alignItems: 'center',
                                     height: 50,
                                     justifyContent: 'center',
+                                    flexDirection: 'row',
                                 }}>
 
                                 {isDownloading ?
@@ -1217,9 +1318,19 @@ const HomeScreen = (props) => {
                                         style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
                                     />
                                 }
-                            </TouchableOpacity>
+                                <Text
+                                    style={{
+                                        marginLeft: 5,
+                                        fontFamily: font.medium,
+                                        color: Colors.placeHolder,
+                                        letterSpacing: 1,
+                                        includeFontPadding: false,
+                                    }}>
+                                    {kFormatter(quoteOfTheDay?.downloads)}
+                                </Text>
+                            </Pressable>
 
-                            <TouchableOpacity
+                            <Pressable
                                 disabled={isSharing != null}
                                 onPress={async () => {
                                     await shareQuote(quoteOfTheDay);
@@ -1229,6 +1340,7 @@ const HomeScreen = (props) => {
                                     alignItems: 'center',
                                     height: 50,
                                     justifyContent: 'center',
+                                    flexDirection: 'row',
                                 }}>
                                 {isSharing != quoteOfTheDay._id ?
                                     (
@@ -1240,9 +1352,19 @@ const HomeScreen = (props) => {
                                         <ActivityIndicator color={Colors.placeHolder} size="small" />
                                     )
                                 }
-                            </TouchableOpacity>
+                                <Text
+                                    style={{
+                                        marginLeft: 5,
+                                        fontFamily: font.medium,
+                                        color: Colors.placeHolder,
+                                        letterSpacing: 1,
+                                        includeFontPadding: false,
+                                    }}>
+                                    {kFormatter(quoteOfTheDay?.share)}
+                                </Text>
+                            </Pressable>
 
-                            {/* <TouchableOpacity
+                            {/* <Pressable
                                 onPress={() => setModalVisibility(true)}
                                 style={{
                                     flex: 1,
@@ -1254,7 +1376,7 @@ const HomeScreen = (props) => {
                                     source={ic_wallPaper}
                                     style={{ height: 18.5, width: 18.5, tintColor: Colors.placeHolder }}
                                 />
-                            </TouchableOpacity> */}
+                            </Pressable> */}
 
                         </View>
 
@@ -1274,6 +1396,96 @@ const HomeScreen = (props) => {
                 visible={!!modalImage}
                 url={modalImage}
             />
+
+            <Modal
+                isVisible={checkUpdate}
+                onBackButtonPress={() => setCheckUpdate(false)}
+                // onBackdropPress={() => setCheckUpdate(false)}
+                useNativeDriverForBackdrop={true}>
+                <View
+                    style={{
+                        backgroundColor: '#fff',
+                        margsinHorizontal: 10,
+                        borderRadius: 20,
+                        padding: 20,
+                        overflow: "hidden",
+                        alignItems: 'center',
+                        justifyContent: "center",
+                    }}>
+
+
+                    <ImageBackground
+                        resizeMode='stretch'
+                        style={{
+                            position: 'absolute',
+                            top: -10, left: 0, right: 0, bottom: -10
+                        }}
+                        source={require('../../Assets/Images/loginBackgorund.png')}>
+                    </ImageBackground>
+
+                    <Image source={require('../../Assets/Images/update_app.png')}
+                        style={{ height: 150, width: 150 }} />
+
+                    <Text
+                        style={{
+                            fontSize: 18,
+                            fontFamily: font.bold,
+                            letterSpacing: 0.5,
+                        }}>
+                        New Update Available
+                    </Text>
+
+                    <Text
+                        style={{
+                            marginTop: 12,
+                            fontSize: 12,
+                            fontFamily: font.light,
+                            letterSpacing: 0.5,
+
+                        }}>
+                        We added new features and fix some bugs to make your experience as smooth as possible. Install now for better functionality.
+                    </Text>
+
+                    <Pressable
+                        onPress={updateApp}
+                        style={{
+                            marginTop: 30,
+                            backgroundColor: colors.primary,
+                            height: 40,
+                            width: 180,
+                            borderRadius: 30,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}>
+                        <Text
+                            style={{
+                                color: colors.white,
+                                fontSize: 15,
+                                fontFamily: font.bold,
+                            }}>
+                            {"Update App"}
+                        </Text>
+                    </Pressable>
+
+                    <Pressable
+                        onPress={() => setCheckUpdate(false)}
+                        style={{
+                            marginTop: 15,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}>
+                        <Text
+                            style={{
+                                color: colors.text,
+                                fontSize: 12,
+                                fontFamily: font.medium,
+                            }}>
+                            {'NOT NOW '}
+                        </Text>
+                    </Pressable>
+
+                </View>
+            </Modal>
 
         </SafeAreaView >
     )

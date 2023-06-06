@@ -19,7 +19,7 @@ export default function CustomButton(props) {
       <Text
         style={{
           color: !!props.textColor ? props.textColor : colors.white,
-          fontSize: 18,
+          fontSize: !!props.textSize ? props.textSize : 18,
           fontFamily: font.bold,
         }}>
         {props.title}

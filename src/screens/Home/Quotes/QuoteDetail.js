@@ -7,7 +7,6 @@ import {
     Pressable,
     Image,
     Dimensions,
-    TouchableOpacity,
     TouchableHighlight,
     ActivityIndicator,
     Platform,
@@ -46,12 +45,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 let user = {};
 const QuoteDetail = (props) => {
     const { params } = props.route;
-    const { Token, isDownloading, downloadQuote, dashboardData, setDashBoardData, setBadgeCount } = useContext(Context)
+    const { Token, checkPermissions, downloadQuote, dashboardData, setDashBoardData, setBadgeCount } = useContext(Context)
     const win = Dimensions.get("window");
     const [modalImage, setModalImage] = useState(null);
     const [isLoading, setisLoading] = useState(false);
     const [isSharing, setIsSharing] = useState(null);
     const [quote, setQuoteDetail] = useState(null);
+    const [isDownloading, setIsDownloading] = useState(false);
 
     useEffect(() => {
         console.log(params._id)
@@ -203,9 +203,56 @@ const QuoteDetail = (props) => {
 
     const debounceDownload = debounnce(async item => {
         console.log('download');
-        await downloadQuote(item?.images?.large, item?._id);
+        let granted = await checkPermissions();
+        if (!granted) {
+            showToast(
+                'Please allow permission from settings first.',
+                'Permission denied',
+            );
+            return;
+        }
+        setIsDownloading(true)
+        let res = await invokeApi({
+            path: 'api/quotes/increament_quote_downloads/' + item?._id,
+            method: 'PUT',
+            navigation: props.navigation,
+        });
+        if (res) {
+            if (res.code == 200) {
+                await downloadQuote(item?.images?.large, item?._id);
+                downloadQuoteOfTheDay(item?._id)
+                setTimeout(() => {
+                    setIsDownloading(false)
+                    downloadCounts()
+                }, 500)
+
+            }
+            else {
+                setIsDownloading(false)
+                showToast(res.message);
+            }
+        }
         await analytics().logEvent('QUOTE_DOWLOAD_EVENT');
     }, 500);
+
+    const downloadCounts = () => {
+        let newObj = quote;
+        newObj.downloads = newObj.downloads + 1;
+        setQuoteDetail({
+            ...quote,
+        })
+    };
+
+    const downloadQuoteOfTheDay = async (id) => {
+        let newObj = dashboardData.quoteOfTheDay;
+        if (id == newObj._id) {
+            newObj.downloads = newObj.downloads + 1;
+        }
+        dashboardData.quoteOfTheDay = newObj;
+        await setDashBoardData({
+            ...dashboardData,
+        })
+    }
 
     const shareQuote = async item => {
         setIsSharing(item._id);
@@ -228,6 +275,7 @@ const QuoteDetail = (props) => {
             console.log('objShare', objShare);
             await Share.open(objShare)
                 .then(async res => {
+                    shareQuoteApi(item._id)
                     await analytics().logEvent('QUOTE_SHARE_EVENT');
                     console.log('res', res);
                 })
@@ -239,6 +287,44 @@ const QuoteDetail = (props) => {
             setIsSharing(null);
         }
     };
+
+    const shareQuoteApi = async (id) => {
+        let res = await invokeApi({
+            path: 'api/quotes/increament_quote_share/' + id,
+            method: 'PUT',
+            navigation: props.navigation,
+        });
+        if (res) {
+            if (res.code == 200) {
+                await countQuoteShare(id)
+                shareQuoteOfTheDay(id)
+            }
+            else {
+                showToast(res.message);
+            }
+        }
+
+    }
+
+
+    const countQuoteShare = () => {
+        let newObj = quote;
+        newObj.share = newObj.share + 1;
+        setQuoteDetail({
+            ...quote,
+        })
+    };
+
+    const shareQuoteOfTheDay = async (id) => {
+        let newObj = dashboardData.quoteOfTheDay;
+        if (id == newObj._id) {
+            newObj.share = newObj.share + 1;
+        }
+        dashboardData.quoteOfTheDay = newObj;
+        await setDashBoardData({
+            ...dashboardData,
+        })
+    }
 
     const GetBase64 = async url => {
         return await axios
@@ -324,7 +410,7 @@ const QuoteDetail = (props) => {
                                 flexDirection: 'row',
                                 backgroundColor: '#FFF',
                             }}>
-                            <TouchableOpacity
+                            <Pressable
                                 onPress={() => favUnFavFunction(quote)}
                                 style={{
                                     flex: 1,
@@ -353,15 +439,16 @@ const QuoteDetail = (props) => {
                                     }}>
                                     {kFormatter(quote?.favourite)}
                                 </Text>
-                            </TouchableOpacity>
+                            </Pressable>
 
-                            <TouchableOpacity
+                            <Pressable
                                 onPress={() => download(quote)}
                                 style={{
                                     flex: 1,
                                     alignItems: 'center',
                                     height: 50,
                                     justifyContent: 'center',
+                                    flexDirection: 'row',
                                 }}>
                                 {isDownloading ?
                                     <ActivityIndicator color={Colors.placeHolder} size="small" />
@@ -371,9 +458,19 @@ const QuoteDetail = (props) => {
                                         style={{ height: 20, width: 20, tintColor: Colors.placeHolder }}
                                     />
                                 }
-                            </TouchableOpacity>
+                                <Text
+                                    style={{
+                                        marginLeft: 5,
+                                        fontFamily: font.medium,
+                                        color: Colors.placeHolder,
+                                        letterSpacing: 1,
+                                        includeFontPadding: false,
+                                    }}>
+                                    {kFormatter(quote?.downloads)}
+                                </Text>
+                            </Pressable>
 
-                            <TouchableOpacity
+                            <Pressable
                                 disabled={isSharing != null}
                                 onPress={async () => {
                                     await shareQuote(quote);
@@ -383,6 +480,7 @@ const QuoteDetail = (props) => {
                                     alignItems: 'center',
                                     height: 50,
                                     justifyContent: 'center',
+                                    flexDirection: 'row',
                                 }}>
                                 {isSharing != quote?._id ?
                                     (
@@ -394,7 +492,17 @@ const QuoteDetail = (props) => {
                                         <ActivityIndicator color={Colors.placeHolder} size="small" />
                                     )
                                 }
-                            </TouchableOpacity>
+                                <Text
+                                    style={{
+                                        marginLeft: 5,
+                                        fontFamily: font.medium,
+                                        color: Colors.placeHolder,
+                                        letterSpacing: 1,
+                                        includeFontPadding: false,
+                                    }}>
+                                    {kFormatter(quote?.share)}
+                                </Text>
+                            </Pressable>
 
 
 

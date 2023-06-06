@@ -30,6 +30,9 @@ export const screens = {
   meditation: 'MEDITATION_SCREEN',
   trackPlayer: 'TRACK_PLAYER_SCREEN',
   favTracks: 'FAVOURITE_TRACKS_SCREEN',
+  playlists: 'PLAYLIST_SCREEN',
+  addPlaylistTracks: 'ADD_PLAYLIST_TRACKS_SCREEN',
+  playlistsDetails: 'PLAYLIST_DETAILS_SCREEN',
 
   /// Quotes
   qouteList: 'QUOTE_LIST_SCREEN',

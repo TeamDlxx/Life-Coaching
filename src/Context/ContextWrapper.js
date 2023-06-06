@@ -22,7 +22,6 @@ const ContextWrapper = props => {
   const [adminURLsAndEmail, setAdminURLsAndEmail] = useState(null);
   const [habitList, setHabitList] = useState([]);
   const [progress, setProgress] = useState([]);
-  const [isDownloading, setIsDownloading] = useState(false);
   const [quotesDownloading, setQuotesDownloading] = useState([]);
   const [progressAudioNote, setProgressAudioNote] = useState([]);
   const [purchases, setPurchases] = useState({
@@ -30,7 +29,7 @@ const ContextWrapper = props => {
     meditation: false,
     skus: [],
   });
-
+  const [categoryList, setCategoryList] = useState([]);   //Meditation category list
   const [gratitudesList, setGratitudesList] = useState([]);
   const updateGratitudeList = updation => setGratitudesList([updation, ...gratitudesList]);
   const [gratitudeExist, setGratitudeExist] = useState();
@@ -69,7 +68,7 @@ const ContextWrapper = props => {
 
       if (granted == 'granted') {
         return true;
-      } else if(granted == 'denied'){
+      } else if (granted == 'denied') {
         console.log('denied...')
         return false;
       }
@@ -296,15 +295,15 @@ const ContextWrapper = props => {
   };
 
   const downloadQuote = async (image, id) => {
-    let granted = await checkPermissions();
-    if (!granted) {
-      showToast(
-        'Please allow permission from settings first.',
-        'Permission denied',
-      );
-      return;
-    }
-    setIsDownloading(true)
+    // let granted = await checkPermissions();
+    // if (!granted) {
+    //   showToast(
+    //     'Please allow permission from settings first.',
+    //     'Permission denied',
+    //   );
+    //   return;
+    // }
+   
     let imgUrl = fileURL + image;
     let ext = imgUrl.split('.').pop();
     let imageName = '/image-' + moment().valueOf();
@@ -314,7 +313,7 @@ const ContextWrapper = props => {
       ext1 = 'jpeg';
     }
     console.log(dirs, 'directories...');
-    // return;
+
     let path = dirs.CacheDir + imageName + '.' + ext1;
 
     if (Platform.OS == 'android') {
@@ -328,26 +327,6 @@ const ContextWrapper = props => {
         .fetch('GET', imgUrl)
         .then(async res => {
           console.log(res.path(), 'end downloaded');
-
-          // if (!!dirs.LegacyDownloadDir == false) {
-          //   let pathnew =
-          //     await ReactNativeBlobUtil.MediaCollection.createMediafile(
-          //       {
-          //         name: imageName,
-          //         parentFolder: 'Better.Me',
-          //         mimeType: `image/${ext1}`,
-          //       },
-          //       'Download',
-          //     );
-          //   console.log('pathnew', pathnew);
-          //   let res1 =
-          //     await ReactNativeBlobUtil.MediaCollection.writeToMediafile(
-          //       pathnew,
-          //       res.path(),
-          //     );
-          //   let ok = await ReactNativeBlobUtil.fs.unlink(path);
-          //   // console.log('ok', ok);
-          // }
           try {
             await CameraRoll.save('file://' + res.path(), {
               type: 'photo',
@@ -356,7 +335,6 @@ const ContextWrapper = props => {
           } catch (e) {
             console.log(e, 'camera roll failed');
           }
-          setIsDownloading(false)
           showToast(
             'Quote has been saved to your storage',
             'Quote Downloaded',
@@ -365,20 +343,17 @@ const ContextWrapper = props => {
         })
         .catch(e => {
           console.log('download failed', e);
-          setIsDownloading(false)
           showToast('Quote downloading failed', 'Something went wrong');
         });
     } else {
       try {
         CameraRoll.save(imgUrl);
-        setIsDownloading(false)
         showToast(
           'Quote has been saved to your storage',
           'Quote Downloaded',
           'success',
         );
       } catch (e) {
-        setIsDownloading(false)
         showToast('Quote downloading failed', 'Something went wrong');
       }
     }
@@ -568,12 +543,13 @@ const ContextWrapper = props => {
     setToken,
     habitList,
     downloadTrack,
+    categoryList, setCategoryList,
     progress,
     deleteTrack,
     setHabitList,
     completed,
-    isDownloading,
     downloadQuote,
+    checkPermissions,
     isMeditationPurchased: purchases?.meditation,
     isHabitPurchased: purchases?.habit,
     purchasedSKUs: purchases?.skus,

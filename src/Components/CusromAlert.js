@@ -33,9 +33,9 @@ export default function CustomAlert(props) {
           <Text style={{ color: "white", fontFamily: 'Pangram-Bold' }}>Buy An Offer</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={props.showAd} style={{ height: 40, width: "100%", backgroundColor: colors.lightPrimary, alignItems: "center", justifyContent: "center", borderRadius: 10, marginTop: 10 }}>
+        {/* <TouchableOpacity onPress={props.showAd} style={{ height: 40, width: "100%", backgroundColor: colors.lightPrimary, alignItems: "center", justifyContent: "center", borderRadius: 10, marginTop: 10 }}>
           <Text style={{ color: colors.primary, fontFamily: 'Pangram-Bold' }}>Watch An Ad</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
 
       </View>
